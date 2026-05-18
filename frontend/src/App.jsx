@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Olha a diferença aqui: agora avisamos que eles estão dentro da pasta "pages"
+// Importações oficiais das nossas páginas
 import LandingPage from './pages/LandingPage'; 
 import StudentDashboard from './pages/StudentDashboard';
+import Login from './pages/Login'; // ← A PEÇA QUE FALTAVA AQUI!
 
 // Componentes simples (placeholders) que ainda vamos criar
-const Login = () => <div className="p-10 text-xl text-blue-600">🔑 Tela de Login/Cadastro</div>;
 const AdminDashboard = () => <div className="p-10 text-xl text-purple-600">⚙️ Dashboard do Admin (Controle)</div>;
 
 function App() {
