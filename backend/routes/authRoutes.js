@@ -91,7 +91,7 @@ module.exports = (supabase) => {
 
       const { data: alunoData, error: alunoError } = await authedClient
         .from('alunos')
-        .select('id, nome, capicoins, fase_atual, created_at')
+        .select('id, nome, capicoins, fase_atual, is_admin, created_at')
         .eq('id', user.id)
         .single();
 

@@ -6,9 +6,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import Login from './pages/Login';
 import Trilha from './pages/Trilha';
 import Ranking from './pages/Ranking';
-
-// Componentes simples (placeholders) que ainda vamos criar
-const AdminDashboard = () => <div className="p-10 text-xl text-purple-600">⚙️ Dashboard do Admin (Controle)</div>;
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (

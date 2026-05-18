@@ -63,8 +63,12 @@ export default function Login() {
         localStorage.setItem('token', dados.token);
         localStorage.setItem('refresh_token', dados.refresh_token);
         localStorage.setItem('aluno', JSON.stringify(dados.aluno));
-        
-        navigate('/student');
+
+        if (dados.aluno?.is_admin === true) {
+          navigate('/admin');
+        } else {
+          navigate('/student');
+        }
       } else {
         // Regra 4: UX Pós-cadastro (muda para login mas mantém o e-mail preenchido)
         setSuccessMessage('Conta criada com sucesso! Faça seu login agora.');

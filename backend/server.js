@@ -24,9 +24,11 @@ app.use(express.json());
 // Importando as nossas rotas e passando o Supabase para elas
 const authRoutes = require('./routes/authRoutes')(supabase);
 const gameRoutes = require('./routes/gameRoutes')(supabase);
+const adminRoutes = require('./routes/adminRoutes')(supabase);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {
