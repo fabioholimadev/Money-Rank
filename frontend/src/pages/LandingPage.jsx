@@ -13,7 +13,11 @@ export default function LandingPage() {
           <Link to="/login" className="text-slate-300 font-bold hover:text-white mr-6 transition-colors">
             Entrar
           </Link>
-          <Link to="/login" className="bg-green-500 hover:bg-green-400 text-slate-900 font-extrabold py-2 px-6 rounded-full shadow-[0_4px_0_0_#15803d] transition-all active:translate-y-1 active:shadow-none">
+          <Link
+            to="/login"
+            state={{ screen: 'register' }}
+            className="bg-green-500 hover:bg-green-400 text-slate-900 font-extrabold py-2 px-6 rounded-full shadow-[0_4px_0_0_#15803d] transition-all active:translate-y-1 active:shadow-none"
+          >
             Cadastrar
           </Link>
         </div>

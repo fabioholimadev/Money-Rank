@@ -1,71 +1,108 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function StudentDashboard() {
-  // 1. Estado para controlar as moedas do aluno
-  const [moedas, setMoedas] = useState(150);
+  const navigate = useNavigate();
+  const [aluno, setAluno] = useState(null);
 
-  // 2. Lista de Fases da nossa Trilha de Consumo
-  const fases = [
-    { id: 1, titulo: "O Monstro Invisível", status: "concluido" },
-    { id: 2, titulo: "Decifrando a Nota Fiscal", status: "atual" },
-    { id: 3, titulo: "Tributo à Saúde", status: "bloqueado" },
-    { id: 4, titulo: "Justiça e Cashback", status: "bloqueado" }
-  ];
+  useEffect(() => {
+    // Ler dados do aluno do localStorage
+    const alunoData = localStorage.getItem('aluno');
+    if (alunoData) {
+      try {
+        setAluno(JSON.parse(alunoData));
+      } catch (err) {
+        console.error('Erro ao parsear dados do aluno:', err);
+        navigate('/login');
+      }
+    } else {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  if (!aluno) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <p className="text-white text-lg">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center pb-20">
-      
-      {/* CABEÇALHO (Moedas e Perfil) */}
-      <header className="w-full bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-blue-700">Money Rank</h1>
-        <div className="flex items-center gap-2 bg-yellow-100 px-4 py-2 rounded-full border border-yellow-300">
-          <span className="text-xl">🪙</span>
-          <span className="font-bold text-yellow-700">{moedas}</span>
+    <div className="min-h-screen bg-slate-900 text-white p-6">
+      {/* Header */}
+      <div className="max-w-4xl mx-auto mb-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-black tracking-tighter">
+            MONEY<span className="text-green-400">RANK</span>
+          </h1>
+          <button
+            onClick={() => {
+              localStorage.clear();
+              navigate('/login');
+            }}
+            className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded-lg transition-all"
+          >
+            Logout
+          </button>
         </div>
-      </header>
-
-      {/* TÍTULO DA TRILHA */}
-      <div className="mt-8 text-center px-4">
-        <h2 className="text-2xl font-extrabold text-slate-800">Trilha: Impostos no Consumo</h2>
-        <p className="text-slate-500 mt-2">Aprenda como os impostos afetam o seu bolso e o seu país!</p>
+        <p className="text-slate-400 mt-2">Bem-vindo, {aluno.nome}! 🎮</p>
       </div>
 
-      {/* A TRILHA (Estilo Duolingo) */}
-      <div className="mt-12 flex flex-col items-center gap-8">
-        {fases.map((fase) => {
-          // Lógica para definir a cor do botão baseado no status da fase
-          let corBotao = "";
-          let icone = "";
+      {/* Cards Dashboard */}
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {/* Card: CapiCoins */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-green-500/30 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-300 font-semibold text-sm">Saldo de CapiCoins</h3>
+            <span className="text-3xl">🪙</span>
+          </div>
+          <p className="text-5xl font-black text-green-400">
+            {aluno.capicoins || 0}
+          </p>
+          <p className="text-slate-500 text-xs mt-4">Moeda oficial do Money Rank</p>
+        </div>
 
-          if (fase.status === "concluido") {
-            corBotao = "bg-green-500 hover:bg-green-600 shadow-[0_6px_0_0_#16a34a]"; // Verde
-            icone = "⭐";
-          } else if (fase.status === "atual") {
-            corBotao = "bg-blue-500 hover:bg-blue-600 shadow-[0_6px_0_0_#2563eb] animate-bounce"; // Azul e pulando
-            icone = "▶️";
-          } else {
-            corBotao = "bg-slate-300 shadow-[0_6px_0_0_#94a3b8] opacity-70 cursor-not-allowed"; // Cinza bloqueado
-            icone = "🔒";
-          }
+        {/* Card: Fase Atual */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-blue-500/30 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-300 font-semibold text-sm">Fase Atual</h3>
+            <span className="text-3xl">🗺️</span>
+          </div>
+          <p className="text-5xl font-black text-blue-400">
+            {aluno.fase_atual || 1}
+          </p>
+          <p className="text-slate-500 text-xs mt-4">Você está progredindo! 🚀</p>
+        </div>
 
-          return (
-            <div key={fase.id} className="flex flex-col items-center relative">
-              {/* Balão com o título da fase */}
-              <div className="mb-2 bg-white px-3 py-1 rounded-lg shadow-sm border border-slate-200 text-sm font-bold text-slate-700">
-                {fase.titulo}
-              </div>
-              
-              {/* Botão Redondo da Fase */}
-              <button 
-                className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl text-white transition-all active:translate-y-2 active:shadow-none ${corBotao}`}
-              >
-                {icone}
-              </button>
-            </div>
-          );
-        })}
+        {/* Card: Streak */}
+        <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-red-500/30 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-slate-300 font-semibold text-sm">Dias Seguidos</h3>
+            <span className="text-3xl">🔥</span>
+          </div>
+          <p className="text-5xl font-black text-red-400">
+            {aluno.streak_atual || 1}
+          </p>
+          <p className="text-slate-500 text-xs mt-4">Mantenha a sequência!</p>
+        </div>
       </div>
 
+      {/* Botões de Navegação */}
+      <div className="max-w-4xl mx-auto flex gap-4 flex-wrap justify-center">
+        <button
+          onClick={() => navigate('/trilha')}
+          className="bg-green-500 hover:bg-green-400 text-slate-900 font-extrabold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#15803d] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
+        >
+          🗺️ Ir para a Trilha
+        </button>
+        <button
+          onClick={() => navigate('/ranking')}
+          className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-extrabold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#b45309] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
+        >
+          🏆 Ver Ranking
+        </button>
+      </div>
     </div>
   );
 }

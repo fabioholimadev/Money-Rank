@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+  const [isLogin, setIsLogin] = useState(
+    location.state?.screen === 'register' ? false : true
+  );
   const [isLoading, setIsLoading] = useState(false);
   
   // Estados dos inputs
@@ -63,7 +66,7 @@ export default function Login() {
         
         navigate('/student');
       } else {
-        // Regra 4: UX Pós-cadastro (Exibe banner verde, limpa campos e muda pra login)
+        // Regra 4: UX Pós-cadastro (muda para login mas mantém o e-mail preenchido)
         setSuccessMessage('Conta criada com sucesso! Faça seu login agora.');
         setIsLogin(true);
         setPassword('');
