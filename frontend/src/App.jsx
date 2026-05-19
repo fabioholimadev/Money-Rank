@@ -4,9 +4,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage'; 
 import StudentDashboard from './pages/StudentDashboard';
 import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
 import Trilha from './pages/Trilha';
 import Ranking from './pages/Ranking';
 import AdminDashboard from './pages/AdminDashboard';
+import Perfil from './pages/Perfil';
 
 function App() {
   return (
@@ -14,10 +16,12 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/trilha" element={<Trilha />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/perfil" element={<Perfil />} />
       </Routes>
     </Router>
   );

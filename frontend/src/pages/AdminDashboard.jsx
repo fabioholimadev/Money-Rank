@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MonetizationOn, Logout } from '@mui/icons-material';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
+    <div className="min-h-screen bg-slate-950 text-white p-6">
       <div className="max-w-6xl mx-auto mb-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -44,8 +45,9 @@ export default function AdminDashboard() {
           </div>
           <button
             onClick={handleLogout}
-            className="bg-green-500 hover:bg-green-400 text-slate-900 font-extrabold py-3 px-8 rounded-xl shadow-[0_4px_0_0_#15803d] active:translate-y-1 active:shadow-none transition-all"
+            className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold py-3 px-8 rounded-2xl shadow-lg shadow-amber-400/20 active:translate-y-1 active:shadow-md transition-all flex items-center gap-2"
           >
+            <Logout sx={{ fontSize: 20 }} />
             Sair
           </button>
         </div>
@@ -53,17 +55,17 @@ export default function AdminDashboard() {
 
       <div className="max-w-6xl mx-auto">
         {isLoading ? (
-          <div className="rounded-3xl bg-slate-800 border border-slate-700 p-10 text-center text-white">
+          <div className="rounded-3xl bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 p-10 text-center text-white shadow-lg shadow-amber-500/5">
             Carregando dados dos alunos...
           </div>
         ) : error ? (
-          <div className="rounded-3xl bg-red-500/10 border border-red-500 p-8 text-red-200">
+          <div className="rounded-3xl bg-red-500/10 border border-red-500 p-8 text-red-200 shadow-lg">
             {error}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-3xl border border-slate-700 bg-slate-800 shadow-lg shadow-black/20">
-            <table className="min-w-full divide-y divide-slate-700">
-              <thead className="bg-slate-900">
+          <div className="overflow-x-auto rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm shadow-lg shadow-amber-500/5">
+            <table className="min-w-full divide-y divide-zinc-800">
+              <thead className="bg-slate-900/60">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider text-slate-400">#</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider text-slate-400">Nome do Aluno</th>
@@ -72,14 +74,17 @@ export default function AdminDashboard() {
                   <th className="px-6 py-4 text-center text-sm font-semibold uppercase tracking-wider text-slate-400">Dias Seguidos</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700">
+              <tbody className="divide-y divide-zinc-800">
                 {students.map((student, index) => (
-                  <tr key={student.id} className="hover:bg-slate-900/60 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-300">{index + 1}</td>
+                  <tr key={student.id} className="hover:bg-slate-900/40 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-amber-400">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{student.nome}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-green-400">🪙 {student.capicoins ?? 0}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-blue-300">{student.fase_atual ?? 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-red-300">{student.streak_atual ?? 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-amber-400 font-semibold flex items-center justify-center gap-1">
+                      <MonetizationOn sx={{ fontSize: 18 }} />
+                      {student.capicoins ?? 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-amber-400 font-semibold">{student.fase_atual ?? 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-amber-400 font-semibold">{student.streak_atual ?? 0}</td>
                   </tr>
                 ))}
               </tbody>

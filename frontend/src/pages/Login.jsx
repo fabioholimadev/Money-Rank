@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Login as LoginIcon, Logout, ArrowBack } from '@mui/icons-material';
 
 export default function Login() {
   const location = useLocation();
@@ -85,17 +86,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4">
-      <div className="absolute top-4 left-4">
-        <Link to="/" className="text-slate-400 hover:text-white transition-colors">
-          ← Voltar para o Início
-        </Link>
-      </div>
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4">
 
-      <div className="bg-slate-800 p-8 rounded-3xl shadow-xl border border-slate-700 w-full max-w-md">
+      <div className="bg-zinc-900/80 backdrop-blur-sm p-8 rounded-3xl shadow-lg shadow-amber-500/5 border border-zinc-800 w-full max-w-md">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-black text-white tracking-tighter mb-2">
-            MONEY<span className="text-green-400">RANK</span>
+            MONEY<span className="text-amber-400">RANK</span>
           </h1>
           <p className="text-slate-400">
             {isLogin ? 'Bem-vindo de volta! Faça seu login.' : 'Crie sua conta e comece a jogar!'}
@@ -112,7 +108,7 @@ export default function Login() {
         )}
 
         {successMessage && (
-          <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm font-semibold">
+          <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-sm font-semibold">
             {successMessage}
           </div>
         )}
@@ -128,7 +124,7 @@ export default function Login() {
                 onChange={(e) => setNome(e.target.value)}
                 disabled={isLoading}
                 placeholder="Como quer ser chamado?"
-                className="w-full bg-slate-900 text-white border border-slate-600 rounded-lg py-2.5 px-4 focus:outline-none focus:border-green-500 disabled:opacity-5"
+                className="w-full bg-slate-900 text-white border border-zinc-700 rounded-lg py-2.5 px-4 focus:outline-none focus:border-amber-400 disabled:opacity-50"
                 required={!isLogin} 
               />
             </div>
@@ -142,7 +138,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               placeholder="seu@email.com"
-              className="w-full bg-slate-900 text-white border border-slate-600 rounded-lg py-2.5 px-4 focus:outline-none focus:border-green-500 disabled:opacity-5"
+              className="w-full bg-slate-900 text-white border border-zinc-700 rounded-lg py-2.5 px-4 focus:outline-none focus:border-amber-400 disabled:opacity-50"
               required
             />
           </div>
@@ -155,7 +151,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               placeholder="••••••••"
-              className="w-full bg-slate-900 text-white border border-slate-600 rounded-lg py-2.5 px-4 focus:outline-none focus:border-green-500 disabled:opacity-5"
+              className="w-full bg-slate-900 text-white border border-zinc-700 rounded-lg py-2.5 px-4 focus:outline-none focus:border-amber-400 disabled:opacity-50"
               required
             />
           </div>
@@ -163,10 +159,10 @@ export default function Login() {
           <button 
             type="submit"
             disabled={isLoading}
-            className={`mt-4 bg-green-500 text-slate-900 text-lg font-extrabold py-3 rounded-xl transition-all ${
+            className={`mt-4 bg-amber-400 text-slate-950 text-lg font-extrabold py-3 rounded-xl transition-all ${
               isLoading 
                 ? 'opacity-60 cursor-not-allowed shadow-none' 
-                : 'hover:bg-green-400 shadow-[0_4px_0_0_#15803d] active:translate-y-1 active:shadow-none'
+                : 'hover:bg-amber-500 shadow-lg shadow-amber-400/20 active:translate-y-1 active:shadow-md'
             }`}
           >
             {isLoading ? 'Carregando...' : isLogin ? 'Entrar' : 'Cadastrar'}
@@ -176,10 +172,17 @@ export default function Login() {
         <div className="mt-6 text-center">
           <button 
             onClick={handleModeSwitch}
-            className="text-slate-400 hover:text-white text-sm transition-colors"
+            className="text-slate-400 hover:text-amber-400 text-sm transition-colors"
           >
             {isLogin ? 'Ainda não tem conta? Crie uma agora.' : 'Já tem uma conta? Faça login.'}
           </button>
+        </div>
+
+        <div className="mt-3 text-center">
+          <Link to="/" className="text-slate-400 hover:text-amber-400 transition-colors flex items-center justify-center gap-2">
+            <ArrowBack sx={{ fontSize: 16 }} />
+            Voltar para o Início
+          </Link>
         </div>
       </div>
     </div>

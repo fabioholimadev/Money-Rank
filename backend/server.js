@@ -25,10 +25,13 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes')(supabase);
 const gameRoutes = require('./routes/gameRoutes')(supabase);
 const adminRoutes = require('./routes/adminRoutes')(supabase);
+const activityRoutes = require('./routes/activityRoutes')(supabase);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/mission', activityRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {
