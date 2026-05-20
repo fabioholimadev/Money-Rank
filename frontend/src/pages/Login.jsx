@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Login as LoginIcon, Logout, ArrowBack } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 
 export default function Login() {
   const location = useLocation();

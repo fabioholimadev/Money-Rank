@@ -206,7 +206,7 @@ export default function Cadastro() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-lg rounded-[32px] border border-slate-800 bg-slate-900/95 p-8 shadow-2xl shadow-amber-500/10">
+      <div className="w-full max-w-lg rounded-4xl border border-slate-800 bg-slate-900/95 p-8 shadow-2xl shadow-amber-500/10">
 
         {/* Header */}
         <div className="mb-8 text-center">
@@ -328,7 +328,7 @@ export default function Cadastro() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="flex-shrink-0 rounded-2xl border border-dashed border-slate-600 bg-slate-950 px-5 py-3 text-sm font-semibold text-slate-400 transition hover:border-amber-400 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="shrink-0 rounded-2xl border border-dashed border-slate-600 bg-slate-950 px-5 py-3 text-sm font-semibold text-slate-400 transition hover:border-amber-400 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {avatarFile ? '↺ Trocar foto' : '+ Escolher foto'}
               </button>
@@ -346,7 +346,7 @@ export default function Cadastro() {
               )}
 
               {avatarFile && (
-                <span className="text-xs text-slate-500 truncate max-w-[130px]">
+                <span className="text-xs text-slate-500 truncate max-w-32.5">
                   {avatarFile.name}
                 </span>
               )}

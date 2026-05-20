@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 import {
-  AccountCircle,
   Edit,
   Check,
   Close,
   ArrowBack,
-  MonetizationOn,
-  Groups,
-  EmailOutlined,
   DeleteForever,
   Warning,
-  Person,
 } from '@mui/icons-material';
 
 const API_BASE = 'http://localhost:3000';
@@ -203,7 +199,7 @@ export default function Perfil() {
 
         {/* ── AVATAR BLOCK ────────────────────────────────────────────────── */}
         <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center shrink-0">
             <AccountCircle sx={{ fontSize: 40 }} className="text-amber-400" />
           </div>
           <div>

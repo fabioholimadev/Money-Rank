@@ -61,7 +61,7 @@ export default function Ranking() {
         {leaderboard.length > 0 ? (
           <div className="overflow-x-auto rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm shadow-lg shadow-amber-500/5">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-900/80 to-slate-900/60 border-b border-zinc-800">
+              <thead className="bg-linear-to-r from-slate-900/80 to-slate-900/60 border-b border-zinc-800">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">
                     Posição
