@@ -9,6 +9,7 @@ import {
   MonetizationOn,
   AutoStories,
 } from '@mui/icons-material';
+import { supabase } from '../lib/supabaseClient';
 
 // Importar componentes da biblioteca
 import InfograficoLata from '../components/InfograficoLata';
@@ -126,8 +127,17 @@ function Trilha() {
   const [capicoinsGanhos, setCapicoinsGanhos] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Mock de dados do aluno (em produção viria do localStorage ou contexto)
-  const alunoId = 'aluno_123_demo'; // Substitua com ID real
+  const parseAlunoFromStorage = () => {
+    try {
+      const raw = localStorage.getItem('aluno');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [aluno, setAluno] = useState(() => parseAlunoFromStorage());
+  const alunoId = aluno?.id;
 
   // ─────────────────────────────────────────────────────────────────────────
   // MANIPULADOR DE CONCLUSÃO DE ATIVIDADE
@@ -136,40 +146,53 @@ function Trilha() {
     setLoading(true);
     console.log('Atividade concluída:', resultadoDaAtividade);
 
-    try {
-      // Preparar payload baseado no tipo de atividade
-      let payloadAPI = {
-        id_aluno: alunoId,
-        id_atividade: `trilha_${atividadeAtual.id}`,
-        recompensa: 50, // Padrão: 50 CapiCoins por atividade
-      };
+    if (!alunoId) {
+      setToastMessage('Usuário não autenticado. Faça login novamente.');
+      setLoading(false);
+      return;
+    }
 
-      // Requisição POST para o backend
-      const response = await fetch('http://localhost:3000/api/activities/complete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payloadAPI),
+    const taskReward = 50;
+
+    try {
+      const { data, error } = await supabase.rpc('complete_task', {
+        p_aluno_id: alunoId,
+        p_task_reward: taskReward,
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro do servidor: ${response.status}`);
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result) {
+        throw new Error('Resposta inválida do servidor.');
+      }
 
-      // Mostrar toast de sucesso
-      setCapicoinsGanhos(50);
-      setToastMessage('✓ Atividade Concluída! +50 CapiCoins 🪙');
+      if (result.already_done) {
+        setToastMessage('Você já concluiu uma tarefa hoje. Volte amanhã para continuar o streak.');
+      } else {
+        const updatedAluno = {
+          ...aluno,
+          capicoins: result.new_capicoins,
+          streak_atual: result.new_streak,
+        };
 
-      // Limpar toast após 3 segundos
+        setAluno(updatedAluno);
+        try {
+          localStorage.setItem('aluno', JSON.stringify(updatedAluno));
+        } catch {
+          // Ignore localStorage write failures
+        }
+
+        setCapicoinsGanhos(result.reward ?? taskReward);
+        setToastMessage(`✓ Atividade concluída! +${result.reward ?? taskReward} CapiCoins 🪙`);
+      }
+
       setTimeout(() => {
         setToastMessage(null);
         setAtividadeAtual(null);
       }, 3000);
-
-      console.log('Resposta do backend:', data);
     } catch (erro) {
       console.error('Erro ao registrar atividade:', erro);
       setToastMessage('❌ Erro ao registrar atividade. Tente novamente.');
