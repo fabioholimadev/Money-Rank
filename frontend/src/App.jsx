@@ -7,7 +7,6 @@ import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
 import Trilha from './pages/Trilha';
 import Ranking from './pages/Ranking';
-import AdminDashboard from './pages/AdminDashboard';
 import Perfil from './pages/Perfil';
 
 function App() {
@@ -20,7 +19,6 @@ function App() {
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/trilha" element={<Trilha />} />
         <Route path="/ranking" element={<Ranking />} />
-        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/perfil" element={<Perfil />} />
       </Routes>
     </Router>

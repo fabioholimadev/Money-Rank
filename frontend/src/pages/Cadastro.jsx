@@ -163,9 +163,8 @@ export default function Cadastro() {
               <option value="" disabled>
                 Selecione sua Turma
               </option>
-              <option value="3º Ano A">3º Ano A</option>
-              <option value="3º Ano B">3º Ano B</option>
-              <option value="3º Ano C">3º Ano C</option>
+              <option value="3º DSA">3º DSA</option>
+              <option value="3º DSB">3º DSB</option>
             </select>
           </div>
 
