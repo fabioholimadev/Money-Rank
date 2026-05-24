@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Login as LoginIcon, Logout, ArrowBack } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const location = useLocation();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(
     location.state?.screen === 'register' ? false : true
   );
@@ -60,16 +62,9 @@ export default function Login() {
 
       // Se der tudo certo:
       if (isLogin) {
-        // Regra 3: Persistência no localStorage para o StudentDashboard ler
-        localStorage.setItem('token', dados.token);
-        localStorage.setItem('refresh_token', dados.refresh_token);
-        localStorage.setItem('aluno', JSON.stringify(dados.aluno));
-
-        if (dados.aluno?.is_admin === true) {
-          navigate('/admin');
-        } else {
-          navigate('/student');
-        }
+        // Use AuthContext to update app auth state in a single place.
+        login(dados);
+        navigate('/student');
       } else {
         // Regra 4: UX Pós-cadastro (muda para login mas mantém o e-mail preenchido)
         setSuccessMessage('Conta criada com sucesso! Faça seu login agora.');

@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // ✅ CORRETO: Cadastro via backend (Express), sem expor chaves do Supabase no frontend.
 // O backend em http://localhost:3000/api/auth/register já trata toda a lógica
@@ -7,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 export default function Cadastro() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,6 +77,12 @@ export default function Cadastro() {
         } else {
           setErrorMessages([dados.error || 'Ocorreu um erro inesperado.']);
         }
+        return;
+      }
+
+      if (dados.token && dados.aluno) {
+        login(dados);
+        navigate('/student');
         return;
       }
 
