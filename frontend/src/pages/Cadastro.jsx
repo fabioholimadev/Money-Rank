@@ -1,46 +1,48 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-
-// ✅ CORRETO: Cadastro via backend (Express), sem expor chaves do Supabase no frontend.
-// O backend em http://localhost:3000/api/auth/register já trata toda a lógica
-// de criação de conta no Supabase usando as chaves seguras do backend/.env
+import { PhotoCamera } from '@mui/icons-material';
+import { supabase } from '../lib/supabase';
 
 export default function Cadastro() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  
+  // Estados originais
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [turmaSelecionada, setTurmaSelecionada] = useState('');
+  
+  // Novos estados para a Foto de Perfil
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+
   const [errorMessages, setErrorMessages] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const validarFormulario = () => {
     const erros = [];
-
-    if (!nome.trim()) {
-      erros.push('Nome de Exibição é obrigatório.');
-    }
-
+    if (!nome.trim()) erros.push('Nome de Exibição é obrigatório.');
     if (!email.trim()) {
       erros.push('E-mail é obrigatório.');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       erros.push('E-mail inválido.');
     }
-
     if (!password) {
       erros.push('Senha é obrigatória.');
     } else if (password.length < 6) {
       erros.push('Senha deve ter pelo menos 6 caracteres.');
     }
-
-    if (!turmaSelecionada) {
-      erros.push('Selecione sua turma.');
-    }
-
+    if (!turmaSelecionada) erros.push('Selecione sua turma.');
     return erros;
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleRegister = async (event) => {
@@ -57,42 +59,52 @@ export default function Cadastro() {
     setLoading(true);
 
     try {
-      // ✅ Chama o backend, que usa as chaves seguras do backend/.env
-      const resposta = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: nome.trim(),
-          email: email.trim(),
-          password,
-          turma: turmaSelecionada,
-        }),
+      // 1. Cria o usuário no Supabase Auth (O Trigger do banco criará o aluno)
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { 
+          data: { nome: nome.trim() } 
+        }
       });
 
-      const dados = await resposta.json();
+      if (authError) {
+        throw new Error(authError.message.includes('already registered') ? 'Este e-mail já está em uso.' : 'Erro ao criar conta.');
+      }
 
-      if (!resposta.ok) {
-        if (resposta.status === 422 && dados.detalhes) {
-          setErrorMessages(dados.detalhes);
-        } else {
-          setErrorMessages([dados.error || 'Ocorreu um erro inesperado.']);
+      if (!authData.user) throw new Error('Falha ao registrar usuário.');
+
+      const userId = authData.user.id;
+      let avatarUrl = null;
+
+      // 2. Faz o upload da foto (se houver)
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const filePath = `${userId}/avatar.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, avatarFile, { upsert: true });
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          avatarUrl = urlData.publicUrl;
         }
-        return;
       }
 
-      if (dados.token && dados.aluno) {
-        login(dados);
-        navigate('/student');
-        return;
-      }
+      // 3. Atualiza a tabela 'alunos' com a Turma escolhida e a Foto (se tiver)
+      const updatePayload = { turma: turmaSelecionada };
+      if (avatarUrl) updatePayload.avatar_url = avatarUrl;
 
-      setSuccessMessage('Cadastro realizado com sucesso! Faça seu login para continuar.');
-      // Redireciona para o login após 2 segundos para o usuário ler a mensagem
-      setTimeout(() => navigate('/login'), 2000);
+      await supabase.from('alunos').update(updatePayload).eq('id', userId);
+
+      // 4. Sucesso!
+      setSuccessMessage('Cadastro realizado com sucesso! Redirecionando para o login...');
+      setTimeout(() => navigate('/login'), 2500);
 
     } catch (erro) {
-      // Erro de rede: backend provavelmente não está rodando
-      setErrorMessages(['Não foi possível conectar ao servidor. Verifique se o back-end está ligado (npm run dev na pasta backend).']);
+      console.error(erro);
+      setErrorMessages([erro.message || 'Ocorreu um erro inesperado.']);
     } finally {
       setLoading(false);
     }
@@ -118,12 +130,33 @@ export default function Cadastro() {
         )}
 
         {successMessage && (
-          <div className="mb-6 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+          <div className="mb-6 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100 font-semibold text-center">
             {successMessage}
           </div>
         )}
 
         <form onSubmit={handleRegister} className="space-y-5">
+          
+          {/* Seletor de Foto de Perfil */}
+          <div className="flex justify-center mb-2">
+            <div className="relative group cursor-pointer">
+              <input type="file" hidden id="cadastro-avatar" accept="image/*" onChange={handleAvatarChange} disabled={loading} />
+              <label htmlFor="cadastro-avatar" className={`cursor-pointer ${loading ? 'pointer-events-none opacity-50' : ''}`}>
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-2 border-amber-400/50" />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-slate-950 border border-slate-700 flex items-center justify-center hover:border-amber-400/50 transition-colors">
+                    <PhotoCamera sx={{ fontSize: 32 }} className="text-slate-500" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <PhotoCamera className="text-white" />
+                </div>
+              </label>
+            </div>
+          </div>
+          <p className="text-center text-xs text-slate-500 -mt-2 mb-4">Escolha uma foto de perfil (Opcional)</p>
+
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">Nome de Exibição</label>
             <input
@@ -131,7 +164,7 @@ export default function Cadastro() {
               value={nome}
               onChange={(event) => setNome(event.target.value)}
               disabled={loading}
-              placeholder="Maria Souza"
+              placeholder="Ex: Maria Souza"
               className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
@@ -160,7 +193,7 @@ export default function Cadastro() {
             />
           </div>
 
-          <div>
+       <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">Turma</label>
             <select
               value={turmaSelecionada}
@@ -168,20 +201,17 @@ export default function Cadastro() {
               disabled={loading}
               className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <option value="" disabled>
-                Selecione sua Turma
-              </option>
-              <option value="3º Ano A">3º Ano A</option>
-              <option value="3º Ano B">3º Ano B</option>
-              <option value="3º Ano C">3º Ano C</option>
+              <option value="" disabled>Selecione sua Turma</option>
+              <option value="3º DSA">3º DSA</option>
+              <option value="3º DSB">3º DSB</option>
             </select>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black uppercase text-slate-950 transition ${
-              loading ? 'cursor-not-allowed opacity-70' : 'hover:bg-amber-300'
+            className={`w-full rounded-2xl bg-amber-400 px-5 py-3.5 mt-2 text-sm font-black uppercase text-slate-950 transition ${
+              loading ? 'cursor-not-allowed opacity-70' : 'hover:bg-amber-300 active:scale-95'
             }`}
           >
             {loading ? 'Registrando...' : 'Cadastrar'}
@@ -196,7 +226,7 @@ export default function Cadastro() {
             </Link>
           </p>
           <p className="mt-3">
-            <Link to="/" className="text-slate-400 hover:text-amber-300">
+            <Link to="/" className="text-slate-500 hover:text-amber-300 transition-colors">
               Voltar para a página inicial
             </Link>
           </p>

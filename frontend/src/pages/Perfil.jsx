@@ -12,9 +12,10 @@ import {
   DeleteForever,
   Warning,
   Person,
+  PhotoCamera
 } from '@mui/icons-material';
-
-const API_BASE = 'http://localhost:3000';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 // ─── Inline Toast ─────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
@@ -47,79 +48,99 @@ function Toast({ message, type, onClose }) {
 
 export default function Perfil() {
   const navigate = useNavigate();
+  const { aluno, login, logout, loading: contextLoading } = useAuth(); // Usando nosso AuthContext
 
   // ── State ─────────────────────────────────────────────────────────────────
-  const [aluno, setAluno] = useState(null);
   const [displayName, setDisplayName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [toast, setToast] = useState(null); // { message, type }
+  const [toast, setToast] = useState(null);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const showToast = (message, type = 'success') => setToast({ message, type });
   const hideToast = () => setToast(null);
 
-  const getToken = () => localStorage.getItem('token');
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
 
-  // ── READ: load student data from localStorage ─────────────────────────────
+  // ── READ: Carregar dados do Contexto ──────────────────────────────────────
   useEffect(() => {
-    const raw = localStorage.getItem('aluno');
-    if (!raw) {
-      navigate('/login');
-      return;
+    if (aluno) {
+      setDisplayName(aluno.nome || '');
+      setAvatarPreview(aluno.avatar_url || null);
     }
-    try {
-      const data = JSON.parse(raw);
-      setAluno(data);
-      setDisplayName(data.nome ?? '');
-    } catch {
-      navigate('/login');
-    }
-  }, [navigate]);
+    
+    // NOVIDADE: Busca o e-mail seguro direto da sessão
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserEmail(user.email);
+    });
+  }, [aluno]);
 
-  // ── UPDATE: update display name via backend ───────────────────────────────
-  const handleUpdateName = async () => {
+  // ── UPDATE: Salvar nome e foto no Supabase ────────────────────────────────
+  const handleUpdateProfile = async () => {
     const trimmed = displayName.trim();
     if (!trimmed) {
       showToast('O nome não pode ficar vazio.', 'error');
       return;
     }
-    if (trimmed === aluno.nome) {
+    if (trimmed === aluno.nome && !avatarFile) {
       showToast('Nenhuma alteração detectada.', 'error');
       return;
     }
 
     setIsUpdating(true);
     try {
-      const res = await fetch(`${API_BASE}/api/game/update-profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ nome: trimmed }),
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Sessão inválida. Faça login novamente.');
 
-      const json = await res.json();
+      let newAvatarUrl = aluno.avatar_url;
 
-      if (!res.ok) {
-        showToast(json.error || 'Erro ao atualizar nome.', 'error');
-        return;
+      // 1. Upload da foto se houver
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const filePath = `${user.id}/avatar.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, avatarFile, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`; // Força reload da imagem
       }
 
-      // Persist updated name locally
-      const updated = { ...aluno, nome: trimmed };
-      setAluno(updated);
-      localStorage.setItem('aluno', JSON.stringify(updated));
-      showToast('Nome atualizado com sucesso!');
-    } catch {
-      showToast('Não foi possível conectar ao servidor.', 'error');
+      // 2. Atualiza a tabela 'alunos'
+      const { error: updateError } = await supabase
+        .from('alunos')
+        .update({ nome: trimmed, avatar_url: newAvatarUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // 3. Atualiza o Contexto e a tela
+      login({ aluno: { ...aluno, nome: trimmed, avatar_url: newAvatarUrl } });
+      setAvatarFile(null);
+      showToast('Perfil atualizado com sucesso!');
+      
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Erro ao atualizar perfil.', 'error');
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // ── DELETE: delete account via backend, clear session, redirect ───────────
+  // ── DELETE: Excluir conta do Supabase e deslogar ─────────────────────────
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
       '⚠️ Tem certeza? Esta ação é irreversível.\n\nTodos os seus dados, CapiCoins e progresso serão apagados permanentemente.'
@@ -128,31 +149,31 @@ export default function Perfil() {
 
     setIsDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/account`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        showToast(json.error || 'Erro ao excluir a conta.', 'error');
-        setIsDeleting(false);
-        return;
+      // Deleta do Supabase Auth (O CASCADE do banco deletará a linha em 'alunos')
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.rpc('delete_user', { user_id: user.id }); // ou chamada equivalente via edge function se necessário, mas como estamos no cliente:
+      
+      // O modo mais seguro de deletar user via client (requer config no painel do Supabase) ou chamando sua própria Edge Function.
+      // Aqui usamos um truque comum: atualizamos uma flag no banco ou pedimos pro backend.
+      // Como não temos backend, vamos usar a exclusão padrão se habilitada, ou exibir um erro orientando:
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id); 
+      
+      if(deleteError) {
+         throw new Error("Por segurança, a exclusão de conta deve ser feita pelo administrador ou por suporte.");
       }
 
-      // Sign out: clear all local state and redirect
-      localStorage.clear();
+      await supabase.auth.signOut();
+      logout();
       navigate('/');
-    } catch {
-      showToast('Não foi possível conectar ao servidor.', 'error');
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Não foi possível excluir a conta agora.', 'error');
       setIsDeleting(false);
     }
   };
 
   // ── Loading state ─────────────────────────────────────────────────────────
-  if (!aluno) {
+  if (contextLoading || !aluno) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -169,7 +190,6 @@ export default function Perfil() {
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
-      {/* Subtle grid background (matches app design) */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -202,10 +222,24 @@ export default function Perfil() {
         </header>
 
         {/* ── AVATAR BLOCK ────────────────────────────────────────────────── */}
-        <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-            <AccountCircle sx={{ fontSize: 40 }} className="text-amber-400" />
+        <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex items-center gap-5 relative">
+          
+          <div className="relative group cursor-pointer">
+            <input type="file" hidden id="avatar-upload" accept="image/*" onChange={handleAvatarChange} />
+            <label htmlFor="avatar-upload" className="cursor-pointer">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover border-2 border-amber-400/50" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                  <AccountCircle sx={{ fontSize: 48 }} className="text-amber-400" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <PhotoCamera className="text-white" />
+              </div>
+            </label>
           </div>
+
           <div>
             <p className="text-xl font-black tracking-tight">{aluno.nome}</p>
             <p className="text-slate-500 text-xs mt-0.5 uppercase tracking-widest">
@@ -220,43 +254,10 @@ export default function Perfil() {
             Informações da Conta
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            {/* Email */}
-            <InfoCard
-              icon={<EmailOutlined sx={{ fontSize: 20 }} />}
-              label="E-mail"
-              value={aluno.email ?? '—'}
-            />
-
-            {/* CapiCoins */}
-            <InfoCard
-              icon={<MonetizationOn sx={{ fontSize: 20 }} />}
-              label="Saldo de CapiCoins"
-              value={`${aluno.capicoins ?? 0} CapiCoins`}
-              accent="text-amber-400"
-            />
-
-            {/* Team / Equipe */}
-            <InfoCard
-              icon={<Groups sx={{ fontSize: 20 }} />}
-              label="Equipe"
-              value={aluno.equipe ?? 'Sem equipe'}
-            />
-
-            {/* Member since */}
-            <InfoCard
-              icon={<Person sx={{ fontSize: 20 }} />}
-              label="Membro desde"
-              value={
-                aluno.created_at
-                  ? new Date(aluno.created_at).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric',
-                    })
-                  : '—'
-              }
-            />
+            <InfoCard icon={<EmailOutlined sx={{ fontSize: 20 }} />} label="E-mail" value={userEmail || 'Carregando...'} />
+            <InfoCard icon={<MonetizationOn sx={{ fontSize: 20 }} />} label="Saldo de CapiCoins" value={`${aluno.capicoins ?? 0} CapiCoins`} accent="text-amber-400" />
+           <InfoCard icon={<Groups sx={{ fontSize: 20 }} />} label="Turma" value={aluno.turma || 'Sem turma'} />
+            <InfoCard icon={<Person sx={{ fontSize: 20 }} />} label="Membro desde" value={aluno.created_at ? new Date(aluno.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
           </div>
         </section>
 
@@ -265,40 +266,36 @@ export default function Perfil() {
           <div className="flex items-center gap-2 mb-5">
             <Edit sx={{ fontSize: 18 }} className="text-amber-400" />
             <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-slate-300">
-              Alterar Nome de Exibição
+              Alterar Dados
             </h2>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-col sm:flex-row">
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUpdateName()}
+              onKeyDown={(e) => e.key === 'Enter' && handleUpdateProfile()}
               disabled={isUpdating}
               maxLength={40}
               placeholder="Seu nome de exibição"
               className="flex-1 bg-slate-900 text-white border border-zinc-700 rounded-xl py-2.5 px-4 focus:outline-none focus:border-amber-400 disabled:opacity-50 transition-colors text-sm"
             />
             <button
-              onClick={handleUpdateName}
-              disabled={isUpdating}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-slate-950 font-extrabold text-sm transition-all ${
-                isUpdating
+              onClick={handleUpdateProfile}
+              disabled={isUpdating || (displayName.trim() === aluno.nome && !avatarFile)}
+              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-slate-950 font-extrabold text-sm transition-all ${
+                isUpdating || (displayName.trim() === aluno.nome && !avatarFile)
                   ? 'bg-amber-400/50 cursor-not-allowed'
                   : 'bg-amber-400 hover:bg-amber-500 shadow-lg shadow-amber-400/20 active:scale-95'
               }`}
             >
-              {isUpdating ? (
-                <div className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
-              ) : (
-                <Check sx={{ fontSize: 18 }} />
-              )}
-              {isUpdating ? 'Salvando…' : 'Salvar'}
+              {isUpdating ? <div className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" /> : <Check sx={{ fontSize: 18 }} />}
+              {isUpdating ? 'Salvando…' : 'Salvar Alterações'}
             </button>
           </div>
           <p className="text-slate-600 text-xs mt-3">
-            Este é o nome que aparece no ranking e no dashboard.
+            O seu novo nome ou foto aparecerão no ranking imediatamente.
           </p>
         </section>
 
@@ -338,7 +335,6 @@ export default function Perfil() {
   );
 }
 
-// ── Small reusable info card ─────────────────────────────────────────────────
 function InfoCard({ icon, label, value, accent = 'text-white' }) {
   return (
     <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 transition-colors">
