@@ -11,6 +11,7 @@ import AtividadeQuiz from './pages/Trilha/SaudeConsumo/PerigoDoce/AtividadeQuiz'
 import Ranking from './pages/Ranking';
 import Perfil from './pages/Perfil';
 import ProtectedRoute from './components/ProtectedRoute';
+import CapiMentor from './components/CapiMentor';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/ranking" element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
       </Routes>
+      <CapiMentor />
     </Router>
   );
 }
