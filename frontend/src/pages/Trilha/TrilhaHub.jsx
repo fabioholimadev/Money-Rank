@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowBack, AutoStories, Quiz, Gavel, AltRoute, FactCheck, Lock } from '@mui/icons-material';
+import { AutoStories, Quiz, Gavel, AltRoute, FactCheck, Lock } from '@mui/icons-material';
 
 export default function TrilhaHub() {
   const navigate = useNavigate();
@@ -55,14 +55,6 @@ export default function TrilhaHub() {
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         
-        {/* Header */}
-        <button 
-          onClick={() => navigate('/student')} 
-          className="flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors mb-8 font-bold text-sm"
-        >
-          <ArrowBack fontSize="small" /> Voltar ao Dashboard
-        </button>
-
         <div className="mb-10">
           <span className="text-amber-400 text-xs font-bold tracking-[0.3em] uppercase">Trilha Principal</span>
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter mt-2">SAÚDE & CONSUMO</h1>

@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Leaderboard, MonetizationOn, Groups, Person, AccountCircle } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
 
 export default function Ranking() {
-  const navigate = useNavigate();
   const [leaderboardInd, setLeaderboardInd] = useState([]);
   const [leaderboardTurmas, setLeaderboardTurmas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,7 +67,7 @@ export default function Ranking() {
           <h1 className="text-4xl font-black tracking-tighter mb-2 flex items-center gap-3">
             <Leaderboard sx={{ fontSize: 40, color: '#fbbf24' }} /> RANKING GERAL
           </h1>
-          <p className="text-slate-400">Os melhores jogadores e turmas do Money Rank</p>
+          <p className="text-slate-400">Os melhores jogadores e turmas da plataforma</p>
         </div>
 
         {/* Abas */}
@@ -159,11 +157,6 @@ export default function Ranking() {
         )}
       </div>
 
-      <div className="relative max-w-4xl mx-auto mt-10 flex justify-center">
-        <button onClick={() => navigate('/student')} className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold py-3 px-12 rounded-2xl shadow-lg shadow-amber-400/20 active:translate-y-1 active:shadow-md transition-all">
-          ← Voltar ao Dashboard
-        </button>
-      </div>
     </div>
   );
 }

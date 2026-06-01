@@ -144,7 +144,7 @@ export default function CapiMentor() {
         <button
           onClick={() => setAberto(true)}
           aria-label="Abrir o CapiMentor"
-          className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 font-black text-slate-950 shadow-xl shadow-amber-500/25 transition-all hover:scale-105 hover:bg-amber-300 active:scale-95"
+          className="fixed bottom-24 md:bottom-5 right-5 z-[60] flex items-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 font-black text-slate-950 shadow-xl shadow-amber-500/25 transition-all hover:scale-105 hover:bg-amber-300 active:scale-95"
         >
           <Pets sx={{ fontSize: 24 }} />
           <span className="hidden sm:inline">Falar com o CapiMentor</span>
@@ -158,7 +158,7 @@ export default function CapiMentor() {
       {/* ── PAINEL DO CHAT ──────────────────────────────────────────────── */}
       {aberto && (
         <div
-          className="capi-panel fixed bottom-0 right-0 z-[60] flex h-[100dvh] w-full flex-col border border-zinc-800 bg-zinc-900/95 backdrop-blur-md shadow-2xl shadow-black/50 sm:bottom-5 sm:right-5 sm:h-[600px] sm:max-h-[80vh] sm:w-[380px] sm:rounded-3xl"
+          className="capi-panel fixed bottom-0 right-0 z-[60] flex h-[100dvh] w-full flex-col border border-zinc-800 bg-zinc-900/95 backdrop-blur-md shadow-2xl shadow-black/50 sm:bottom-24 md:bottom-5 sm:right-5 sm:h-[600px] sm:max-h-[80vh] sm:w-[380px] sm:rounded-3xl"
           role="dialog"
           aria-label="CapiMentor — Tutor de IA"
         >

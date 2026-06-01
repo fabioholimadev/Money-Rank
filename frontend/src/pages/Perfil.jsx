@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   AccountCircle,
   Edit,
   Check,
   Close,
-  ArrowBack,
   MonetizationOn,
   Groups,
   EmailOutlined,
@@ -202,23 +201,13 @@ export default function Perfil() {
       <div className="relative max-w-2xl mx-auto px-5 py-8 flex flex-col gap-8">
 
         {/* ── HEADER ──────────────────────────────────────────────────────── */}
-        <header className="flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400/70">
-              Meu Perfil
-            </span>
-            <h1 className="text-3xl font-black tracking-tighter mt-0.5">
-              MONEY<span className="text-amber-400">RANK</span>
-            </h1>
-          </div>
-
-          <Link
-            to="/student"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-700 bg-slate-900/60 text-slate-400 text-sm font-semibold hover:border-amber-400/50 hover:text-amber-400 hover:bg-amber-400/5 transition-all"
-          >
-            <ArrowBack sx={{ fontSize: 18 }} />
-            Voltar
-          </Link>
+        <header>
+          <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400/70">
+            Meu Perfil
+          </span>
+          <h1 className="text-3xl font-black tracking-tighter mt-0.5 text-white">
+            Configurações
+          </h1>
         </header>
 
         {/* ── AVATAR BLOCK ────────────────────────────────────────────────── */}
