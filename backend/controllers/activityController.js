@@ -162,11 +162,12 @@ const completeActivity = async (req, res, supabase) => {
       message: `Atividade concluída com sucesso! +${recompensaFinal} CapiCoins 🪙`,
       reward: recompensaFinal,
       capicoins_atuais: novoCapicoins,
-      streak: novoStreak,
+      streak_atual: novoStreak,
       aluno: {
         id: id_aluno,
         capicoins: novoCapicoins,
         recompensa: recompensaFinal,
+        streak_atual: novoStreak,
       },
     });
   } catch (err) {

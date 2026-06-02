@@ -79,10 +79,11 @@ export default function AtividadeQuiz() {
 
         const reward = json.reward ?? json.aluno?.recompensa ?? RECOMPENSA_QUIZ;
         const capicoins = json.capicoins_atuais ?? json.aluno?.capicoins;
+        const streak_atual = json.aluno?.streak_atual ?? json.streak_atual;
 
         setResultadoBanco({ reward, capicoins });
         if (updateAluno && capicoins !== undefined) {
-          updateAluno({ capicoins });
+          updateAluno({ capicoins, streak_atual });
         }
       }
     } catch (error) {
