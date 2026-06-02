@@ -45,10 +45,11 @@ export default function ConteudoPerigoDoce() {
         updateAluno?.({ capicoins: json.aluno.capicoins });
       }
 
-      if (json.aluno?.capicoins !== undefined && json.aluno.capicoins !== undefined) {
-        setMensagem(`Excelente! Você ganhou ${reward} CapiCoins por concluir a missão.`);
+      // 🚀 CORREÇÃO DA LÓGICA DE MENSAGEM AQUI!
+      if (reward > 0) {
+        setMensagem(`Excelente! Você ganhou +${reward} CapiCoins por concluir a missão.`);
       } else {
-        setMensagem(`Excelente! Você ganhou ${reward} CapiCoins por concluir a missão.`);
+        setMensagem(`Revisão concluída! Você já resgatou a recompensa desta missão hoje.`);
       }
     } catch (error) {
       console.error('Erro ao registrar conclusão:', error);
@@ -95,12 +96,11 @@ export default function ConteudoPerigoDoce() {
           </button>
         </div>
 
-        {/* ÁREA DO CONTEÚDO (Renderiza condicionalmente baseado na aba) */}
+        {/* ÁREA DO CONTEÚDO */}
         <div className="bg-slate-900 border border-slate-800 p-3 md:p-6 rounded-3xl shadow-xl mb-8 md:mb-12 w-full overflow-hidden">
           
           {abaAtiva === 'video' ? (
             <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-800 flex items-center justify-center relative">
-              {/* PLACEHOLDER: Troque este link pelo do seu vídeo do YouTube depois */}
               <iframe 
                 src="https://www.youtube.com/embed/ZnTJw_e7YDU" 
                 title="Vídeo Resumo" 
@@ -112,7 +112,6 @@ export default function ConteudoPerigoDoce() {
             </div>
           ) : (
             <div className="aspect-[4/3] md:aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-800 relative">
-              {/* O seu link oficial do Google Slides */}
               <iframe 
                 src="https://docs.google.com/presentation/d/e/2PACX-1vSIyWrjISGHq781i0JeVy4rJMw2chATeHHYWL_RvjNpocCsS4iyVC3gUZxEJw1UURrQa_xuUxJ-jFNZ/pubembed?start=false&loop=false&delayms=3000" 
                 frameBorder="0" 
@@ -127,7 +126,7 @@ export default function ConteudoPerigoDoce() {
           
         </div>
 
-        {/* BOTÃO DE RESGATE (Fica embaixo, independente da aba) */}
+        {/* BOTÃO DE RESGATE */}
         {!concluido ? (
           <div className="flex justify-center">
             <button 

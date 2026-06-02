@@ -280,8 +280,9 @@ export default function CapiMentor() {
             <p className="mt-2 px-1 text-center text-[10px] text-slate-600">
               O CapiMentor pode errar. Confira informações importantes.
             </p>
-          </div>
+         </div>
         </div>
+        </> 
       )}
     </>
   );

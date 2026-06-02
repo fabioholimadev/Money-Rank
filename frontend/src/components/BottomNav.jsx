@@ -1,8 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Dashboard, Map, EmojiEvents, Person } from '@mui/icons-material';
+import { Home, Map, EmojiEvents, Person } from '@mui/icons-material';
 
 const ITENS = [
-  { label: 'Home',    to: '/student',  Icon: Dashboard    },
+  { label: 'Home',    to: '/student',  Icon: Home         },
   { label: 'Trilha',  to: '/trilha',   Icon: Map          },
   { label: 'Ranking', to: '/ranking',  Icon: EmojiEvents  },
   { label: 'Perfil',  to: '/perfil',   Icon: Person       },

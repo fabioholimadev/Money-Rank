@@ -18,6 +18,7 @@ import {
 
 function Landing() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // ── Pilares da Gamificação (Carrossel Principal) ──
@@ -111,13 +112,24 @@ function Landing() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-slate-900/90 backdrop-blur-md border-b border-zinc-800 py-3 shadow-lg' : 'bg-transparent py-5'}`}>
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
           <a href="#" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 flex items-center justify-center border-2 border-amber-400 rounded-full p-1 bg-slate-900">
-              <span className="text-amber-400 font-black text-lg">$</span>
+            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border-2 border-amber-400 rounded-full p-1 bg-slate-900">
+              <span className="text-amber-400 font-black text-sm md:text-lg">$</span>
             </div>
-            <span className="text-xl font-black tracking-wider text-white group-hover:text-amber-400 transition-colors uppercase">
+            <span className="text-2xl md:text-xl lg:text-xl font-black tracking-wider text-white group-hover:text-amber-400 transition-colors uppercase hidden sm:inline">
               Money <span className="text-amber-400">Rank</span>
             </span>
           </a>
+
+          {/* Mobile: botão hambúrguer */}
+          <button
+            onClick={() => setMenuAberto(true)}
+            className="md:hidden ml-auto p-2 rounded-md text-slate-200"
+            aria-label="Abrir menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
             <a href="#problema" className="hover:text-amber-400 transition-colors">O Desafio</a>
@@ -126,7 +138,7 @@ function Landing() {
             <a href="#quem-faz-acontecer" className="hover:text-amber-400 transition-colors">Nossa Pesquisa</a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <a href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
               Entrar
             </a>
@@ -137,6 +149,69 @@ function Landing() {
           </div>
         </div>
       </header>
+
+      {/* ── Mobile Menu — Fullscreen Overlay ─────────────────────────── */}
+      <div
+        className={`fixed inset-0 z-[60] md:hidden flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md transition-all duration-300 ${
+          menuAberto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Fechar */}
+        <button
+          onClick={() => setMenuAberto(false)}
+          aria-label="Fechar menu"
+          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Logo no topo */}
+        <div className="absolute top-5 left-6 flex items-center gap-2">
+          <div className="w-8 h-8 flex items-center justify-center border-2 border-amber-400 rounded-full bg-slate-900">
+            <span className="text-amber-400 font-black text-sm">$</span>
+          </div>
+          <span className="text-white font-black text-lg tracking-wider">Money <span className="text-amber-400">Rank</span></span>
+        </div>
+
+        {/* Links centralizados */}
+        <nav className="flex flex-col items-center gap-2 w-full px-8 mb-10">
+          {[
+            { href: '#problema',           label: 'O Desafio'     },
+            { href: '#solucao',            label: 'A Solução'     },
+            { href: '#diferenciais',       label: 'Diferenciais'  },
+            { href: '#quem-faz-acontecer', label: 'Nossa Pesquisa'},
+          ].map(({ href, label }) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setMenuAberto(false)}
+              className="w-full text-center py-4 text-2xl font-black text-slate-200 hover:text-amber-400 transition-colors border-b border-zinc-800/60 last:border-0"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col items-center gap-3 w-full px-8 max-w-xs">
+          <a
+            href="/login"
+            onClick={() => setMenuAberto(false)}
+            className="w-full text-center py-3.5 rounded-2xl border border-slate-700 text-slate-200 font-bold text-base hover:border-amber-400/50 hover:text-amber-400 transition-all"
+          >
+            Entrar
+          </a>
+          <a
+            href="/cadastro"
+            onClick={() => setMenuAberto(false)}
+            className="w-full text-center py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-base transition-all shadow-lg shadow-amber-400/20"
+          >
+            Criar Conta Aluno
+          </a>
+        </div>
+      </div>
 
       {/* ══════════════════════════════
           HERO SECTION
@@ -154,7 +229,7 @@ function Landing() {
               Validação Aberta — Projeto de Pesquisa
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
+            <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
               Educação Fiscal <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">
                 Gamificada e Prática.
@@ -176,9 +251,9 @@ function Landing() {
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-4">
-              <a href="/cadastro" className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-amber-500/20 group w-max">
+              <a href="/cadastro" className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-2 px-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-amber-500/20 group text-sm md:text-lg w-max">
                 Criar Minha Conta Aluno
-                <ArrowForward sx={{ fontSize: 18 }} className="group-hover:translate-x-1 transition-transform" />
+                <ArrowForward sx={{ fontSize: 16 }} className="group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
           </div>
@@ -187,7 +262,7 @@ function Landing() {
           <div className="relative flex items-center justify-center py-10 lg:py-0">
             
             {/* Card Central */}
-            <div className="w-full max-w-sm bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative z-30 backdrop-blur-sm min-h-[340px] flex flex-col justify-between">
+            <div className="w-full max-w-sm bg-zinc-900/90 border border-zinc-800 p-4 md:p-8 rounded-3xl shadow-2xl relative z-30 backdrop-blur-sm min-h-[340px] flex flex-col justify-between">
               <div key={currentSlide} className="flex flex-col items-center text-center gap-4 animate-[fadeIn_0.4s_ease-in-out]">
                 <div className="p-4 bg-amber-400/10 rounded-2xl border border-amber-400/20 shadow-inner">
                   {carouselItems[currentSlide].icon}
@@ -245,7 +320,7 @@ function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="reveal flex flex-col items-center text-center p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
+            <div className="reveal flex flex-col items-center text-center p-4 md:p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
               <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mb-6 border border-zinc-700 shadow-inner">
                 <SentimentVeryDissatisfied className="text-red-400" sx={{ fontSize: 28 }} />
               </div>
@@ -253,7 +328,7 @@ function Landing() {
               <p className="text-slate-400 text-sm leading-relaxed">Textos longos afastam a atenção dos estudantes dos terceiros anos, gerando baixa absorção de conteúdo fiscal de cidadania.</p>
             </div>
 
-            <div className="reveal flex flex-col items-center text-center p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
+            <div className="reveal flex flex-col items-center text-center p-4 md:p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
               <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mb-6 border border-zinc-700 shadow-inner">
                 <BarChart className="text-amber-400" sx={{ fontSize: 28 }} />
               </div>

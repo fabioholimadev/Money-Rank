@@ -64,18 +64,28 @@ export default function Ranking() {
 
       <div className="relative max-w-4xl mx-auto mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter mb-2 flex items-center gap-3">
-            <Leaderboard sx={{ fontSize: 40, color: '#fbbf24' }} /> RANKING GERAL
+          <h1 className="text-2xl md:text-4xl font-black tracking-tighter mb-2 flex items-center gap-3">
+            <Leaderboard sx={{ fontSize: 32, color: '#fbbf24' }} /> RANKING GERAL
           </h1>
-          <p className="text-slate-400">Os melhores jogadores e turmas da plataforma</p>
+          <p className="text-slate-400 text-sm">Os melhores jogadores e turmas da plataforma</p>
         </div>
 
-        {/* Abas */}
-        <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1 shrink-0">
-          <button onClick={() => setActiveTab('individual')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${ activeTab === 'individual' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800' }`}>
+        {/* Abas — botões simétricos e centrados */}
+        <div className="flex justify-center items-center bg-slate-900 border border-slate-800 rounded-xl p-1 shrink-0 w-full md:w-auto">
+          <button
+            onClick={() => setActiveTab('individual')}
+            className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              activeTab === 'individual' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
             <Person sx={{ fontSize: 18 }} /> Alunos
           </button>
-          <button onClick={() => setActiveTab('turmas')} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${ activeTab === 'turmas' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800' }`}>
+          <button
+            onClick={() => setActiveTab('turmas')}
+            className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              activeTab === 'turmas' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
             <Groups sx={{ fontSize: 18 }} /> Turmas
           </button>
         </div>
@@ -94,11 +104,10 @@ export default function Ranking() {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-slate-900/80 to-slate-900/60 border-b border-zinc-800">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-slate-300 w-24">Posição</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">{activeTab === 'individual' ? 'Jogador' : 'Turma'}</th>
-                  {activeTab === 'individual' && <th className="px-6 py-4 text-center text-sm font-bold text-slate-300 w-32">Fase</th>}
-                  {activeTab === 'turmas' && <th className="px-6 py-4 text-center text-sm font-bold text-slate-300 w-32">Alunos</th>}
-                  <th className="px-6 py-4 text-right text-sm font-bold text-amber-400 w-40">CapiCoins</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-slate-300 w-16 md:w-20">Pos.</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-slate-300">{activeTab === 'individual' ? 'Jogador' : 'Turma'}</th>
+                  {activeTab === 'turmas' && <th className="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-slate-300 w-20">Alunos</th>}
+                  <th className="px-3 md:px-6 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-amber-400 w-28 md:w-32">CapiCoins</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
@@ -107,38 +116,49 @@ export default function Ranking() {
 
                   return (
                     <tr key={activeTab === 'individual' ? item.id : item.turma} className="border-b border-zinc-800 hover:bg-slate-900/40 transition-colors">
-                      <td className={`px-6 py-4 font-bold text-lg ${posicaoEstilo}`}>
-                        {index === 0 && '🥇'} {index === 1 && '🥈'} {index === 2 && '🥉'} {index + 1}º
+                      {/* Posição */}
+                      <td className={`px-3 md:px-6 py-3 md:py-4 font-bold text-sm md:text-lg whitespace-nowrap ${posicaoEstilo}`}>
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}º`}
                       </td>
-                      
+
                       {/* Avatar + Nome */}
-                      <td className="px-6 py-4 flex items-center gap-4">
-                        {activeTab === 'individual' ? (
-                          item.avatar_url ? (
-                            <img src={item.avatar_url} alt="Avatar" className="w-12 h-12 rounded-xl object-cover border border-zinc-700 shadow-sm" />
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <div className="flex items-center gap-2 md:gap-4">
+                          {activeTab === 'individual' ? (
+                            item.avatar_url ? (
+                              <img src={item.avatar_url} alt="Avatar" className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover border border-zinc-700 shrink-0" />
+                            ) : (
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center shrink-0">
+                                <AccountCircle sx={{ fontSize: 18 }} className="text-slate-600" />
+                              </div>
+                            )
                           ) : (
-                            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center">
-                              <AccountCircle sx={{ fontSize: 28 }} className="text-slate-600" />
+                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center shrink-0">
+                              <Groups sx={{ fontSize: 18 }} className="text-slate-600" />
                             </div>
-                          )
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center">
-                            <Groups sx={{ fontSize: 28 }} className="text-slate-600" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-semibold text-white text-xs md:text-base truncate">
+                              {activeTab === 'individual' ? item.nome : item.turma}
+                            </p>
+                            {activeTab === 'individual' && item.turma && (
+                              <p className="text-[10px] text-slate-500 font-bold tracking-wider uppercase hidden sm:block">{item.turma}</p>
+                            )}
                           </div>
-                        )}
-                        <div>
-                          <p className="font-semibold text-white text-lg">{activeTab === 'individual' ? item.nome : item.turma}</p>
-                          {activeTab === 'individual' && item.turma && <p className="text-xs text-slate-500 font-bold tracking-wider uppercase mt-1">{item.turma}</p>}
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-center font-bold text-slate-300">
-                        {activeTab === 'individual' ? (item.fase_atual || 1) : `${item.qtd_alunos} membros`}
-                      </td>
-                      
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2 font-black text-amber-400 text-xl">
-                          <MonetizationOn sx={{ fontSize: 24 }} />
+                      {/* Alunos (só turmas) */}
+                      {activeTab === 'turmas' && (
+                        <td className="px-3 md:px-6 py-3 md:py-4 text-center font-bold text-slate-300 text-xs md:text-sm whitespace-nowrap">
+                          {item.qtd_alunos} membros
+                        </td>
+                      )}
+
+                      {/* CapiCoins */}
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <div className="flex items-center justify-end gap-1 md:gap-2 font-black text-amber-400 text-sm md:text-lg whitespace-nowrap">
+                          <MonetizationOn sx={{ fontSize: 16 }} />
                           {activeTab === 'individual' ? (item.capicoins || 0) : item.total_capicoins}
                         </div>
                       </td>

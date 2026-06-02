@@ -29,7 +29,7 @@ export default function TopBar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -68,32 +68,36 @@ export default function TopBar() {
         </nav>
 
         {/* ── Status + Logout ───────────────────────────────────────────── */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Streak */}
-          <div className="flex items-center gap-1">
-            <LocalFireDepartment sx={{ fontSize: 18 }} className="text-orange-400" />
-            <span className="text-sm font-black text-white">{aluno.streak_atual ?? 0}</span>
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <LocalFireDepartment sx={{ fontSize: 16 }} className="text-orange-400" />
+            <span className="text-xs sm:text-sm font-black text-white">{aluno.streak_atual ?? 0}</span>
           </div>
 
           {/* CapiCoins */}
-          <div className="flex items-center gap-1">
-            <MonetizationOn sx={{ fontSize: 18 }} className="text-amber-400" />
-            <span className="text-sm font-black text-white">{aluno.capicoins ?? 0}</span>
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <MonetizationOn sx={{ fontSize: 16 }} className="text-amber-400" />
+            <span className="text-xs sm:text-sm font-black text-white">{aluno.capicoins ?? 0}</span>
           </div>
 
-          {/* Fase */}
-          <div className="hidden sm:flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2.5 py-0.5">
-            <Star sx={{ fontSize: 13 }} className="text-emerald-400" />
-            <span className="text-[11px] font-bold text-emerald-400">Fase {aluno.fase_atual ?? 1}</span>
+          {/* Fase — sempre visível, compacto no mobile */}
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-1.5 sm:px-2.5 py-0.5">
+            <Star sx={{ fontSize: 12 }} className="text-emerald-400" />
+            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-400 leading-none">
+              {/* Mobile: só o número | Desktop: "Fase N" */}
+              <span className="sm:hidden">{aluno.fase_atual ?? 1}</span>
+              <span className="hidden sm:inline">Fase {aluno.fase_atual ?? 1}</span>
+            </span>
           </div>
 
           {/* Logout */}
           <button
             onClick={handleLogout}
             aria-label="Sair"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs font-semibold hover:border-red-500/50 hover:text-red-400 transition-all"
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs font-semibold hover:border-red-500/50 hover:text-red-400 transition-all"
           >
-            <Logout sx={{ fontSize: 15 }} />
+            <Logout sx={{ fontSize: 14 }} />
             <span className="hidden sm:inline">Sair</span>
           </button>
         </div>
