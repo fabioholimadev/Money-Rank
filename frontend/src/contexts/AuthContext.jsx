@@ -44,8 +44,16 @@ export function AuthProvider({ children }) {
     setToken(null);
   };
 
+  const updateAluno = (data) => {
+    setAluno((prevAluno) => {
+      const nextAluno = { ...(prevAluno || {}), ...data };
+      localStorage.setItem('aluno', JSON.stringify(nextAluno));
+      return nextAluno;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ aluno, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ aluno, token, loading, login, logout, updateAluno }}>
       {children}
     </AuthContext.Provider>
   );

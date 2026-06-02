@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowBack, CheckCircle, MonetizationOn, PlayCircleOutlined, Slideshow } from '@mui/icons-material';
-import { supabase } from "../../../../lib/supabase";
+import { fetchApi } from '../../../../lib/api';
+import { useAuth } from '../../../../contexts/AuthContext';
 
 export default function ConteudoPerigoDoce() {
   const navigate = useNavigate();
@@ -15,30 +16,43 @@ export default function ConteudoPerigoDoce() {
   // ⚠️ ID da atividade no Supabase
   const ATIVIDADE_CONTEUDO_ID = 'ec178180-8513-44a4-9cb1-d0d9f3306b09';
 
+  const { aluno, updateAluno } = useAuth();
+
   const marcarComoLido = async () => {
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não logado");
+      const alunoId = aluno?.id;
+      if (!alunoId) throw new Error('Usuário não logado');
 
-      const { data, error } = await supabase.rpc('complete_task', {
-        p_aluno_id: user.id,
-        p_atividade_id: ATIVIDADE_CONTEUDO_ID
+      const response = await fetchApi('/api/activities/complete', {
+        method: 'POST',
+        body: {
+          id_atividade: ATIVIDADE_CONTEUDO_ID,
+          id_aluno: alunoId,
+          recompensa: 200,
+          tipo: 'conteudo',
+        },
       });
 
-      if (error) throw error;
-
-      setConcluido(true);
-      
-      if (data[0].is_farming) {
-        setMensagem('Você já havia revisado este material. Nenhuma CapiCoin adicional foi gerada, mas o conhecimento é todo seu!');
-      } else {
-        setMensagem(`Excelente! Você ganhou ${data[0].reward} CapiCoins por concluir a missão.`);
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json?.error || 'Erro ao registrar conclusão');
       }
 
+      setConcluido(true);
+      const reward = json.reward ?? json.aluno?.recompensa ?? 200;
+      if (json.aluno?.capicoins !== undefined) {
+        updateAluno?.({ capicoins: json.aluno.capicoins });
+      }
+
+      if (json.aluno?.capicoins !== undefined && json.aluno.capicoins !== undefined) {
+        setMensagem(`Excelente! Você ganhou ${reward} CapiCoins por concluir a missão.`);
+      } else {
+        setMensagem(`Excelente! Você ganhou ${reward} CapiCoins por concluir a missão.`);
+      }
     } catch (error) {
-      console.error("Erro ao registrar conclusão:", error);
-      alert("Erro ao registrar conclusão. Tente novamente.");
+      console.error('Erro ao registrar conclusão:', error);
+      alert(error?.message || 'Erro ao registrar conclusão. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }

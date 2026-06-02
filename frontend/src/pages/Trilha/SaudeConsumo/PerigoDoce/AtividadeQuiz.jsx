@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowBack, CheckCircle, Cancel, MonetizationOn } from '@mui/icons-material';
-import { supabase } from "../../../../lib/supabase";
+import { fetchApi } from "../../../../lib/api";
+import { useAuth } from '../../../../contexts/AuthContext';
 import { bancoDeQuestoes } from './questoes'; 
 
 export default function AtividadeQuiz() {
@@ -16,9 +17,13 @@ export default function AtividadeQuiz() {
   const [jogoFinalizado, setJogoFinalizado] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultadoBanco, setResultadoBanco] = useState(null);
+  const [erroRecompensa, setErroRecompensa] = useState(null);
 
   // ⚠️ COLE AQUI O ID DO QUIZ QUE O SQL GEROU LÁ NO SUPABASE
-  const ATIVIDADE_QUIZ_ID = '90dad467-0e2c-4fb6-be94-744bc0ae67ac'; 
+  const ATIVIDADE_QUIZ_ID = '90dad467-0e2c-4fb6-be94-744bc0ae67ac';
+  const RECOMPENSA_QUIZ = 100;
+
+  const { aluno, updateAluno } = useAuth();
 
   // Ao carregar a tela, sorteia 5 questões do banco
   useEffect(() => {
@@ -49,23 +54,40 @@ export default function AtividadeQuiz() {
   const finalizarJogo = async () => {
     setJogoFinalizado(true);
     setIsSubmitting(true);
+    setErroRecompensa(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      const alunoId = aluno?.id;
+      if (!alunoId) throw new Error('Usuário não autenticado');
 
       // Só ganha CapiCoins se acertar pelo menos 3 de 5
       if (pontuacao >= 3) {
-        const { data, error } = await supabase.rpc('complete_task', {
-          p_aluno_id: user.id,
-          p_atividade_id: ATIVIDADE_QUIZ_ID
+        const response = await fetchApi('/api/activities/complete', {
+          method: 'POST',
+          body: {
+            id_atividade: ATIVIDADE_QUIZ_ID,
+            id_aluno: alunoId,
+            recompensa: RECOMPENSA_QUIZ,
+            tipo: 'atividade',
+          },
         });
 
-        if (error) throw error;
-        setResultadoBanco(data[0]); 
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json?.error || 'Erro ao concluir a atividade');
+        }
+
+        const reward = json.reward ?? json.aluno?.recompensa ?? RECOMPENSA_QUIZ;
+        const capicoins = json.capicoins_atuais ?? json.aluno?.capicoins;
+
+        setResultadoBanco({ reward, capicoins });
+        if (updateAluno && capicoins !== undefined) {
+          updateAluno({ capicoins });
+        }
       }
     } catch (error) {
-      console.error("Erro ao salvar pontuação:", error);
+      console.error('Erro ao salvar pontuação:', error);
+      setErroRecompensa(error?.message ?? 'Erro ao salvar pontuação');
     } finally {
       setIsSubmitting(false);
     }
@@ -147,10 +169,10 @@ export default function AtividadeQuiz() {
                   <>
                     <MonetizationOn sx={{ fontSize: 60, color: '#fbbf24', mb: 2 }} />
                     <h3 className="text-xl font-bold text-amber-400 mb-2">Recompensa Recebida!</h3>
-                    {resultadoBanco?.is_farming ? (
-                      <p className="text-sm text-slate-400">Você ganhou <span className="text-amber-400 font-bold">+{resultadoBanco?.reward} CapiCoins</span> (recompensa reduzida) por refazer a missão!</p>
+                    {erroRecompensa ? (
+                      <p className="text-sm text-red-400">{erroRecompensa}</p>
                     ) : (
-                      <p className="text-sm text-slate-400">Excelente! Seus <span className="text-amber-400 font-bold">+{resultadoBanco?.reward} CapiCoins</span> já estão na sua conta.</p>
+                      <p className="text-sm text-slate-400">Excelente! Seus <span className="text-amber-400 font-bold">+{resultadoBanco?.reward ?? 0} CapiCoins</span> já estão na sua conta.</p>
                     )}
                   </>
                 ) : (

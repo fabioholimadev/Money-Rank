@@ -8,49 +8,72 @@
 // ────────────────────────────────────────────────────────────────────────
 const completeActivity = async (req, res, supabase) => {
   try {
-    const { id_atividade, id_aluno, recompensa } = req.body;
+    const { id_atividade, id_aluno, tipo } = req.body;
+    const recompensa = Number(req.body.recompensa);
+    const agora = new Date();
+    const timestampAgora = agora.toISOString();
 
     // Validação básica
-    if (!id_atividade || !id_aluno || recompensa === undefined) {
+    if (!id_atividade || !id_aluno || Number.isNaN(recompensa) || !tipo) {
       return res.status(400).json({
-        error: 'Campos obrigatórios faltando: id_atividade, id_aluno, recompensa',
+        error: 'Campos obrigatórios faltando: id_atividade, id_aluno, recompensa, tipo',
       });
     }
 
-    // 1a. Verificar se a atividade já foi concluída
-    const { data: historico, error: historicoError } = await supabase
+    if (!['conteudo', 'atividade'].includes(tipo)) {
+      return res.status(400).json({
+        error: "Tipo inválido. Deve ser 'conteudo' ou 'atividade'.",
+      });
+    }
+
+    // 1a. Verificar se a atividade já foi registrada no histórico
+    const { data: existente, error: existenteError } = await supabase
       .from('historico_atividades')
-      .select('id')
+      .select('vezes_concluida')
       .eq('id_aluno', id_aluno)
       .eq('id_atividade', id_atividade)
-      .single();
+      .maybeSingle();
 
-    if (historico) {
-      return res.status(400).json({
-        error: 'Atividade já foi concluída por este aluno.',
-      });
+    if (existenteError) {
+      console.error('Erro ao verificar histórico:', existenteError);
+      return res.status(500).json({ error: 'Erro ao verificar histórico da atividade.' });
     }
 
-    // 1b. Inserir novo registro no histórico
-    const { error: insertError } = await supabase
-      .from('historico_atividades')
-      .insert([
-        {
-          id_aluno,
-          id_atividade,
-          data_conclusao: new Date().toISOString(),
-        },
-      ]);
+    if (!existente) {
+      const { error: insertError } = await supabase
+        .from('historico_atividades')
+        .insert([
+          {
+            id_aluno,
+            id_atividade,
+            vezes_concluida: 1,
+            ultima_conclusao: timestampAgora,
+          },
+        ]);
 
-    if (insertError) {
-      console.error('Erro ao inserir histórico:', insertError);
-      return res.status(500).json({ error: 'Erro ao registrar conclusão da atividade.' });
+      if (insertError) {
+        console.error('Erro ao inserir histórico:', insertError);
+        return res.status(500).json({ error: 'Erro ao registrar conclusão da atividade.' });
+      }
+    } else {
+      const { error: updateHistoricoError } = await supabase
+        .from('historico_atividades')
+        .update({
+          vezes_concluida: (existente.vezes_concluida || 0) + 1,
+          ultima_conclusao: timestampAgora,
+        })
+        .match({ id_aluno, id_atividade });
+
+      if (updateHistoricoError) {
+        console.error('Erro ao atualizar histórico:', updateHistoricoError);
+        return res.status(500).json({ error: 'Erro ao atualizar o histórico da atividade.' });
+      }
     }
 
-    // 1c. Buscar dados atuais do aluno
+    // 1c. Buscar dados atuais do aluno, streak e última atividade
     const { data: aluno, error: alunoError } = await supabase
       .from('alunos')
-      .select('id, capicoins, id_equipe')
+      .select('id, capicoins, id_equipe, streak_atual, ultima_atividade')
       .eq('id', id_aluno)
       .single();
 
@@ -58,12 +81,58 @@ const completeActivity = async (req, res, supabase) => {
       return res.status(404).json({ error: 'Aluno não encontrado.' });
     }
 
-    // 1d. Atualizar saldo de CapiCoins do aluno
-    const novoCapicoins = (aluno.capicoins || 0) + recompensa;
+    // Normalizar datas para comparar apenas dias (meia-noite local)
+    const dataUltimaAtividade = aluno.ultima_atividade ? new Date(aluno.ultima_atividade) : null;
+
+    let novoStreak = 1;
+
+    if (!dataUltimaAtividade) {
+      // Nunca fez antes
+      novoStreak = 1;
+    } else {
+      const hoje = new Date(agora);
+      hoje.setHours(0, 0, 0, 0);
+
+      const ultima = new Date(dataUltimaAtividade);
+      ultima.setHours(0, 0, 0, 0);
+
+      const diffTime = Math.abs(hoje - ultima);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      const baseStreak = Number(aluno.streak_atual) || 0;
+
+      // Regras com tolerância de 1 dia (diffDays === 2 perdoado)
+      if (diffDays === 0) {
+        // Já contou hoje: mantém
+        novoStreak = baseStreak || 1;
+      } else if (diffDays === 1 || diffDays === 2) {
+        // Ontem ou anteontem (tolerância): incrementa
+        novoStreak = baseStreak + 1;
+      } else {
+        // Muito tempo sem fazer: reset
+        novoStreak = 1;
+      }
+    }
+
+    // 1d. Recompensa de farming
+    let recompensaFarming = 0;
+
+    if (!existente) {
+      recompensaFarming = recompensa;
+    } else {
+      recompensaFarming = tipo === 'conteudo' ? 0 : Math.round(recompensa * 0.3);
+    }
+
+    const recompensaFinal = Math.round(recompensaFarming * (1 + novoStreak * 0.05));
+    const novoCapicoins = (aluno.capicoins || 0) + recompensaFinal;
 
     const { error: updateAlunoError } = await supabase
       .from('alunos')
-      .update({ capicoins: novoCapicoins })
+      .update({
+        capicoins: novoCapicoins,
+        streak_atual: novoStreak,
+        ultima_atividade: timestampAgora,
+      })
       .eq('id', id_aluno);
 
     if (updateAlunoError) {
@@ -71,7 +140,7 @@ const completeActivity = async (req, res, supabase) => {
       return res.status(500).json({ error: 'Erro ao atualizar saldo do aluno.' });
     }
 
-    // 1e. Se o aluno tem equipe, atualizar também a equipe
+    // 1e. Se o aluno tem equipe, atualizar também a equipe com a recompensa final
     if (aluno.id_equipe) {
       const { data: equipe, error: equipeError } = await supabase
         .from('equipes')
@@ -80,7 +149,7 @@ const completeActivity = async (req, res, supabase) => {
         .single();
 
       if (!equipeError && equipe) {
-        const novasCapicoinsEquipe = (equipe.capicoins_totais || 0) + recompensa;
+        const novasCapicoinsEquipe = (equipe.capicoins_totais || 0) + recompensaFinal;
 
         await supabase
           .from('equipes')
@@ -90,11 +159,14 @@ const completeActivity = async (req, res, supabase) => {
     }
 
     return res.status(200).json({
-      message: `Atividade concluída com sucesso! +${recompensa} CapiCoins 🪙`,
+      message: `Atividade concluída com sucesso! +${recompensaFinal} CapiCoins 🪙`,
+      reward: recompensaFinal,
+      capicoins_atuais: novoCapicoins,
+      streak: novoStreak,
       aluno: {
         id: id_aluno,
         capicoins: novoCapicoins,
-        recompensa,
+        recompensa: recompensaFinal,
       },
     });
   } catch (err) {
@@ -121,11 +193,17 @@ const processDecision = async (req, res, supabase) => {
     if (trilha === 3) {
       const { data: historicoDecisoes, error: historicoError } = await supabase
         .from('historico_atividades')
-        .select('id')
+        .select('vezes_concluida')
         .eq('id_aluno', id_aluno)
-        .eq('id_atividade', 'roleta_trilha_3');
+        .eq('id_atividade', 'roleta_trilha_3')
+        .maybeSingle();
 
-      const tentativas = historicoDecisoes ? historicoDecisoes.length : 0;
+      if (historicoError) {
+        console.error('Erro ao verificar histórico da roleta:', historicoError);
+        return res.status(500).json({ error: 'Erro ao verificar histórico da roleta.' });
+      }
+
+      const tentativas = historicoDecisoes ? historicoDecisoes.vezes_concluida || 0 : 0;
 
       // Buscar aluno
       const { data: aluno, error: alunoError } = await supabase
@@ -172,14 +250,35 @@ const processDecision = async (req, res, supabase) => {
         }
 
         // Registrar no histórico
-        await supabase.from('historico_atividades').insert([
-          {
-            id_aluno,
-            id_atividade: 'roleta_trilha_3',
-            data_conclusao: new Date().toISOString(),
-            resultado_decisao: 'vitoria',
-          },
-        ]);
+        if (!historicoDecisoes) {
+          const { error: insertHistoricoError } = await supabase
+            .from('historico_atividades')
+            .insert([
+              {
+                id_aluno,
+                id_atividade: 'roleta_trilha_3',
+                vezes_concluida: 1,
+              },
+            ]);
+
+          if (insertHistoricoError) {
+            console.error('Erro ao inserir histórico da roleta:', insertHistoricoError);
+            return res.status(500).json({ error: 'Erro ao registrar histórico da roleta.' });
+          }
+        } else {
+          const { error: updateHistoricoError } = await supabase
+            .from('historico_atividades')
+            .update({
+              vezes_concluida: (historicoDecisoes.vezes_concluida || 0) + 1,
+              ultima_conclusao: new Date().toISOString(),
+            })
+            .match({ id_aluno, id_atividade: 'roleta_trilha_3' });
+
+          if (updateHistoricoError) {
+            console.error('Erro ao atualizar histórico da roleta:', updateHistoricoError);
+            return res.status(500).json({ error: 'Erro ao atualizar histórico da roleta.' });
+          }
+        }
 
         return res.status(200).json({
           ganhou: true,
@@ -221,14 +320,35 @@ const processDecision = async (req, res, supabase) => {
         }
 
         // Registrar no histórico
-        await supabase.from('historico_atividades').insert([
-          {
-            id_aluno,
-            id_atividade: 'roleta_trilha_3',
-            data_conclusao: new Date().toISOString(),
-            resultado_decisao: 'derrota',
-          },
-        ]);
+        if (!historicoDecisoes) {
+          const { error: insertHistoricoError } = await supabase
+            .from('historico_atividades')
+            .insert([
+              {
+                id_aluno,
+                id_atividade: 'roleta_trilha_3',
+                vezes_concluida: 1,
+              },
+            ]);
+
+          if (insertHistoricoError) {
+            console.error('Erro ao inserir histórico da roleta:', insertHistoricoError);
+            return res.status(500).json({ error: 'Erro ao registrar histórico da roleta.' });
+          }
+        } else {
+          const { error: updateHistoricoError } = await supabase
+            .from('historico_atividades')
+            .update({
+              vezes_concluida: (historicoDecisoes.vezes_concluida || 0) + 1,
+              ultima_conclusao: new Date().toISOString(),
+            })
+            .match({ id_aluno, id_atividade: 'roleta_trilha_3' });
+
+          if (updateHistoricoError) {
+            console.error('Erro ao atualizar histórico da roleta:', updateHistoricoError);
+            return res.status(500).json({ error: 'Erro ao atualizar histórico da roleta.' });
+          }
+        }
 
         return res.status(200).json({
           ganhou: false,
@@ -280,6 +400,18 @@ const completeMissaoNotaFiscal = async (req, res, supabase) => {
       return res.status(404).json({ error: 'Aluno não encontrado.' });
     }
 
+    const { data: historicoMissao, error: historicoMissaoError } = await supabase
+      .from('historico_atividades')
+      .select('vezes_concluida')
+      .eq('id_aluno', id_aluno)
+      .eq('id_atividade', 'missao_nota_fiscal')
+      .maybeSingle();
+
+    if (historicoMissaoError) {
+      console.error('Erro ao verificar histórico da missão:', historicoMissaoError);
+      return res.status(500).json({ error: 'Erro ao verificar histórico da missão.' });
+    }
+
     // 3b. Bonificar com +200 CapiCoins
     const recompensa = 200;
     const novoCapicoins = (aluno.capicoins || 0) + recompensa;
@@ -313,21 +445,41 @@ const completeMissaoNotaFiscal = async (req, res, supabase) => {
     }
 
     // Registrar no histórico
-    await supabase.from('historico_atividades').insert([
-      {
-        id_aluno,
-        id_atividade: 'missao_nota_fiscal',
-        data_conclusao: new Date().toISOString(),
-        detalhes: {
-          chave_acesso_nota,
-          valor_imposto,
-        },
-      },
-    ]);
+    if (!historicoMissao) {
+      const { error: insertHistoricoError } = await supabase
+        .from('historico_atividades')
+        .insert([
+          {
+            id_aluno,
+            id_atividade: 'missao_nota_fiscal',
+            vezes_concluida: 1,
+          },
+        ]);
+
+      if (insertHistoricoError) {
+        console.error('Erro ao inserir histórico da missão:', insertHistoricoError);
+        return res.status(500).json({ error: 'Erro ao registrar histórico da missão.' });
+      }
+    } else {
+      const { error: updateHistoricoError } = await supabase
+        .from('historico_atividades')
+        .update({
+          vezes_concluida: (historicoMissao.vezes_concluida || 0) + 1,
+          ultima_conclusao: new Date().toISOString(),
+        })
+        .match({ id_aluno, id_atividade: 'missao_nota_fiscal' });
+
+      if (updateHistoricoError) {
+        console.error('Erro ao atualizar histórico da missão:', updateHistoricoError);
+        return res.status(500).json({ error: 'Erro ao atualizar histórico da missão.' });
+      }
+    }
 
     // 3c. Retornar sucesso
     return res.status(200).json({
       message: 'Pesquisa de campo validada! +200 CapiCoins 📋',
+      reward: recompensa,
+      capicoins_atuais: novoCapicoins,
       aluno: {
         id: id_aluno,
         capicoins: novoCapicoins,
