@@ -16,7 +16,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
-// ─── Inline Toast ─────────────────────────────────────────────────────────────
+// ─── Inline Toast ──────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3500);
@@ -30,148 +30,199 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div
-      className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl border backdrop-blur-sm shadow-xl text-sm font-semibold animate-fade-in ${colors}`}
+      className={`fixed top-20 right-4 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl border backdrop-blur-sm shadow-xl text-sm font-semibold max-w-[90vw] ${colors}`}
     >
       {type === 'success' ? (
-        <Check sx={{ fontSize: 18 }} />
+        <Check sx={{ fontSize: 18 }} className="shrink-0" />
       ) : (
-        <Warning sx={{ fontSize: 18 }} />
+        <Warning sx={{ fontSize: 18 }} className="shrink-0" />
       )}
-      {message}
-      <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100 transition-opacity">
+      <span className="leading-snug">{message}</span>
+      <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100 transition-opacity shrink-0">
         <Close sx={{ fontSize: 16 }} />
       </button>
     </div>
   );
 }
 
+// ─── InfoCard ──────────────────────────────────────────────────────────────────
+function InfoCard({ icon, label, value, accent = 'text-white' }) {
+  return (
+    <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 transition-colors">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-slate-500">{icon}</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">{label}</span>
+      </div>
+      <p className={`text-sm font-semibold truncate ${accent}`}>{value}</p>
+    </div>
+  );
+}
+
+// ─── Perfil ────────────────────────────────────────────────────────────────────
 export default function Perfil() {
   const navigate = useNavigate();
-  const { aluno, login, logout, loading: contextLoading } = useAuth(); // Usando nosso AuthContext
+  const { aluno, login, logout, loading: contextLoading } = useAuth();
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  const [displayName, setDisplayName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [displayName, setDisplayName]   = useState('');
+  const [userEmail, setUserEmail]       = useState('');
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [avatarFile, setAvatarFile] = useState(null);
-  
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [avatarFile, setAvatarFile]     = useState(null);
+  const [isUpdating, setIsUpdating]     = useState(false);
+  const [isDeleting, setIsDeleting]     = useState(false);
+  const [toast, setToast]               = useState(null);
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
   const showToast = (message, type = 'success') => setToast({ message, type });
   const hideToast = () => setToast(null);
 
   const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
-  // ── READ: Carregar dados do Contexto ──────────────────────────────────────
+  // ── READ: Carregar dados do Contexto ───────────────────────────────────────
   useEffect(() => {
     if (aluno) {
-      setDisplayName(aluno.nome || '');
-      setAvatarPreview(aluno.avatar_url || null);
+      setDisplayName(aluno.nome ?? '');
+      setAvatarPreview(aluno.avatar_url ?? null);
     }
-    
-    // NOVIDADE: Busca o e-mail seguro direto da sessão
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserEmail(user.email);
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.email) setUserEmail(data.user.email);
     });
   }, [aluno]);
 
-  // ── UPDATE: Salvar nome e foto no Supabase ────────────────────────────────
+  // ── UPDATE: Salvar nome e foto ─────────────────────────────────────────────
   const handleUpdateProfile = async () => {
+    // Guard: sessão pode ter expirado durante uso mobile em background
+    if (!aluno) {
+      showToast('Sessão inválida. Recarregue a página e tente novamente.', 'error');
+      return;
+    }
+
     const trimmed = displayName.trim();
     if (!trimmed) {
       showToast('O nome não pode ficar vazio.', 'error');
       return;
     }
-    if (trimmed === aluno.nome && !avatarFile) {
+    if (trimmed === (aluno.nome ?? '') && !avatarFile) {
       showToast('Nenhuma alteração detectada.', 'error');
       return;
     }
 
     setIsUpdating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Sessão inválida. Faça login novamente.');
+      // 1. Verificar sessão activa
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user) {
+        throw new Error('Sessão expirada. Por favor, faça login novamente.');
+      }
+      const user = authData.user;
 
-      let newAvatarUrl = aluno.avatar_url;
-
-      // 1. Upload da foto se houver
+      // 2. Upload da foto (se existir)
+      let newAvatarUrl = aluno?.avatar_url ?? null;
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
+        const fileExt = avatarFile.name.split('.').pop() ?? 'jpg';
         const filePath = `${user.id}/avatar.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(filePath, avatarFile, { upsert: true });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) throw new Error(`Erro no upload da foto: ${uploadError.message}`);
 
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-        newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`; // Força reload da imagem
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        // Anexa timestamp para forçar reload da imagem em cache
+        newAvatarUrl = urlData?.publicUrl
+          ? `${urlData.publicUrl}?t=${Date.now()}`
+          : newAvatarUrl;
       }
 
-      // 2. Atualiza a tabela 'alunos'
+      // 3. Actualizar tabela 'alunos'
       const { error: updateError } = await supabase
         .from('alunos')
         .update({ nome: trimmed, avatar_url: newAvatarUrl })
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) throw new Error(`Erro ao salvar: ${updateError.message}`);
 
-      // 3. Atualiza o Contexto e a tela
-      login({ aluno: { ...aluno, nome: trimmed, avatar_url: newAvatarUrl } });
+      // 4. Guardar snapshot do aluno ANTES da actualização do contexto
+      //    (aluno pode ter sido limpo se sessão expirou durante o await acima)
+      const alunoActual = aluno;
+      if (!alunoActual) {
+        throw new Error('Sessão expirou durante a actualização. Recarregue a página.');
+      }
+
+      // 5. Actualizar contexto (login() só faz merge — não exige token)
+      login({
+        aluno: { ...alunoActual, nome: trimmed, avatar_url: newAvatarUrl },
+      });
+
       setAvatarFile(null);
-      showToast('Perfil atualizado com sucesso!');
-      
+      showToast('Perfil actualizado com sucesso! ✓');
+
     } catch (err) {
-      console.error(err);
-      showToast(err.message || 'Erro ao atualizar perfil.', 'error');
+      console.error('[Perfil] handleUpdateProfile:', err);
+      showToast(
+        err?.message || 'Erro inesperado ao actualizar o perfil. Tente novamente.',
+        'error'
+      );
     } finally {
+      // Sempre desbloqueia o botão, independentemente do caminho de erro
       setIsUpdating(false);
     }
   };
 
-  // ── DELETE: Excluir conta do Supabase e deslogar ─────────────────────────
+  // ── DELETE: Excluir conta ──────────────────────────────────────────────────
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      '⚠️ Tem certeza? Esta ação é irreversível.\n\nTodos os seus dados, CapiCoins e progresso serão apagados permanentemente.'
+      '⚠️ Tem certeza? Esta acção é irreversível.\n\nTodos os seus dados, CapiCoins e progresso serão apagados permanentemente.'
     );
     if (!confirmed) return;
 
     setIsDeleting(true);
     try {
-      // Deleta do Supabase Auth (O CASCADE do banco deletará a linha em 'alunos')
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.rpc('delete_user', { user_id: user.id }); // ou chamada equivalente via edge function se necessário, mas como estamos no cliente:
-      
-      // O modo mais seguro de deletar user via client (requer config no painel do Supabase) ou chamando sua própria Edge Function.
-      // Aqui usamos um truque comum: atualizamos uma flag no banco ou pedimos pro backend.
-      // Como não temos backend, vamos usar a exclusão padrão se habilitada, ou exibir um erro orientando:
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id); 
-      
-      if(deleteError) {
-         throw new Error("Por segurança, a exclusão de conta deve ser feita pelo administrador ou por suporte.");
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      if (!user) throw new Error('Sessão inválida. Faça login novamente.');
+
+      // Tenta chamar a RPC de exclusão definida no banco
+      // NOTA: supabase.auth.admin.deleteUser() é API de servidor (service_role),
+      // não está disponível no cliente — por isso usamos uma RPC personalizada.
+      const { error: rpcError } = await supabase.rpc('delete_user', {
+        user_id: user.id,
+      });
+
+      if (rpcError) {
+        // Se a RPC não existir ou falhar, orientamos o utilizador
+        throw new Error(
+          'A exclusão automática não está disponível. Contacte o administrador para remover a sua conta.'
+        );
       }
 
+      // Sessão encerrada com sucesso
       await supabase.auth.signOut();
       logout();
       navigate('/');
+
     } catch (err) {
-      console.error(err);
-      showToast(err.message || 'Não foi possível excluir a conta agora.', 'error');
+      console.error('[Perfil] handleDeleteAccount:', err);
+      showToast(
+        err?.message || 'Não foi possível excluir a conta agora. Tente mais tarde.',
+        'error'
+      );
+    } finally {
+      // Garante que o botão sempre é desbloqueado (caminho ausente na versão anterior)
       setIsDeleting(false);
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (contextLoading || !aluno) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -183,11 +234,12 @@ export default function Perfil() {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Toast */}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
+      )}
 
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
@@ -200,7 +252,7 @@ export default function Perfil() {
 
       <div className="relative max-w-2xl mx-auto px-5 py-8 flex flex-col gap-8">
 
-        {/* ── HEADER ──────────────────────────────────────────────────────── */}
+        {/* ── HEADER ────────────────────────────────────────────────────── */}
         <header>
           <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400/70">
             Meu Perfil
@@ -210,14 +262,23 @@ export default function Perfil() {
           </h1>
         </header>
 
-        {/* ── AVATAR BLOCK ────────────────────────────────────────────────── */}
-        <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex items-center gap-5 relative">
-          
+        {/* ── AVATAR BLOCK ──────────────────────────────────────────────── */}
+        <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex items-center gap-5">
           <div className="relative group cursor-pointer">
-            <input type="file" hidden id="avatar-upload" accept="image/*" onChange={handleAvatarChange} />
-            <label htmlFor="avatar-upload" className="cursor-pointer">
+            <input
+              type="file"
+              hidden
+              id="avatar-upload"
+              accept="image/*"
+              onChange={handleAvatarChange}
+            />
+            <label htmlFor="avatar-upload" className="cursor-pointer block">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover border-2 border-amber-400/50" />
+                <img
+                  src={avatarPreview}
+                  alt="Avatar"
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-amber-400/50"
+                />
               ) : (
                 <div className="w-20 h-20 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
                   <AccountCircle sx={{ fontSize: 48 }} className="text-amber-400" />
@@ -230,27 +291,52 @@ export default function Perfil() {
           </div>
 
           <div>
-            <p className="text-xl font-black tracking-tight">{aluno.nome}</p>
+            <p className="text-xl font-black tracking-tight">{aluno.nome ?? '—'}</p>
             <p className="text-slate-500 text-xs mt-0.5 uppercase tracking-widest">
               {aluno.is_admin ? 'Administrador' : 'Estudante'}
             </p>
           </div>
         </section>
 
-        {/* ── INFO CARDS ──────────────────────────────────────────────────── */}
+        {/* ── INFO CARDS ────────────────────────────────────────────────── */}
         <section>
           <h2 className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500 mb-4">
             Informações da Conta
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoCard icon={<EmailOutlined sx={{ fontSize: 20 }} />} label="E-mail" value={userEmail || 'Carregando...'} />
-            <InfoCard icon={<MonetizationOn sx={{ fontSize: 20 }} />} label="Saldo de CapiCoins" value={`${aluno.capicoins ?? 0} CapiCoins`} accent="text-amber-400" />
-           <InfoCard icon={<Groups sx={{ fontSize: 20 }} />} label="Turma" value={aluno.turma || 'Sem turma'} />
-            <InfoCard icon={<Person sx={{ fontSize: 20 }} />} label="Membro desde" value={aluno.created_at ? new Date(aluno.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'} />
+            <InfoCard
+              icon={<EmailOutlined sx={{ fontSize: 20 }} />}
+              label="E-mail"
+              value={userEmail || 'Carregando…'}
+            />
+            <InfoCard
+              icon={<MonetizationOn sx={{ fontSize: 20 }} />}
+              label="Saldo de CapiCoins"
+              value={`${aluno.capicoins ?? 0} CapiCoins`}
+              accent="text-amber-400"
+            />
+            <InfoCard
+              icon={<Groups sx={{ fontSize: 20 }} />}
+              label="Turma"
+              value={aluno.turma || 'Sem turma'}
+            />
+            <InfoCard
+              icon={<Person sx={{ fontSize: 20 }} />}
+              label="Membro desde"
+              value={
+                aluno.created_at
+                  ? new Date(aluno.created_at).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : '—'
+              }
+            />
           </div>
         </section>
 
-        {/* ── UPDATE DISPLAY NAME ─────────────────────────────────────────── */}
+        {/* ── UPDATE DISPLAY NAME ───────────────────────────────────────── */}
         <section className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7">
           <div className="flex items-center gap-2 mb-5">
             <Edit sx={{ fontSize: 18 }} className="text-amber-400" />
@@ -264,7 +350,7 @@ export default function Perfil() {
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUpdateProfile()}
+              onKeyDown={(e) => e.key === 'Enter' && !isUpdating && handleUpdateProfile()}
               disabled={isUpdating}
               maxLength={40}
               placeholder="Seu nome de exibição"
@@ -272,14 +358,21 @@ export default function Perfil() {
             />
             <button
               onClick={handleUpdateProfile}
-              disabled={isUpdating || (displayName.trim() === aluno.nome && !avatarFile)}
+              disabled={
+                isUpdating ||
+                (!avatarFile && displayName.trim() === (aluno.nome ?? ''))
+              }
               className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-slate-950 font-extrabold text-sm transition-all ${
-                isUpdating || (displayName.trim() === aluno.nome && !avatarFile)
+                isUpdating || (!avatarFile && displayName.trim() === (aluno.nome ?? ''))
                   ? 'bg-amber-400/50 cursor-not-allowed'
                   : 'bg-amber-400 hover:bg-amber-500 shadow-lg shadow-amber-400/20 active:scale-95'
               }`}
             >
-              {isUpdating ? <div className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" /> : <Check sx={{ fontSize: 18 }} />}
+              {isUpdating ? (
+                <div className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
+              ) : (
+                <Check sx={{ fontSize: 18 }} />
+              )}
               {isUpdating ? 'Salvando…' : 'Salvar Alterações'}
             </button>
           </div>
@@ -288,7 +381,7 @@ export default function Perfil() {
           </p>
         </section>
 
-        {/* ── DANGER ZONE ─────────────────────────────────────────────────── */}
+        {/* ── DANGER ZONE ───────────────────────────────────────────────── */}
         <section className="border border-red-500/25 rounded-3xl p-7 bg-red-950/10">
           <div className="flex items-center gap-2 mb-2">
             <Warning sx={{ fontSize: 18 }} className="text-red-400" />
@@ -297,7 +390,8 @@ export default function Perfil() {
             </h2>
           </div>
           <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-            A exclusão da conta é <span className="text-red-300 font-semibold">permanente e irreversível</span>.
+            A exclusão da conta é{' '}
+            <span className="text-red-300 font-semibold">permanente e irreversível</span>.
             Todo o seu progresso, CapiCoins e dados serão apagados imediatamente.
           </p>
 
@@ -320,18 +414,6 @@ export default function Perfil() {
         </section>
 
       </div>
-    </div>
-  );
-}
-
-function InfoCard({ icon, label, value, accent = 'text-white' }) {
-  return (
-    <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 transition-colors">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-slate-500">{icon}</span>
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">{label}</span>
-      </div>
-      <p className={`text-sm font-semibold truncate ${accent}`}>{value}</p>
     </div>
   );
 }
