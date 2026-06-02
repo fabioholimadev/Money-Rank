@@ -157,59 +157,66 @@ export default function CapiMentor() {
 
       {/* ── PAINEL DO CHAT ──────────────────────────────────────────────── */}
       {aberto && (
-        <div
-          className="capi-panel fixed bottom-0 right-0 z-[60] flex h-[100dvh] w-full flex-col border border-zinc-800 bg-zinc-900/95 backdrop-blur-md shadow-2xl shadow-black/50 sm:bottom-24 md:bottom-5 sm:right-5 sm:h-[600px] sm:max-h-[80vh] sm:w-[380px] sm:rounded-3xl"
-          role="dialog"
-          aria-label="CapiMentor — Tutor de IA"
-        >
-          {/* Header */}
-          <header className="flex items-center justify-between border-b border-zinc-800 px-4 py-3.5 sm:rounded-t-3xl">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-400">
-                <Pets sx={{ fontSize: 24 }} />
-              </div>
-              <div>
-                <p className="flex items-center gap-1 text-sm font-black text-white">
-                  CapiMentor
-                  <AutoAwesome sx={{ fontSize: 14 }} className="text-amber-400" />
-                </p>
-                <p className="text-[11px] font-semibold text-emerald-400">
-                  online • tutor de finanças
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setAberto(false)}
-              aria-label="Fechar"
-              className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              <Close />
-            </button>
-          </header>
-
-          {/* Mensagens */}
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {mensagens.map((m, i) => (
-              <div
-                key={i}
-                className={`capi-msg flex ${
-                  m.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                    m.role === 'user'
-                      ? 'rounded-br-md bg-amber-400 font-medium text-slate-950'
-                      : 'rounded-bl-md border border-zinc-800 bg-slate-950/60 text-slate-200'
-                  }`}
-                >
-                  {m.content}
+        <>
+          {/* Backdrop (apenas mobile) */}
+          <div 
+            className="fixed inset-0 z-[59] bg-black/50 md:hidden"
+            onClick={() => setAberto(false)}
+          />
+          
+          <div
+            className="capi-panel fixed inset-x-0 bottom-0 z-[60] flex flex-col w-full h-[70vh] md:h-[600px] md:w-[380px] md:bottom-5 md:right-5 md:left-auto md:rounded-3xl rounded-t-3xl border border-zinc-800 bg-zinc-900/95 backdrop-blur-md shadow-2xl shadow-black/50"
+            role="dialog"
+            aria-label="CapiMentor — Tutor de IA"
+          >
+            {/* Header */}
+            <header className="flex items-center justify-between border-b border-zinc-800 px-3 md:px-4 py-3 md:py-3.5 md:rounded-t-3xl flex-shrink-0">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex h-8 md:h-10 w-8 md:w-10 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-400 text-sm md:text-base">
+                  <Pets sx={{ fontSize: 20 }} />
+                </div>
+                <div>
+                  <p className="flex items-center gap-1 text-xs md:text-sm font-black text-white">
+                    CapiMentor
+                    <AutoAwesome sx={{ fontSize: 12 }} className="text-amber-400" />
+                  </p>
+                  <p className="text-[10px] md:text-[11px] font-semibold text-emerald-400">
+                    online • tutor de finanças
+                  </p>
                 </div>
               </div>
-            ))}
+              <button
+                onClick={() => setAberto(false)}
+                aria-label="Fechar"
+                className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
+              >
+                <Close sx={{ fontSize: 20 }} />
+              </button>
+            </header>
 
-            {/* Indicador "digitando" */}
-            {carregando && (
+            {/* Mensagens */}
+            <div className="flex-1 space-y-2 md:space-y-3 overflow-y-auto px-3 md:px-4 py-3 md:py-4">
+              {mensagens.map((m, i) => (
+                <div
+                  key={i}
+                  className={`capi-msg flex ${
+                    m.role === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 md:px-3.5 py-2 md:py-2.5 text-xs md:text-sm leading-relaxed ${
+                      m.role === 'user'
+                        ? 'rounded-br-md bg-amber-400 font-medium text-slate-950'
+                        : 'rounded-bl-md border border-zinc-800 bg-slate-950/60 text-slate-200'
+                    }`}
+                  >
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+
+              {/* Indicador "digitando" */}
+              {carregando && (
               <div className="capi-msg flex justify-start">
                 <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-zinc-800 bg-slate-950/60 px-4 py-3">
                   {[0, 1, 2].map((d) => (

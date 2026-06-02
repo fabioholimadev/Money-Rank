@@ -99,27 +99,29 @@ export default function AtividadeQuiz() {
   const questao = questoesSorteadas[perguntaAtual];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-slate-950 text-white p-4 md:p-6 flex flex-col items-center w-full max-w-full overflow-x-hidden">
       <div className="w-full max-w-2xl">
         
-        <button onClick={() => navigate('/trilha')} className="flex items-center gap-2 text-slate-400 hover:text-amber-400 mb-8 font-bold transition-colors">
+        <button onClick={() => navigate('/trilha')} className="flex items-center gap-2 text-slate-400 hover:text-amber-400 mb-6 md:mb-8 font-bold transition-colors text-sm md:text-base">
           <ArrowBack fontSize="small" /> Abandonar Missão
         </button>
 
         {!jogoFinalizado ? (
           <>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-amber-400 font-bold uppercase tracking-widest text-sm">Questão {perguntaAtual + 1} de {questoesSorteadas.length}</span>
-              <span className="bg-slate-800 px-4 py-1 rounded-full text-sm font-bold border border-slate-700">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6 mb-6">
+              <span className="text-amber-400 font-bold uppercase tracking-widest text-xs md:text-sm">
+                Questão {perguntaAtual + 1} de {questoesSorteadas.length}
+              </span>
+              <span className="bg-slate-800 px-3 md:px-4 py-1.5 md:py-1 rounded-full text-xs md:text-sm font-bold border border-slate-700">
                 Acertos: <span className={pontuacao > 0 ? 'text-green-400' : 'text-slate-400'}>{pontuacao}</span>
               </span>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl mb-6 shadow-lg">
-              <h2 className="text-xl md:text-2xl font-bold leading-relaxed">{questao.enunciado}</h2>
+            <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl mb-6 shadow-lg">
+              <h2 className="text-base md:text-2xl font-bold leading-relaxed">{questao.enunciado}</h2>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2 md:gap-3">
               {questao.alternativas.map((alt, index) => {
                 let corBotao = "bg-slate-900 border-slate-800 hover:border-amber-500/50 text-slate-300";
                 
@@ -134,7 +136,7 @@ export default function AtividadeQuiz() {
                     key={index}
                     onClick={() => handleResponder(index)}
                     disabled={respondido}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${corBotao}`}
+                    className={`w-full text-left p-3 md:p-4 rounded-xl border-2 transition-all text-sm md:text-base ${corBotao}`}
                   >
                     {alt}
                   </button>
@@ -143,50 +145,58 @@ export default function AtividadeQuiz() {
             </div>
 
             {respondido && (
-              <div className="mt-8 animate-fade-in">
-                <div className={`p-4 rounded-xl mb-6 border ${opcaoSelecionada === questao.respostaCorreta ? 'bg-green-900/20 border-green-900/50 text-green-200' : 'bg-red-900/20 border-red-900/50 text-red-200'}`}>
+              <div className="mt-6 md:mt-8 animate-fade-in">
+                <div className={`p-3 md:p-4 rounded-xl mb-4 md:mb-6 border text-sm md:text-base ${opcaoSelecionada === questao.respostaCorreta ? 'bg-green-900/20 border-green-900/50 text-green-200' : 'bg-red-900/20 border-red-900/50 text-red-200'}`}>
                   <p className="font-bold mb-1 flex items-center gap-2">
                     {opcaoSelecionada === questao.respostaCorreta ? <><CheckCircle fontSize="small" /> Mandou bem!</> : <><Cancel fontSize="small" /> Errou, mas faz parte!</>}
                   </p>
-                  <p className="text-sm opacity-90">{questao.justificativa}</p>
+                  <p className="text-xs md:text-sm opacity-90">{questao.justificativa}</p>
                 </div>
                 
-                <button onClick={proximaPergunta} className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-xl transition-colors">
+                <button onClick={proximaPergunta} className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 md:py-4 rounded-xl transition-colors text-sm md:text-base">
                   {perguntaAtual + 1 === questoesSorteadas.length ? 'Finalizar Missão' : 'Próxima Questão'}
                 </button>
               </div>
             )}
           </>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center shadow-2xl animate-fade-in">
-            <h2 className="text-3xl font-black text-white mb-2">Missão Concluída!</h2>
-            <p className="text-slate-400 mb-8">Você acertou {pontuacao} de {questoesSorteadas.length} questões.</p>
+          <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl text-center shadow-2xl animate-fade-in">
+            <h2 className="text-2xl md:text-3xl font-black text-white mb-2">Missão Concluída!</h2>
+            <p className="text-slate-400 mb-6 md:mb-8 text-sm md:text-base">
+              Você acertou {pontuacao} de {questoesSorteadas.length} questões.
+            </p>
             
             {isSubmitting ? (
-              <div className="text-amber-400 font-bold animate-pulse">Sincronizando com o Banco Central...</div>
+              <div className="text-amber-400 font-bold animate-pulse text-sm md:text-base">
+                Sincronizando com o Banco Central...
+              </div>
             ) : (
-              <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 mb-8">
+              <div className="bg-slate-950 p-4 md:p-6 rounded-2xl border border-slate-800 mb-6 md:mb-8">
                 {pontuacao >= 3 ? (
                   <>
-                    <MonetizationOn sx={{ fontSize: 60, color: '#fbbf24', mb: 2 }} />
-                    <h3 className="text-xl font-bold text-amber-400 mb-2">Recompensa Recebida!</h3>
+                    <MonetizationOn sx={{ fontSize: 50 }} className="text-amber-400 mx-auto mb-2" />
+                    <h3 className="text-lg md:text-xl font-bold text-amber-400 mb-2">Recompensa Recebida!</h3>
                     {erroRecompensa ? (
-                      <p className="text-sm text-red-400">{erroRecompensa}</p>
+                      <p className="text-xs md:text-sm text-red-400">{erroRecompensa}</p>
                     ) : (
-                      <p className="text-sm text-slate-400">Excelente! Seus <span className="text-amber-400 font-bold">+{resultadoBanco?.reward ?? 0} CapiCoins</span> já estão na sua conta.</p>
+                      <p className="text-xs md:text-sm text-slate-400">
+                        Excelente! Seus <span className="text-amber-400 font-bold">+{resultadoBanco?.reward ?? 0} CapiCoins</span> já estão na sua conta.
+                      </p>
                     )}
                   </>
                 ) : (
                   <>
-                    <Cancel sx={{ fontSize: 60, color: '#ef4444', mb: 2 }} />
-                    <h3 className="text-xl font-bold text-red-400 mb-2">Treine mais um pouco!</h3>
-                    <p className="text-sm text-slate-400">Você precisa acertar pelo menos 3 questões para faturar CapiCoins.</p>
+                    <Cancel sx={{ fontSize: 50 }} className="text-red-400 mx-auto mb-2" />
+                    <h3 className="text-lg md:text-xl font-bold text-red-400 mb-2">Treine mais um pouco!</h3>
+                    <p className="text-xs md:text-sm text-slate-400">
+                      Você precisa acertar pelo menos 3 questões para faturar CapiCoins.
+                    </p>
                   </>
                 )}
               </div>
             )}
 
-            <button onClick={() => navigate('/trilha')} className="w-full bg-slate-100 hover:bg-white text-slate-900 font-black py-4 rounded-xl transition-colors">
+            <button onClick={() => navigate('/trilha')} className="w-full bg-slate-100 hover:bg-white text-slate-900 font-black py-3 md:py-4 rounded-xl transition-colors text-sm md:text-base">
               Voltar a Trilha Principal
             </button>
           </div>
