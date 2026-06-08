@@ -8,6 +8,9 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  optimizeDeps: {
+    include: ['prop-types', 'react-is'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './frontend/src'),
