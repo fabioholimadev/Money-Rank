@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
+import EsqueciSenha from './pages/EsqueciSenha';
+import RedefinirSenha from './pages/RedefinirSenha';
 
 // Páginas protegidas
 import StudentDashboard from './pages/StudentDashboard';
@@ -25,6 +27,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
         {/* ── Rotas protegidas (com Layout = TopBar + BottomNav + CapiMentor) ── */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>

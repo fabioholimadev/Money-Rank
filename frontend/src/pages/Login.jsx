@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ArrowBack, PhotoCamera } from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -232,7 +233,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center flex flex-col gap-3">
           <button 
             onClick={handleModeSwitch}
             type="button"
@@ -240,6 +241,14 @@ export default function Login() {
           >
             {isLogin ? 'Ainda não tem conta? Crie uma agora.' : 'Já tem uma conta? Faça login.'}
           </button>
+          {isLogin && (
+            <Link
+              to="/esqueci-senha"
+              className="text-slate-500 hover:text-amber-400 text-sm transition-colors"
+            >
+              Esqueci minha senha
+            </Link>
+          )}
         </div>
 
         <div className="mt-3 text-center">
