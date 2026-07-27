@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowBack, CheckCircle, Cancel, MonetizationOn } from '@mui/icons-material';
 import { fetchApi } from "../../../../lib/api";
@@ -9,7 +9,10 @@ export default function AtividadeQuiz() {
   const navigate = useNavigate();
   
   // Estados do Jogo
-  const [questoesSorteadas, setQuestoesSorteadas] = useState([]);
+  const [questoesSorteadas] = useState(() => {
+    const embaralhadas = [...bancoDeQuestoes].sort(() => 0.5 - Math.random());
+    return embaralhadas.slice(0, 5);
+  });
   const [perguntaAtual, setPerguntaAtual] = useState(0);
   const [pontuacao, setPontuacao] = useState(0);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
@@ -24,12 +27,6 @@ export default function AtividadeQuiz() {
   const RECOMPENSA_QUIZ = 100;
 
   const { aluno, updateAluno } = useAuth();
-
-  // Ao carregar a tela, sorteia 5 questões do banco
-  useEffect(() => {
-    const embaralhar = [...bancoDeQuestoes].sort(() => 0.5 - Math.random());
-    setQuestoesSorteadas(embaralhar.slice(0, 5));
-  }, []);
 
   const handleResponder = (indexSelecionado) => {
     if (respondido) return; 

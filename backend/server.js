@@ -22,12 +22,10 @@ app.use(cors()); // Permite que o Front-end (porta 5174) fale com este Back-end 
 app.use(express.json());
 
 // Importando as nossas rotas e passando o Supabase para elas
-const authRoutes = require('./routes/authRoutes')(supabase);
 const gameRoutes = require('./routes/gameRoutes')(supabase);
 const activityRoutes = require('./routes/activityRoutes')(supabase);
 const mentorRoutes = require('./routes/mentorRoutes')(supabase);
 
-app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/mission', activityRoutes);

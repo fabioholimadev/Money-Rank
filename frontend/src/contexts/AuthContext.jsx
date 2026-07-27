@@ -1,66 +1,59 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext(null);
 
+const LEGACY_SESSION_KEYS = ['token', 'refresh_token', 'aluno'];
+
+/**
+ * Contexto transitório usado durante a troca do Supabase Auth pelo Firebase.
+ *
+ * A Task 1.1 invalida qualquer sessão antiga que ainda esteja no navegador.
+ * A Task 1.2 adicionará o observador de sessão do Firebase e disponibilizará
+ * novamente os dados do usuário autenticado.
+ */
 export function AuthProvider({ children }) {
   const [aluno, setAluno] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw = localStorage.getItem('aluno');
-    const t = localStorage.getItem('token');
-    if (raw) {
-      try {
-        setAluno(JSON.parse(raw));
-      } catch (e) {
-        console.error('Failed to parse aluno from localStorage', e);
-      }
-    }
-    if (t) setToken(t);
-    setLoading(false);
+    LEGACY_SESSION_KEYS.forEach((key) => localStorage.removeItem(key));
   }, []);
 
-  const login = (data) => {
-    if (!data) return;
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      setToken(data.token);
-    }
-    if (data.refresh_token) {
-      localStorage.setItem('refresh_token', data.refresh_token);
-    }
-    if (data.aluno) {
-      localStorage.setItem('aluno', JSON.stringify(data.aluno));
-      setAluno(data.aluno);
-    }
-  };
-
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('aluno');
+    LEGACY_SESSION_KEYS.forEach((key) => localStorage.removeItem(key));
     setAluno(null);
-    setToken(null);
   };
 
   const updateAluno = (data) => {
-    setAluno((prevAluno) => {
-      const nextAluno = { ...(prevAluno || {}), ...data };
-      localStorage.setItem('aluno', JSON.stringify(nextAluno));
-      return nextAluno;
-    });
+    setAluno((currentAluno) =>
+      currentAluno ? { ...currentAluno, ...data } : currentAluno
+    );
   };
 
   return (
-    <AuthContext.Provider value={{ aluno, token, loading, login, logout, updateAluno }}>
+    <AuthContext.Provider
+      value={{
+        user: null,
+        aluno,
+        loading: false,
+        logout,
+        updateAluno,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
+// O hook compartilha o arquivo com o Provider para manter a API centralizada.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de AuthProvider.');
+  }
+
+  return context;
 }
 
 export default AuthProvider;

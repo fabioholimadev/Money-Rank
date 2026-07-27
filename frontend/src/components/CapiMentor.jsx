@@ -15,7 +15,7 @@ import { fetchApi } from '../lib/api';
  * - Aparece como um botão flutuante (FAB) no canto inferior direito.
  * - Só é renderizado quando há um aluno logado (segurança + UX).
  * - Conversa com o backend em POST /api/mentor/chat usando fetchApi,
- *   que já injeta o token JWT (Bearer) automaticamente.
+ *   responsável por configurar os cabeçalhos HTTP automaticamente.
  * - A chave da IA fica EXCLUSIVAMENTE no backend. Aqui nunca trafega segredo.
  *
  * Monte-o UMA vez, de forma global (ver App.jsx), para que o histórico
@@ -91,7 +91,7 @@ export default function CapiMentor() {
         try {
           const j = await res.json();
           if (j?.error) detalhe = j.error;
-        } catch (_) {
+        } catch {
           /* resposta sem JSON */
         }
         throw new Error(detalhe);

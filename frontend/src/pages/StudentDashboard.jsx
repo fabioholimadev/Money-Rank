@@ -16,25 +16,13 @@ import { supabase } from '../lib/supabase';
 export default function StudentDashboard() {
   const { aluno, loading } = useAuth();
 
-  const [stats, setStats] = useState({
-    nome: '',
-    capicoins: 0,
-    fase_atual: 1,
-    streak_atual: 0,
-    avatar_url: null,
-  });
-
-  useEffect(() => {
-    if (aluno) {
-      setStats({
-        nome: aluno.nome || '',
-        capicoins: aluno.capicoins || 0,
-        fase_atual: aluno.fase_atual || 1,
-        streak_atual: aluno.streak_atual || 0,
-        avatar_url: aluno.avatar_url || null,
-      });
-    }
-  }, [aluno]);
+  const [stats, setStats] = useState(() => ({
+    nome: aluno?.nome || '',
+    capicoins: aluno?.capicoins || 0,
+    fase_atual: aluno?.fase_atual || 1,
+    streak_atual: aluno?.streak_atual || 0,
+    avatar_url: aluno?.avatar_url || null,
+  }));
 
   useEffect(() => {
     const fetchRealTimeStats = async () => {

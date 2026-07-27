@@ -1,11 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
 
 // Páginas públicas
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
-import Cadastro from './pages/Cadastro';
-import EsqueciSenha from './pages/EsqueciSenha';
-import RedefinirSenha from './pages/RedefinirSenha';
 
 // Páginas protegidas
 import StudentDashboard from './pages/StudentDashboard';
@@ -26,9 +23,9 @@ function App() {
         {/* ── Rotas públicas (sem TopBar / BottomNav) ──────────────────── */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/cadastro" element={<Cadastro />} />
-        <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+        <Route path="/cadastro" element={<Navigate to="/login" replace />} />
+        <Route path="/esqueci-senha" element={<Navigate to="/login" replace />} />
+        <Route path="/redefinir-senha" element={<Navigate to="/login" replace />} />
 
         {/* ── Rotas protegidas (com Layout = TopBar + BottomNav + CapiMentor) ── */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>

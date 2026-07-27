@@ -3,14 +3,9 @@ import {
   LocalFireDepartment,
   MonetizationOn,
   Star,
-  Home,
-  Map,
-  EmojiEvents,
-  Person,
   Logout,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 
 const NAV_ITENS = [
   { label: 'Home',    to: '/student'  },
@@ -33,10 +28,7 @@ export default function TopBar() {
 
   if (!aluno) return null;
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (_) { /* ignora falha de rede */ }
+  const handleLogout = () => {
     logout();
     navigate('/');
   };

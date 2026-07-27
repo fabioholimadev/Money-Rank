@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AccountCircle,
   Edit,
@@ -8,7 +7,6 @@ import {
   MonetizationOn,
   Groups,
   EmailOutlined,
-  DeleteForever,
   Warning,
   Person,
   PhotoCamera
@@ -60,16 +58,14 @@ function InfoCard({ icon, label, value, accent = 'text-white' }) {
 
 // ─── Perfil ────────────────────────────────────────────────────────────────────
 export default function Perfil() {
-  const navigate = useNavigate();
-  const { aluno, login, logout, loading: contextLoading } = useAuth();
+  const { aluno, updateAluno, loading: contextLoading } = useAuth();
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [displayName, setDisplayName]   = useState('');
-  const [userEmail, setUserEmail]       = useState('');
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [displayName, setDisplayName]   = useState(aluno?.nome ?? '');
+  const userEmail = aluno?.email ?? '';
+  const [avatarPreview, setAvatarPreview] = useState(aluno?.avatar_url ?? null);
   const [avatarFile, setAvatarFile]     = useState(null);
   const [isUpdating, setIsUpdating]     = useState(false);
-  const [isDeleting, setIsDeleting]     = useState(false);
   const [toast, setToast]               = useState(null);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -83,21 +79,10 @@ export default function Perfil() {
     setAvatarPreview(URL.createObjectURL(file));
   };
 
-  // ── READ: Carregar dados do Contexto ───────────────────────────────────────
-  useEffect(() => {
-    if (aluno) {
-      setDisplayName(aluno.nome ?? '');
-      setAvatarPreview(aluno.avatar_url ?? null);
-    }
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user?.email) setUserEmail(data.user.email);
-    });
-  }, [aluno]);
-
   // ── UPDATE: Salvar nome e foto ─────────────────────────────────────────────
   const handleUpdateProfile = async () => {
     // Guard: sessão pode ter expirado durante uso mobile em background
-    if (!aluno) {
+    if (!aluno?.id) {
       showToast('Sessão inválida. Recarregue a página e tente novamente.', 'error');
       return;
     }
@@ -114,18 +99,11 @@ export default function Perfil() {
 
     setIsUpdating(true);
     try {
-      // 1. Verificar sessão activa
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData?.user) {
-        throw new Error('Sessão expirada. Por favor, faça login novamente.');
-      }
-      const user = authData.user;
-
-      // 2. Upload da foto (se existir)
+      // 1. Upload da foto (se existir)
       let newAvatarUrl = aluno?.avatar_url ?? null;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop() ?? 'jpg';
-        const filePath = `${user.id}/avatar.${fileExt}`;
+        const filePath = `${aluno.id}/avatar.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('avatars')
@@ -143,24 +121,18 @@ export default function Perfil() {
           : newAvatarUrl;
       }
 
-      // 3. Actualizar tabela 'alunos'
+      // 2. Actualizar tabela 'alunos'
       const { error: updateError } = await supabase
         .from('alunos')
         .update({ nome: trimmed, avatar_url: newAvatarUrl })
-        .eq('id', user.id);
+        .eq('id', aluno.id);
 
       if (updateError) throw new Error(`Erro ao salvar: ${updateError.message}`);
 
-      // 4. Guardar snapshot do aluno ANTES da actualização do contexto
-      //    (aluno pode ter sido limpo se sessão expirou durante o await acima)
-      const alunoActual = aluno;
-      if (!alunoActual) {
-        throw new Error('Sessão expirou durante a actualização. Recarregue a página.');
-      }
-
-      // 5. Actualizar contexto (login() só faz merge — não exige token)
-      login({
-        aluno: { ...alunoActual, nome: trimmed, avatar_url: newAvatarUrl },
+      // 3. Actualizar o snapshot do perfil no contexto
+      updateAluno({
+        nome: trimmed,
+        avatar_url: newAvatarUrl,
       });
 
       setAvatarFile(null);
@@ -175,50 +147,6 @@ export default function Perfil() {
     } finally {
       // Sempre desbloqueia o botão, independentemente do caminho de erro
       setIsUpdating(false);
-    }
-  };
-
-  // ── DELETE: Excluir conta ──────────────────────────────────────────────────
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      '⚠️ Tem certeza? Esta acção é irreversível.\n\nTodos os seus dados, CapiCoins e progresso serão apagados permanentemente.'
-    );
-    if (!confirmed) return;
-
-    setIsDeleting(true);
-    try {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      if (!user) throw new Error('Sessão inválida. Faça login novamente.');
-
-      // Tenta chamar a RPC de exclusão definida no banco
-      // NOTA: supabase.auth.admin.deleteUser() é API de servidor (service_role),
-      // não está disponível no cliente — por isso usamos uma RPC personalizada.
-      const { error: rpcError } = await supabase.rpc('delete_user', {
-        user_id: user.id,
-      });
-
-      if (rpcError) {
-        // Se a RPC não existir ou falhar, orientamos o utilizador
-        throw new Error(
-          'A exclusão automática não está disponível. Contacte o administrador para remover a sua conta.'
-        );
-      }
-
-      // Sessão encerrada com sucesso
-      await supabase.auth.signOut();
-      logout();
-      navigate('/');
-
-    } catch (err) {
-      console.error('[Perfil] handleDeleteAccount:', err);
-      showToast(
-        err?.message || 'Não foi possível excluir a conta agora. Tente mais tarde.',
-        'error'
-      );
-    } finally {
-      // Garante que o botão sempre é desbloqueado (caminho ausente na versão anterior)
-      setIsDeleting(false);
     }
   };
 
@@ -381,36 +309,18 @@ export default function Perfil() {
           </p>
         </section>
 
-        {/* ── DANGER ZONE ───────────────────────────────────────────────── */}
-        <section className="border border-red-500/25 rounded-3xl p-7 bg-red-950/10">
+        {/* ── ACCOUNT MIGRATION NOTICE ───────────────────────────────────── */}
+        <section className="rounded-3xl border border-amber-400/20 bg-amber-400/5 p-7">
           <div className="flex items-center gap-2 mb-2">
-            <Warning sx={{ fontSize: 18 }} className="text-red-400" />
-            <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-400">
-              Zona de Perigo
+            <Warning sx={{ fontSize: 18 }} className="text-amber-400" />
+            <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-amber-400">
+              Gestão da Conta
             </h2>
           </div>
-          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-            A exclusão da conta é{' '}
-            <span className="text-red-300 font-semibold">permanente e irreversível</span>.
-            Todo o seu progresso, CapiCoins e dados serão apagados imediatamente.
+          <p className="text-sm leading-relaxed text-slate-400">
+            A exclusão de conta ficará disponível novamente após a migração
+            completa para o Firebase Auth.
           </p>
-
-          <button
-            onClick={handleDeleteAccount}
-            disabled={isDeleting}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all ${
-              isDeleting
-                ? 'bg-red-600/50 text-white/50 cursor-not-allowed'
-                : 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 active:scale-95'
-            }`}
-          >
-            {isDeleting ? (
-              <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-            ) : (
-              <DeleteForever sx={{ fontSize: 18 }} />
-            )}
-            {isDeleting ? 'Excluindo…' : 'Excluir Minha Conta'}
-          </button>
         </section>
 
       </div>

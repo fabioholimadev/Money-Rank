@@ -142,7 +142,7 @@ function Landing() {
             <a href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
               Entrar
             </a>
-            <a href="/cadastro" className="flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-amber-400/10">
+            <a href="/login" className="flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-amber-400/10">
               <Login sx={{ fontSize: 16 }} />
               Acessar Sistema
             </a>
@@ -204,11 +204,11 @@ function Landing() {
             Entrar
           </a>
           <a
-            href="/cadastro"
+            href="/login"
             onClick={() => setMenuAberto(false)}
             className="w-full text-center py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-base transition-all shadow-lg shadow-amber-400/20"
           >
-            Criar Conta Aluno
+            Acessar Sistema
           </a>
         </div>
       </div>
@@ -251,8 +251,8 @@ function Landing() {
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-4">
-              <a href="/cadastro" className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-2 px-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-amber-500/20 group text-sm md:text-lg w-max">
-                Criar Minha Conta Aluno
+              <a href="/login" className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-2 px-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-amber-500/20 group text-sm md:text-lg w-max">
+                Acessar o Money Rank
                 <ArrowForward sx={{ fontSize: 16 }} className="group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
@@ -567,9 +567,9 @@ function Landing() {
           <div className="space-y-3">
             <h4 className="text-slate-200 font-bold uppercase tracking-wider text-[10px]">Tecnologias</h4>
             <ul className="space-y-2">
-              <li>React 18 & Tailwind CSS</li>
+              <li>React & Tailwind CSS</li>
               <li>Node.js / Express Architecture</li>
-              <li>Supabase Database Security (RLS Bypass)</li>
+              <li>Firebase Auth & SQL Connect</li>
             </ul>
           </div>
         </div>
