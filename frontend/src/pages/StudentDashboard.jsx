@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
 import {
   MonetizationOn,
   Map,
   LocalFireDepartment,
-  AccountCircle,
   EmojiEvents,
   Bolt,
   TrendingUp,
@@ -11,31 +9,19 @@ import {
   Recycling,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import ProfileAvatar from '../components/ProfileAvatar';
 
 export default function StudentDashboard() {
   const { aluno, loading } = useAuth();
 
-  const [stats, setStats] = useState(() => ({
+  const stats = {
     nome: aluno?.nome || '',
     capicoins: aluno?.capicoins || 0,
     fase_atual: aluno?.fase_atual || 1,
     streak_atual: aluno?.streak_atual || 0,
     avatar_url: aluno?.avatar_url || null,
-  }));
-
-  useEffect(() => {
-    const fetchRealTimeStats = async () => {
-      if (!aluno?.id) return;
-      const { data, error } = await supabase
-        .from('alunos')
-        .select('nome, capicoins, fase_atual, streak_atual, avatar_url')
-        .eq('id', aluno.id)
-        .single();
-      if (!error && data) setStats(data);
-    };
-    fetchRealTimeStats();
-  }, [aluno?.id]);
+    avatar_id: aluno?.avatar_id || null,
+  };
 
   if (loading || !aluno) {
     return (
@@ -142,17 +128,13 @@ export default function StudentDashboard() {
       {/* ── WELCOME BLOCK ──────────────────────────────────────────────── */}
       <section className="relative bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-7 flex flex-col sm:flex-row items-start sm:items-center gap-6">
         <div className="flex items-center gap-5">
-          {stats.avatar_url ? (
-            <img
-              src={stats.avatar_url}
-              alt="Avatar"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400/50 shadow-lg shadow-amber-500/10"
-            />
-          ) : (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center">
-              <AccountCircle sx={{ fontSize: 40 }} className="text-slate-600" />
-            </div>
-          )}
+          <ProfileAvatar
+            avatarId={stats.avatar_id}
+            className="border-2 border-amber-400/50 shadow-amber-500/10"
+            name={stats.nome}
+            photoUrl={stats.avatar_url}
+            size="lg"
+          />
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400 mb-2">
               Olá, {stats.nome} 👋

@@ -55,8 +55,40 @@ Money Rank.
 
 1. Acesse `http://localhost:5173/login`.
 2. Clique em **Continuar com o Google** e selecione uma conta.
-3. Confirme o redirecionamento para `/student`.
+3. Confirme o redirecionamento para `/completar-perfil` no primeiro acesso ou
+   para `/student` quando o perfil já estiver completo.
 4. Recarregue a página e confirme que a sessão continua ativa.
 5. Clique em **Sair** e confirme o retorno para `/login`.
 6. Sem uma sessão ativa, acesse `/student` diretamente e confirme o
    redirecionamento para `/login`.
+
+## 👤 Fluxo de completar perfil
+
+Depois do primeiro login com Google, o aluno é direcionado automaticamente para
+`/completar-perfil`. Para liberar as áreas do jogo, ele deve:
+
+1. Confirmar ou alterar o nome preferido.
+2. Selecionar **3º DSA** ou **3º DSB** na caixa de turma.
+3. Escolher uma Capi profissional ou enviar uma foto JPG, PNG ou WebP de até
+   5 MB.
+4. Clicar em **Concluir e começar**.
+
+O nome preferido também é atualizado no perfil básico do Firebase Auth. Durante
+a migração, turma, avatar, foto e estado de conclusão ficam no armazenamento
+local, separados pelo `uid` do Firebase. A foto enviada é recortada, reduzida
+para 320 × 320 pixels e convertida para JPEG antes de ser salva no navegador.
+Esses campos serão migrados para o PostgreSQL e para o armazenamento definitivo
+nas Tasks 2.1 e 2.2 do Firebase SQL Connect.
+
+### Teste local do perfil
+
+1. Entre com uma conta Google que ainda não tenha perfil local.
+2. Confirme o redirecionamento de `/student` para `/completar-perfil`.
+3. Tente enviar o formulário vazio e confirme as mensagens de validação.
+4. Preencha o nome, selecione **3º DSA** e escolha uma Capi profissional.
+5. Confirme o redirecionamento para `/student` e a Capi no dashboard.
+6. Recarregue a página e confirme que o perfil continua completo.
+7. Acesse `/perfil`, troque a turma para **3º DSB** e envie uma foto válida.
+8. Confirme a prévia quadrada da foto, salve e recarregue a página.
+9. Tente enviar um arquivo que não seja imagem ou uma imagem acima de 5 MB e
+   confirme que o formulário exibe a validação sem perder o perfil atual.

@@ -1,8 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+export default function ProtectedRoute({
+  children,
+  requireCompleteProfile = true,
+}) {
+  const { user, aluno, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -25,6 +28,20 @@ export default function ProtectedRoute({ children }) {
         to="/login"
       />
     );
+  }
+
+  if (requireCompleteProfile && !aluno?.profile_complete) {
+    return (
+      <Navigate
+        replace
+        state={{ from: location }}
+        to="/completar-perfil"
+      />
+    );
+  }
+
+  if (!requireCompleteProfile && aluno?.profile_complete) {
+    return <Navigate replace to="/student" />;
   }
 
   return children;
