@@ -1,0 +1,96 @@
+# Completa ou atualiza o perfil usando uma das Capis profissionais do catálogo.
+mutation UpsertMyProfileWithAvatar(
+  $preferredName: String!
+  $classGroup: StudentClass!
+  $avatarId: ProfessionalAvatar!
+) @auth(level: USER_EMAIL_VERIFIED) {
+  user_upsert(
+    data: {
+      uid_expr: "auth.uid"
+      email_expr: "auth.token.email"
+      preferredName: $preferredName
+      classGroup: $classGroup
+      avatarId: $avatarId
+      avatarUrl: null
+      profileCompleted: true
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+# A URL deverá apontar para o armazenamento definitivo; a foto em Base64 usada
+# temporariamente na Task 1.3 não será gravada no PostgreSQL.
+mutation UpsertMyProfileWithPhoto(
+  $preferredName: String!
+  $classGroup: StudentClass!
+  $avatarUrl: String!
+) @auth(level: USER_EMAIL_VERIFIED) {
+  user_upsert(
+    data: {
+      uid_expr: "auth.uid"
+      email_expr: "auth.token.email"
+      preferredName: $preferredName
+      classGroup: $classGroup
+      avatarId: null
+      avatarUrl: $avatarUrl
+      profileCompleted: true
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+# Operação administrativa: o cliente web não pode registrar pontuação.
+mutation UpsertStudentProgress(
+  $studentUid: String!
+  $phaseNumber: Int!
+  $status: ProgressStatus!
+  $score: Int!
+  $attempts: Int!
+  $correctAnswers: Int!
+  $wrongAnswers: Int!
+  $startedAt: Timestamp
+  $completedAt: Timestamp
+) @auth(level: NO_ACCESS) {
+  studentProgress_upsert(
+    data: {
+      userUid: $studentUid
+      phaseNumber: $phaseNumber
+      status: $status
+      score: $score
+      attempts: $attempts
+      correctAnswers: $correctAnswers
+      wrongAnswers: $wrongAnswers
+      startedAt: $startedAt
+      completedAt: $completedAt
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+# Operação administrativa e atômica. amount positivo credita; amount negativo
+# debita. O backend responsável pela atividade validará a regra de negócio.
+mutation ApplyCapiCoinTransaction(
+  $studentUid: String!
+  $amount: Int!
+  $transactionType: CapiCoinTransactionType!
+  $reason: String!
+  $sourceId: String
+) @auth(level: NO_ACCESS) @transaction {
+  user_update(
+    key: { uid: $studentUid }
+    data: {
+      capiCoins_update: { inc: $amount }
+      updatedAt_expr: "request.time"
+    }
+  ) @check(expr: "this != null", message: "Aluno não encontrado.")
+
+  capiCoinTransaction_insert(
+    data: {
+      userUid: $studentUid
+      amount: $amount
+      transactionType: $transactionType
+      reason: $reason
+      sourceId: $sourceId
+    }
+  )
+}

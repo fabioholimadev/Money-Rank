@@ -1,0 +1,54 @@
+# Retorna apenas o perfil associado ao token Firebase Auth atual.
+query GetMyProfile @auth(level: USER_EMAIL_VERIFIED) {
+  user(key: { uid_expr: "auth.uid" }) {
+    uid
+    email
+    preferredName
+    classGroup
+    role
+    avatarId
+    avatarUrl
+    profileCompleted
+    capiCoins
+    currentPhase
+    currentStreak
+    createdAt
+    updatedAt
+  }
+}
+
+# O uid não é recebido do cliente: o filtro sempre usa auth.uid.
+query ListMyProgress @auth(level: USER_EMAIL_VERIFIED) {
+  studentProgressEntries(
+    where: { userUid: { eq_expr: "auth.uid" } }
+    orderBy: [{ phaseNumber: ASC }]
+  ) {
+    phaseNumber
+    status
+    score
+    attempts
+    correctAnswers
+    wrongAnswers
+    startedAt
+    completedAt
+    updatedAt
+  }
+}
+
+# Histórico paginado, ordenado do lançamento mais recente para o mais antigo.
+query ListMyCapiCoinTransactions($offset: Int = 0)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  capiCoinTransactions(
+    where: { userUid: { eq_expr: "auth.uid" } }
+    orderBy: [{ createdAt: DESC }]
+    limit: 50
+    offset: $offset
+  ) {
+    id
+    amount
+    transactionType
+    reason
+    sourceId
+    createdAt
+  }
+}

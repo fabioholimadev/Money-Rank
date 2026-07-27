@@ -1,0 +1,14 @@
+# Configuração do serviço Firebase SQL Connect do Money Rank.
+# O deploy criará/vinculará um Cloud SQL PostgreSQL somente quando autorizado.
+serviceId: "money-rank-service"
+location: "southamerica-east1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "money-rank-db"
+      cloudSql:
+        instanceId: "money-rank-sql"
+        schemaValidation: "COMPATIBLE"
+connectorDirs:
+  - "./connector"

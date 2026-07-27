@@ -92,3 +92,61 @@ nas Tasks 2.1 e 2.2 do Firebase SQL Connect.
 8. Confirme a prévia quadrada da foto, salve e recarregue a página.
 9. Tente enviar um arquivo que não seja imagem ou uma imagem acima de 5 MB e
    confirme que o formulário exibe a validação sem perder o perfil atual.
+
+## 🗄️ Firebase SQL Connect
+
+O backend relacional fica em `dataconnect/` e usa PostgreSQL por meio do
+Firebase SQL Connect:
+
+- `schema/schema.gql`: tabelas, enums, chaves, relações e índices.
+- `connector/queries.gql`: leituras autorizadas do próprio aluno.
+- `connector/mutations.gql`: perfil do aluno e operações administrativas.
+- `dataconnect.yaml`: serviço `money-rank-service` em
+  `southamerica-east1`.
+
+### Modelo inicial
+
+- `User`: perfil vinculado diretamente ao `uid` do Firebase Auth, turma,
+  papel, saldo de CapiCoins e fase atual.
+- `StudentProgress`: progresso consolidado por aluno e fase, com chave
+  composta para impedir registros duplicados.
+- `CapiCoinTransaction`: livro-caixa de créditos e débitos. O saldo rápido
+  permanece em `User.capiCoins`, mas toda alteração gera um lançamento
+  auditável na mesma transação.
+
+As turmas são enums fechados: `THIRD_DSA` representa **3º DSA** e `THIRD_DSB`
+representa **3º DSB**. A conversão para os rótulos da interface será feita na
+integração do SDK.
+
+### Segurança das operações
+
+- Consultas de perfil, progresso e histórico exigem e-mail verificado e usam
+  `auth.uid` no servidor. O frontend nunca envia um `uid` para ler outro aluno.
+- O aluno pode completar apenas o próprio perfil.
+- Pontuação e CapiCoins usam `@auth(level: NO_ACCESS)`: somente um backend com
+  Firebase Admin poderá executá-las. Isso impede premiação pelo navegador.
+
+### Teste local do esquema
+
+O teste usa o projeto isolado `demo-money-rank`, o PostgreSQL PGlite local e
+não cria recursos no Google Cloud:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-dataconnect.ps1
+```
+
+O resultado esperado é:
+
+```text
+SQL Connect validado: esquema, relacoes e operacoes carregados.
+```
+
+No Windows, a CLI pode exibir um aviso `ECONNRESET` ao desligar o processo
+PGlite. O script só considera o teste aprovado quando o comando termina com
+código zero e o log confirma que o serviço foi configurado sem erros de
+compilação.
+
+O deploy não faz parte do teste local. Antes de executar
+`firebase deploy --only dataconnect`, é necessário ativar a API SQL Connect,
+confirmar o plano de faturamento e revisar a criação do Cloud SQL
+`money-rank-sql`.

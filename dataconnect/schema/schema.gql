@@ -1,0 +1,122 @@
+# Papéis reconhecidos pela plataforma. A elevação para TEACHER deve ser feita
+# exclusivamente por uma rotina administrativa confiável.
+enum UserRole {
+  STUDENT
+  TEACHER
+}
+
+# Valores persistidos das duas turmas disponíveis na interface.
+# A Task 2.2 mapeará THIRD_DSA/THIRD_DSB para "3º DSA"/"3º DSB".
+enum StudentClass {
+  THIRD_DSA
+  THIRD_DSB
+}
+
+# Catálogo fechado dos avatares profissionais incluídos no frontend.
+enum ProfessionalAvatar {
+  CAPI_CIENTISTA
+  CAPI_PROFESSORA
+  CAPI_PROGRAMADORA
+  CAPI_ECONOMISTA
+  CAPI_MEDICA
+  CAPI_ENGENHEIRA
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum CapiCoinTransactionType {
+  ACTIVITY_REWARD
+  STREAK_BONUS
+  PURCHASE
+  ADMIN_ADJUSTMENT
+}
+
+# O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
+# manter um segundo identificador e permite filtros seguros com auth.uid.
+type User
+  @table(
+    name: "users"
+    key: "uid"
+    singular: "user"
+    plural: "users"
+  ) {
+  uid: String!
+    @col(name: "firebase_uid", dataType: "varchar(128)")
+    @default(expr: "auth.uid")
+  email: String! @col(dataType: "varchar(320)") @unique
+  preferredName: String!
+    @col(name: "preferred_name", dataType: "varchar(40)")
+  classGroup: StudentClass @col(name: "class_group") @index
+  role: UserRole! @default(value: STUDENT) @index
+  avatarId: ProfessionalAvatar @col(name: "avatar_id")
+  avatarUrl: String @col(name: "avatar_url", dataType: "varchar(2048)")
+  profileCompleted: Boolean!
+    @col(name: "profile_completed")
+    @default(value: false)
+  capiCoins: Int! @col(name: "capi_coins") @default(value: 0)
+  currentPhase: Int! @col(name: "current_phase") @default(value: 1)
+  currentStreak: Int! @col(name: "current_streak") @default(value: 0)
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Uma linha representa o estado consolidado de um aluno em uma fase. A chave
+# composta impede duplicidade para a mesma combinação de aluno e fase.
+type StudentProgress
+  @table(
+    name: "student_progress"
+    key: ["user", "phaseNumber"]
+    singular: "studentProgress"
+    plural: "studentProgressEntries"
+  )
+  @index(fields: ["userUid", "updatedAt"], order: [ASC, DESC]) {
+  user: User! @ref(fields: "userUid", references: "uid")
+  userUid: String!
+    @col(name: "user_uid", dataType: "varchar(128)")
+  phaseNumber: Int! @col(name: "phase_number")
+  status: ProgressStatus! @default(value: NOT_STARTED) @index
+  score: Int! @default(value: 0)
+  attempts: Int! @default(value: 0)
+  correctAnswers: Int!
+    @col(name: "correct_answers")
+    @default(value: 0)
+  wrongAnswers: Int!
+    @col(name: "wrong_answers")
+    @default(value: 0)
+  startedAt: Timestamp @col(name: "started_at")
+  completedAt: Timestamp @col(name: "completed_at")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Livro-caixa imutável de CapiCoins. O saldo atual fica em User.capiCoins para
+# leitura rápida; cada alteração deve gerar uma linha nesta tabela na mesma
+# transação.
+type CapiCoinTransaction
+  @table(
+    name: "capi_coin_transactions"
+    singular: "capiCoinTransaction"
+    plural: "capiCoinTransactions"
+  )
+  @index(fields: ["userUid", "createdAt"], order: [ASC, DESC]) {
+  user: User! @ref(fields: "userUid", references: "uid")
+  userUid: String!
+    @col(name: "user_uid", dataType: "varchar(128)")
+  amount: Int!
+  transactionType: CapiCoinTransactionType!
+    @col(name: "transaction_type")
+  reason: String! @col(dataType: "varchar(160)")
+  sourceId: String @col(name: "source_id", dataType: "varchar(128)")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+}
