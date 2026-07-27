@@ -13,7 +13,7 @@ O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) foca
 * **Trilhas Pedagógicas:** Aprenda sobre tributos e controle de gastos em missões curtas e interativas.
 * **Sistema de Recompensas:** Ganhe moedas (XP) ao desvendar impostos ocultos em cupons fiscais.
 * **Impacto Social Visível:** Mecânica que mostra o dinheiro dos impostos virtuais sendo convertido em infraestrutura de saúde e educação.
-* **Autenticação Segura:** Sistema de login e cadastro integrado com Supabase.
+* **Autenticação Segura:** Acesso exclusivo com conta Google pelo Firebase Auth.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -21,8 +21,42 @@ O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) foca
 * React (Vite)
 * Tailwind CSS
 * React Router DOM
+* Firebase Authentication
 
 **Back-end & Banco de Dados:**
 * Node.js com Express
-* Supabase (PostgreSQL & Auth)
+* Firebase SQL Connect (PostgreSQL, em migração)
 * CORS & Dotenv
+
+## 🔐 Configuração do Firebase Auth
+
+O aplicativo Web `Money Rank Web` está registrado no projeto Firebase
+`money-rank`. Para executar o login localmente:
+
+1. Acesse o [Firebase Console do projeto Money Rank](https://console.firebase.google.com/project/money-rank/authentication/providers).
+2. Abra **Authentication > Sign-in method**.
+3. Ative o provedor **Google**.
+4. Selecione o e-mail de suporte do projeto e salve.
+5. Em **Authentication > Settings > Authorized domains**, confirme que
+   `localhost` está autorizado.
+6. No terminal, execute:
+
+   ```powershell
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+O frontend usa a API modular do Firebase e observa a sessão pelo
+`onAuthStateChanged`. Nenhuma senha do Google é recebida ou armazenada pelo
+Money Rank.
+
+### Teste local do login
+
+1. Acesse `http://localhost:5173/login`.
+2. Clique em **Continuar com o Google** e selecione uma conta.
+3. Confirme o redirecionamento para `/student`.
+4. Recarregue a página e confirme que a sessão continua ativa.
+5. Clique em **Sair** e confirme o retorno para `/login`.
+6. Sem uma sessão ativa, acesse `/student` diretamente e confirme o
+   redirecionamento para `/login`.

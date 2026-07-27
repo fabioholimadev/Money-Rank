@@ -28,9 +28,13 @@ export default function TopBar() {
 
   if (!aluno) return null;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Não foi possível encerrar a sessão:', error);
+    }
   };
 
   return (
