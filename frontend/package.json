@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@money-rank/dataconnect": "file:src/lib/dataconnect-sdk",
     "@mui/icons-material": "^9.1.0",
     "@mui/material": "^9.1.0",
     "@supabase/supabase-js": "^2.106.0",

@@ -150,3 +150,62 @@ O deploy não faz parte do teste local. Antes de executar
 `firebase deploy --only dataconnect`, é necessário ativar a API SQL Connect,
 confirmar o plano de faturamento e revisar a criação do Cloud SQL
 `money-rank-sql`.
+
+### SDK Web gerado
+
+O conector gera um SDK JavaScript tipado em
+`frontend/src/lib/dataconnect-sdk`. O frontend instala esse diretório como uma
+dependência local chamada `@money-rank/dataconnect`, evitando operações
+GraphQL escritas manualmente nos componentes React.
+
+A integração está separada em três camadas:
+
+- `dataConnectClient.js`: inicializa o cliente e conecta o emulador quando
+  solicitado.
+- `profileDataMapper.js`: converte `3º DSA`, `3º DSB` e as Capis para os enums
+  relacionais.
+- `studentDataService.js`: executa perfil, progresso e histórico usando apenas
+  as operações autorizadas do SDK.
+
+O `AuthContext` usa o PostgreSQL como fonte do perfil quando o SQL Connect está
+ativado. Se ele estiver desativado ou indisponível durante a leitura, o perfil
+local continua funcionando como contingência. Uma falha durante a gravação é
+informada ao aluno para evitar que a interface confirme dados que não chegaram
+ao banco.
+
+Fotos enviadas pelo aluno ainda são URLs `data:image` locais e não são gravadas
+no PostgreSQL. Nome, turma e conclusão do perfil são sincronizados; o arquivo
+continuará no navegador até a implementação do Firebase Storage.
+
+#### Variáveis do frontend
+
+Copie `frontend/.env.example` para `frontend/.env.local` somente quando quiser
+ativar o SQL Connect:
+
+```dotenv
+VITE_DATA_CONNECT_ENABLED=false
+VITE_USE_DATA_CONNECT_EMULATOR=true
+VITE_DATA_CONNECT_EMULATOR_HOST=127.0.0.1
+VITE_DATA_CONNECT_EMULATOR_PORT=9399
+```
+
+`VITE_DATA_CONNECT_ENABLED` deve permanecer `false` enquanto o serviço de
+produção não estiver implantado. No modo de desenvolvimento,
+`VITE_USE_DATA_CONNECT_EMULATOR=true` já ativa o cliente local.
+
+Sempre que um arquivo `.gql` for alterado, valide o conector para regenerar o
+SDK e reinstale a dependência local:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\test-dataconnect.ps1
+cd frontend
+npm install ./src/lib/dataconnect-sdk
+```
+
+Os mapeamentos entre a interface e os enums relacionais podem ser verificados
+separadamente:
+
+```powershell
+cd frontend
+npm run test:dataconnect-mappers
+```

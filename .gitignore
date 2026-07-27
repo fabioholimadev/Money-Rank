@@ -5,6 +5,8 @@ backend/node_modules/
 
 # Arquivos de ambiente (Senhas)
 .env
+.env.local
+.env.*.local
 backend/.env
 frontend/.env
 

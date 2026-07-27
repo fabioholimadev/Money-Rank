@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -21,6 +22,11 @@ import {
   isValidAvatarId,
   isValidClassName,
 } from '../constants/profileOptions';
+import { isDataConnectEnabled } from '../lib/dataConnectClient';
+import {
+  fetchMyStudentProfile,
+  syncStudentProfile,
+} from '../services/studentDataService';
 
 const AuthContext = createContext(null);
 
@@ -118,45 +124,74 @@ function writeStoredProfile(uid, profile) {
   }
 }
 
-/**
- * Converte o usuário do Firebase em um snapshot compatível com os componentes
- * atuais. Os dados relacionais definitivos serão conectados ao SQL Connect nas
- * Tasks 2.1 e 2.2.
- */
-function createStudentSnapshot(firebaseUser, currentStudent = null) {
+function createStudentSnapshot(
+  firebaseUser,
+  currentStudent = null,
+  remoteProfile = null,
+) {
   const matchingStudent =
     currentStudent?.id === firebaseUser.uid ? currentStudent : null;
   const storedProfile = readStoredProfile(firebaseUser.uid);
+  const hasRemoteProfile = Boolean(remoteProfile);
+  const remoteAvatarId = isValidAvatarId(remoteProfile?.avatar_id)
+    ? remoteProfile.avatar_id
+    : null;
+  const remoteAvatarUrl = normalizeProfilePhotoUrl(
+    remoteProfile?.avatar_url,
+  );
+  const storedLocalPhoto = storedProfile?.avatar_url?.startsWith('data:image/')
+    ? storedProfile.avatar_url
+    : null;
+
+  const avatarId = hasRemoteProfile
+    ? remoteAvatarId
+    : storedProfile?.avatar_id || matchingStudent?.avatar_id || null;
+  const avatarUrl = avatarId
+    ? null
+    : remoteAvatarUrl ||
+      (hasRemoteProfile ? storedLocalPhoto : storedProfile?.avatar_url) ||
+      matchingStudent?.avatar_url ||
+      firebaseUser.photoURL ||
+      null;
 
   return {
     ...matchingStudent,
+    ...remoteProfile,
     id: firebaseUser.uid,
     nome:
+      remoteProfile?.nome ||
       storedProfile?.nome ||
       matchingStudent?.nome ||
       firebaseUser.displayName ||
       'Estudante',
     email: firebaseUser.email || '',
-    avatar_url:
-      storedProfile?.avatar_url ||
-      matchingStudent?.avatar_url ||
-      firebaseUser.photoURL ||
-      null,
-    avatar_id:
-      storedProfile?.avatar_id || matchingStudent?.avatar_id || null,
-    turma: storedProfile?.turma || matchingStudent?.turma || '',
-    capicoins: matchingStudent?.capicoins ?? 0,
-    fase_atual: matchingStudent?.fase_atual ?? 1,
-    streak_atual: matchingStudent?.streak_atual ?? 0,
-    is_admin: matchingStudent?.is_admin ?? false,
+    avatar_url: avatarUrl,
+    avatar_id: avatarId,
+    turma:
+      remoteProfile?.turma ||
+      storedProfile?.turma ||
+      matchingStudent?.turma ||
+      '',
+    capicoins:
+      remoteProfile?.capicoins ?? matchingStudent?.capicoins ?? 0,
+    fase_atual:
+      remoteProfile?.fase_atual ?? matchingStudent?.fase_atual ?? 1,
+    streak_atual:
+      remoteProfile?.streak_atual ?? matchingStudent?.streak_atual ?? 0,
+    is_admin:
+      remoteProfile?.is_admin ?? matchingStudent?.is_admin ?? false,
     created_at:
+      remoteProfile?.created_at ||
       matchingStudent?.created_at ||
       firebaseUser.metadata.creationTime ||
       null,
-    profile_complete:
-      storedProfile?.profile_complete ??
-      matchingStudent?.profile_complete ??
-      false,
+    updated_at:
+      remoteProfile?.updated_at || matchingStudent?.updated_at || null,
+    profile_complete: hasRemoteProfile
+      ? remoteProfile.profile_complete === true
+      : (storedProfile?.profile_complete ??
+        matchingStudent?.profile_complete ??
+        false),
   };
 }
 
@@ -165,31 +200,112 @@ export function AuthProvider({ children }) {
   const [aluno, setAluno] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [profileSyncError, setProfileSyncError] = useState(null);
+  const alunoRef = useRef(null);
 
   useEffect(() => {
     LEGACY_SESSION_KEYS.forEach((key) => localStorage.removeItem(key));
+    let isObserverActive = true;
+    let observerRevision = 0;
 
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => {
+        const currentRevision = ++observerRevision;
         setUser(firebaseUser);
-        setAluno((currentStudent) =>
-          firebaseUser
-            ? createStudentSnapshot(firebaseUser, currentStudent)
-            : null,
-        );
         setAuthError(null);
-        setLoading(false);
+        setProfileSyncError(null);
+
+        if (!firebaseUser) {
+          alunoRef.current = null;
+          setAluno(null);
+          setLoading(false);
+          return;
+        }
+
+        const localSnapshot = createStudentSnapshot(
+          firebaseUser,
+          alunoRef.current,
+        );
+        alunoRef.current = localSnapshot;
+        setAluno(localSnapshot);
+
+        if (!isDataConnectEnabled) {
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+
+        async function loadRelationalProfile() {
+          let remoteProfile = await fetchMyStudentProfile();
+
+          // Migra automaticamente um perfil completo da Task 1.3.
+          if (!remoteProfile && localSnapshot.profile_complete) {
+            remoteProfile = await syncStudentProfile(localSnapshot);
+          }
+
+          if (
+            !isObserverActive ||
+            currentRevision !== observerRevision ||
+            auth.currentUser?.uid !== firebaseUser.uid
+          ) {
+            return;
+          }
+
+          const synchronizedSnapshot = remoteProfile
+            ? createStudentSnapshot(
+                firebaseUser,
+                localSnapshot,
+                remoteProfile,
+              )
+            : localSnapshot;
+
+          alunoRef.current = synchronizedSnapshot;
+          setAluno(synchronizedSnapshot);
+        }
+
+        loadRelationalProfile()
+          .catch((error) => {
+            if (
+              !isObserverActive ||
+              currentRevision !== observerRevision
+            ) {
+              return;
+            }
+
+            console.warn(
+              'Não foi possível carregar o perfil no SQL Connect.',
+              error,
+            );
+            setProfileSyncError(
+              'O perfil relacional está temporariamente indisponível. Os dados locais foram mantidos.',
+            );
+          })
+          .finally(() => {
+            if (
+              isObserverActive &&
+              currentRevision === observerRevision
+            ) {
+              setLoading(false);
+            }
+          });
       },
       (error) => {
+        observerRevision += 1;
         setUser(null);
+        alunoRef.current = null;
         setAluno(null);
         setAuthError(error);
+        setProfileSyncError(null);
         setLoading(false);
       },
     );
 
-    return unsubscribe;
+    return () => {
+      isObserverActive = false;
+      unsubscribe();
+    };
   }, []);
 
   const loginWithGoogle = useCallback(async () => {
@@ -228,11 +344,46 @@ export function AuthProvider({ children }) {
       }
 
       // O Firebase Auth armazena somente os campos básicos da identidade.
-      // Turma e avatar migram para o SQL Connect nas Tasks 2.1 e 2.2.
       await updateProfile(firebaseUser, { displayName: nome });
 
+      const localCandidate = {
+        ...createStudentSnapshot(firebaseUser, alunoRef.current),
+        nome,
+        turma,
+        avatar_id: avatarId,
+        avatar_url: avatarUrl,
+        profile_complete: true,
+      };
+
+      let remoteProfile = null;
+
+      if (isDataConnectEnabled) {
+        try {
+          remoteProfile = await syncStudentProfile(localCandidate);
+          setProfileSyncError(null);
+        } catch (error) {
+          console.warn(
+            'Não foi possível salvar o perfil no SQL Connect.',
+            error,
+          );
+          setProfileSyncError(
+            'Não foi possível sincronizar o perfil com o banco de dados.',
+          );
+          throw new Error(
+            'Não foi possível sincronizar o perfil. Confirme se o emulador SQL Connect está ativo e tente novamente.',
+            { cause: error },
+          );
+        }
+      }
+
       const completedProfile = {
-        ...createStudentSnapshot(firebaseUser, aluno),
+        ...(remoteProfile
+          ? createStudentSnapshot(
+              firebaseUser,
+              localCandidate,
+              remoteProfile,
+            )
+          : localCandidate),
         nome,
         turma,
         avatar_id: avatarId,
@@ -241,17 +392,22 @@ export function AuthProvider({ children }) {
       };
 
       writeStoredProfile(firebaseUser.uid, completedProfile);
+      alunoRef.current = completedProfile;
       setAluno(completedProfile);
 
       return completedProfile;
     },
-    [aluno],
+    [],
   );
 
   const updateAluno = useCallback((data) => {
-    setAluno((currentStudent) =>
-      currentStudent ? { ...currentStudent, ...data } : currentStudent,
-    );
+    setAluno((currentStudent) => {
+      const updatedStudent = currentStudent
+        ? { ...currentStudent, ...data }
+        : currentStudent;
+      alunoRef.current = updatedStudent;
+      return updatedStudent;
+    });
   }, []);
 
   const value = useMemo(
@@ -260,6 +416,8 @@ export function AuthProvider({ children }) {
       aluno,
       loading,
       authError,
+      profileSyncError,
+      dataConnectEnabled: isDataConnectEnabled,
       loginWithGoogle,
       logout,
       saveProfile,
@@ -270,6 +428,7 @@ export function AuthProvider({ children }) {
       aluno,
       loading,
       authError,
+      profileSyncError,
       loginWithGoogle,
       logout,
       saveProfile,
