@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, getMyProfile, listMyProgress, listMyCapiCoinTransactions } from '@money-rank/dataconnect';
+import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, initializeMyTrail, completeMyIntroduction, completeMyCurrentPhaseContent, registerMyCurrentPhaseAttempt, completeMyCurrentPhase } from '@money-rank/dataconnect';
 
 
 // Operation UpsertMyProfileWithAvatar:  For variables, look at type UpsertMyProfileWithAvatarVars in ../index.d.ts
@@ -32,14 +32,20 @@ const { data } = await UpsertStudentProgress(dataConnect, upsertStudentProgressV
 // Operation ApplyCapiCoinTransaction:  For variables, look at type ApplyCapiCoinTransactionVars in ../index.d.ts
 const { data } = await ApplyCapiCoinTransaction(dataConnect, applyCapiCoinTransactionVars);
 
-// Operation GetMyProfile: 
-const { data } = await GetMyProfile(dataConnect);
+// Operation InitializeMyTrail: 
+const { data } = await InitializeMyTrail(dataConnect);
 
-// Operation ListMyProgress: 
-const { data } = await ListMyProgress(dataConnect);
+// Operation CompleteMyIntroduction: 
+const { data } = await CompleteMyIntroduction(dataConnect);
 
-// Operation ListMyCapiCoinTransactions:  For variables, look at type ListMyCapiCoinTransactionsVars in ../index.d.ts
-const { data } = await ListMyCapiCoinTransactions(dataConnect, listMyCapiCoinTransactionsVars);
+// Operation CompleteMyCurrentPhaseContent:  For variables, look at type CompleteMyCurrentPhaseContentVars in ../index.d.ts
+const { data } = await CompleteMyCurrentPhaseContent(dataConnect, completeMyCurrentPhaseContentVars);
+
+// Operation RegisterMyCurrentPhaseAttempt:  For variables, look at type RegisterMyCurrentPhaseAttemptVars in ../index.d.ts
+const { data } = await RegisterMyCurrentPhaseAttempt(dataConnect, registerMyCurrentPhaseAttemptVars);
+
+// Operation CompleteMyCurrentPhase:  For variables, look at type CompleteMyCurrentPhaseVars in ../index.d.ts
+const { data } = await CompleteMyCurrentPhase(dataConnect, completeMyCurrentPhaseVars);
 
 
 ```

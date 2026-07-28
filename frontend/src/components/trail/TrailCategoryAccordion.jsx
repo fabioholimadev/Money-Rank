@@ -1,22 +1,42 @@
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import TrailModuleCard from './TrailModuleCard';
+import {
+  getPhaseProgress,
+  isActivityUnlocked,
+  isPhaseCompleted,
+  isPhaseUnlocked,
+} from '../../lib/trailProgress';
 
-function calculateCategoryProgress(modules, currentPhase) {
-  if (modules.length === 0) {
+function calculateCategoryProgress(
+  modules,
+  currentPhase,
+  progressEntries,
+) {
+  const interactiveModules = modules.filter(
+    ({ contentOnly }) => !contentOnly,
+  );
+
+  if (interactiveModules.length === 0) {
     return {
       completedModules: 0,
       percentage: 0,
+      totalModules: 0,
     };
   }
 
-  const completedModules = modules.filter(
-    ({ fase }) => fase < currentPhase,
+  const completedModules = interactiveModules.filter((module) =>
+    isPhaseCompleted(
+      module.fase,
+      currentPhase,
+      getPhaseProgress(progressEntries, module.fase),
+    ),
   ).length;
 
   return {
     completedModules,
+    totalModules: interactiveModules.length,
     percentage: Math.round(
-      (completedModules / modules.length) * 100,
+      (completedModules / interactiveModules.length) * 100,
     ),
   };
 }
@@ -24,20 +44,22 @@ function calculateCategoryProgress(modules, currentPhase) {
 export default function TrailCategoryAccordion({
   category,
   currentPhase,
+  progressEntries,
   isOpen,
   onToggle,
   onNavigate,
 }) {
   const Icone = category.Icone;
-  const { completedModules, percentage } = calculateCategoryProgress(
-    category.modulos,
-    currentPhase,
-  );
+  const { completedModules, percentage, totalModules } =
+    calculateCategoryProgress(
+      category.modulos,
+      currentPhase,
+      progressEntries,
+    );
   const contentId = `trail-category-${category.id}`;
   const triggerId = `${contentId}-trigger`;
   const categoryCompleted =
-    completedModules === category.modulos.length &&
-    category.modulos.length > 0;
+    completedModules === totalModules && totalModules > 0;
 
   return (
     <section
@@ -119,7 +141,7 @@ export default function TrailCategoryAccordion({
           <span className="whitespace-nowrap text-xs font-semibold text-slate-400">
             {categoryCompleted
               ? 'Concluída'
-              : `${completedModules}/${category.modulos.length} fases`}
+              : `${completedModules}/${totalModules} fases`}
           </span>
         </span>
 
@@ -142,16 +164,38 @@ export default function TrailCategoryAccordion({
             />
 
             <div className="relative z-10 flex w-full flex-col items-center gap-6">
-              {category.modulos.map((modulo, index) => (
-                <TrailModuleCard
-                  key={modulo.id}
-                  modulo={modulo}
-                  indice={index}
-                  liberado={modulo.fase <= currentPhase}
-                  concluido={modulo.fase < currentPhase}
-                  onNavigate={onNavigate}
-                />
-              ))}
+              {category.modulos.map((modulo, index) => {
+                const phaseProgress = getPhaseProgress(
+                  progressEntries,
+                  modulo.fase,
+                );
+                const liberado = modulo.contentOnly
+                  ? currentPhase >= 0
+                  : isPhaseUnlocked(modulo.fase, currentPhase);
+                const concluido = modulo.contentOnly
+                  ? currentPhase > 0
+                  : isPhaseCompleted(
+                      modulo.fase,
+                      currentPhase,
+                      phaseProgress,
+                    );
+
+                return (
+                  <TrailModuleCard
+                    key={modulo.id}
+                    modulo={modulo}
+                    indice={index}
+                    liberado={liberado}
+                    concluido={concluido}
+                    atividadeLiberada={isActivityUnlocked(
+                      modulo.fase,
+                      currentPhase,
+                      phaseProgress,
+                    )}
+                    onNavigate={onNavigate}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

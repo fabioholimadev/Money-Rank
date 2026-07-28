@@ -29,6 +29,7 @@ enum ProgressStatus {
 }
 
 enum CapiCoinTransactionType {
+  CONTENT_REWARD
   ACTIVITY_REWARD
   STREAK_BONUS
   PURCHASE
@@ -58,8 +59,14 @@ type User
     @col(name: "profile_completed")
     @default(value: false)
   capiCoins: Int! @col(name: "capi_coins") @default(value: 0)
-  currentPhase: Int! @col(name: "current_phase") @default(value: 1)
+  # Todo aluno começa no Passo 0. A Fase 1 só é liberada depois da
+  # conclusão da introdução.
+  currentPhase: Int! @col(name: "current_phase") @default(value: 0)
   currentStreak: Int! @col(name: "current_streak") @default(value: 0)
+  # Data da última atividade que contou para a sequência diária. Usamos Date
+  # em vez de Timestamp para impedir que duas atividades no mesmo dia
+  # aumentem o streak mais de uma vez.
+  lastStreakDate: Date @col(name: "last_streak_date")
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")

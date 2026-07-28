@@ -95,8 +95,8 @@ export default function TopBar() {
             <Star sx={{ fontSize: 11 }} className="text-emerald-400" />
             <span className="text-[10px] sm:text-[11px] font-bold text-emerald-400 leading-none tabular-nums">
               {/* Mobile: "F3" | Tablet+: "Fase 3" */}
-              <span className="sm:hidden">F{aluno.fase_atual ?? 1}</span>
-              <span className="hidden sm:inline">Fase {aluno.fase_atual ?? 1}</span>
+              <span className="sm:hidden">F{aluno.fase_atual ?? 0}</span>
+              <span className="hidden sm:inline">Fase {aluno.fase_atual ?? 0}</span>
             </span>
           </div>
 

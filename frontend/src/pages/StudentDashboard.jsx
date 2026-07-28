@@ -17,7 +17,7 @@ export default function StudentDashboard() {
   const stats = {
     nome: aluno?.nome || '',
     capicoins: aluno?.capicoins || 0,
-    fase_atual: aluno?.fase_atual || 1,
+    fase_atual: aluno?.fase_atual ?? 0,
     streak_atual: aluno?.streak_atual || 0,
     avatar_url: aluno?.avatar_url || null,
     avatar_id: aluno?.avatar_id || null,
@@ -72,7 +72,7 @@ export default function StudentDashboard() {
       titulo: 'Streak — Dias Seguidos',
       corTitulo: 'text-red-400',
       texto:
-        'Entre no sistema todos os dias para aumentar seu Streak. Sequências altas multiplicam os CapiCoins que você ganha nas missões — não quebre a corrente!',
+        'Conclua ao menos uma atividade por dia para aumentar seu Streak. Mais de uma atividade no mesmo dia mantém a sequência sem inflar o contador.',
     },
     {
       icone: <EmojiEvents sx={{ fontSize: 28 }} />,

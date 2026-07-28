@@ -3,18 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import TrailCategoryAccordion from '../../components/trail/TrailCategoryAccordion';
 import { useAuth } from '../../contexts/AuthContext';
 import { TRAIL_CATEGORIES } from '../../data/trailCategories';
-
-function normalizeCurrentPhase(value) {
-  const currentPhase = Number(value);
-
-  return Number.isInteger(currentPhase) && currentPhase > 0
-    ? currentPhase
-    : 1;
-}
+import { normalizeCurrentPhase } from '../../lib/trailProgress';
 
 export default function TrilhaHub() {
   const navigate = useNavigate();
-  const { aluno } = useAuth();
+  const { aluno, trailProgress } = useAuth();
   const [openCategoryId, setOpenCategoryId] = useState(null);
   const currentPhase = normalizeCurrentPhase(aluno?.fase_atual);
 
@@ -45,6 +38,7 @@ export default function TrilhaHub() {
             key={category.id}
             category={category}
             currentPhase={currentPhase}
+            progressEntries={trailProgress}
             isOpen={openCategoryId === category.id}
             onToggle={() => toggleCategory(category.id)}
             onNavigate={navigate}

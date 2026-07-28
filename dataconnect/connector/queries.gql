@@ -12,6 +12,7 @@ query GetMyProfile @auth(level: USER_EMAIL_VERIFIED) {
     capiCoins
     currentPhase
     currentStreak
+    lastStreakDate
     createdAt
     updatedAt
   }

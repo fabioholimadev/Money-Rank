@@ -114,3 +114,286 @@ mutation ApplyCapiCoinTransaction(
     }
   )
 }
+
+# Migração segura para perfis criados antes do Passo 0. Somente alunos que
+# ainda não possuem nenhum progresso podem voltar de 1 para 0.
+mutation InitializeMyTrail @auth(level: USER_EMAIL_VERIFIED) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE users AS u
+      SET
+        current_phase = 0,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        u.firebase_uid = $1
+        AND u.current_phase = 1
+        AND NOT EXISTS (
+          SELECT 1
+          FROM student_progress AS sp
+          WHERE sp.user_uid = u.firebase_uid
+        )
+    """
+    params: [{ _expr: "auth.uid" }]
+  )
+}
+
+# O Passo 0 é concluído uma única vez. A mesma instrução SQL registra o
+# progresso, libera a Fase 1, credita a recompensa de conteúdo e cria o
+# lançamento no livro-caixa.
+mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
+  affectedRows: _execute(
+    sql: """
+      WITH advanced_user AS (
+        UPDATE users AS u
+        SET
+          current_phase = 1,
+          capi_coins = u.capi_coins + 20,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          u.firebase_uid = $1
+          AND u.current_phase = 0
+        RETURNING u.firebase_uid
+      ),
+      completed_progress AS (
+        INSERT INTO student_progress (
+          user_uid,
+          phase_number,
+          status,
+          score,
+          attempts,
+          correct_answers,
+          wrong_answers,
+          started_at,
+          completed_at,
+          updated_at
+        )
+        SELECT
+          advanced_user.firebase_uid,
+          0,
+          'COMPLETED',
+          100,
+          1,
+          1,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM advanced_user
+        ON CONFLICT (user_uid, phase_number) DO NOTHING
+        RETURNING user_uid
+      )
+      INSERT INTO capi_coin_transactions (
+        user_uid,
+        amount,
+        transaction_type,
+        reason,
+        source_id,
+        created_at
+      )
+      SELECT
+        completed_progress.user_uid,
+        20,
+        'CONTENT_REWARD',
+        'Conclusão do Passo 0',
+        'introduction-0',
+        CURRENT_TIMESTAMP
+      FROM completed_progress
+    """
+    params: [{ _expr: "auth.uid" }]
+  )
+}
+
+# Ao concluir o conteúdo da fase atual, cria o estado IN_PROGRESS e paga a
+# recompensa de conteúdo. O INSERT com conflito ignorado garante idempotência.
+mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  affectedRows: _execute(
+    sql: """
+      WITH started_progress AS (
+        INSERT INTO student_progress (
+          user_uid,
+          phase_number,
+          status,
+          score,
+          attempts,
+          correct_answers,
+          wrong_answers,
+          started_at,
+          updated_at
+        )
+        SELECT
+          u.firebase_uid,
+          $1,
+          'IN_PROGRESS',
+          0,
+          0,
+          0,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM users AS u
+        WHERE
+          u.firebase_uid = $2
+          AND u.current_phase = $1
+          AND $1 BETWEEN 1 AND 4
+        ON CONFLICT (user_uid, phase_number) DO UPDATE
+        SET
+          status = 'IN_PROGRESS',
+          started_at = COALESCE(
+            student_progress.started_at,
+            CURRENT_TIMESTAMP
+          ),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE student_progress.status = 'NOT_STARTED'
+        RETURNING user_uid
+      ),
+      credited_user AS (
+        UPDATE users AS u
+        SET
+          capi_coins = u.capi_coins + 20,
+          updated_at = CURRENT_TIMESTAMP
+        FROM started_progress
+        WHERE u.firebase_uid = started_progress.user_uid
+        RETURNING u.firebase_uid
+      )
+      INSERT INTO capi_coin_transactions (
+        user_uid,
+        amount,
+        transaction_type,
+        reason,
+        source_id,
+        created_at
+      )
+      SELECT
+        credited_user.firebase_uid,
+        20,
+        'CONTENT_REWARD',
+        CONCAT('Conteúdo da Fase ', $1::text),
+        CONCAT('phase-', $1::text, '-content'),
+        CURRENT_TIMESTAMP
+      FROM credited_user
+    """
+    params: [$phaseNumber, { _expr: "auth.uid" }]
+  )
+}
+
+# Registra uma tentativa que ainda não alcançou a pontuação mínima. Não libera
+# a próxima fase e não gera moedas.
+mutation RegisterMyCurrentPhaseAttempt(
+  $phaseNumber: Int!
+  $score: Int!
+  $correctAnswers: Int!
+  $wrongAnswers: Int!
+)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE student_progress AS sp
+      SET
+        score = GREATEST(sp.score, $2),
+        attempts = sp.attempts + 1,
+        correct_answers = GREATEST(sp.correct_answers, $3),
+        wrong_answers = sp.wrong_answers + $4,
+        updated_at = CURRENT_TIMESTAMP
+      FROM users AS u
+      WHERE
+        sp.user_uid = $5
+        AND sp.phase_number = $1
+        AND sp.status = 'IN_PROGRESS'
+        AND u.firebase_uid = sp.user_uid
+        AND u.current_phase = $1
+        AND $1 BETWEEN 1 AND 4
+        AND $2 BETWEEN 0 AND 59
+        AND $3 >= 0
+        AND $4 >= 0
+    """
+    params: [
+      $phaseNumber
+      $score
+      $correctAnswers
+      $wrongAnswers
+      { _expr: "auth.uid" }
+    ]
+  )
+}
+
+# Conclusão atômica e idempotente da atividade atual. A pontuação mínima é
+# validada na autorização; o SQL só aceita a fase corrente em IN_PROGRESS.
+# O streak usa CURRENT_DATE do servidor:
+# - mesma data: mantém o valor;
+# - dia imediatamente anterior: soma um;
+# - intervalo maior: reinicia em um.
+mutation CompleteMyCurrentPhase(
+  $phaseNumber: Int!
+  $score: Int!
+  $correctAnswers: Int!
+  $wrongAnswers: Int!
+)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  affectedRows: _execute(
+    sql: """
+      WITH completed_progress AS (
+        UPDATE student_progress AS sp
+        SET
+          status = 'COMPLETED',
+          score = GREATEST(sp.score, $2),
+          attempts = sp.attempts + 1,
+          correct_answers = GREATEST(sp.correct_answers, $3),
+          wrong_answers = sp.wrong_answers + $4,
+          completed_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        FROM users AS owner
+        WHERE
+          sp.user_uid = $5
+          AND sp.phase_number = $1
+          AND sp.status = 'IN_PROGRESS'
+          AND owner.firebase_uid = sp.user_uid
+          AND owner.current_phase = $1
+          AND $1 BETWEEN 1 AND 4
+          AND $2 BETWEEN 60 AND 100
+          AND $3 >= 1
+          AND $4 >= 0
+        RETURNING sp.user_uid
+      ),
+      rewarded_user AS (
+        UPDATE users AS u
+        SET
+          current_phase = LEAST(u.current_phase + 1, 4),
+          capi_coins = u.capi_coins + 100,
+          current_streak = CASE
+            WHEN u.last_streak_date = CURRENT_DATE THEN u.current_streak
+            WHEN u.last_streak_date = CURRENT_DATE - 1 THEN u.current_streak + 1
+            ELSE 1
+          END,
+          last_streak_date = CURRENT_DATE,
+          updated_at = CURRENT_TIMESTAMP
+        FROM completed_progress
+        WHERE u.firebase_uid = completed_progress.user_uid
+        RETURNING u.firebase_uid
+      )
+      INSERT INTO capi_coin_transactions (
+        user_uid,
+        amount,
+        transaction_type,
+        reason,
+        source_id,
+        created_at
+      )
+      SELECT
+        rewarded_user.firebase_uid,
+        100,
+        'ACTIVITY_REWARD',
+        CONCAT('Atividade da Fase ', $1::text),
+        CONCAT('phase-', $1::text, '-activity'),
+        CURRENT_TIMESTAMP
+      FROM rewarded_user
+    """
+    params: [
+      $phaseNumber
+      $score
+      $correctAnswers
+      $wrongAnswers
+      { _expr: "auth.uid" }
+    ]
+  )
+}

@@ -24,7 +24,9 @@ import {
 } from '../constants/profileOptions';
 import { isDataConnectEnabled } from '../lib/dataConnectClient';
 import {
+  fetchMyProgress,
   fetchMyStudentProfile,
+  initializeLegacyTrail,
   syncStudentProfile,
 } from '../services/studentDataService';
 
@@ -175,7 +177,7 @@ function createStudentSnapshot(
     capicoins:
       remoteProfile?.capicoins ?? matchingStudent?.capicoins ?? 0,
     fase_atual:
-      remoteProfile?.fase_atual ?? matchingStudent?.fase_atual ?? 1,
+      remoteProfile?.fase_atual ?? matchingStudent?.fase_atual ?? 0,
     streak_atual:
       remoteProfile?.streak_atual ?? matchingStudent?.streak_atual ?? 0,
     is_admin:
@@ -201,6 +203,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [profileSyncError, setProfileSyncError] = useState(null);
+  const [trailProgress, setTrailProgress] = useState([]);
+  const [trailLoading, setTrailLoading] = useState(false);
   const alunoRef = useRef(null);
 
   useEffect(() => {
@@ -219,6 +223,8 @@ export function AuthProvider({ children }) {
         if (!firebaseUser) {
           alunoRef.current = null;
           setAluno(null);
+          setTrailProgress([]);
+          setTrailLoading(false);
           setLoading(false);
           return;
         }
@@ -231,18 +237,49 @@ export function AuthProvider({ children }) {
         setAluno(localSnapshot);
 
         if (!isDataConnectEnabled) {
+          setTrailProgress([]);
           setLoading(false);
           return;
         }
 
         setLoading(true);
+        setTrailLoading(true);
 
         async function loadRelationalProfile() {
           let remoteProfile = await fetchMyStudentProfile();
+          let remoteProgress = [];
 
           // Migra automaticamente um perfil completo da Task 1.3.
           if (!remoteProfile && localSnapshot.profile_complete) {
             remoteProfile = await syncStudentProfile(localSnapshot);
+          }
+
+          if (remoteProfile) {
+            remoteProgress = await fetchMyProgress();
+
+            // Perfis anteriores à Task 3.2 começavam na Fase 1. Somente um
+            // perfil sem histórico pode ser reiniciado no Passo 0.
+            if (
+              remoteProfile.fase_atual === 1 &&
+              remoteProgress.length === 0
+            ) {
+              try {
+                const initialized = await initializeLegacyTrail();
+                if (initialized) {
+                  [remoteProfile, remoteProgress] = await Promise.all([
+                    fetchMyStudentProfile(),
+                    fetchMyProgress(),
+                  ]);
+                }
+              } catch (error) {
+                // A aplicação continua utilizável enquanto o novo conector
+                // ainda não foi implantado no ambiente remoto.
+                console.warn(
+                  'Não foi possível inicializar o Passo 0 no SQL Connect.',
+                  error,
+                );
+              }
+            }
           }
 
           if (
@@ -263,6 +300,7 @@ export function AuthProvider({ children }) {
 
           alunoRef.current = synchronizedSnapshot;
           setAluno(synchronizedSnapshot);
+          setTrailProgress(remoteProgress);
         }
 
         loadRelationalProfile()
@@ -281,6 +319,7 @@ export function AuthProvider({ children }) {
             setProfileSyncError(
               'O perfil relacional está temporariamente indisponível. Os dados locais foram mantidos.',
             );
+            setTrailProgress([]);
           })
           .finally(() => {
             if (
@@ -288,6 +327,7 @@ export function AuthProvider({ children }) {
               currentRevision === observerRevision
             ) {
               setLoading(false);
+              setTrailLoading(false);
             }
           });
       },
@@ -298,6 +338,8 @@ export function AuthProvider({ children }) {
         setAluno(null);
         setAuthError(error);
         setProfileSyncError(null);
+        setTrailProgress([]);
+        setTrailLoading(false);
         setLoading(false);
       },
     );
@@ -410,6 +452,54 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const refreshTrailState = useCallback(async () => {
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser || !isDataConnectEnabled) {
+      return {
+        profile: alunoRef.current,
+        progress: [],
+      };
+    }
+
+    setTrailLoading(true);
+
+    try {
+      const [remoteProfile, remoteProgress] = await Promise.all([
+        fetchMyStudentProfile(),
+        fetchMyProgress(),
+      ]);
+      const synchronizedSnapshot = remoteProfile
+        ? createStudentSnapshot(
+            firebaseUser,
+            alunoRef.current,
+            remoteProfile,
+          )
+        : alunoRef.current;
+
+      alunoRef.current = synchronizedSnapshot;
+      setAluno(synchronizedSnapshot);
+      setTrailProgress(remoteProgress);
+      setProfileSyncError(null);
+
+      return {
+        profile: synchronizedSnapshot,
+        progress: remoteProgress,
+      };
+    } catch (error) {
+      console.warn(
+        'Não foi possível atualizar o progresso no SQL Connect.',
+        error,
+      );
+      setProfileSyncError(
+        'Não foi possível atualizar o progresso no banco de dados.',
+      );
+      throw error;
+    } finally {
+      setTrailLoading(false);
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -417,11 +507,14 @@ export function AuthProvider({ children }) {
       loading,
       authError,
       profileSyncError,
+      trailProgress,
+      trailLoading,
       dataConnectEnabled: isDataConnectEnabled,
       loginWithGoogle,
       logout,
       saveProfile,
       updateAluno,
+      refreshTrailState,
     }),
     [
       user,
@@ -429,10 +522,13 @@ export function AuthProvider({ children }) {
       loading,
       authError,
       profileSyncError,
+      trailProgress,
+      trailLoading,
       loginWithGoogle,
       logout,
       saveProfile,
       updateAluno,
+      refreshTrailState,
     ],
   );
 

@@ -1,21 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowBack } from '@mui/icons-material';
+import PhaseContentLayout from '../../../../components/trail/PhaseContentLayout';
+import { HEALTH_CONSUMPTION_CONTENT } from '../../../../data/healthConsumptionContent';
 
-export default function Conteudo() {
-  const navigate = useNavigate();
-
+export default function ConteudoEngenhariaDesejo() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-2">Conteúdo - Engenharia do Desejo</h1>
-        <p className="text-gray-400 mb-8">Conteúdo em construção...</p>
-      </div>
-      <button 
-        onClick={() => navigate(-1)} 
-        className="mt-8 flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors"
-      >
-        <ArrowBack /> Voltar
-      </button>
-    </div>
+    <PhaseContentLayout
+      content={HEALTH_CONSUMPTION_CONTENT.engenhariaDesejo}
+    />
   );
 }

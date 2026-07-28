@@ -17,6 +17,11 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertMyProfileWithoutSyncedPhoto*](#upsertmyprofilewithoutsyncedphoto)
   - [*UpsertStudentProgress*](#upsertstudentprogress)
   - [*ApplyCapiCoinTransaction*](#applycapicointransaction)
+  - [*InitializeMyTrail*](#initializemytrail)
+  - [*CompleteMyIntroduction*](#completemyintroduction)
+  - [*CompleteMyCurrentPhaseContent*](#completemycurrentphasecontent)
+  - [*RegisterMyCurrentPhaseAttempt*](#registermycurrentphaseattempt)
+  - [*CompleteMyCurrentPhase*](#completemycurrentphase)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `money-rank-connector`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -112,6 +117,7 @@ export interface GetMyProfileData {
     capiCoins: number;
     currentPhase: number;
     currentStreak: number;
+    lastStreakDate?: DateString | null;
     createdAt: TimestampString;
     updatedAt: TimestampString;
   } & User_Key;
@@ -1002,6 +1008,533 @@ executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.user_update);
   console.log(data.capiCoinTransaction_insert);
+});
+```
+
+## InitializeMyTrail
+You can execute the `InitializeMyTrail` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+initializeMyTrail(): MutationPromise<InitializeMyTrailData, undefined>;
+
+interface InitializeMyTrailRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<InitializeMyTrailData, undefined>;
+}
+export const initializeMyTrailRef: InitializeMyTrailRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+initializeMyTrail(dc: DataConnect): MutationPromise<InitializeMyTrailData, undefined>;
+
+interface InitializeMyTrailRef {
+  ...
+  (dc: DataConnect): MutationRef<InitializeMyTrailData, undefined>;
+}
+export const initializeMyTrailRef: InitializeMyTrailRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the initializeMyTrailRef:
+```typescript
+const name = initializeMyTrailRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `InitializeMyTrail` mutation has no variables.
+### Return Type
+Recall that executing the `InitializeMyTrail` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `InitializeMyTrailData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface InitializeMyTrailData {
+  affectedRows?: number | null;
+}
+```
+### Using `InitializeMyTrail`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, initializeMyTrail } from '@money-rank/dataconnect';
+
+
+// Call the `initializeMyTrail()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await initializeMyTrail();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await initializeMyTrail(dataConnect);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+initializeMyTrail().then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `InitializeMyTrail`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, initializeMyTrailRef } from '@money-rank/dataconnect';
+
+
+// Call the `initializeMyTrailRef()` function to get a reference to the mutation.
+const ref = initializeMyTrailRef();
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = initializeMyTrailRef(dataConnect);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CompleteMyIntroduction
+You can execute the `CompleteMyIntroduction` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+completeMyIntroduction(): MutationPromise<CompleteMyIntroductionData, undefined>;
+
+interface CompleteMyIntroductionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<CompleteMyIntroductionData, undefined>;
+}
+export const completeMyIntroductionRef: CompleteMyIntroductionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+completeMyIntroduction(dc: DataConnect): MutationPromise<CompleteMyIntroductionData, undefined>;
+
+interface CompleteMyIntroductionRef {
+  ...
+  (dc: DataConnect): MutationRef<CompleteMyIntroductionData, undefined>;
+}
+export const completeMyIntroductionRef: CompleteMyIntroductionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the completeMyIntroductionRef:
+```typescript
+const name = completeMyIntroductionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CompleteMyIntroduction` mutation has no variables.
+### Return Type
+Recall that executing the `CompleteMyIntroduction` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CompleteMyIntroductionData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CompleteMyIntroductionData {
+  affectedRows?: number | null;
+}
+```
+### Using `CompleteMyIntroduction`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, completeMyIntroduction } from '@money-rank/dataconnect';
+
+
+// Call the `completeMyIntroduction()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await completeMyIntroduction();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await completeMyIntroduction(dataConnect);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+completeMyIntroduction().then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CompleteMyIntroduction`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, completeMyIntroductionRef } from '@money-rank/dataconnect';
+
+
+// Call the `completeMyIntroductionRef()` function to get a reference to the mutation.
+const ref = completeMyIntroductionRef();
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = completeMyIntroductionRef(dataConnect);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CompleteMyCurrentPhaseContent
+You can execute the `CompleteMyCurrentPhaseContent` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+completeMyCurrentPhaseContent(vars: CompleteMyCurrentPhaseContentVariables): MutationPromise<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+
+interface CompleteMyCurrentPhaseContentRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CompleteMyCurrentPhaseContentVariables): MutationRef<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+}
+export const completeMyCurrentPhaseContentRef: CompleteMyCurrentPhaseContentRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+completeMyCurrentPhaseContent(dc: DataConnect, vars: CompleteMyCurrentPhaseContentVariables): MutationPromise<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+
+interface CompleteMyCurrentPhaseContentRef {
+  ...
+  (dc: DataConnect, vars: CompleteMyCurrentPhaseContentVariables): MutationRef<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+}
+export const completeMyCurrentPhaseContentRef: CompleteMyCurrentPhaseContentRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the completeMyCurrentPhaseContentRef:
+```typescript
+const name = completeMyCurrentPhaseContentRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CompleteMyCurrentPhaseContent` mutation requires an argument of type `CompleteMyCurrentPhaseContentVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CompleteMyCurrentPhaseContentVariables {
+  phaseNumber: number;
+}
+```
+### Return Type
+Recall that executing the `CompleteMyCurrentPhaseContent` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CompleteMyCurrentPhaseContentData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CompleteMyCurrentPhaseContentData {
+  affectedRows?: number | null;
+}
+```
+### Using `CompleteMyCurrentPhaseContent`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, completeMyCurrentPhaseContent, CompleteMyCurrentPhaseContentVariables } from '@money-rank/dataconnect';
+
+// The `CompleteMyCurrentPhaseContent` mutation requires an argument of type `CompleteMyCurrentPhaseContentVariables`:
+const completeMyCurrentPhaseContentVars: CompleteMyCurrentPhaseContentVariables = {
+  phaseNumber: ..., 
+};
+
+// Call the `completeMyCurrentPhaseContent()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await completeMyCurrentPhaseContent(completeMyCurrentPhaseContentVars);
+// Variables can be defined inline as well.
+const { data } = await completeMyCurrentPhaseContent({ phaseNumber: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await completeMyCurrentPhaseContent(dataConnect, completeMyCurrentPhaseContentVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+completeMyCurrentPhaseContent(completeMyCurrentPhaseContentVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CompleteMyCurrentPhaseContent`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, completeMyCurrentPhaseContentRef, CompleteMyCurrentPhaseContentVariables } from '@money-rank/dataconnect';
+
+// The `CompleteMyCurrentPhaseContent` mutation requires an argument of type `CompleteMyCurrentPhaseContentVariables`:
+const completeMyCurrentPhaseContentVars: CompleteMyCurrentPhaseContentVariables = {
+  phaseNumber: ..., 
+};
+
+// Call the `completeMyCurrentPhaseContentRef()` function to get a reference to the mutation.
+const ref = completeMyCurrentPhaseContentRef(completeMyCurrentPhaseContentVars);
+// Variables can be defined inline as well.
+const ref = completeMyCurrentPhaseContentRef({ phaseNumber: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = completeMyCurrentPhaseContentRef(dataConnect, completeMyCurrentPhaseContentVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## RegisterMyCurrentPhaseAttempt
+You can execute the `RegisterMyCurrentPhaseAttempt` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+registerMyCurrentPhaseAttempt(vars: RegisterMyCurrentPhaseAttemptVariables): MutationPromise<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+
+interface RegisterMyCurrentPhaseAttemptRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RegisterMyCurrentPhaseAttemptVariables): MutationRef<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+}
+export const registerMyCurrentPhaseAttemptRef: RegisterMyCurrentPhaseAttemptRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+registerMyCurrentPhaseAttempt(dc: DataConnect, vars: RegisterMyCurrentPhaseAttemptVariables): MutationPromise<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+
+interface RegisterMyCurrentPhaseAttemptRef {
+  ...
+  (dc: DataConnect, vars: RegisterMyCurrentPhaseAttemptVariables): MutationRef<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+}
+export const registerMyCurrentPhaseAttemptRef: RegisterMyCurrentPhaseAttemptRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the registerMyCurrentPhaseAttemptRef:
+```typescript
+const name = registerMyCurrentPhaseAttemptRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RegisterMyCurrentPhaseAttemptVariables {
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+}
+```
+### Return Type
+Recall that executing the `RegisterMyCurrentPhaseAttempt` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RegisterMyCurrentPhaseAttemptData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RegisterMyCurrentPhaseAttemptData {
+  affectedRows?: number | null;
+}
+```
+### Using `RegisterMyCurrentPhaseAttempt`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, registerMyCurrentPhaseAttempt, RegisterMyCurrentPhaseAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
+const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `registerMyCurrentPhaseAttempt()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await registerMyCurrentPhaseAttempt(registerMyCurrentPhaseAttemptVars);
+// Variables can be defined inline as well.
+const { data } = await registerMyCurrentPhaseAttempt({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await registerMyCurrentPhaseAttempt(dataConnect, registerMyCurrentPhaseAttemptVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+registerMyCurrentPhaseAttempt(registerMyCurrentPhaseAttemptVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `RegisterMyCurrentPhaseAttempt`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, registerMyCurrentPhaseAttemptRef, RegisterMyCurrentPhaseAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
+const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `registerMyCurrentPhaseAttemptRef()` function to get a reference to the mutation.
+const ref = registerMyCurrentPhaseAttemptRef(registerMyCurrentPhaseAttemptVars);
+// Variables can be defined inline as well.
+const ref = registerMyCurrentPhaseAttemptRef({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = registerMyCurrentPhaseAttemptRef(dataConnect, registerMyCurrentPhaseAttemptVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CompleteMyCurrentPhase
+You can execute the `CompleteMyCurrentPhase` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+completeMyCurrentPhase(vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+
+interface CompleteMyCurrentPhaseRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CompleteMyCurrentPhaseVariables): MutationRef<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+}
+export const completeMyCurrentPhaseRef: CompleteMyCurrentPhaseRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+completeMyCurrentPhase(dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+
+interface CompleteMyCurrentPhaseRef {
+  ...
+  (dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationRef<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+}
+export const completeMyCurrentPhaseRef: CompleteMyCurrentPhaseRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the completeMyCurrentPhaseRef:
+```typescript
+const name = completeMyCurrentPhaseRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CompleteMyCurrentPhaseVariables {
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+}
+```
+### Return Type
+Recall that executing the `CompleteMyCurrentPhase` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CompleteMyCurrentPhaseData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CompleteMyCurrentPhaseData {
+  affectedRows?: number | null;
+}
+```
+### Using `CompleteMyCurrentPhase`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, completeMyCurrentPhase, CompleteMyCurrentPhaseVariables } from '@money-rank/dataconnect';
+
+// The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
+const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `completeMyCurrentPhase()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await completeMyCurrentPhase(completeMyCurrentPhaseVars);
+// Variables can be defined inline as well.
+const { data } = await completeMyCurrentPhase({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await completeMyCurrentPhase(dataConnect, completeMyCurrentPhaseVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+completeMyCurrentPhase(completeMyCurrentPhaseVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CompleteMyCurrentPhase`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, completeMyCurrentPhaseRef, CompleteMyCurrentPhaseVariables } from '@money-rank/dataconnect';
+
+// The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
+const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `completeMyCurrentPhaseRef()` function to get a reference to the mutation.
+const ref = completeMyCurrentPhaseRef(completeMyCurrentPhaseVars);
+// Variables can be defined inline as well.
+const ref = completeMyCurrentPhaseRef({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = completeMyCurrentPhaseRef(dataConnect, completeMyCurrentPhaseVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
 });
 ```
 

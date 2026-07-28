@@ -3,6 +3,7 @@ import AutoStories from '@mui/icons-material/AutoStories';
 import FactCheck from '@mui/icons-material/FactCheck';
 import Gavel from '@mui/icons-material/Gavel';
 import HealthAndSafety from '@mui/icons-material/HealthAndSafety';
+import PlayCircle from '@mui/icons-material/PlayCircle';
 import Quiz from '@mui/icons-material/Quiz';
 
 export const TRAIL_CATEGORIES = [
@@ -17,6 +18,21 @@ export const TRAIL_CATEGORIES = [
     corBorda: 'border-emerald-500/30',
     corSombra: 'shadow-emerald-500/10',
     modulos: [
+      {
+        id: 'introducao',
+        fase: 0,
+        etapaLabel: 'Passo 0',
+        titulo: 'Introdução',
+        descricao:
+          'Assista ao vídeo de abertura antes de começar as fases.',
+        IconeConteudo: PlayCircle,
+        rota: '/trilha/saude-consumo/introducao',
+        rotuloConteudo: 'Assistir introdução',
+        contentOnly: true,
+        cor: 'from-emerald-500 to-teal-500',
+        corSombra: 'shadow-emerald-500/20',
+        corBorda: 'border-emerald-500/30',
+      },
       {
         id: 'perigo-doce',
         fase: 1,

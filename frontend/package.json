@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs"
+    "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs",
+    "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

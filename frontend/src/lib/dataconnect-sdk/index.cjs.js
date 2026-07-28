@@ -1,6 +1,7 @@
 const { queryRef, executeQuery, validateArgsWithOptions, mutationRef, executeMutation, validateArgs } = require('firebase/data-connect');
 
 const CapiCoinTransactionType = {
+  CONTENT_REWARD: "CONTENT_REWARD",
   ACTIVITY_REWARD: "ACTIVITY_REWARD",
   STREAK_BONUS: "STREAK_BONUS",
   PURCHASE: "PURCHASE",
@@ -111,6 +112,76 @@ exports.applyCapiCoinTransactionRef = applyCapiCoinTransactionRef;
 exports.applyCapiCoinTransaction = function applyCapiCoinTransaction(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(applyCapiCoinTransactionRef(dcInstance, inputVars));
+}
+;
+
+const initializeMyTrailRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'InitializeMyTrail');
+}
+initializeMyTrailRef.operationName = 'InitializeMyTrail';
+exports.initializeMyTrailRef = initializeMyTrailRef;
+
+exports.initializeMyTrail = function initializeMyTrail(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(initializeMyTrailRef(dcInstance, inputVars));
+}
+;
+
+const completeMyIntroductionRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CompleteMyIntroduction');
+}
+completeMyIntroductionRef.operationName = 'CompleteMyIntroduction';
+exports.completeMyIntroductionRef = completeMyIntroductionRef;
+
+exports.completeMyIntroduction = function completeMyIntroduction(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(completeMyIntroductionRef(dcInstance, inputVars));
+}
+;
+
+const completeMyCurrentPhaseContentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CompleteMyCurrentPhaseContent', inputVars);
+}
+completeMyCurrentPhaseContentRef.operationName = 'CompleteMyCurrentPhaseContent';
+exports.completeMyCurrentPhaseContentRef = completeMyCurrentPhaseContentRef;
+
+exports.completeMyCurrentPhaseContent = function completeMyCurrentPhaseContent(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(completeMyCurrentPhaseContentRef(dcInstance, inputVars));
+}
+;
+
+const registerMyCurrentPhaseAttemptRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RegisterMyCurrentPhaseAttempt', inputVars);
+}
+registerMyCurrentPhaseAttemptRef.operationName = 'RegisterMyCurrentPhaseAttempt';
+exports.registerMyCurrentPhaseAttemptRef = registerMyCurrentPhaseAttemptRef;
+
+exports.registerMyCurrentPhaseAttempt = function registerMyCurrentPhaseAttempt(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(registerMyCurrentPhaseAttemptRef(dcInstance, inputVars));
+}
+;
+
+const completeMyCurrentPhaseRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CompleteMyCurrentPhase', inputVars);
+}
+completeMyCurrentPhaseRef.operationName = 'CompleteMyCurrentPhase';
+exports.completeMyCurrentPhaseRef = completeMyCurrentPhaseRef;
+
+exports.completeMyCurrentPhase = function completeMyCurrentPhase(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(completeMyCurrentPhaseRef(dcInstance, inputVars));
 }
 ;
 

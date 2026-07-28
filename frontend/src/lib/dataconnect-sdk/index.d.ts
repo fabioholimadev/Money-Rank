@@ -9,6 +9,7 @@ export type DateString = string;
 
 
 export enum CapiCoinTransactionType {
+  CONTENT_REWARD = "CONTENT_REWARD",
   ACTIVITY_REWARD = "ACTIVITY_REWARD",
   STREAK_BONUS = "STREAK_BONUS",
   PURCHASE = "PURCHASE",
@@ -60,6 +61,29 @@ export interface CapiCoinTransaction_Key {
   __typename?: 'CapiCoinTransaction_Key';
 }
 
+export interface CompleteMyCurrentPhaseContentData {
+  affectedRows?: number | null;
+}
+
+export interface CompleteMyCurrentPhaseContentVariables {
+  phaseNumber: number;
+}
+
+export interface CompleteMyCurrentPhaseData {
+  affectedRows?: number | null;
+}
+
+export interface CompleteMyCurrentPhaseVariables {
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+}
+
+export interface CompleteMyIntroductionData {
+  affectedRows?: number | null;
+}
+
 export interface GetMyProfileData {
   user?: {
     uid: string;
@@ -73,9 +97,14 @@ export interface GetMyProfileData {
     capiCoins: number;
     currentPhase: number;
     currentStreak: number;
+    lastStreakDate?: DateString | null;
     createdAt: TimestampString;
     updatedAt: TimestampString;
   } & User_Key;
+}
+
+export interface InitializeMyTrailData {
+  affectedRows?: number | null;
 }
 
 export interface ListMyCapiCoinTransactionsData {
@@ -105,6 +134,17 @@ export interface ListMyProgressData {
     completedAt?: TimestampString | null;
     updatedAt: TimestampString;
   })[];
+}
+
+export interface RegisterMyCurrentPhaseAttemptData {
+  affectedRows?: number | null;
+}
+
+export interface RegisterMyCurrentPhaseAttemptVariables {
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
 }
 
 export interface StudentProgress_Key {
@@ -222,6 +262,66 @@ export const applyCapiCoinTransactionRef: ApplyCapiCoinTransactionRef;
 
 export function applyCapiCoinTransaction(vars: ApplyCapiCoinTransactionVariables): MutationPromise<ApplyCapiCoinTransactionData, ApplyCapiCoinTransactionVariables>;
 export function applyCapiCoinTransaction(dc: DataConnect, vars: ApplyCapiCoinTransactionVariables): MutationPromise<ApplyCapiCoinTransactionData, ApplyCapiCoinTransactionVariables>;
+
+interface InitializeMyTrailRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<InitializeMyTrailData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): MutationRef<InitializeMyTrailData, undefined>;
+  operationName: string;
+}
+export const initializeMyTrailRef: InitializeMyTrailRef;
+
+export function initializeMyTrail(): MutationPromise<InitializeMyTrailData, undefined>;
+export function initializeMyTrail(dc: DataConnect): MutationPromise<InitializeMyTrailData, undefined>;
+
+interface CompleteMyIntroductionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<CompleteMyIntroductionData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): MutationRef<CompleteMyIntroductionData, undefined>;
+  operationName: string;
+}
+export const completeMyIntroductionRef: CompleteMyIntroductionRef;
+
+export function completeMyIntroduction(): MutationPromise<CompleteMyIntroductionData, undefined>;
+export function completeMyIntroduction(dc: DataConnect): MutationPromise<CompleteMyIntroductionData, undefined>;
+
+interface CompleteMyCurrentPhaseContentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CompleteMyCurrentPhaseContentVariables): MutationRef<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CompleteMyCurrentPhaseContentVariables): MutationRef<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+  operationName: string;
+}
+export const completeMyCurrentPhaseContentRef: CompleteMyCurrentPhaseContentRef;
+
+export function completeMyCurrentPhaseContent(vars: CompleteMyCurrentPhaseContentVariables): MutationPromise<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+export function completeMyCurrentPhaseContent(dc: DataConnect, vars: CompleteMyCurrentPhaseContentVariables): MutationPromise<CompleteMyCurrentPhaseContentData, CompleteMyCurrentPhaseContentVariables>;
+
+interface RegisterMyCurrentPhaseAttemptRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RegisterMyCurrentPhaseAttemptVariables): MutationRef<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RegisterMyCurrentPhaseAttemptVariables): MutationRef<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+  operationName: string;
+}
+export const registerMyCurrentPhaseAttemptRef: RegisterMyCurrentPhaseAttemptRef;
+
+export function registerMyCurrentPhaseAttempt(vars: RegisterMyCurrentPhaseAttemptVariables): MutationPromise<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+export function registerMyCurrentPhaseAttempt(dc: DataConnect, vars: RegisterMyCurrentPhaseAttemptVariables): MutationPromise<RegisterMyCurrentPhaseAttemptData, RegisterMyCurrentPhaseAttemptVariables>;
+
+interface CompleteMyCurrentPhaseRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CompleteMyCurrentPhaseVariables): MutationRef<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationRef<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+  operationName: string;
+}
+export const completeMyCurrentPhaseRef: CompleteMyCurrentPhaseRef;
+
+export function completeMyCurrentPhase(vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
+export function completeMyCurrentPhase(dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
 
 interface GetMyProfileRef {
   /* Allow users to create refs without passing in DataConnect */
