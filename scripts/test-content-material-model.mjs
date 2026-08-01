@@ -1,0 +1,69 @@
+import assert from 'node:assert/strict';
+import { HEALTH_CONSUMPTION_CONTENT } from '../frontend/src/data/healthConsumptionContent.js';
+import {
+  CONTENT_MATERIAL_TYPES,
+  getAvailableExtraMaterialIds,
+  getContentMaterialSlots,
+  hasCompletedContentVisits,
+  validatePhaseContent,
+} from '../frontend/src/lib/contentMaterialModel.js';
+
+const contents = Object.values(HEALTH_CONSUMPTION_CONTENT);
+const introduction = HEALTH_CONSUMPTION_CONTENT.introducao;
+const phases = contents.filter((content) => !content.introduction);
+
+for (const content of contents) {
+  const validation = validatePhaseContent(content);
+  assert.equal(
+    validation.valid,
+    true,
+    `${content.id}: ${validation.errors.join(' ')}`,
+  );
+}
+
+assert.deepEqual(
+  getContentMaterialSlots(introduction).map(({ id }) => id),
+  [CONTENT_MATERIAL_TYPES.VIDEO],
+  'O Passo 0 deve continuar exibindo somente o vídeo introdutório.',
+);
+assert.equal(
+  hasCompletedContentVisits(introduction, [CONTENT_MATERIAL_TYPES.VIDEO]),
+  true,
+  'O vídeo deve ser suficiente para concluir o Passo 0.',
+);
+
+for (const phase of phases) {
+  const slots = getContentMaterialSlots(phase);
+  const availableExtraIds = getAvailableExtraMaterialIds(phase);
+
+  assert.deepEqual(
+    slots.map(({ id }) => id),
+    [
+      CONTENT_MATERIAL_TYPES.VIDEO,
+      CONTENT_MATERIAL_TYPES.SLIDES,
+      CONTENT_MATERIAL_TYPES.SUMMARY,
+    ],
+    `${phase.id} deve reservar os três espaços de materiais.`,
+  );
+  assert.ok(
+    availableExtraIds.length >= 1,
+    `${phase.id} deve publicar slides ou resumo/documento.`,
+  );
+  assert.equal(
+    hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
+    false,
+    `${phase.id} não pode ser concluída somente com o vídeo.`,
+  );
+  assert.equal(
+    hasCompletedContentVisits(phase, [
+      CONTENT_MATERIAL_TYPES.VIDEO,
+      availableExtraIds[0],
+    ]),
+    true,
+    `${phase.id} deve aceitar vídeo mais um material extra.`,
+  );
+}
+
+console.log(
+  'Modelo de materiais validado: vídeo obrigatório, slots fixos e pelo menos um material extra por fase.',
+);
