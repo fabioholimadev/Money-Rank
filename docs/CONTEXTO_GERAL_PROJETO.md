@@ -13,9 +13,9 @@
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
 | Branch ativa | `feat/task-3-7-ilusao-dinheiro` |
-| Último commit concluído | `8b77215 feat: implementa estudo de caso O Custo do Vício` |
+| Último commit concluído | `597dfe3 chore: organiza repositorio e documentacao dos epicos` |
 | Task atual | Task 3.7 — A Ilusão do Dinheiro |
-| Estado da Task atual | Implementada e testada automaticamente; aguarda teste manual e commit |
+| Estado da Task atual | Implementada, testada e validada pelo usuário; aguarda commit |
 | Próxima Task prevista | Task 3.8 — A Engenharia do Desejo |
 
 ### Ação imediata para quem retomar
@@ -30,10 +30,10 @@
 2. Não descartar as alterações sem commit da Task 3.7.
 3. Não incluir `vite.config.js` nem os falsos apontamentos de modificação
    em `frontend/src/lib/dataconnect-sdk/` no próximo commit.
-4. Preservar a reorganização pendente descrita em
-   **Organização do repositório e da documentação**.
-5. Executar o teste manual descrito na seção **Task 3.7 em andamento**.
-6. Depois da aprovação do usuário, fazer os commits semânticos, merge
+4. Preservar a reorganização concluída no commit `597dfe3`.
+5. Criar o commit funcional da Task 3.7 e atualizar a documentação com o
+   hash final.
+6. Fazer merge
    fast-forward na branch-base e criar a branch da Task 3.8.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
@@ -415,7 +415,10 @@ de 2026-08-01, o bundle principal ficou em aproximadamente 912 kB minificado e
 266 kB gzip. Isso ainda precisa de code splitting antes ou durante a preparação
 para produção.
 
-### Teste manual pendente
+### Teste manual validado
+
+O usuário autorizou a continuidade e o commit em 2026-08-02 após o roteiro de
+validação local. Os caminhos de referência permanecem documentados abaixo.
 
 Caminho de reprovação:
 
@@ -445,22 +448,10 @@ Se a conta já concluiu a versão antiga da Fase 3, o banco considera a nova
 execução uma revisão e paga 20 CapiCoins-base. Para testar 100, usar uma conta
 nova ou reiniciar os dados locais do emulador de forma consciente.
 
-### Commits previstos depois da aprovação
+### Commit funcional previsto
 
-Primeiro, registrar a organização separadamente:
-
-```powershell
-git add -A -- .gitignore .kiro .vscode README.md frontend/README.md `
-  frontend/public/icons.svg frontend/src/assets/react.svg `
-  frontend/src/assets/vite.svg docs/README.md `
-  docs/CONTEXTO_GERAL_PROJETO.md docs/epic-1 docs/epic-2 `
-  docs/epic-3/README.md docs/epic-4 docs/epic-5
-
-git commit -m "chore: organiza repositorio e documentacao dos epicos"
-```
-
-Depois, atualizar este contexto com o hash do `chore` e registrar a
-implementação da Task 3.7:
+A organização foi registrada separadamente em `597dfe3`. O próximo commit
+registra somente a implementação da Task 3.7 e esta atualização de contexto:
 
 ```powershell
 git add -- docs/CONTEXTO_GERAL_PROJETO.md `
@@ -695,7 +686,7 @@ Executaria o checklist de produção:
 
 ## 16. Organização do repositório e da documentação
 
-Em 2026-08-02 foi preparada uma limpeza estrutural ainda sem commit:
+Em 2026-08-02 foi concluída uma limpeza estrutural no commit `597dfe3`:
 
 - removidas as configurações locais `.claude/`, `.kiro/` e `.vscode/`;
 - removidos `dataconnect-debug.log` e `pglite-debug.log`, que são artefatos
@@ -716,8 +707,8 @@ contra avanço duplicado, foi preservado em `docs/epic-3/README.md`, adaptado
 para fase 0, Firebase Auth e Capi Bank. As referências antigas a Supabase e fase
 inicial 1 não representam mais a arquitetura desejada.
 
-Esta organização deve entrar em um commit `chore` separado do commit funcional
-da Task 3.7. `vite.config.js` e falsos diffs do SDK continuam excluídos de ambos.
+A organização entrou em um commit `chore` separado do commit funcional da
+Task 3.7. `vite.config.js` e falsos diffs do SDK foram excluídos do commit.
 
 Validação executada em 2026-08-02:
 

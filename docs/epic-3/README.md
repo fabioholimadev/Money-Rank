@@ -15,7 +15,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.4 | Repeticoes, livro-caixa e streak competitivo | Concluída | `ae1f74a` |
 | 3.5 | O Perigo Doce com IA e fallback local | Concluída | `8ba9a35` |
 | 3.6 | O Custo do Vicio com personagens | Concluída | `8b77215` |
-| 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Em teste manual | a definir |
+| 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Validada; aguardando commit | a definir |
 | 3.8 | A Engenharia do Desejo | Planejada | - |
 
 ## Estrutura visual e progressão
@@ -78,9 +78,9 @@ Detalhes: [`custo-vicio-estudo-caso.md`](custo-vicio-estudo-caso.md).
 
 ### Fase 3 - A Ilusão do Dinheiro
 
-Alex toma seis decisões ramificadas. A historia separa créditos simulados das
-CapiCoins reais. A implementacao esta pronta, mas deve passar pelo teste manual
-antes do commit.
+Alex toma seis decisões ramificadas. A história separa créditos simulados das
+CapiCoins reais. A implementação e o roteiro manual foram validados; falta
+apenas registrar o commit funcional e seu hash.
 
 Detalhes e roteiro: [`ilusao-dinheiro-caminhos.md`](ilusao-dinheiro-caminhos.md).
 
