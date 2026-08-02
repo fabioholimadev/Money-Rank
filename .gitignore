@@ -15,6 +15,11 @@ npm-debug.log*
 .DS_Store
 dist/
 
+# Configurações locais de agentes e editores
+.claude/
+.kiro/
+.vscode/
+
 # Dados e artefatos locais do Firebase SQL Connect
 .dataconnect/
 firebase-debug.log*

@@ -2,6 +2,11 @@
 
 > Formando a próxima geração de jovens financeiramente livres.
 
+> Para retomar o desenvolvimento em outro Codex ou com outro desenvolvedor,
+> comece por [`docs/CONTEXTO_GERAL_PROJETO.md`](docs/CONTEXTO_GERAL_PROJETO.md).
+> O indice tecnico, o historico e o planejamento dos cinco Epicos ficam em
+> [`docs/README.md`](docs/README.md).
+
 O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) focada em ensinar Educação Financeira e Fiscal para a Geração Z. O projeto visa combater a "ilusão fiscal" brasileira, ensinando de forma prática e visual como os impostos sobre o consumo (ICMS, IBS, CBS) impactam o dia a dia e financiam serviços essenciais como o SUS e a educação.
 
 ## 🎯 O Problema que Resolvemos
@@ -224,3 +229,7 @@ A documentação pedagógica e técnica das atividades fica em `docs/epic-3`.
 O estudo de caso **O Custo do Vício** possui três personagens, cinco decisões
 sem alternativa errada e repetição competitiva registrada pelo SQL Connect.
 Consulte [`docs/epic-3/custo-vicio-estudo-caso.md`](docs/epic-3/custo-vicio-estudo-caso.md).
+
+**A Ilusão do Dinheiro** usa seis decisões ramificadas, caixa narrativo e
+quatro finais sem misturar valores simulados com a carteira competitiva.
+Consulte [`docs/epic-3/ilusao-dinheiro-caminhos.md`](docs/epic-3/ilusao-dinheiro-caminhos.md).
