@@ -1,5 +1,7 @@
 # Task 3.7 — A Ilusão do Dinheiro
 
+Status: concluída e validada em 2026-08-02. Commit funcional: `5c8e1ce`.
+
 ## Objetivo
 
 **A Ilusão do Dinheiro** substitui a pergunta estática da Fase 3 por uma

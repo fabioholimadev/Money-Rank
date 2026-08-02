@@ -12,10 +12,10 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch ativa | `feat/task-3-7-ilusao-dinheiro` |
-| Último commit concluído | `597dfe3 chore: organiza repositorio e documentacao dos epicos` |
-| Task atual | Task 3.7 — A Ilusão do Dinheiro |
-| Estado da Task atual | Implementada, testada e validada pelo usuário; aguarda commit |
+| Branch para retomada | `feat/mvp-gamificacao-ia` |
+| Último commit funcional | `5c8e1ce feat: implementa caminhos de decisao da Ilusao do Dinheiro` |
+| Task atual | Nenhuma Task em andamento |
+| Estado da Task 3.7 | Concluída, testada e documentada |
 | Próxima Task prevista | Task 3.8 — A Engenharia do Desejo |
 
 ### Ação imediata para quem retomar
@@ -27,14 +27,14 @@
    git status --short --branch
    ```
 
-2. Não descartar as alterações sem commit da Task 3.7.
-3. Não incluir `vite.config.js` nem os falsos apontamentos de modificação
-   em `frontend/src/lib/dataconnect-sdk/` no próximo commit.
-4. Preservar a reorganização concluída no commit `597dfe3`.
-5. Criar o commit funcional da Task 3.7 e atualizar a documentação com o
-   hash final.
-6. Fazer merge
-   fast-forward na branch-base e criar a branch da Task 3.8.
+2. Confirmar que `feat/mvp-gamificacao-ia` contém `597dfe3` e `5c8e1ce`.
+3. Preservar as alterações locais do usuário em `vite.config.js`.
+4. Tratar os apontamentos em `frontend/src/lib/dataconnect-sdk/` como falsos
+   diffs enquanto `git diff --quiet` retornar `0`.
+5. Antes de codificar, criar `feat/task-3-8-engenharia-desejo` a partir da
+   branch-base.
+6. Executar a Task 3.8 inteira, incluindo documentação e validação, sem
+   alterar incidentalmente o backend Supabase legado.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -313,6 +313,7 @@ já conquistados na competição.
 | 3.4 | repetições, livro-caixa e streak competitivo | `ae1f74a` |
 | 3.5 | O Perigo Doce com Firebase AI Logic e fallback | `8ba9a35` |
 | 3.6 | O Custo do Vício com personagens e cinco análises | `8b77215` |
+| 3.7 | A Ilusão do Dinheiro com seis decisões ramificadas | `5c8e1ce` |
 
 ### Observação sobre Task 1.1
 
@@ -346,8 +347,8 @@ concluída.
 
 ### Fase 3 — A Ilusão do Dinheiro
 
-Estado detalhado na seção seguinte. A implementação ainda não foi
-commitada.
+Concluída e registrada em `5c8e1ce`. O estado detalhado permanece na seção
+seguinte para auditoria da mecânica e dos testes.
 
 ### Fase 4 — A Engenharia do Desejo
 
@@ -361,7 +362,7 @@ Ainda usa uma atividade estática temporária. A versão planejada deve:
 - usar IA apenas para ajudar na pesquisa/organização, nunca para declarar uma
   peça verdadeira sem fonte.
 
-## 10. Task 3.7 em andamento — A Ilusão do Dinheiro
+## 10. Task 3.7 concluída — A Ilusão do Dinheiro
 
 ### Branch e arquivos
 
@@ -448,36 +449,20 @@ Se a conta já concluiu a versão antiga da Fase 3, o banco considera a nova
 execução uma revisão e paga 20 CapiCoins-base. Para testar 100, usar uma conta
 nova ou reiniciar os dados locais do emulador de forma consciente.
 
-### Commit funcional previsto
+### Commits relacionados
 
-A organização foi registrada separadamente em `597dfe3`. O próximo commit
-registra somente a implementação da Task 3.7 e esta atualização de contexto:
-
-```powershell
-git add -- docs/CONTEXTO_GERAL_PROJETO.md `
-  docs/epic-3/ilusao-dinheiro-caminhos.md frontend/package.json `
-  frontend/src/data/healthConsumptionActivities.js `
-  frontend/src/data/ilusaoDinheiroPaths.js `
-  frontend/src/lib/ilusaoDinheiroGame.js `
-  frontend/src/pages/Trilha/SaudeConsumo/IlusaoDinheiro/AtividadeCaminhos.jsx `
-  scripts/test-ilusao-dinheiro-game.mjs
-
-git commit -m "feat: implementa caminhos de decisão da Ilusão do Dinheiro"
-git switch feat/mvp-gamificacao-ia
-git merge --ff-only feat/task-3-7-ilusao-dinheiro
-git switch -c feat/task-3-8-engenharia-desejo
-```
+- `597dfe3` — organiza o repositório e a documentação dos Épicos;
+- `5c8e1ce` — implementa os caminhos de decisão da Ilusão do Dinheiro.
 
 ## 11. Backlog restante
 
 ### Épico 3
 
-1. finalizar e commitar Task 3.7;
-2. Task 3.8 — Engenharia do Desejo;
-3. definir teto alto de repetições remuneradas com o professor;
-4. revisar e aprovar todas as bases pedagógicas;
-5. migrar rankings individual e por turma para SQL Connect;
-6. confirmar numeração final das Tasks 3.9–3.11 antes de codificar.
+1. Task 3.8 — Engenharia do Desejo;
+2. definir teto alto de repetições remuneradas com o professor;
+3. revisar e aprovar todas as bases pedagógicas;
+4. migrar rankings individual e por turma para SQL Connect;
+5. confirmar numeração final das Tasks 3.9–3.11 antes de codificar.
 
 O arquivo `docs/epic-3/economia-competitiva.md` menciona a Task 3.11 para
 rankings. A numeração intermediária ainda não foi formalmente fechada.
