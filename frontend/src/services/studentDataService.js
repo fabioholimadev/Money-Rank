@@ -2,6 +2,8 @@ import {
   completeMyCurrentPhase,
   completeMyCurrentPhaseContent,
   completeMyIntroduction,
+  getMyActivityAttempt,
+  getMyCapiCoinTransactionBySource,
   getMyProfile,
   initializeMyTrail,
   listMyCapiCoinTransactions,
@@ -21,6 +23,7 @@ import {
   toDataConnectAvatar,
   toDataConnectClass,
 } from '../lib/profileDataMapper';
+import { normalizeAttemptReward } from '../lib/competitiveEconomy';
 
 const MIN_PHASE = 1;
 const MAX_PHASE = 4;
@@ -72,6 +75,64 @@ function normalizeActivityResult(result) {
   }
 
   return { score, correctAnswers, wrongAnswers };
+}
+
+function normalizeActivityId(activityId, phaseNumber) {
+  const fallback = `phase-${phaseNumber}-activity`;
+  const normalized = String(activityId || fallback).trim();
+
+  if (normalized.length < 1 || normalized.length > 128) {
+    throw new Error('O identificador da atividade é inválido.');
+  }
+
+  return normalized;
+}
+
+function createAttemptId() {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+
+  if (typeof globalThis.crypto?.getRandomValues !== 'function') {
+    throw new Error(
+      'O navegador não oferece geração segura de identificadores.',
+    );
+  }
+
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hexadecimal = [...bytes].map((byte) =>
+    byte.toString(16).padStart(2, '0'),
+  );
+
+  return [
+    hexadecimal.slice(0, 4).join(''),
+    hexadecimal.slice(4, 6).join(''),
+    hexadecimal.slice(6, 8).join(''),
+    hexadecimal.slice(8, 10).join(''),
+    hexadecimal.slice(10, 16).join(''),
+  ].join('-');
+}
+
+async function fetchAttemptById(attemptId) {
+  const result = await getMyActivityAttempt(
+    dataConnect,
+    { attemptId },
+    { fetchPolicy: QueryFetchPolicy.SERVER_ONLY },
+  );
+
+  return result.data.activityAttempts[0] ?? null;
+}
+
+async function fetchTransactionBySource(sourceId) {
+  const result = await getMyCapiCoinTransactionBySource(
+    dataConnect,
+    { sourceId },
+    { fetchPolicy: QueryFetchPolicy.SERVER_ONLY },
+  );
+
+  return result.data.capiCoinTransactions[0] ?? null;
 }
 
 function isHttpsUrl(value) {
@@ -184,7 +245,16 @@ export async function completeIntroductionStep() {
     );
   }
 
-  return { reward: 20 };
+  const transaction = await fetchTransactionBySource('introduction-0');
+
+  return {
+    reward: Number(transaction?.amount ?? 0),
+    baseReward: Number(transaction?.baseAmount ?? 0),
+    multiplierPercent: Number(
+      transaction?.streakMultiplierPercent ?? 100,
+    ),
+    streakBonus: Number(transaction?.streakBonus ?? 0),
+  };
 }
 
 export async function completePhaseContent(phaseNumber) {
@@ -194,13 +264,29 @@ export async function completePhaseContent(phaseNumber) {
     phaseNumber: normalizedPhase,
   });
 
+  const saved = readAffectedRows(result) === 1;
+  const transaction = saved
+    ? await fetchTransactionBySource(
+        `phase-${normalizedPhase}-content`,
+      )
+    : null;
+
   return {
-    saved: readAffectedRows(result) === 1,
-    reward: readAffectedRows(result) === 1 ? 20 : 0,
+    saved,
+    reward: Number(transaction?.amount ?? 0),
+    baseReward: Number(transaction?.baseAmount ?? 0),
+    multiplierPercent: Number(
+      transaction?.streakMultiplierPercent ?? 100,
+    ),
+    streakBonus: Number(transaction?.streakBonus ?? 0),
   };
 }
 
-export async function registerPhaseAttempt(phaseNumber, activityResult) {
+export async function registerPhaseAttempt(
+  phaseNumber,
+  activityResult,
+  activityId,
+) {
   requireDataConnect();
   const normalizedPhase = normalizePhaseNumber(phaseNumber);
   const normalizedResult = normalizeActivityResult(activityResult);
@@ -211,21 +297,28 @@ export async function registerPhaseAttempt(phaseNumber, activityResult) {
     );
   }
 
-  const result = await registerMyCurrentPhaseAttempt(dataConnect, {
+  const attemptId = createAttemptId();
+  await registerMyCurrentPhaseAttempt(dataConnect, {
+    attemptId,
+    activityId: normalizeActivityId(activityId, normalizedPhase),
     phaseNumber: normalizedPhase,
     ...normalizedResult,
   });
+  const attempt = await fetchAttemptById(attemptId);
 
-  if (readAffectedRows(result) !== 1) {
+  if (!attempt || attempt.passed) {
     throw new Error(
       'Não foi possível registrar a tentativa na fase atual.',
     );
   }
+
+  return attempt;
 }
 
 export async function completePhaseActivity(
   phaseNumber,
   activityResult,
+  activityId,
 ) {
   requireDataConnect();
   const normalizedPhase = normalizePhaseNumber(phaseNumber);
@@ -237,16 +330,20 @@ export async function completePhaseActivity(
     );
   }
 
-  const result = await completeMyCurrentPhase(dataConnect, {
+  const attemptId = createAttemptId();
+  await completeMyCurrentPhase(dataConnect, {
+    attemptId,
+    activityId: normalizeActivityId(activityId, normalizedPhase),
     phaseNumber: normalizedPhase,
     ...normalizedResult,
   });
+  const attempt = await fetchAttemptById(attemptId);
 
-  if (readAffectedRows(result) !== 1) {
+  if (!attempt || !attempt.passed) {
     throw new Error(
-      'A atividade já foi premiada, está bloqueada ou o conteúdo ainda não foi concluído.',
+      'A atividade está bloqueada ou o conteúdo ainda não foi concluído.',
     );
   }
 
-  return { reward: 100 };
+  return normalizeAttemptReward(attempt);
 }

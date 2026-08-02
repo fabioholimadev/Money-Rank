@@ -14,6 +14,7 @@ export enum CapiCoinTransactionType {
   STREAK_BONUS = "STREAK_BONUS",
   PURCHASE = "PURCHASE",
   ADMIN_ADJUSTMENT = "ADMIN_ADJUSTMENT",
+  ACTIVITY_REPEAT_REWARD = "ACTIVITY_REPEAT_REWARD",
 };
 
 export enum ProfessionalAvatar {
@@ -42,6 +43,11 @@ export enum UserRole {
 };
 
 
+
+export interface ActivityAttempt_Key {
+  id: UUIDString;
+  __typename?: 'ActivityAttempt_Key';
+}
 
 export interface ApplyCapiCoinTransactionData {
   user_update?: User_Key | null;
@@ -74,6 +80,8 @@ export interface CompleteMyCurrentPhaseData {
 }
 
 export interface CompleteMyCurrentPhaseVariables {
+  attemptId: UUIDString;
+  activityId: string;
   phaseNumber: number;
   score: number;
   correctAnswers: number;
@@ -82,6 +90,66 @@ export interface CompleteMyCurrentPhaseVariables {
 
 export interface CompleteMyIntroductionData {
   affectedRows?: number | null;
+}
+
+export interface EconomyConfig_Key {
+  configKey: string;
+  __typename?: 'EconomyConfig_Key';
+}
+
+export interface GetEconomyConfigData {
+  economyConfig?: {
+    configKey: string;
+    firstContentReward: number;
+    firstActivityReward: number;
+    repeatActivityReward: number;
+    rewardedRepeatLimitPerDay?: number | null;
+    streakTier3Percent: number;
+    streakTier5Percent: number;
+    streakTier7Percent: number;
+    updatedAt: TimestampString;
+  } & EconomyConfig_Key;
+}
+
+export interface GetMyActivityAttemptData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    createdAt: TimestampString;
+  } & ActivityAttempt_Key)[];
+}
+
+export interface GetMyActivityAttemptVariables {
+  attemptId: UUIDString;
+}
+
+export interface GetMyCapiCoinTransactionBySourceData {
+  capiCoinTransactions: ({
+    id: UUIDString;
+    amount: number;
+    baseAmount: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    transactionType: CapiCoinTransactionType;
+    sourceId?: string | null;
+    phaseNumber?: number | null;
+    createdAt: TimestampString;
+  } & CapiCoinTransaction_Key)[];
+}
+
+export interface GetMyCapiCoinTransactionBySourceVariables {
+  sourceId: string;
 }
 
 export interface GetMyProfileData {
@@ -107,13 +175,44 @@ export interface InitializeMyTrailData {
   affectedRows?: number | null;
 }
 
+export interface ListMyActivityAttemptsData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    createdAt: TimestampString;
+  } & ActivityAttempt_Key)[];
+}
+
+export interface ListMyActivityAttemptsVariables {
+  phaseNumber: number;
+  offset?: number | null;
+}
+
 export interface ListMyCapiCoinTransactionsData {
   capiCoinTransactions: ({
     id: UUIDString;
+    attemptId?: UUIDString | null;
     amount: number;
+    baseAmount: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
     transactionType: CapiCoinTransactionType;
     reason: string;
     sourceId?: string | null;
+    phaseNumber?: number | null;
+    classGroup?: StudentClass | null;
+    competitionWeek?: DateString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
 }
@@ -141,6 +240,8 @@ export interface RegisterMyCurrentPhaseAttemptData {
 }
 
 export interface RegisterMyCurrentPhaseAttemptVariables {
+  attemptId: UUIDString;
+  activityId: string;
   phaseNumber: number;
   score: number;
   correctAnswers: number;
@@ -151,6 +252,20 @@ export interface StudentProgress_Key {
   userUid: string;
   phaseNumber: number;
   __typename?: 'StudentProgress_Key';
+}
+
+export interface UpsertEconomyConfigData {
+  economyConfig_upsert: EconomyConfig_Key;
+}
+
+export interface UpsertEconomyConfigVariables {
+  firstContentReward: number;
+  firstActivityReward: number;
+  repeatActivityReward: number;
+  rewardedRepeatLimitPerDay?: number | null;
+  streakTier3Percent: number;
+  streakTier5Percent: number;
+  streakTier7Percent: number;
 }
 
 export interface UpsertMyProfileWithAvatarData {
@@ -263,6 +378,18 @@ export const applyCapiCoinTransactionRef: ApplyCapiCoinTransactionRef;
 export function applyCapiCoinTransaction(vars: ApplyCapiCoinTransactionVariables): MutationPromise<ApplyCapiCoinTransactionData, ApplyCapiCoinTransactionVariables>;
 export function applyCapiCoinTransaction(dc: DataConnect, vars: ApplyCapiCoinTransactionVariables): MutationPromise<ApplyCapiCoinTransactionData, ApplyCapiCoinTransactionVariables>;
 
+interface UpsertEconomyConfigRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertEconomyConfigVariables): MutationRef<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertEconomyConfigVariables): MutationRef<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+  operationName: string;
+}
+export const upsertEconomyConfigRef: UpsertEconomyConfigRef;
+
+export function upsertEconomyConfig(vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+export function upsertEconomyConfig(dc: DataConnect, vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+
 interface InitializeMyTrailRef {
   /* Allow users to create refs without passing in DataConnect */
   (): MutationRef<InitializeMyTrailData, undefined>;
@@ -358,4 +485,52 @@ export const listMyCapiCoinTransactionsRef: ListMyCapiCoinTransactionsRef;
 
 export function listMyCapiCoinTransactions(vars?: ListMyCapiCoinTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyCapiCoinTransactionsData, ListMyCapiCoinTransactionsVariables>;
 export function listMyCapiCoinTransactions(dc: DataConnect, vars?: ListMyCapiCoinTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyCapiCoinTransactionsData, ListMyCapiCoinTransactionsVariables>;
+
+interface GetMyCapiCoinTransactionBySourceRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyCapiCoinTransactionBySourceVariables): QueryRef<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyCapiCoinTransactionBySourceVariables): QueryRef<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+  operationName: string;
+}
+export const getMyCapiCoinTransactionBySourceRef: GetMyCapiCoinTransactionBySourceRef;
+
+export function getMyCapiCoinTransactionBySource(vars: GetMyCapiCoinTransactionBySourceVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+export function getMyCapiCoinTransactionBySource(dc: DataConnect, vars: GetMyCapiCoinTransactionBySourceVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+
+interface GetMyActivityAttemptRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyActivityAttemptVariables): QueryRef<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyActivityAttemptVariables): QueryRef<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+  operationName: string;
+}
+export const getMyActivityAttemptRef: GetMyActivityAttemptRef;
+
+export function getMyActivityAttempt(vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+export function getMyActivityAttempt(dc: DataConnect, vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+
+interface ListMyActivityAttemptsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyActivityAttemptsVariables): QueryRef<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListMyActivityAttemptsVariables): QueryRef<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+  operationName: string;
+}
+export const listMyActivityAttemptsRef: ListMyActivityAttemptsRef;
+
+export function listMyActivityAttempts(vars: ListMyActivityAttemptsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+export function listMyActivityAttempts(dc: DataConnect, vars: ListMyActivityAttemptsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+
+interface GetEconomyConfigRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetEconomyConfigData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetEconomyConfigData, undefined>;
+  operationName: string;
+}
+export const getEconomyConfigRef: GetEconomyConfigRef;
+
+export function getEconomyConfig(options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
+export function getEconomyConfig(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
 

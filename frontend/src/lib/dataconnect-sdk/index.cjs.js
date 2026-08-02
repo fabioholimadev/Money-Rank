@@ -6,6 +6,7 @@ const CapiCoinTransactionType = {
   STREAK_BONUS: "STREAK_BONUS",
   PURCHASE: "PURCHASE",
   ADMIN_ADJUSTMENT: "ADMIN_ADJUSTMENT",
+  ACTIVITY_REPEAT_REWARD: "ACTIVITY_REPEAT_REWARD",
 }
 exports.CapiCoinTransactionType = CapiCoinTransactionType;
 
@@ -112,6 +113,20 @@ exports.applyCapiCoinTransactionRef = applyCapiCoinTransactionRef;
 exports.applyCapiCoinTransaction = function applyCapiCoinTransaction(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(applyCapiCoinTransactionRef(dcInstance, inputVars));
+}
+;
+
+const upsertEconomyConfigRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertEconomyConfig', inputVars);
+}
+upsertEconomyConfigRef.operationName = 'UpsertEconomyConfig';
+exports.upsertEconomyConfigRef = upsertEconomyConfigRef;
+
+exports.upsertEconomyConfig = function upsertEconomyConfig(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertEconomyConfigRef(dcInstance, inputVars));
 }
 ;
 
@@ -227,5 +242,65 @@ exports.listMyCapiCoinTransactions = function listMyCapiCoinTransactions(dcOrVar
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listMyCapiCoinTransactionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getMyCapiCoinTransactionBySourceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyCapiCoinTransactionBySource', inputVars);
+}
+getMyCapiCoinTransactionBySourceRef.operationName = 'GetMyCapiCoinTransactionBySource';
+exports.getMyCapiCoinTransactionBySourceRef = getMyCapiCoinTransactionBySourceRef;
+
+exports.getMyCapiCoinTransactionBySource = function getMyCapiCoinTransactionBySource(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyCapiCoinTransactionBySourceRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getMyActivityAttemptRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyActivityAttempt', inputVars);
+}
+getMyActivityAttemptRef.operationName = 'GetMyActivityAttempt';
+exports.getMyActivityAttemptRef = getMyActivityAttemptRef;
+
+exports.getMyActivityAttempt = function getMyActivityAttempt(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyActivityAttemptRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listMyActivityAttemptsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyActivityAttempts', inputVars);
+}
+listMyActivityAttemptsRef.operationName = 'ListMyActivityAttempts';
+exports.listMyActivityAttemptsRef = listMyActivityAttemptsRef;
+
+exports.listMyActivityAttempts = function listMyActivityAttempts(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMyActivityAttemptsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getEconomyConfigRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetEconomyConfig');
+}
+getEconomyConfigRef.operationName = 'GetEconomyConfig';
+exports.getEconomyConfigRef = getEconomyConfigRef;
+
+exports.getEconomyConfig = function getEconomyConfig(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getEconomyConfigRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

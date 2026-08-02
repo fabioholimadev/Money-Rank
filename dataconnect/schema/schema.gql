@@ -1,18 +1,15 @@
-# Papéis reconhecidos pela plataforma. A elevação para TEACHER deve ser feita
-# exclusivamente por uma rotina administrativa confiável.
+# Papéis reconhecidos pela plataforma. A elevação para TEACHER deve ser
+# feita exclusivamente por uma rotina administrativa confiável.
 enum UserRole {
   STUDENT
   TEACHER
 }
 
-# Valores persistidos das duas turmas disponíveis na interface.
-# A Task 2.2 mapeará THIRD_DSA/THIRD_DSB para "3º DSA"/"3º DSB".
 enum StudentClass {
   THIRD_DSA
   THIRD_DSB
 }
 
-# Catálogo fechado dos avatares profissionais incluídos no frontend.
 enum ProfessionalAvatar {
   CAPI_CIENTISTA
   CAPI_PROFESSORA
@@ -34,6 +31,7 @@ enum CapiCoinTransactionType {
   STREAK_BONUS
   PURCHASE
   ADMIN_ADJUSTMENT
+  ACTIVITY_REPEAT_REWARD
 }
 
 # O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
@@ -59,13 +57,8 @@ type User
     @col(name: "profile_completed")
     @default(value: false)
   capiCoins: Int! @col(name: "capi_coins") @default(value: 0)
-  # Todo aluno começa no Passo 0. A Fase 1 só é liberada depois da
-  # conclusão da introdução.
   currentPhase: Int! @col(name: "current_phase") @default(value: 0)
   currentStreak: Int! @col(name: "current_streak") @default(value: 0)
-  # Data da última atividade que contou para a sequência diária. Usamos Date
-  # em vez de Timestamp para impedir que duas atividades no mesmo dia
-  # aumentem o streak mais de uma vez.
   lastStreakDate: Date @col(name: "last_streak_date")
   createdAt: Timestamp!
     @col(name: "created_at")
@@ -105,9 +98,82 @@ type StudentProgress
     @default(expr: "request.time")
 }
 
+# Cada execução de uma atividade gera uma tentativa imutável. O attemptId
+# funciona como chave de idempotência para impedir recompensa duplicada em
+# reenvios de rede.
+type ActivityAttempt
+  @table(
+    name: "activity_attempts"
+    singular: "activityAttempt"
+    plural: "activityAttempts"
+  )
+  @index(
+    fields: ["userUid", "phaseNumber", "createdAt"]
+    order: [ASC, ASC, DESC]
+  ) {
+  user: User! @ref(fields: "userUid", references: "uid")
+  userUid: String!
+    @col(name: "user_uid", dataType: "varchar(128)")
+  activityId: String!
+    @col(name: "activity_id", dataType: "varchar(128)")
+  phaseNumber: Int! @col(name: "phase_number")
+  score: Int!
+  correctAnswers: Int! @col(name: "correct_answers")
+  wrongAnswers: Int! @col(name: "wrong_answers")
+  passed: Boolean!
+  firstCompletion: Boolean! @col(name: "first_completion")
+  rewardBase: Int! @col(name: "reward_base") @default(value: 0)
+  streakMultiplierPercent: Int!
+    @col(name: "streak_multiplier_percent")
+    @default(value: 100)
+  streakBonus: Int! @col(name: "streak_bonus") @default(value: 0)
+  rewardAmount: Int! @col(name: "reward_amount") @default(value: 0)
+  rewardLimitReached: Boolean!
+    @col(name: "reward_limit_reached")
+    @default(value: false)
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+}
+
+# Configuração única e administrativa da economia. O limite nulo significa
+# que as repetições remuneradas ainda não possuem teto definido.
+type EconomyConfig
+  @table(
+    name: "economy_config"
+    key: "configKey"
+    singular: "economyConfig"
+    plural: "economyConfigs"
+  ) {
+  configKey: String!
+    @col(name: "config_key", dataType: "varchar(32)")
+  firstContentReward: Int!
+    @col(name: "first_content_reward")
+    @default(value: 20)
+  firstActivityReward: Int!
+    @col(name: "first_activity_reward")
+    @default(value: 100)
+  repeatActivityReward: Int!
+    @col(name: "repeat_activity_reward")
+    @default(value: 20)
+  rewardedRepeatLimitPerDay: Int
+    @col(name: "rewarded_repeat_limit_per_day")
+  streakTier3Percent: Int!
+    @col(name: "streak_tier_3_percent")
+    @default(value: 110)
+  streakTier5Percent: Int!
+    @col(name: "streak_tier_5_percent")
+    @default(value: 120)
+  streakTier7Percent: Int!
+    @col(name: "streak_tier_7_percent")
+    @default(value: 130)
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
 # Livro-caixa imutável de CapiCoins. O saldo atual fica em User.capiCoins para
-# leitura rápida; cada alteração deve gerar uma linha nesta tabela na mesma
-# transação.
+# leitura rápida; cada alteração gera uma linha nesta tabela na mesma operação.
 type CapiCoinTransaction
   @table(
     name: "capi_coin_transactions"
@@ -118,11 +184,21 @@ type CapiCoinTransaction
   user: User! @ref(fields: "userUid", references: "uid")
   userUid: String!
     @col(name: "user_uid", dataType: "varchar(128)")
+  attempt: ActivityAttempt @ref(fields: "attemptId", references: "id")
+  attemptId: UUID @col(name: "attempt_id")
   amount: Int!
+  baseAmount: Int! @col(name: "base_amount") @default(value: 0)
+  streakMultiplierPercent: Int!
+    @col(name: "streak_multiplier_percent")
+    @default(value: 100)
+  streakBonus: Int! @col(name: "streak_bonus") @default(value: 0)
   transactionType: CapiCoinTransactionType!
     @col(name: "transaction_type")
   reason: String! @col(dataType: "varchar(160)")
   sourceId: String @col(name: "source_id", dataType: "varchar(128)")
+  phaseNumber: Int @col(name: "phase_number")
+  classGroup: StudentClass @col(name: "class_group")
+  competitionWeek: Date @col(name: "competition_week") @index
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")

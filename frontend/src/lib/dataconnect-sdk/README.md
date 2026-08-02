@@ -11,12 +11,17 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetMyProfile*](#getmyprofile)
   - [*ListMyProgress*](#listmyprogress)
   - [*ListMyCapiCoinTransactions*](#listmycapicointransactions)
+  - [*GetMyCapiCoinTransactionBySource*](#getmycapicointransactionbysource)
+  - [*GetMyActivityAttempt*](#getmyactivityattempt)
+  - [*ListMyActivityAttempts*](#listmyactivityattempts)
+  - [*GetEconomyConfig*](#geteconomyconfig)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*UpsertMyProfileWithPhoto*](#upsertmyprofilewithphoto)
   - [*UpsertMyProfileWithoutSyncedPhoto*](#upsertmyprofilewithoutsyncedphoto)
   - [*UpsertStudentProgress*](#upsertstudentprogress)
   - [*ApplyCapiCoinTransaction*](#applycapicointransaction)
+  - [*UpsertEconomyConfig*](#upserteconomyconfig)
   - [*InitializeMyTrail*](#initializemytrail)
   - [*CompleteMyIntroduction*](#completemyintroduction)
   - [*CompleteMyCurrentPhaseContent*](#completemycurrentphasecontent)
@@ -320,10 +325,17 @@ The `data` property is an object of type `ListMyCapiCoinTransactionsData`, which
 export interface ListMyCapiCoinTransactionsData {
   capiCoinTransactions: ({
     id: UUIDString;
+    attemptId?: UUIDString | null;
     amount: number;
+    baseAmount: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
     transactionType: CapiCoinTransactionType;
     reason: string;
     sourceId?: string | null;
+    phaseNumber?: number | null;
+    classGroup?: StudentClass | null;
+    competitionWeek?: DateString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
 }
@@ -392,6 +404,477 @@ console.log(data.capiCoinTransactions);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.capiCoinTransactions);
+});
+```
+
+## GetMyCapiCoinTransactionBySource
+You can execute the `GetMyCapiCoinTransactionBySource` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getMyCapiCoinTransactionBySource(vars: GetMyCapiCoinTransactionBySourceVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+
+interface GetMyCapiCoinTransactionBySourceRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyCapiCoinTransactionBySourceVariables): QueryRef<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+}
+export const getMyCapiCoinTransactionBySourceRef: GetMyCapiCoinTransactionBySourceRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyCapiCoinTransactionBySource(dc: DataConnect, vars: GetMyCapiCoinTransactionBySourceVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+
+interface GetMyCapiCoinTransactionBySourceRef {
+  ...
+  (dc: DataConnect, vars: GetMyCapiCoinTransactionBySourceVariables): QueryRef<GetMyCapiCoinTransactionBySourceData, GetMyCapiCoinTransactionBySourceVariables>;
+}
+export const getMyCapiCoinTransactionBySourceRef: GetMyCapiCoinTransactionBySourceRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyCapiCoinTransactionBySourceRef:
+```typescript
+const name = getMyCapiCoinTransactionBySourceRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyCapiCoinTransactionBySource` query requires an argument of type `GetMyCapiCoinTransactionBySourceVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyCapiCoinTransactionBySourceVariables {
+  sourceId: string;
+}
+```
+### Return Type
+Recall that executing the `GetMyCapiCoinTransactionBySource` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyCapiCoinTransactionBySourceData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyCapiCoinTransactionBySourceData {
+  capiCoinTransactions: ({
+    id: UUIDString;
+    amount: number;
+    baseAmount: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    transactionType: CapiCoinTransactionType;
+    sourceId?: string | null;
+    phaseNumber?: number | null;
+    createdAt: TimestampString;
+  } & CapiCoinTransaction_Key)[];
+}
+```
+### Using `GetMyCapiCoinTransactionBySource`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyCapiCoinTransactionBySource, GetMyCapiCoinTransactionBySourceVariables } from '@money-rank/dataconnect';
+
+// The `GetMyCapiCoinTransactionBySource` query requires an argument of type `GetMyCapiCoinTransactionBySourceVariables`:
+const getMyCapiCoinTransactionBySourceVars: GetMyCapiCoinTransactionBySourceVariables = {
+  sourceId: ..., 
+};
+
+// Call the `getMyCapiCoinTransactionBySource()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyCapiCoinTransactionBySource(getMyCapiCoinTransactionBySourceVars);
+// Variables can be defined inline as well.
+const { data } = await getMyCapiCoinTransactionBySource({ sourceId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyCapiCoinTransactionBySource(dataConnect, getMyCapiCoinTransactionBySourceVars);
+
+console.log(data.capiCoinTransactions);
+
+// Or, you can use the `Promise` API.
+getMyCapiCoinTransactionBySource(getMyCapiCoinTransactionBySourceVars).then((response) => {
+  const data = response.data;
+  console.log(data.capiCoinTransactions);
+});
+```
+
+### Using `GetMyCapiCoinTransactionBySource`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyCapiCoinTransactionBySourceRef, GetMyCapiCoinTransactionBySourceVariables } from '@money-rank/dataconnect';
+
+// The `GetMyCapiCoinTransactionBySource` query requires an argument of type `GetMyCapiCoinTransactionBySourceVariables`:
+const getMyCapiCoinTransactionBySourceVars: GetMyCapiCoinTransactionBySourceVariables = {
+  sourceId: ..., 
+};
+
+// Call the `getMyCapiCoinTransactionBySourceRef()` function to get a reference to the query.
+const ref = getMyCapiCoinTransactionBySourceRef(getMyCapiCoinTransactionBySourceVars);
+// Variables can be defined inline as well.
+const ref = getMyCapiCoinTransactionBySourceRef({ sourceId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyCapiCoinTransactionBySourceRef(dataConnect, getMyCapiCoinTransactionBySourceVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.capiCoinTransactions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.capiCoinTransactions);
+});
+```
+
+## GetMyActivityAttempt
+You can execute the `GetMyActivityAttempt` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getMyActivityAttempt(vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+
+interface GetMyActivityAttemptRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyActivityAttemptVariables): QueryRef<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+}
+export const getMyActivityAttemptRef: GetMyActivityAttemptRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyActivityAttempt(dc: DataConnect, vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+
+interface GetMyActivityAttemptRef {
+  ...
+  (dc: DataConnect, vars: GetMyActivityAttemptVariables): QueryRef<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+}
+export const getMyActivityAttemptRef: GetMyActivityAttemptRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyActivityAttemptRef:
+```typescript
+const name = getMyActivityAttemptRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyActivityAttempt` query requires an argument of type `GetMyActivityAttemptVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyActivityAttemptVariables {
+  attemptId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetMyActivityAttempt` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyActivityAttemptData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyActivityAttemptData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    createdAt: TimestampString;
+  } & ActivityAttempt_Key)[];
+}
+```
+### Using `GetMyActivityAttempt`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyActivityAttempt, GetMyActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `GetMyActivityAttempt` query requires an argument of type `GetMyActivityAttemptVariables`:
+const getMyActivityAttemptVars: GetMyActivityAttemptVariables = {
+  attemptId: ..., 
+};
+
+// Call the `getMyActivityAttempt()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyActivityAttempt(getMyActivityAttemptVars);
+// Variables can be defined inline as well.
+const { data } = await getMyActivityAttempt({ attemptId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyActivityAttempt(dataConnect, getMyActivityAttemptVars);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+getMyActivityAttempt(getMyActivityAttemptVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+### Using `GetMyActivityAttempt`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyActivityAttemptRef, GetMyActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `GetMyActivityAttempt` query requires an argument of type `GetMyActivityAttemptVariables`:
+const getMyActivityAttemptVars: GetMyActivityAttemptVariables = {
+  attemptId: ..., 
+};
+
+// Call the `getMyActivityAttemptRef()` function to get a reference to the query.
+const ref = getMyActivityAttemptRef(getMyActivityAttemptVars);
+// Variables can be defined inline as well.
+const ref = getMyActivityAttemptRef({ attemptId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyActivityAttemptRef(dataConnect, getMyActivityAttemptVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+## ListMyActivityAttempts
+You can execute the `ListMyActivityAttempts` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listMyActivityAttempts(vars: ListMyActivityAttemptsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+
+interface ListMyActivityAttemptsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyActivityAttemptsVariables): QueryRef<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+}
+export const listMyActivityAttemptsRef: ListMyActivityAttemptsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyActivityAttempts(dc: DataConnect, vars: ListMyActivityAttemptsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+
+interface ListMyActivityAttemptsRef {
+  ...
+  (dc: DataConnect, vars: ListMyActivityAttemptsVariables): QueryRef<ListMyActivityAttemptsData, ListMyActivityAttemptsVariables>;
+}
+export const listMyActivityAttemptsRef: ListMyActivityAttemptsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyActivityAttemptsRef:
+```typescript
+const name = listMyActivityAttemptsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyActivityAttempts` query requires an argument of type `ListMyActivityAttemptsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyActivityAttemptsVariables {
+  phaseNumber: number;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyActivityAttempts` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyActivityAttemptsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyActivityAttemptsData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    createdAt: TimestampString;
+  } & ActivityAttempt_Key)[];
+}
+```
+### Using `ListMyActivityAttempts`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyActivityAttempts, ListMyActivityAttemptsVariables } from '@money-rank/dataconnect';
+
+// The `ListMyActivityAttempts` query requires an argument of type `ListMyActivityAttemptsVariables`:
+const listMyActivityAttemptsVars: ListMyActivityAttemptsVariables = {
+  phaseNumber: ..., 
+  offset: ..., // optional
+};
+
+// Call the `listMyActivityAttempts()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyActivityAttempts(listMyActivityAttemptsVars);
+// Variables can be defined inline as well.
+const { data } = await listMyActivityAttempts({ phaseNumber: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyActivityAttempts(dataConnect, listMyActivityAttemptsVars);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+listMyActivityAttempts(listMyActivityAttemptsVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+### Using `ListMyActivityAttempts`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyActivityAttemptsRef, ListMyActivityAttemptsVariables } from '@money-rank/dataconnect';
+
+// The `ListMyActivityAttempts` query requires an argument of type `ListMyActivityAttemptsVariables`:
+const listMyActivityAttemptsVars: ListMyActivityAttemptsVariables = {
+  phaseNumber: ..., 
+  offset: ..., // optional
+};
+
+// Call the `listMyActivityAttemptsRef()` function to get a reference to the query.
+const ref = listMyActivityAttemptsRef(listMyActivityAttemptsVars);
+// Variables can be defined inline as well.
+const ref = listMyActivityAttemptsRef({ phaseNumber: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyActivityAttemptsRef(dataConnect, listMyActivityAttemptsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+## GetEconomyConfig
+You can execute the `GetEconomyConfig` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getEconomyConfig(options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
+
+interface GetEconomyConfigRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetEconomyConfigData, undefined>;
+}
+export const getEconomyConfigRef: GetEconomyConfigRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getEconomyConfig(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
+
+interface GetEconomyConfigRef {
+  ...
+  (dc: DataConnect): QueryRef<GetEconomyConfigData, undefined>;
+}
+export const getEconomyConfigRef: GetEconomyConfigRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getEconomyConfigRef:
+```typescript
+const name = getEconomyConfigRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetEconomyConfig` query has no variables.
+### Return Type
+Recall that executing the `GetEconomyConfig` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetEconomyConfigData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetEconomyConfigData {
+  economyConfig?: {
+    configKey: string;
+    firstContentReward: number;
+    firstActivityReward: number;
+    repeatActivityReward: number;
+    rewardedRepeatLimitPerDay?: number | null;
+    streakTier3Percent: number;
+    streakTier5Percent: number;
+    streakTier7Percent: number;
+    updatedAt: TimestampString;
+  } & EconomyConfig_Key;
+}
+```
+### Using `GetEconomyConfig`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getEconomyConfig } from '@money-rank/dataconnect';
+
+
+// Call the `getEconomyConfig()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getEconomyConfig();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getEconomyConfig(dataConnect);
+
+console.log(data.economyConfig);
+
+// Or, you can use the `Promise` API.
+getEconomyConfig().then((response) => {
+  const data = response.data;
+  console.log(data.economyConfig);
+});
+```
+
+### Using `GetEconomyConfig`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getEconomyConfigRef } from '@money-rank/dataconnect';
+
+
+// Call the `getEconomyConfigRef()` function to get a reference to the query.
+const ref = getEconomyConfigRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getEconomyConfigRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.economyConfig);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.economyConfig);
 });
 ```
 
@@ -1011,6 +1494,133 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## UpsertEconomyConfig
+You can execute the `UpsertEconomyConfig` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+upsertEconomyConfig(vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+
+interface UpsertEconomyConfigRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertEconomyConfigVariables): MutationRef<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+}
+export const upsertEconomyConfigRef: UpsertEconomyConfigRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertEconomyConfig(dc: DataConnect, vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+
+interface UpsertEconomyConfigRef {
+  ...
+  (dc: DataConnect, vars: UpsertEconomyConfigVariables): MutationRef<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+}
+export const upsertEconomyConfigRef: UpsertEconomyConfigRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertEconomyConfigRef:
+```typescript
+const name = upsertEconomyConfigRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertEconomyConfig` mutation requires an argument of type `UpsertEconomyConfigVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertEconomyConfigVariables {
+  firstContentReward: number;
+  firstActivityReward: number;
+  repeatActivityReward: number;
+  rewardedRepeatLimitPerDay?: number | null;
+  streakTier3Percent: number;
+  streakTier5Percent: number;
+  streakTier7Percent: number;
+}
+```
+### Return Type
+Recall that executing the `UpsertEconomyConfig` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertEconomyConfigData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertEconomyConfigData {
+  economyConfig_upsert: EconomyConfig_Key;
+}
+```
+### Using `UpsertEconomyConfig`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertEconomyConfig, UpsertEconomyConfigVariables } from '@money-rank/dataconnect';
+
+// The `UpsertEconomyConfig` mutation requires an argument of type `UpsertEconomyConfigVariables`:
+const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
+  firstContentReward: ..., 
+  firstActivityReward: ..., 
+  repeatActivityReward: ..., 
+  rewardedRepeatLimitPerDay: ..., // optional
+  streakTier3Percent: ..., 
+  streakTier5Percent: ..., 
+  streakTier7Percent: ..., 
+};
+
+// Call the `upsertEconomyConfig()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertEconomyConfig(upsertEconomyConfigVars);
+// Variables can be defined inline as well.
+const { data } = await upsertEconomyConfig({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertEconomyConfig(dataConnect, upsertEconomyConfigVars);
+
+console.log(data.economyConfig_upsert);
+
+// Or, you can use the `Promise` API.
+upsertEconomyConfig(upsertEconomyConfigVars).then((response) => {
+  const data = response.data;
+  console.log(data.economyConfig_upsert);
+});
+```
+
+### Using `UpsertEconomyConfig`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertEconomyConfigRef, UpsertEconomyConfigVariables } from '@money-rank/dataconnect';
+
+// The `UpsertEconomyConfig` mutation requires an argument of type `UpsertEconomyConfigVariables`:
+const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
+  firstContentReward: ..., 
+  firstActivityReward: ..., 
+  repeatActivityReward: ..., 
+  rewardedRepeatLimitPerDay: ..., // optional
+  streakTier3Percent: ..., 
+  streakTier5Percent: ..., 
+  streakTier7Percent: ..., 
+};
+
+// Call the `upsertEconomyConfigRef()` function to get a reference to the mutation.
+const ref = upsertEconomyConfigRef(upsertEconomyConfigVars);
+// Variables can be defined inline as well.
+const ref = upsertEconomyConfigRef({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertEconomyConfigRef(dataConnect, upsertEconomyConfigVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.economyConfig_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.economyConfig_upsert);
+});
+```
+
 ## InitializeMyTrail
 You can execute the `InitializeMyTrail` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
 ```typescript
@@ -1336,6 +1946,8 @@ The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `Regis
 
 ```typescript
 export interface RegisterMyCurrentPhaseAttemptVariables {
+  attemptId: UUIDString;
+  activityId: string;
   phaseNumber: number;
   score: number;
   correctAnswers: number;
@@ -1359,6 +1971,8 @@ import { connectorConfig, registerMyCurrentPhaseAttempt, RegisterMyCurrentPhaseA
 
 // The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
 const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
+  attemptId: ..., 
+  activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
   correctAnswers: ..., 
@@ -1369,7 +1983,7 @@ const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables 
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await registerMyCurrentPhaseAttempt(registerMyCurrentPhaseAttemptVars);
 // Variables can be defined inline as well.
-const { data } = await registerMyCurrentPhaseAttempt({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const { data } = await registerMyCurrentPhaseAttempt({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1392,6 +2006,8 @@ import { connectorConfig, registerMyCurrentPhaseAttemptRef, RegisterMyCurrentPha
 
 // The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
 const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
+  attemptId: ..., 
+  activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
   correctAnswers: ..., 
@@ -1401,7 +2017,7 @@ const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables 
 // Call the `registerMyCurrentPhaseAttemptRef()` function to get a reference to the mutation.
 const ref = registerMyCurrentPhaseAttemptRef(registerMyCurrentPhaseAttemptVars);
 // Variables can be defined inline as well.
-const ref = registerMyCurrentPhaseAttemptRef({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const ref = registerMyCurrentPhaseAttemptRef({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1454,6 +2070,8 @@ The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCu
 
 ```typescript
 export interface CompleteMyCurrentPhaseVariables {
+  attemptId: UUIDString;
+  activityId: string;
   phaseNumber: number;
   score: number;
   correctAnswers: number;
@@ -1477,6 +2095,8 @@ import { connectorConfig, completeMyCurrentPhase, CompleteMyCurrentPhaseVariable
 
 // The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
 const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
+  attemptId: ..., 
+  activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
   correctAnswers: ..., 
@@ -1487,7 +2107,7 @@ const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await completeMyCurrentPhase(completeMyCurrentPhaseVars);
 // Variables can be defined inline as well.
-const { data } = await completeMyCurrentPhase({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const { data } = await completeMyCurrentPhase({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1510,6 +2130,8 @@ import { connectorConfig, completeMyCurrentPhaseRef, CompleteMyCurrentPhaseVaria
 
 // The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
 const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
+  attemptId: ..., 
+  activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
   correctAnswers: ..., 
@@ -1519,7 +2141,7 @@ const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
 // Call the `completeMyCurrentPhaseRef()` function to get a reference to the mutation.
 const ref = completeMyCurrentPhaseRef(completeMyCurrentPhaseVars);
 // Variables can be defined inline as well.
-const ref = completeMyCurrentPhaseRef({ phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const ref = completeMyCurrentPhaseRef({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

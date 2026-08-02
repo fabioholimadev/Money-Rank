@@ -17,13 +17,13 @@ import {
 import {
   getPhaseProgress,
   isActivityUnlocked,
-  isPhaseCompleted,
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
 import { bancoDeQuestoes } from './questoes';
 
 const PHASE_NUMBER = 1;
 const MINIMUM_CORRECT_ANSWERS = 3;
+const ACTIVITY_ID = 'perigo-doce-quiz';
 
 export default function AtividadeQuiz() {
   const navigate = useNavigate();
@@ -52,11 +52,6 @@ export default function AtividadeQuiz() {
   const phaseProgress = getPhaseProgress(
     trailProgress,
     PHASE_NUMBER,
-  );
-  const alreadyCompleted = isPhaseCompleted(
-    PHASE_NUMBER,
-    currentPhase,
-    phaseProgress,
   );
   const activityUnlocked = isActivityUnlocked(
     PHASE_NUMBER,
@@ -88,36 +83,34 @@ export default function AtividadeQuiz() {
     const passed = pontuacao >= MINIMUM_CORRECT_ANSWERS;
 
     try {
-      if (alreadyCompleted) {
-        setResultadoBanco({
-          reward: 0,
-          capicoins: aluno?.capicoins ?? 0,
-          streak: aluno?.streak_atual ?? 0,
-          wasReview: true,
-        });
-        return;
-      }
-
       if (passed) {
-        const completion = await completePhaseActivity(PHASE_NUMBER, {
-          score,
-          correctAnswers: pontuacao,
-          wrongAnswers: totalQuestions - pontuacao,
-        });
+        const completion = await completePhaseActivity(
+          PHASE_NUMBER,
+          {
+            score,
+            correctAnswers: pontuacao,
+            wrongAnswers: totalQuestions - pontuacao,
+          },
+          ACTIVITY_ID,
+        );
         const synchronizedState = await refreshTrailState();
 
         setResultadoBanco({
-          reward: completion.reward,
+          ...completion,
           capicoins: synchronizedState.profile?.capicoins ?? 0,
           streak: synchronizedState.profile?.streak_atual ?? 0,
-          wasReview: false,
+          wasReview: !completion.firstCompletion,
         });
       } else {
-        await registerPhaseAttempt(PHASE_NUMBER, {
-          score,
-          correctAnswers: pontuacao,
-          wrongAnswers: totalQuestions - pontuacao,
-        });
+        await registerPhaseAttempt(
+          PHASE_NUMBER,
+          {
+            score,
+            correctAnswers: pontuacao,
+            wrongAnswers: totalQuestions - pontuacao,
+          },
+          ACTIVITY_ID,
+        );
         await refreshTrailState();
         setResultadoBanco({
           reward: 0,
@@ -314,11 +307,18 @@ export default function AtividadeQuiz() {
                       : 'Recompensa recebida'}
                   </h2>
                   <p className="mt-2 text-sm text-slate-400">
-                    {resultadoBanco?.wasReview
-                      ? 'As moedas não foram duplicadas porque esta fase já estava concluída.'
+                    {resultadoBanco?.rewardLimitReached
+                      ? 'A tentativa foi salva, mas o limite configurado de repetições remuneradas foi alcançado.'
                       : `+${resultadoBanco?.reward ?? 0} CapiCoins. Saldo atual: ${resultadoBanco?.capicoins ?? 0}.`}
                   </p>
-                  {!resultadoBanco?.wasReview && (
+                  {!resultadoBanco?.rewardLimitReached && (
+                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                      Base: {resultadoBanco?.baseReward ?? 0} · Streak:{' '}
+                      {resultadoBanco?.multiplierPercent ?? 100}% ·
+                      Bônus: +{resultadoBanco?.streakBonus ?? 0}
+                    </p>
+                  )}
+                  {!resultadoBanco?.rewardLimitReached && (
                     <p className="mt-2 text-sm font-bold text-orange-400">
                       Streak atual: {resultadoBanco?.streak ?? 0}
                     </p>

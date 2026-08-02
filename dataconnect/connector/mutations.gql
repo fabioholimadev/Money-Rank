@@ -115,6 +115,32 @@ mutation ApplyCapiCoinTransaction(
   )
 }
 
+# Configuração administrativa da economia. O cliente web não recebe
+# permissão para alterar recompensas, multiplicadores ou limites.
+mutation UpsertEconomyConfig(
+  $firstContentReward: Int!
+  $firstActivityReward: Int!
+  $repeatActivityReward: Int!
+  $rewardedRepeatLimitPerDay: Int
+  $streakTier3Percent: Int!
+  $streakTier5Percent: Int!
+  $streakTier7Percent: Int!
+) @auth(level: NO_ACCESS) {
+  economyConfig_upsert(
+    data: {
+      configKey: "default"
+      firstContentReward: $firstContentReward
+      firstActivityReward: $firstActivityReward
+      repeatActivityReward: $repeatActivityReward
+      rewardedRepeatLimitPerDay: $rewardedRepeatLimitPerDay
+      streakTier3Percent: $streakTier3Percent
+      streakTier5Percent: $streakTier5Percent
+      streakTier7Percent: $streakTier7Percent
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
 # Migração segura para perfis criados antes do Passo 0. Somente alunos que
 # ainda não possuem nenhum progresso podem voltar de 1 para 0.
 mutation InitializeMyTrail @auth(level: USER_EMAIL_VERIFIED) {
@@ -143,16 +169,33 @@ mutation InitializeMyTrail @auth(level: USER_EMAIL_VERIFIED) {
 mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
   affectedRows: _execute(
     sql: """
-      WITH advanced_user AS (
-        UPDATE users AS u
-        SET
-          current_phase = 1,
-          capi_coins = u.capi_coins + 20,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE
-          u.firebase_uid = $1
-          AND u.current_phase = 0
-        RETURNING u.firebase_uid
+      WITH settings AS (
+        SELECT
+          COALESCE((
+            SELECT first_content_reward
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 20)::integer AS base_reward,
+          COALESCE((
+            SELECT streak_tier_3_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 110)::integer AS tier_3,
+          COALESCE((
+            SELECT streak_tier_5_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 120)::integer AS tier_5,
+          COALESCE((
+            SELECT streak_tier_7_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 130)::integer AS tier_7
+      ),
+      local_clock AS (
+        SELECT
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+            AS local_date
       ),
       completed_progress AS (
         INSERT INTO student_progress (
@@ -168,7 +211,7 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
           updated_at
         )
         SELECT
-          advanced_user.firebase_uid,
+          u.firebase_uid,
           0,
           'COMPLETED',
           100,
@@ -178,26 +221,105 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
           CURRENT_TIMESTAMP,
           CURRENT_TIMESTAMP,
           CURRENT_TIMESTAMP
-        FROM advanced_user
+        FROM users AS u
+        WHERE
+          u.firebase_uid = $1
+          AND u.current_phase = 0
         ON CONFLICT (user_uid, phase_number) DO NOTHING
         RETURNING user_uid
+      ),
+      reward_seed AS (
+        SELECT
+          u.firebase_uid,
+          u.class_group,
+          settings.base_reward,
+          settings.tier_3,
+          settings.tier_5,
+          settings.tier_7,
+          local_clock.local_date,
+          CASE
+            WHEN u.last_streak_date = local_clock.local_date
+              THEN GREATEST(u.current_streak, 1)
+            WHEN u.last_streak_date = local_clock.local_date - 1
+              THEN u.current_streak + 1
+            ELSE 1
+          END AS next_streak
+        FROM users AS u
+        INNER JOIN completed_progress AS progress
+          ON progress.user_uid = u.firebase_uid
+        CROSS JOIN settings
+        CROSS JOIN local_clock
+      ),
+      reward_context AS (
+        SELECT
+          reward_seed.*,
+          CASE
+            WHEN next_streak >= 7 THEN tier_7
+            WHEN next_streak >= 5 THEN tier_5
+            WHEN next_streak >= 3 THEN tier_3
+            ELSE 100
+          END AS multiplier_percent
+        FROM reward_seed
+      ),
+      reward_values AS (
+        SELECT
+          reward_context.*,
+          ROUND(
+            base_reward * multiplier_percent / 100.0
+          )::integer AS reward_amount
+        FROM reward_context
+      ),
+      credited_user AS (
+        UPDATE users AS u
+        SET
+          current_phase = 1,
+          capi_coins = u.capi_coins + values.reward_amount,
+          current_streak = values.next_streak,
+          last_streak_date = values.local_date,
+          updated_at = CURRENT_TIMESTAMP
+        FROM reward_values AS values
+        WHERE u.firebase_uid = values.firebase_uid
+        RETURNING
+          u.firebase_uid,
+          values.class_group,
+          values.base_reward,
+          values.multiplier_percent,
+          values.reward_amount,
+          values.local_date
       )
       INSERT INTO capi_coin_transactions (
         user_uid,
         amount,
+        base_amount,
+        streak_multiplier_percent,
+        streak_bonus,
         transaction_type,
         reason,
         source_id,
+        phase_number,
+        class_group,
+        competition_week,
         created_at
       )
       SELECT
-        completed_progress.user_uid,
-        20,
+        credited_user.firebase_uid,
+        credited_user.reward_amount,
+        credited_user.base_reward,
+        credited_user.multiplier_percent,
+        credited_user.reward_amount - credited_user.base_reward,
         'CONTENT_REWARD',
         'Conclusão do Passo 0',
         'introduction-0',
+        0,
+        credited_user.class_group,
+        (
+          credited_user.local_date
+          - (
+            EXTRACT(ISODOW FROM credited_user.local_date)::integer - 1
+          )
+        )::date,
         CURRENT_TIMESTAMP
-      FROM completed_progress
+      FROM credited_user
     """
     params: [{ _expr: "auth.uid" }]
   )
@@ -209,7 +331,35 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
   @auth(level: USER_EMAIL_VERIFIED) {
   affectedRows: _execute(
     sql: """
-      WITH started_progress AS (
+      WITH settings AS (
+        SELECT
+          COALESCE((
+            SELECT first_content_reward
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 20)::integer AS base_reward,
+          COALESCE((
+            SELECT streak_tier_3_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 110)::integer AS tier_3,
+          COALESCE((
+            SELECT streak_tier_5_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 120)::integer AS tier_5,
+          COALESCE((
+            SELECT streak_tier_7_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 130)::integer AS tier_7
+      ),
+      local_clock AS (
+        SELECT
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+            AS local_date
+      ),
+      started_progress AS (
         INSERT INTO student_progress (
           user_uid,
           phase_number,
@@ -247,29 +397,95 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
         WHERE student_progress.status = 'NOT_STARTED'
         RETURNING user_uid
       ),
+      reward_seed AS (
+        SELECT
+          u.firebase_uid,
+          u.class_group,
+          settings.base_reward,
+          settings.tier_3,
+          settings.tier_5,
+          settings.tier_7,
+          local_clock.local_date,
+          CASE
+            WHEN u.last_streak_date = local_clock.local_date
+              THEN GREATEST(u.current_streak, 1)
+            WHEN u.last_streak_date = local_clock.local_date - 1
+              THEN u.current_streak + 1
+            ELSE 1
+          END AS next_streak
+        FROM users AS u
+        INNER JOIN started_progress AS progress
+          ON progress.user_uid = u.firebase_uid
+        CROSS JOIN settings
+        CROSS JOIN local_clock
+      ),
+      reward_context AS (
+        SELECT
+          reward_seed.*,
+          CASE
+            WHEN next_streak >= 7 THEN tier_7
+            WHEN next_streak >= 5 THEN tier_5
+            WHEN next_streak >= 3 THEN tier_3
+            ELSE 100
+          END AS multiplier_percent
+        FROM reward_seed
+      ),
+      reward_values AS (
+        SELECT
+          reward_context.*,
+          ROUND(
+            base_reward * multiplier_percent / 100.0
+          )::integer AS reward_amount
+        FROM reward_context
+      ),
       credited_user AS (
         UPDATE users AS u
         SET
-          capi_coins = u.capi_coins + 20,
+          capi_coins = u.capi_coins + values.reward_amount,
+          current_streak = values.next_streak,
+          last_streak_date = values.local_date,
           updated_at = CURRENT_TIMESTAMP
-        FROM started_progress
-        WHERE u.firebase_uid = started_progress.user_uid
-        RETURNING u.firebase_uid
+        FROM reward_values AS values
+        WHERE u.firebase_uid = values.firebase_uid
+        RETURNING
+          u.firebase_uid,
+          values.class_group,
+          values.base_reward,
+          values.multiplier_percent,
+          values.reward_amount,
+          values.local_date
       )
       INSERT INTO capi_coin_transactions (
         user_uid,
         amount,
+        base_amount,
+        streak_multiplier_percent,
+        streak_bonus,
         transaction_type,
         reason,
         source_id,
+        phase_number,
+        class_group,
+        competition_week,
         created_at
       )
       SELECT
         credited_user.firebase_uid,
-        20,
+        credited_user.reward_amount,
+        credited_user.base_reward,
+        credited_user.multiplier_percent,
+        credited_user.reward_amount - credited_user.base_reward,
         'CONTENT_REWARD',
         CONCAT('Conteúdo da Fase ', $1::text),
         CONCAT('phase-', $1::text, '-content'),
+        $1,
+        credited_user.class_group,
+        (
+          credited_user.local_date
+          - (
+            EXTRACT(ISODOW FROM credited_user.local_date)::integer - 1
+          )
+        )::date,
         CURRENT_TIMESTAMP
       FROM credited_user
     """
@@ -280,6 +496,8 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
 # Registra uma tentativa que ainda não alcançou a pontuação mínima. Não libera
 # a próxima fase e não gera moedas.
 mutation RegisterMyCurrentPhaseAttempt(
+  $attemptId: UUID!
+  $activityId: String!
   $phaseNumber: Int!
   $score: Int!
   $correctAnswers: Int!
@@ -288,26 +506,85 @@ mutation RegisterMyCurrentPhaseAttempt(
   @auth(level: USER_EMAIL_VERIFIED) {
   affectedRows: _execute(
     sql: """
+      WITH eligible_attempt AS (
+        SELECT
+          sp.user_uid,
+          sp.phase_number
+        FROM student_progress AS sp
+        INNER JOIN users AS u
+          ON u.firebase_uid = sp.user_uid
+        WHERE
+          sp.user_uid = $7
+          AND sp.phase_number = $3
+          AND (
+            (
+              sp.status = 'IN_PROGRESS'
+              AND u.current_phase = $3
+            )
+            OR (
+              sp.status = 'COMPLETED'
+              AND $3 <= u.current_phase
+            )
+          )
+          AND $3 BETWEEN 1 AND 4
+          AND $4 BETWEEN 0 AND 59
+          AND $5 >= 0
+          AND $6 >= 0
+          AND LENGTH($2) BETWEEN 1 AND 128
+      ),
+      created_attempt AS (
+        INSERT INTO activity_attempts (
+          id,
+          user_uid,
+          activity_id,
+          phase_number,
+          score,
+          correct_answers,
+          wrong_answers,
+          passed,
+          first_completion,
+          reward_base,
+          streak_multiplier_percent,
+          streak_bonus,
+          reward_amount,
+          reward_limit_reached,
+          created_at
+        )
+        SELECT
+          $1::uuid,
+          eligible_attempt.user_uid,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          FALSE,
+          FALSE,
+          0,
+          100,
+          0,
+          0,
+          FALSE,
+          CURRENT_TIMESTAMP
+        FROM eligible_attempt
+        ON CONFLICT (id) DO NOTHING
+        RETURNING user_uid, phase_number
+      )
       UPDATE student_progress AS sp
       SET
-        score = GREATEST(sp.score, $2),
+        score = GREATEST(sp.score, $4),
         attempts = sp.attempts + 1,
-        correct_answers = GREATEST(sp.correct_answers, $3),
-        wrong_answers = sp.wrong_answers + $4,
+        correct_answers = GREATEST(sp.correct_answers, $5),
+        wrong_answers = sp.wrong_answers + $6,
         updated_at = CURRENT_TIMESTAMP
-      FROM users AS u
+      FROM created_attempt
       WHERE
-        sp.user_uid = $5
-        AND sp.phase_number = $1
-        AND sp.status = 'IN_PROGRESS'
-        AND u.firebase_uid = sp.user_uid
-        AND u.current_phase = $1
-        AND $1 BETWEEN 1 AND 4
-        AND $2 BETWEEN 0 AND 59
-        AND $3 >= 0
-        AND $4 >= 0
+        sp.user_uid = created_attempt.user_uid
+        AND sp.phase_number = created_attempt.phase_number
     """
     params: [
+      $attemptId
+      $activityId
       $phaseNumber
       $score
       $correctAnswers
@@ -324,6 +601,8 @@ mutation RegisterMyCurrentPhaseAttempt(
 # - dia imediatamente anterior: soma um;
 # - intervalo maior: reinicia em um.
 mutation CompleteMyCurrentPhase(
+  $attemptId: UUID!
+  $activityId: String!
   $phaseNumber: Int!
   $score: Int!
   $correctAnswers: Int!
@@ -332,63 +611,278 @@ mutation CompleteMyCurrentPhase(
   @auth(level: USER_EMAIL_VERIFIED) {
   affectedRows: _execute(
     sql: """
-      WITH completed_progress AS (
+      WITH settings AS (
+        SELECT
+          COALESCE((
+            SELECT first_activity_reward
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 100)::integer AS first_reward,
+          COALESCE((
+            SELECT repeat_activity_reward
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 20)::integer AS repeat_reward,
+          (
+            SELECT rewarded_repeat_limit_per_day
+            FROM economy_config
+            WHERE config_key = 'default'
+          )::integer AS repeat_limit,
+          COALESCE((
+            SELECT streak_tier_3_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 110)::integer AS tier_3,
+          COALESCE((
+            SELECT streak_tier_5_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 120)::integer AS tier_5,
+          COALESCE((
+            SELECT streak_tier_7_percent
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 130)::integer AS tier_7
+      ),
+      local_clock AS (
+        SELECT
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+            AS local_date
+      ),
+      eligible_attempt AS (
+        SELECT
+          $1::uuid AS attempt_id,
+          $2 AS activity_id,
+          u.firebase_uid,
+          u.class_group,
+          u.current_phase,
+          u.current_streak,
+          u.last_streak_date,
+          sp.status,
+          (sp.status = 'IN_PROGRESS') AS first_completion,
+          settings.*,
+          local_clock.local_date,
+          (
+            SELECT COUNT(*)::integer
+            FROM activity_attempts AS previous
+            WHERE
+              previous.user_uid = u.firebase_uid
+              AND previous.passed = TRUE
+              AND previous.first_completion = FALSE
+              AND previous.reward_amount > 0
+              AND (
+                previous.created_at
+                AT TIME ZONE 'America/Fortaleza'
+              )::date = local_clock.local_date
+          ) AS rewarded_repeats_today
+        FROM users AS u
+        INNER JOIN student_progress AS sp
+          ON sp.user_uid = u.firebase_uid
+          AND sp.phase_number = $3
+        CROSS JOIN settings
+        CROSS JOIN local_clock
+        WHERE
+          u.firebase_uid = $7
+          AND (
+            (
+              sp.status = 'IN_PROGRESS'
+              AND u.current_phase = $3
+            )
+            OR (
+              sp.status = 'COMPLETED'
+              AND $3 <= u.current_phase
+            )
+          )
+          AND $3 BETWEEN 1 AND 4
+          AND $4 BETWEEN 60 AND 100
+          AND $5 >= 1
+          AND $6 >= 0
+          AND LENGTH($2) BETWEEN 1 AND 128
+      ),
+      reward_policy AS (
+        SELECT
+          eligible_attempt.*,
+          (
+            NOT first_completion
+            AND repeat_limit IS NOT NULL
+            AND rewarded_repeats_today >= repeat_limit
+          ) AS reward_limit_reached,
+          CASE
+            WHEN first_completion THEN first_reward
+            WHEN repeat_limit IS NULL
+              OR rewarded_repeats_today < repeat_limit
+              THEN repeat_reward
+            ELSE 0
+          END AS reward_base
+        FROM eligible_attempt
+      ),
+      streak_seed AS (
+        SELECT
+          reward_policy.*,
+          CASE
+            WHEN reward_base <= 0 THEN current_streak
+            WHEN last_streak_date = local_date
+              THEN GREATEST(current_streak, 1)
+            WHEN last_streak_date = local_date - 1
+              THEN current_streak + 1
+            ELSE 1
+          END AS next_streak
+        FROM reward_policy
+      ),
+      reward_context AS (
+        SELECT
+          streak_seed.*,
+          CASE
+            WHEN reward_base <= 0 THEN 100
+            WHEN next_streak >= 7 THEN tier_7
+            WHEN next_streak >= 5 THEN tier_5
+            WHEN next_streak >= 3 THEN tier_3
+            ELSE 100
+          END AS multiplier_percent
+        FROM streak_seed
+      ),
+      reward_values AS (
+        SELECT
+          reward_context.*,
+          ROUND(
+            reward_base * multiplier_percent / 100.0
+          )::integer AS reward_amount
+        FROM reward_context
+      ),
+      created_attempt AS (
+        INSERT INTO activity_attempts (
+          id,
+          user_uid,
+          activity_id,
+          phase_number,
+          score,
+          correct_answers,
+          wrong_answers,
+          passed,
+          first_completion,
+          reward_base,
+          streak_multiplier_percent,
+          streak_bonus,
+          reward_amount,
+          reward_limit_reached,
+          created_at
+        )
+        SELECT
+          attempt_id,
+          firebase_uid,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          TRUE,
+          first_completion,
+          reward_base,
+          multiplier_percent,
+          reward_amount - reward_base,
+          reward_amount,
+          reward_limit_reached,
+          CURRENT_TIMESTAMP
+        FROM reward_values
+        ON CONFLICT (id) DO NOTHING
+        RETURNING id, user_uid, phase_number
+      ),
+      updated_progress AS (
         UPDATE student_progress AS sp
         SET
           status = 'COMPLETED',
-          score = GREATEST(sp.score, $2),
+          score = GREATEST(sp.score, $4),
           attempts = sp.attempts + 1,
-          correct_answers = GREATEST(sp.correct_answers, $3),
-          wrong_answers = sp.wrong_answers + $4,
-          completed_at = CURRENT_TIMESTAMP,
+          correct_answers = GREATEST(sp.correct_answers, $5),
+          wrong_answers = sp.wrong_answers + $6,
+          completed_at = COALESCE(sp.completed_at, CURRENT_TIMESTAMP),
           updated_at = CURRENT_TIMESTAMP
-        FROM users AS owner
+        FROM created_attempt
         WHERE
-          sp.user_uid = $5
-          AND sp.phase_number = $1
-          AND sp.status = 'IN_PROGRESS'
-          AND owner.firebase_uid = sp.user_uid
-          AND owner.current_phase = $1
-          AND $1 BETWEEN 1 AND 4
-          AND $2 BETWEEN 60 AND 100
-          AND $3 >= 1
-          AND $4 >= 0
+          sp.user_uid = created_attempt.user_uid
+          AND sp.phase_number = created_attempt.phase_number
         RETURNING sp.user_uid
       ),
       rewarded_user AS (
         UPDATE users AS u
         SET
-          current_phase = LEAST(u.current_phase + 1, 4),
-          capi_coins = u.capi_coins + 100,
-          current_streak = CASE
-            WHEN u.last_streak_date = CURRENT_DATE THEN u.current_streak
-            WHEN u.last_streak_date = CURRENT_DATE - 1 THEN u.current_streak + 1
-            ELSE 1
+          current_phase = CASE
+            WHEN values.first_completion
+              THEN LEAST(u.current_phase + 1, 4)
+            ELSE u.current_phase
           END,
-          last_streak_date = CURRENT_DATE,
+          capi_coins = u.capi_coins + values.reward_amount,
+          current_streak = CASE
+            WHEN values.reward_amount > 0 THEN values.next_streak
+            ELSE u.current_streak
+          END,
+          last_streak_date = CASE
+            WHEN values.reward_amount > 0 THEN values.local_date
+            ELSE u.last_streak_date
+          END,
           updated_at = CURRENT_TIMESTAMP
-        FROM completed_progress
-        WHERE u.firebase_uid = completed_progress.user_uid
-        RETURNING u.firebase_uid
+        FROM created_attempt
+        INNER JOIN reward_values AS values
+          ON values.attempt_id = created_attempt.id
+        WHERE u.firebase_uid = created_attempt.user_uid
+        RETURNING
+          u.firebase_uid,
+          created_attempt.id AS attempt_id,
+          values.activity_id,
+          values.first_completion,
+          values.reward_base,
+          values.multiplier_percent,
+          values.reward_amount,
+          values.class_group,
+          values.local_date
       )
       INSERT INTO capi_coin_transactions (
         user_uid,
+        attempt_id,
         amount,
+        base_amount,
+        streak_multiplier_percent,
+        streak_bonus,
         transaction_type,
         reason,
         source_id,
+        phase_number,
+        class_group,
+        competition_week,
         created_at
       )
       SELECT
         rewarded_user.firebase_uid,
-        100,
-        'ACTIVITY_REWARD',
-        CONCAT('Atividade da Fase ', $1::text),
-        CONCAT('phase-', $1::text, '-activity'),
+        rewarded_user.attempt_id,
+        rewarded_user.reward_amount,
+        rewarded_user.reward_base,
+        rewarded_user.multiplier_percent,
+        rewarded_user.reward_amount - rewarded_user.reward_base,
+        CASE
+          WHEN rewarded_user.first_completion THEN 'ACTIVITY_REWARD'
+          ELSE 'ACTIVITY_REPEAT_REWARD'
+        END::capi_coin_transaction_type,
+        CASE
+          WHEN rewarded_user.first_completion
+            THEN CONCAT('Atividade da Fase ', $3::text)
+          ELSE CONCAT('Revisão da atividade da Fase ', $3::text)
+        END,
+        $2,
+        $3,
+        rewarded_user.class_group,
+        (
+          rewarded_user.local_date
+          - (
+            EXTRACT(ISODOW FROM rewarded_user.local_date)::integer - 1
+          )
+        )::date,
         CURRENT_TIMESTAMP
       FROM rewarded_user
+      WHERE rewarded_user.reward_amount > 0
     """
     params: [
+      $attemptId
+      $activityId
       $phaseNumber
       $score
       $correctAnswers

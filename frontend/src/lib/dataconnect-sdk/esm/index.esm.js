@@ -6,6 +6,7 @@ export const CapiCoinTransactionType = {
   STREAK_BONUS: "STREAK_BONUS",
   PURCHASE: "PURCHASE",
   ADMIN_ADJUSTMENT: "ADMIN_ADJUSTMENT",
+  ACTIVITY_REPEAT_REWARD: "ACTIVITY_REPEAT_REWARD",
 }
 
 export const ProfessionalAvatar = {
@@ -96,6 +97,18 @@ applyCapiCoinTransactionRef.operationName = 'ApplyCapiCoinTransaction';
 export function applyCapiCoinTransaction(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(applyCapiCoinTransactionRef(dcInstance, inputVars));
+}
+
+export const upsertEconomyConfigRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertEconomyConfig', inputVars);
+}
+upsertEconomyConfigRef.operationName = 'UpsertEconomyConfig';
+
+export function upsertEconomyConfig(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertEconomyConfigRef(dcInstance, inputVars));
 }
 
 export const initializeMyTrailRef = (dc) => {
@@ -195,5 +208,57 @@ export function listMyCapiCoinTransactions(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
   return executeQuery(listMyCapiCoinTransactionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getMyCapiCoinTransactionBySourceRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyCapiCoinTransactionBySource', inputVars);
+}
+getMyCapiCoinTransactionBySourceRef.operationName = 'GetMyCapiCoinTransactionBySource';
+
+export function getMyCapiCoinTransactionBySource(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyCapiCoinTransactionBySourceRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getMyActivityAttemptRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyActivityAttempt', inputVars);
+}
+getMyActivityAttemptRef.operationName = 'GetMyActivityAttempt';
+
+export function getMyActivityAttempt(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyActivityAttemptRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyActivityAttemptsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyActivityAttempts', inputVars);
+}
+listMyActivityAttemptsRef.operationName = 'ListMyActivityAttempts';
+
+export function listMyActivityAttempts(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMyActivityAttemptsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getEconomyConfigRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetEconomyConfig');
+}
+getEconomyConfigRef.operationName = 'GetEconomyConfig';
+
+export function getEconomyConfig(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getEconomyConfigRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

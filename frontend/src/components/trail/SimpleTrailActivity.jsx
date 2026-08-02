@@ -14,7 +14,6 @@ import {
 import {
   getPhaseProgress,
   isActivityUnlocked,
-  isPhaseCompleted,
   normalizeCurrentPhase,
 } from '../../lib/trailProgress';
 import TrailLockedState from './TrailLockedState';
@@ -39,11 +38,6 @@ export default function SimpleTrailActivity({ activity }) {
     trailProgress,
     activity.phaseNumber,
   );
-  const alreadyCompleted = isPhaseCompleted(
-    activity.phaseNumber,
-    currentPhase,
-    phaseProgress,
-  );
   const activityUnlocked = isActivityUnlocked(
     activity.phaseNumber,
     currentPhase,
@@ -62,29 +56,21 @@ export default function SimpleTrailActivity({ activity }) {
     setSaveError('');
 
     try {
-      let reward = 0;
-      let synchronizedState = {
-        profile: aluno,
-        progress: trailProgress,
-      };
-
-      if (!alreadyCompleted) {
-        const completion = await completePhaseActivity(
-          activity.phaseNumber,
-          {
-            score: 100,
-            correctAnswers: 1,
-            wrongAnswers,
-          },
-        );
-        reward = completion.reward;
-        synchronizedState = await refreshTrailState();
-      }
+      const completion = await completePhaseActivity(
+        activity.phaseNumber,
+        {
+          score: 100,
+          correctAnswers: 1,
+          wrongAnswers,
+        },
+        activity.id,
+      );
+      const synchronizedState = await refreshTrailState();
 
       setResult({
-        reward,
+        ...completion,
         profile: synchronizedState.profile,
-        wasReview: alreadyCompleted,
+        wasReview: !completion.firstCompletion,
       });
     } catch (error) {
       console.error('Não foi possível concluir a atividade.', error);
@@ -128,8 +114,8 @@ export default function SimpleTrailActivity({ activity }) {
                 {activity.title}
               </h1>
               <p className="mt-3 text-sm text-slate-400">
-                Responda corretamente para concluir a fase e receber 100
-                CapiCoins.
+                A primeira conclusão vale 100 CapiCoins-base. Revisões
+                aprovadas valem 20, e o streak multiplica a recompensa.
               </p>
             </header>
 
@@ -236,11 +222,18 @@ export default function SimpleTrailActivity({ activity }) {
                 : 'Fase concluída!'}
             </h1>
             <p className="mt-3 text-sm text-slate-400">
-              {result.wasReview
-                ? 'Esta fase já havia sido premiada, então nenhuma moeda foi duplicada.'
+              {result.rewardLimitReached
+                ? 'A tentativa foi registrada, mas o limite configurado de repetições remuneradas foi alcançado.'
                 : `+${result.reward} CapiCoins registrados. Saldo atual: ${result.profile?.capicoins ?? 0}.`}
             </p>
-            {!result.wasReview && (
+            {!result.rewardLimitReached && (
+              <p className="mt-2 text-xs font-semibold text-slate-400">
+                Base: {result.baseReward} · Streak:{' '}
+                {result.multiplierPercent}% · Bônus: +
+                {result.streakBonus}
+              </p>
+            )}
+            {!result.rewardLimitReached && (
               <p className="mt-2 text-sm font-bold text-orange-400">
                 Streak atual: {result.profile?.streak_atual ?? 0}
               </p>

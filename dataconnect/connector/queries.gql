@@ -46,10 +46,116 @@ query ListMyCapiCoinTransactions($offset: Int = 0)
     offset: $offset
   ) {
     id
+    attemptId
     amount
+    baseAmount
+    streakMultiplierPercent
+    streakBonus
     transactionType
     reason
     sourceId
+    phaseNumber
+    classGroup
+    competitionWeek
     createdAt
+  }
+}
+
+# Retorna o lançamento de uma etapa única, como o Passo 0 ou o conteúdo de
+# uma fase. Assim, o frontend exibe o valor real já multiplicado pelo streak.
+query GetMyCapiCoinTransactionBySource($sourceId: String!)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  capiCoinTransactions(
+    where: {
+      userUid: { eq_expr: "auth.uid" }
+      sourceId: { eq: $sourceId }
+    }
+    orderBy: [{ createdAt: DESC }]
+    limit: 1
+  ) {
+    id
+    amount
+    baseAmount
+    streakMultiplierPercent
+    streakBonus
+    transactionType
+    sourceId
+    phaseNumber
+    createdAt
+  }
+}
+
+# Recupera o resultado autoritativo de uma tentativa pelo identificador de
+# idempotência. O filtro por auth.uid impede a leitura de tentativas de outro
+# aluno, mesmo que o UUID seja conhecido.
+query GetMyActivityAttempt($attemptId: UUID!)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  activityAttempts(
+    where: {
+      id: { eq: $attemptId }
+      userUid: { eq_expr: "auth.uid" }
+    }
+    limit: 1
+  ) {
+    id
+    activityId
+    phaseNumber
+    score
+    correctAnswers
+    wrongAnswers
+    passed
+    firstCompletion
+    rewardBase
+    streakMultiplierPercent
+    streakBonus
+    rewardAmount
+    rewardLimitReached
+    createdAt
+  }
+}
+
+# Histórico paginado de tentativas do aluno. Será usado nas atividades e,
+# futuramente, nos relatórios pedagógicos.
+query ListMyActivityAttempts($phaseNumber: Int!, $offset: Int = 0)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  activityAttempts(
+    where: {
+      userUid: { eq_expr: "auth.uid" }
+      phaseNumber: { eq: $phaseNumber }
+    }
+    orderBy: [{ createdAt: DESC }]
+    limit: 50
+    offset: $offset
+  ) {
+    id
+    activityId
+    phaseNumber
+    score
+    correctAnswers
+    wrongAnswers
+    passed
+    firstCompletion
+    rewardBase
+    streakMultiplierPercent
+    streakBonus
+    rewardAmount
+    rewardLimitReached
+    createdAt
+  }
+}
+
+# A configuração pode ser consultada pelo app, mas somente uma rotina
+# administrativa confiável consegue alterá-la.
+query GetEconomyConfig @auth(level: USER_EMAIL_VERIFIED) {
+  economyConfig(key: { configKey: "default" }) {
+    configKey
+    firstContentReward
+    firstActivityReward
+    repeatActivityReward
+    rewardedRepeatLimitPerDay
+    streakTier3Percent
+    streakTier5Percent
+    streakTier7Percent
+    updatedAt
   }
 }

@@ -463,7 +463,7 @@ export default function PhaseContentLayout({ content }) {
               <p className="mt-2 text-xs font-bold text-amber-400">
                 {contentAlreadyCompleted
                   ? 'Revisão do conteúdo: 0 CapiCoins'
-                  : 'Primeira conclusão: +20 CapiCoins'}
+                  : 'Primeira conclusão: 20 CapiCoins-base + streak'}
               </p>
             </div>
           </div>
