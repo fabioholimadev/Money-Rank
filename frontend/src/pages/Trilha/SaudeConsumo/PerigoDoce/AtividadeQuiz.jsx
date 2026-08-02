@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowBack,
   ArrowForward,
@@ -19,7 +19,7 @@ import {
   isActivityUnlocked,
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
-import { bancoDeQuestoes } from './questoes';
+import { generatePerigoDoceQuestions } from '../../../../services/perigoDoceAiService';
 
 const PHASE_NUMBER = 1;
 const MINIMUM_CORRECT_ANSWERS = 3;
@@ -33,12 +33,12 @@ export default function AtividadeQuiz() {
     trailLoading,
     refreshTrailState,
   } = useAuth();
-  const [questoesSorteadas] = useState(() => {
-    const embaralhadas = [...bancoDeQuestoes].sort(
-      () => 0.5 - Math.random(),
-    );
-    return embaralhadas.slice(0, 5);
-  });
+  const [questoesSorteadas, setQuestoesSorteadas] = useState([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [questionSource, setQuestionSource] = useState(null);
+  const [questionNotice, setQuestionNotice] = useState('');
+  const [questionLoadError, setQuestionLoadError] = useState('');
+  const questionGenerationRef = useRef(null);
   const [perguntaAtual, setPerguntaAtual] = useState(0);
   const [pontuacao, setPontuacao] = useState(0);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
@@ -58,6 +58,63 @@ export default function AtividadeQuiz() {
     currentPhase,
     phaseProgress,
   );
+
+  useEffect(() => {
+    if (trailLoading || !activityUnlocked || jogoFinalizado) {
+      return undefined;
+    }
+
+    let isActive = true;
+
+    async function loadQuestions() {
+      setIsLoadingQuestions(true);
+      setQuestionLoadError('');
+
+      try {
+        if (!questionGenerationRef.current) {
+          questionGenerationRef.current = generatePerigoDoceQuestions({
+            currentPhase,
+            capiCoins: aluno?.capicoins,
+            streak: aluno?.streak_atual,
+            progressEntries: trailProgress,
+          });
+        }
+
+        const result = await questionGenerationRef.current;
+
+        if (!isActive) return;
+
+        setQuestoesSorteadas(result.questions);
+        setQuestionSource(result.source);
+        setQuestionNotice(result.notice);
+      } catch (error) {
+        if (!isActive) return;
+
+        console.error('Não foi possível preparar o quiz.', error);
+        setQuestionLoadError(
+          'Não foi possível preparar as questões. Recarregue a página para tentar novamente.',
+        );
+      } finally {
+        if (isActive) {
+          setIsLoadingQuestions(false);
+        }
+      }
+    }
+
+    loadQuestions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    activityUnlocked,
+    aluno?.capicoins,
+    aluno?.streak_atual,
+    currentPhase,
+    jogoFinalizado,
+    trailLoading,
+    trailProgress,
+  ]);
 
   const handleResponder = (selectedIndex) => {
     if (respondido) return;
@@ -150,11 +207,42 @@ export default function AtividadeQuiz() {
     );
   }
 
-  if (questoesSorteadas.length === 0) {
+  if (isLoadingQuestions || trailLoading) {
     return (
       <TrailPageShell>
-        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center text-white">
-          Carregando missão...
+        <div
+          role="status"
+          className="rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center text-white"
+        >
+          <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-slate-700 border-t-amber-400" />
+          <p className="font-bold">Preparando sua missão...</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Organizando cinco questões com a base científica da fase.
+          </p>
+        </div>
+      </TrailPageShell>
+    );
+  }
+
+  if (questionLoadError || questoesSorteadas.length === 0) {
+    return (
+      <TrailPageShell>
+        <div className="rounded-3xl border border-red-500/30 bg-slate-900 p-8 text-center text-white">
+          <Cancel
+            sx={{ fontSize: 42 }}
+            className="mx-auto text-red-400"
+            aria-hidden="true"
+          />
+          <p role="alert" className="mt-3 font-bold text-red-300">
+            {questionLoadError || 'Nenhuma questão foi preparada.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 rounded-xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-950 hover:bg-amber-400"
+          >
+            Tentar novamente
+          </button>
         </div>
       </TrailPageShell>
     );
@@ -178,9 +266,24 @@ export default function AtividadeQuiz() {
         {!jogoFinalizado ? (
           <>
             <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-                Questão {perguntaAtual + 1} de {questoesSorteadas.length}
-              </span>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                  Questão {perguntaAtual + 1} de{' '}
+                  {questoesSorteadas.length}
+                </span>
+                <p
+                  className={`mt-2 inline-flex rounded-full border px-3 py-1 text-[11px] font-bold ${
+                    questionSource === 'ai'
+                      ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                      : 'border-slate-700 bg-slate-800 text-slate-300'
+                  }`}
+                  title={questionNotice}
+                >
+                  {questionSource === 'ai'
+                    ? 'Gerado pela IA com fontes validadas'
+                    : 'Modo local seguro'}
+                </p>
+              </div>
               <span className="rounded-full border border-slate-700 bg-slate-800 px-4 py-1.5 text-xs font-bold">
                 Acertos:{' '}
                 <span

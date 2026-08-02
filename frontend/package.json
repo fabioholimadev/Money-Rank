@@ -11,6 +11,7 @@
     "test:competitive-economy": "node ../scripts/test-competitive-economy.mjs",
     "test:content-materials": "node ../scripts/test-content-material-model.mjs",
     "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs",
+    "test:perigo-doce-ai": "node ../scripts/test-perigo-doce-ai.mjs",
     "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {
@@ -21,7 +22,7 @@
     "@mui/material": "^9.1.0",
     "@supabase/supabase-js": "^2.106.0",
     "@tailwindcss/postcss": "^4.3.0",
-    "firebase": "^12.16.0",
+    "firebase": "^12.17.0",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
