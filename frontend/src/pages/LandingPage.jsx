@@ -565,11 +565,11 @@ function Landing() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-[10px]">Tecnologias</h4>
+            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-[10px]">Experiência</h4>
             <ul className="space-y-2">
-              <li>React & Tailwind CSS</li>
-              <li>Node.js / Express Architecture</li>
-              <li>Firebase Auth & SQL Connect</li>
+              <li>Trilhas gamificadas</li>
+              <li>CapiCoins, streaks e rankings</li>
+              <li>Conteúdos com IA responsável</li>
             </ul>
           </div>
         </div>

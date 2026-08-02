@@ -1,24 +1,4 @@
 export const HEALTH_CONSUMPTION_ACTIVITIES = {
-  custoVicio: {
-    id: 'custo-vicio-case',
-    phaseNumber: 2,
-    stepLabel: 'Fase 2',
-    mechanicLabel: 'Estudo de Caso',
-    title: 'O orçamento de Rafael',
-    prompt:
-      'Rafael gasta R$ 15 por dia com um hábito de consumo. Considerando 30 dias, quanto esse gasto representa no mês?',
-    options: [
-      { label: 'R$ 150', correct: false },
-      { label: 'R$ 300', correct: false },
-      { label: 'R$ 450', correct: true },
-      { label: 'R$ 1.500', correct: false },
-    ],
-    explanation:
-      'R$ 15 × 30 dias = R$ 450. Observar o total mensal ajuda a enxergar o custo real de um gasto recorrente.',
-    nextPath: '/trilha/saude-consumo/ilusao-dinheiro/conteudo',
-    nextLabel: 'Continuar para a Fase 3',
-  },
-
   ilusaoDinheiro: {
     id: 'ilusao-dinheiro-paths',
     phaseNumber: 3,

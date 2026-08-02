@@ -395,7 +395,7 @@ export default function AtividadeQuiz() {
             <div className="my-7 rounded-2xl border border-slate-800 bg-slate-950 p-5">
               {isSubmitting ? (
                 <p className="font-bold text-amber-400">
-                  Registrando no SQL Connect...
+                  Guardando no Capi Bank...
                 </p>
               ) : passed ? (
                 <>

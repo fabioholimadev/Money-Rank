@@ -317,7 +317,7 @@ export function AuthProvider({ children }) {
               error,
             );
             setProfileSyncError(
-              'O perfil relacional está temporariamente indisponível. Os dados locais foram mantidos.',
+              'O Capi Bank está temporariamente indisponível. Os dados deste dispositivo foram mantidos.',
             );
             setTrailProgress([]);
           })
@@ -409,10 +409,10 @@ export function AuthProvider({ children }) {
             error,
           );
           setProfileSyncError(
-            'Não foi possível sincronizar o perfil com o banco de dados.',
+            'Não foi possível salvar o perfil no Capi Bank.',
           );
           throw new Error(
-            'Não foi possível sincronizar o perfil. Confirme se o emulador SQL Connect está ativo e tente novamente.',
+            'Não foi possível salvar o perfil no Capi Bank. Tente novamente em instantes.',
             { cause: error },
           );
         }
@@ -492,7 +492,7 @@ export function AuthProvider({ children }) {
         error,
       );
       setProfileSyncError(
-        'Não foi possível atualizar o progresso no banco de dados.',
+        'Não foi possível atualizar o progresso no Capi Bank.',
       );
       throw error;
     } finally {

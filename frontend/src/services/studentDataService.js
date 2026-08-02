@@ -31,7 +31,7 @@ const MAX_PHASE = 4;
 function requireDataConnect() {
   if (!isDataConnectEnabled) {
     throw new Error(
-      'O Firebase SQL Connect está desativado. Ative-o no .env.local para salvar o progresso.',
+      'O Capi Bank está temporariamente indisponível. Tente novamente em instantes.',
     );
   }
 }
@@ -166,7 +166,7 @@ export async function syncStudentProfile(profile) {
 
   const classGroup = toDataConnectClass(profile.turma);
   if (!classGroup) {
-    throw new Error('A turma informada não existe no esquema do SQL Connect.');
+    throw new Error('A turma informada não é válida.');
   }
 
   const variables = {
@@ -176,7 +176,7 @@ export async function syncStudentProfile(profile) {
   const avatarId = toDataConnectAvatar(profile.avatar_id);
 
   if (profile.avatar_id && !avatarId) {
-    throw new Error('A Capi escolhida não existe no esquema do SQL Connect.');
+    throw new Error('A Capi escolhida não é válida.');
   }
 
   if (avatarId) {

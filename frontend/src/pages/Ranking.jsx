@@ -39,7 +39,7 @@ export default function Ranking() {
         }
       } catch (err) {
         console.error('Erro ao buscar leaderboard:', err);
-        setErrorMsg('Não foi possível conectar ao banco de dados.');
+        setErrorMsg('O Capi Bank está descansando. Tente novamente em instantes.');
       } finally {
         setIsLoading(false);
       }

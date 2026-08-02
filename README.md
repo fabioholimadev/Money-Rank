@@ -217,3 +217,10 @@ arquivo [`docs/deploy/checklist-producao.md`](docs/deploy/checklist-producao.md)
 Ele registra as pendências de App Check com reCAPTCHA Enterprise, proteção
 contra repetição, custos da IA, aprovação pedagógica, SQL Connect de produção e
 testes do ambiente final. O modo debug do App Check nunca deve ser publicado.
+
+## 🧠 Atividades do Épico 3
+
+A documentação pedagógica e técnica das atividades fica em `docs/epic-3`.
+O estudo de caso **O Custo do Vício** possui três personagens, cinco decisões
+sem alternativa errada e repetição competitiva registrada pelo SQL Connect.
+Consulte [`docs/epic-3/custo-vicio-estudo-caso.md`](docs/epic-3/custo-vicio-estudo-caso.md).
