@@ -16,7 +16,8 @@ períodos e análises pedagógicas.
 | 5.1 | Criar rotas protegidas para `role = TEACHER` | Concluída (`99d8108`) |
 | 5.2 | Criar métricas e gráficos a partir do SQL Connect | Concluída (`406f387`) |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Concluída (`3882996`) |
-| 5.4 | Administrar períodos e encerramento auditado | Planejada para depois da 5.3 |
+| 5.4 | Criar Estúdio de conteúdos, atividades e revisão | Especificada; não iniciada |
+| 5.5 | Administrar períodos e encerramento auditado | Planejada após o Estúdio |
 
 O caminho mínimo do MVP prioriza 5.1 e 5.2. Caso o tempo fique curto, o Chat
 de Dados pode ser adiado sem impedir o piloto, desde que o professor tenha as
@@ -63,12 +64,18 @@ professor, cinco intenções fechadas, cálculo factual determinístico e Gemini
 limitado a uma recomendação pedagógica sem números. Detalhes e roteiro:
 [`chat-dados-professor.md`](chat-dados-professor.md).
 
-## Task 5.4 - Administração da competição
+## Task 5.4 - Estúdio do Professor
 
-Planejada, mas não iniciada. Permitirá criar, agendar, pausar, retomar e
-encerrar períodos. Novo ciclo, ajuste de saldo, limpeza pré-piloto e exclusão
-definitiva serão ações distintas. Qualquer limpeza exigirá backup, confirmação
-forte, autorização no servidor e registro de auditoria.
+Planejada, mas não iniciada. Permitirá editar materiais, revisar pesquisas e
+versionar as bases das quatro atividades com rascunho, prévia e publicação.
+Detalhes: [`estudio-professor.md`](estudio-professor.md).
+
+## Task 5.5 - Administração da competição
+
+Permitirá criar, agendar, pausar, retomar e encerrar períodos. Novo ciclo,
+ajuste de saldo, limpeza pré-piloto e exclusão definitiva serão ações distintas.
+Qualquer limpeza exigirá backup, confirmação forte, autorização no servidor e
+registro de auditoria.
 
 ## Testes previstos
 

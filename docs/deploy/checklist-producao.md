@@ -22,12 +22,14 @@ deploy público não deve ser considerado concluído.
 - [ ] Remover os tokens de depuração que não forem mais necessários.
 - [ ] Confirmar que `startActivitySession` e `submitActivitySession` rejeitam
   chamadas sem App Check e que tokens de uso limitado não podem ser repetidos.
+- [ ] Confirmar o mesmo comportamento em `askTeacherData` e
+  `askStudentMentor`.
 
 ## Cloud Functions e pontuação autoritativa
 
 - [ ] Implantar o schema e as operações do Data Connect antes das Functions.
 - [ ] Criar `GEMINI_API_KEY` no Secret Manager; nunca expor a chave ao Vite.
-- [ ] Confirmar Node.js 22 e região `southamerica-east1` nas duas callables.
+- [ ] Confirmar Node.js 22 e região `southamerica-east1` em todas as callables.
 - [ ] Validar que o bundle e as respostas HTTP não expõem o gabarito do quiz.
 - [ ] Reenviar a mesma sessão e confirmar uma tentativa e uma recompensa.
 - [ ] Tentar enviar sessão de outro usuário e confirmar resposta `not-found`.
@@ -42,10 +44,18 @@ deploy público não deve ser considerado concluído.
   Config, permitindo troca sem novo deploy.
 - [ ] Configurar orçamento, alertas de cobrança e limites de uso antes de abrir
   o acesso para as turmas.
+- [ ] Medir o CapiMentor com `maxInstances: 5` e decidir se será necessário um
+  rate limit persistente por aluno antes do piloto.
 - [ ] Manter `security.auth-only=true` e validar que usuários sem Firebase Auth
   recebem erro de autenticação.
 - [ ] Revisar a amostragem do AI Monitoring para não armazenar conteúdo além do
   necessário para diagnóstico.
+- [ ] Confirmar preço, cota e orçamento do Google Search Grounding; cada busca
+  pode gerar cobrança adicional.
+- [ ] Validar que respostas fundamentadas do CapiMentor exibem fontes e o
+  `searchEntryPoint.renderedContent` exigido pelos termos do Google Search.
+- [ ] Confirmar que o fallback institucional continua disponível quando não há
+  fontes, cota ou pesquisa.
 
 ## Conteúdo pedagógico
 
@@ -53,6 +63,8 @@ deploy público não deve ser considerado concluído.
   `teacher_approved` somente depois da revisão do professor responsável.
 - [ ] Verificar se links, vídeos, slides e resumos estão publicados e acessíveis
   pelo domínio final.
+- [ ] Enquanto o Estúdio não existir, validar e versionar manualmente os arquivos
+  em `frontend/src/data`; não editar conteúdo direto em produção.
 - [ ] Executar uma tentativa completa de cada atividade com uma conta de aluno
   e outra de professor.
 
@@ -79,3 +91,14 @@ deploy público não deve ser considerado concluído.
   não forem necessárias.
 - [ ] Executar lint, build, testes automatizados e smoke test no ambiente final.
 - [ ] Criar um procedimento de rollback e registrar a versão implantada.
+
+## Hosting e ordem de implantação
+
+- [ ] Adicionar Firebase Hosting ao `firebase.json` para `frontend/dist`, com
+  rewrite SPA para `/index.html`, sem sobrescrever Data Connect/Functions.
+- [ ] Executar `npm run build` e confirmar que nenhum `.env.local`, segredo ou
+  token debug entrou em `dist`.
+- [ ] Implantar na ordem: `dataconnect`, `functions`, `hosting`.
+- [ ] Não reutilizar a aplicação antiga da Render, pois ela depende da
+  arquitetura Express/Supabase.
+- [ ] Executar primeiro em homologação e somente depois repetir em produção.
