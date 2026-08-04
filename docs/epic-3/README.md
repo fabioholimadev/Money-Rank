@@ -16,7 +16,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.5 | O Perigo Doce com IA e fallback local | Concluída | `8ba9a35` |
 | 3.6 | O Custo do Vicio com personagens | Concluída | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Concluída | `5c8e1ce` |
-| 3.8 | A Engenharia do Desejo com banco publicitário auditável | Testada; commit pendente | - |
+| 3.8 | A Engenharia do Desejo com banco publicitário auditável | Concluída | `8e76b9e` |
 
 ## Estrutura visual e progressão
 

@@ -125,3 +125,5 @@ O usuário concluiu o roteiro local e aprovou a experiência visual e funcional
 em `2026-08-04`. Os testes automatizados, lint e build também foram aprovados.
 A revisão pedagógica dos 12 cards pelo professor permanece obrigatória antes
 do uso oficial com as turmas.
+
+Commit funcional: `8e76b9e feat: implementa Engenharia do Desejo auditavel`.
