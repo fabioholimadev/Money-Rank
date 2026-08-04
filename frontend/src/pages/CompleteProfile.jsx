@@ -3,12 +3,14 @@ import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProfileForm from '../components/ProfileForm';
 import { useAuth } from '../contexts/AuthContext';
+import { getHomePathForProfile } from '../lib/roleAccess';
 
 export default function CompleteProfile() {
   const { aluno, saveProfile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const destination = location.state?.from?.pathname || '/student';
+  const destination =
+    location.state?.from?.pathname || getHomePathForProfile(aluno);
 
   const handleSubmit = async (profile) => {
     await saveProfile(profile);

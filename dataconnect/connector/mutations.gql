@@ -59,6 +59,30 @@ mutation UpsertMyProfileWithoutSyncedPhoto(
   )
 }
 
+# Elevação administrativa de papel. A operação nunca pode ser chamada pelo
+# navegador e exige que o perfil Google já esteja completo no Capi Bank.
+mutation SetUserRoleByEmail(
+  $email: String!
+  $role: UserRole!
+) @auth(level: NO_ACCESS) {
+  updatedUser: _executeReturningFirst(
+    sql: """
+      UPDATE users
+      SET
+        role = $2::user_role,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        LOWER(email) = LOWER(BTRIM($1))
+        AND profile_completed = TRUE
+      RETURNING
+        firebase_uid AS "uid",
+        preferred_name AS "preferredName",
+        role::text AS "role"
+    """
+    params: [$email, $role]
+  )
+}
+
 # Operação administrativa: o cliente web não pode registrar pontuação.
 mutation UpsertStudentProgress(
   $studentUid: String!

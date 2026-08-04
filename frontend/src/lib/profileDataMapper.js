@@ -51,6 +51,8 @@ export function mapDataConnectUser(databaseUser) {
     return null;
   }
 
+  const role = databaseUser.role === 'TEACHER' ? 'TEACHER' : 'STUDENT';
+
   return {
     id: databaseUser.uid,
     nome: databaseUser.preferredName,
@@ -63,7 +65,8 @@ export function mapDataConnectUser(databaseUser) {
     fase_atual: databaseUser.currentPhase ?? 0,
     streak_atual: databaseUser.currentStreak ?? 0,
     ultimo_streak_em: databaseUser.lastStreakDate ?? null,
-    is_admin: databaseUser.role === 'TEACHER',
+    role,
+    is_admin: role === 'TEACHER',
     created_at: databaseUser.createdAt ?? null,
     updated_at: databaseUser.updatedAt ?? null,
   };

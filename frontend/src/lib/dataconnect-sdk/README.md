@@ -24,6 +24,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*UpsertMyProfileWithPhoto*](#upsertmyprofilewithphoto)
   - [*UpsertMyProfileWithoutSyncedPhoto*](#upsertmyprofilewithoutsyncedphoto)
+  - [*SetUserRoleByEmail*](#setuserrolebyemail)
   - [*UpsertStudentProgress*](#upsertstudentprogress)
   - [*ApplyCapiCoinTransaction*](#applycapicointransaction)
   - [*UpsertEconomyConfig*](#upserteconomyconfig)
@@ -1826,6 +1827,118 @@ console.log(data.user_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.user_upsert);
+});
+```
+
+## SetUserRoleByEmail
+You can execute the `SetUserRoleByEmail` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+setUserRoleByEmail(vars: SetUserRoleByEmailVariables): MutationPromise<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+
+interface SetUserRoleByEmailRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetUserRoleByEmailVariables): MutationRef<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+}
+export const setUserRoleByEmailRef: SetUserRoleByEmailRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setUserRoleByEmail(dc: DataConnect, vars: SetUserRoleByEmailVariables): MutationPromise<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+
+interface SetUserRoleByEmailRef {
+  ...
+  (dc: DataConnect, vars: SetUserRoleByEmailVariables): MutationRef<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+}
+export const setUserRoleByEmailRef: SetUserRoleByEmailRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setUserRoleByEmailRef:
+```typescript
+const name = setUserRoleByEmailRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetUserRoleByEmail` mutation requires an argument of type `SetUserRoleByEmailVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetUserRoleByEmailVariables {
+  email: string;
+  role: UserRole;
+}
+```
+### Return Type
+Recall that executing the `SetUserRoleByEmail` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetUserRoleByEmailData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetUserRoleByEmailData {
+  updatedUser?: unknown | null;
+}
+```
+### Using `SetUserRoleByEmail`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setUserRoleByEmail, SetUserRoleByEmailVariables } from '@money-rank/dataconnect';
+
+// The `SetUserRoleByEmail` mutation requires an argument of type `SetUserRoleByEmailVariables`:
+const setUserRoleByEmailVars: SetUserRoleByEmailVariables = {
+  email: ..., 
+  role: ..., 
+};
+
+// Call the `setUserRoleByEmail()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setUserRoleByEmail(setUserRoleByEmailVars);
+// Variables can be defined inline as well.
+const { data } = await setUserRoleByEmail({ email: ..., role: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setUserRoleByEmail(dataConnect, setUserRoleByEmailVars);
+
+console.log(data.updatedUser);
+
+// Or, you can use the `Promise` API.
+setUserRoleByEmail(setUserRoleByEmailVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedUser);
+});
+```
+
+### Using `SetUserRoleByEmail`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setUserRoleByEmailRef, SetUserRoleByEmailVariables } from '@money-rank/dataconnect';
+
+// The `SetUserRoleByEmail` mutation requires an argument of type `SetUserRoleByEmailVariables`:
+const setUserRoleByEmailVars: SetUserRoleByEmailVariables = {
+  email: ..., 
+  role: ..., 
+};
+
+// Call the `setUserRoleByEmailRef()` function to get a reference to the mutation.
+const ref = setUserRoleByEmailRef(setUserRoleByEmailVars);
+// Variables can be defined inline as well.
+const ref = setUserRoleByEmailRef({ email: ..., role: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setUserRoleByEmailRef(dataConnect, setUserRoleByEmailVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedUser);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedUser);
 });
 ```
 

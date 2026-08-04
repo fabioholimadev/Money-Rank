@@ -405,6 +405,15 @@ export interface RegisterMyCurrentPhaseAttemptVariables {
   wrongAnswers: number;
 }
 
+export interface SetUserRoleByEmailData {
+  updatedUser?: unknown | null;
+}
+
+export interface SetUserRoleByEmailVariables {
+  email: string;
+  role: UserRole;
+}
+
 export interface StudentProgress_Key {
   userUid: string;
   phaseNumber: number;
@@ -520,6 +529,18 @@ export const upsertMyProfileWithoutSyncedPhotoRef: UpsertMyProfileWithoutSyncedP
 
 export function upsertMyProfileWithoutSyncedPhoto(vars: UpsertMyProfileWithoutSyncedPhotoVariables): MutationPromise<UpsertMyProfileWithoutSyncedPhotoData, UpsertMyProfileWithoutSyncedPhotoVariables>;
 export function upsertMyProfileWithoutSyncedPhoto(dc: DataConnect, vars: UpsertMyProfileWithoutSyncedPhotoVariables): MutationPromise<UpsertMyProfileWithoutSyncedPhotoData, UpsertMyProfileWithoutSyncedPhotoVariables>;
+
+interface SetUserRoleByEmailRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetUserRoleByEmailVariables): MutationRef<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetUserRoleByEmailVariables): MutationRef<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+  operationName: string;
+}
+export const setUserRoleByEmailRef: SetUserRoleByEmailRef;
+
+export function setUserRoleByEmail(vars: SetUserRoleByEmailVariables): MutationPromise<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
+export function setUserRoleByEmail(dc: DataConnect, vars: SetUserRoleByEmailVariables): MutationPromise<SetUserRoleByEmailData, SetUserRoleByEmailVariables>;
 
 interface UpsertStudentProgressRef {
   /* Allow users to create refs without passing in DataConnect */

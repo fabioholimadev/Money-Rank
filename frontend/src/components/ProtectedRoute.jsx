@@ -1,9 +1,14 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  canProfileAccessRole,
+  getHomePathForProfile,
+} from '../lib/roleAccess';
 
 export default function ProtectedRoute({
   children,
   requireCompleteProfile = true,
+  requiredRole = null,
 }) {
   const { user, aluno, loading } = useAuth();
   const location = useLocation();
@@ -40,8 +45,12 @@ export default function ProtectedRoute({
     );
   }
 
+  if (!canProfileAccessRole(aluno, requiredRole)) {
+    return <Navigate replace to={getHomePathForProfile(aluno)} />;
+  }
+
   if (!requireCompleteProfile && aluno?.profile_complete) {
-    return <Navigate replace to="/student" />;
+    return <Navigate replace to={getHomePathForProfile(aluno)} />;
   }
 
   return children;

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "local:competition": "node scripts/manageLocalCompetitionPeriod.js",
+    "local:teacher": "node scripts/manageLocalTeacher.js",
     "lint": "eslint src test scripts",
     "test": "node --test test/*.test.js"
   },

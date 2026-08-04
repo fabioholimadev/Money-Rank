@@ -95,6 +95,18 @@ export function upsertMyProfileWithoutSyncedPhoto(dcOrVars, vars) {
   return executeMutation(upsertMyProfileWithoutSyncedPhotoRef(dcInstance, inputVars));
 }
 
+export const setUserRoleByEmailRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetUserRoleByEmail', inputVars);
+}
+setUserRoleByEmailRef.operationName = 'SetUserRoleByEmail';
+
+export function setUserRoleByEmail(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setUserRoleByEmailRef(dcInstance, inputVars));
+}
+
 export const upsertStudentProgressRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

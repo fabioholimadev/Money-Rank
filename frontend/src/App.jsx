@@ -19,10 +19,12 @@ import ConteudoEngenhariaDesejo from './pages/Trilha/SaudeConsumo/EngenhariaDese
 import AtividadeFatoFake from './pages/Trilha/SaudeConsumo/EngenhariaDesejo/AtividadeFatoFake';
 import Ranking from './pages/Ranking';
 import Perfil from './pages/Perfil';
+import TeacherDashboard from './pages/TeacherDashboard';
 
 // Infraestrutura de layout
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import { USER_ROLES } from './lib/roleAccess';
 
 function App() {
   return (
@@ -44,7 +46,13 @@ function App() {
         <Route path="/redefinir-senha" element={<Navigate to="/login" replace />} />
 
         {/* ── Rotas protegidas (com Layout = TopBar + BottomNav + CapiMentor) ── */}
-        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        <Route
+          element={
+            <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/trilha" element={<TrilhaHub />} />
           <Route
@@ -80,6 +88,14 @@ function App() {
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/perfil" element={<Perfil />} />
         </Route>
+        <Route
+          path="/professor"
+          element={
+            <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
+              <TeacherDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getHomePathForProfile } from '../lib/roleAccess';
 
 const AUTH_ERROR_MESSAGES = {
   'auth/cancelled-popup-request':
@@ -58,13 +59,14 @@ function GoogleIcon() {
 }
 
 export default function Login() {
-  const { user, loading, loginWithGoogle } = useAuth();
+  const { user, aluno, loading, loginWithGoogle } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const destination = location.state?.from?.pathname || '/student';
+  const destination =
+    location.state?.from?.pathname || getHomePathForProfile(aluno);
 
   if (loading) {
     return (

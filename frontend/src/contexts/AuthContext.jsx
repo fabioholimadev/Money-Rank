@@ -167,6 +167,12 @@ function createStudentSnapshot(
       firebaseUser.displayName ||
       'Estudante',
     email: firebaseUser.email || '',
+    role:
+      remoteProfile?.role ||
+      matchingStudent?.role ||
+      (remoteProfile?.is_admin || matchingStudent?.is_admin
+        ? 'TEACHER'
+        : 'STUDENT'),
     avatar_url: avatarUrl,
     avatar_id: avatarId,
     turma:
