@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import TeacherDataChat from '../components/TeacherDataChat';
 import {
   fetchTeacherDashboard,
   fetchTeacherPeriods,
@@ -587,6 +588,11 @@ export default function TeacherDashboard() {
                 </p>
               )}
             </section>
+
+            <TeacherDataChat
+              key={selectedPeriodId}
+              periodId={selectedPeriodId}
+            />
           </>
         )}
       </div>

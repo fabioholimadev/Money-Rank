@@ -11,10 +11,15 @@ import {
   createActivitySession,
   getActivityResult,
   getActivitySession,
+  getTeacherDashboardForChat,
   markActivitySessionSubmitted,
   persistActivityResult,
 } from './activityRepository.js';
 import { buildAiPerigoDoceSession } from './perigoDoceSession.js';
+import {
+  buildTeacherChatResponse,
+  normalizeTeacherQuestion,
+} from './teacherDataChat.js';
 
 const REGION = 'southamerica-east1';
 const SESSION_DURATION_MILLISECONDS = 45 * 60 * 1_000;
@@ -53,6 +58,14 @@ function requireStudent(request) {
     );
   }
   return request.auth.uid;
+}
+
+function normalizeUuid(value, message) {
+  const uuid = String(value ?? '').trim();
+  if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(uuid)) {
+    throw new HttpsError('invalid-argument', message);
+  }
+  return uuid;
 }
 
 function normalizePhaseNumber(value) {
@@ -214,6 +227,72 @@ export const submitActivitySession = onCall(
       throw new HttpsError(
         'failed-precondition',
         error?.message || 'Não foi possível concluir a atividade.',
+      );
+    }
+  },
+);
+
+export const askTeacherData = onCall(
+  {
+    ...callableOptions,
+    secrets: [geminiApiKey],
+  },
+  async (request) => {
+    const teacherUid = requireStudent(request);
+    const periodId = normalizeUuid(
+      request.data?.periodId,
+      'Selecione um período válido para a análise.',
+    );
+    const question = normalizeTeacherQuestion(request.data?.question);
+    if (question.length < 5) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Escreva uma pergunta com pelo menos cinco caracteres.',
+      );
+    }
+
+    try {
+      const context = await getTeacherDashboardForChat(
+        teacherUid,
+        periodId,
+      );
+      if (!context?.summary) {
+        throw new HttpsError(
+          'permission-denied',
+          'Somente um professor autorizado pode consultar estes dados.',
+        );
+      }
+
+      const response = await buildTeacherChatResponse({
+        question,
+        rawContext: context,
+        apiKey: geminiApiKey.value(),
+        model: geminiModel.value(),
+      });
+      if (!response) {
+        throw new HttpsError(
+          'failed-precondition',
+          'O período não possui dados válidos para esta análise.',
+        );
+      }
+
+      return {
+        ...response,
+        periodId,
+        scope: 'Dados agregados do período selecionado',
+        limitations:
+          'A análise não consulta e-mail, UID, respostas individuais ou dados fora do período.',
+      };
+    } catch (error) {
+      logger.error('Falha no Chat de Dados do professor.', {
+        periodId,
+        code: error?.code,
+        message: error?.message,
+      });
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError(
+        'failed-precondition',
+        'Não foi possível preparar a análise pedagógica agora.',
       );
     }
   },

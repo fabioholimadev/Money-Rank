@@ -40,6 +40,25 @@ export async function getActivityResult(sessionId) {
   return unwrapData(response).activityAttempts?.[0] ?? null;
 }
 
+export async function getTeacherDashboardForChat(
+  teacherUid,
+  periodId,
+) {
+  const response = await dataConnect.executeQuery(
+    'GetTeacherDashboard',
+    { periodId, studentLimit: 1 },
+    {
+      impersonate: {
+        authClaims: {
+          sub: teacherUid,
+          email_verified: true,
+        },
+      },
+    },
+  );
+  return unwrapData(response);
+}
+
 export async function markActivitySessionSubmitted(sessionId, studentUid) {
   const response = await dataConnect.executeMutation(
     'MarkAuthoritativeActivitySessionSubmitted',
