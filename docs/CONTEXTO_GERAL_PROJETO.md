@@ -12,9 +12,9 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/task-3-9-competition-rules` |
-| Último commit funcional | `060bb42 docs: registra encerramento da Task 3.8` |
-| Task atual | Task 3.9 implementada; aguardando validação local do usuário |
+| Branch para retomada | `feat/mvp-gamificacao-ia` |
+| Último commit funcional | `eefaf10 feat: implementa periodos competitivos e repeticao segura` |
+| Task atual | Task 3.9 concluída, testada e documentada |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
 | Próxima Task prevista | Task 3.10 — pontuação autoritativa e concorrência segura |
@@ -28,13 +28,15 @@
    git status --short --branch
    ```
 
-2. Confirmar que a branch da Task 3.9 parte de `060bb42`.
+2. Confirmar que `feat/mvp-gamificacao-ia` contém `eefaf10` e o commit
+   documental de encerramento.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
-4. Na Task 3.9, incluir os diffs reais do SDK gerado que expõem períodos,
+4. Reconhecer que os diffs do SDK em `eefaf10` são reais e expõem períodos,
    supressão de recompensa e intervalo mínimo.
 5. Ler `docs/epic-3/periodos-competitivos.md` antes de alterar regras de janela,
    repetição ou atribuição ao ranking.
-6. Não iniciar a Task 3.10 antes do teste local e commit semântico da 3.9.
+6. Antes da Task 3.10, confirmar o escopo da validação autoritativa por
+   mecânica e abrir uma nova branch.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -315,10 +317,7 @@ já conquistados na competição.
 | 3.6 | O Custo do Vício com personagens e cinco análises | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com seis decisões ramificadas | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco 6/6 e rodadas 3/3 | `8e76b9e` |
-
-Task 3.9 está implementada na branch
-`feat/task-3-9-competition-rules`, mas somente entrará nesta tabela como
-concluída depois do teste local, commit e merge.
+| 3.9 | Períodos competitivos e repetição segura sem teto diário | `eefaf10` |
 
 ### Observação sobre Task 1.1
 
@@ -382,7 +381,7 @@ Regras preservadas para evolução do banco:
 - usar IA apenas para ajudar na pesquisa/organização, nunca para declarar uma
   peça verdadeira sem fonte.
 
-### Fundação competitiva — Task 3.9 em validação
+### Fundação competitiva — Task 3.9 concluída
 
 Branch: `feat/task-3-9-competition-rules`.
 
@@ -407,10 +406,11 @@ Arquivos centrais: schema/operações em `dataconnect/`, SDK gerado, utilitário
 `competitiveEconomy.js` e `competitionPeriod.js`, serviço
 `competitionDataService.js` e mensagens das quatro atividades.
 
-Validações já concluídas: nove suítes de testes, ESLint, build, geração do
+Validações concluídas: nove suítes de testes, ESLint, build, geração do
 SDK e recarga/migração pelo emulador ativo. O build conserva o aviso conhecido
 do bundle principal, agora com aproximadamente 940 kB minificado e 273 kB
-gzip. Ainda faltam o teste local do usuário e o commit.
+gzip. O usuário aprovou o teste local em 2026-08-04 e o commit funcional é
+`eefaf10`.
 
 ## 10. Task 3.7 concluída — A Ilusão do Dinheiro
 
@@ -508,8 +508,9 @@ nova ou reiniciar os dados locais do emulador de forma consciente.
 
 ### Épico 3
 
-1. Task 3.9, em validação: períodos competitivos controláveis, repetições
-   remuneradas sem teto diário e intervalo anti-automação de 30 segundos;
+1. Task 3.9, concluída em `eefaf10`: períodos competitivos controláveis,
+   repetições remuneradas sem teto diário e intervalo anti-automação de
+   30 segundos;
 2. Task 3.10, planejada: validar a pontuação de cada mecânica no servidor,
    reforçar idempotência e tratar concorrência entre requisições;
 3. Task 3.11, planejada: migrar rankings individual e por turma para SQL

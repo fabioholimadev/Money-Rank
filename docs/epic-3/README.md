@@ -17,7 +17,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.6 | O Custo do Vicio com personagens | Concluída | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Concluída | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco publicitário auditável | Concluída | `8e76b9e` |
-| 3.9 | Períodos competitivos, repetição ilimitada e proteção anti-automação | Em validação | Pendente |
+| 3.9 | Períodos competitivos, repetição ilimitada e proteção anti-automação | Concluída | `eefaf10` |
 | 3.10 | Pontuação autoritativa e concorrência segura das atividades | Planejada | — |
 | 3.11 | Rankings individual e por turma vinculados ao período | Planejada | — |
 
