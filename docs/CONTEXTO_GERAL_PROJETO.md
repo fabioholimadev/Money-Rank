@@ -6,18 +6,18 @@
 
 ## 1. Estado rápido da retomada
 
-| Campo | Estado em 2026-08-03 |
+| Campo | Estado em 2026-08-04 |
 | --- | --- |
 | Repositório canônico nesta máquina | `C:\Documentos\Programação\Money Rank` |
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/mvp-gamificacao-ia` |
-| Último commit funcional | `8e76b9e feat: implementa Engenharia do Desejo auditavel` |
-| Task atual | Nenhuma Task em andamento |
+| Branch para retomada | `feat/task-3-9-competition-rules` |
+| Último commit funcional | `060bb42 docs: registra encerramento da Task 3.8` |
+| Task atual | Task 3.9 implementada; aguardando validação local do usuário |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | Definir a numeração e o escopo após a Task 3.8 |
+| Próxima Task prevista | Task 3.10 — pontuação autoritativa e concorrência segura |
 
 ### Ação imediata para quem retomar
 
@@ -28,14 +28,13 @@
    git status --short --branch
    ```
 
-2. Confirmar que `feat/mvp-gamificacao-ia` contém `8e76b9e`.
+2. Confirmar que a branch da Task 3.9 parte de `060bb42`.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
-4. Tratar os apontamentos em `frontend/src/lib/dataconnect-sdk/` como falsos
-   diffs enquanto `git diff --quiet` retornar `0`.
-5. Ler `docs/epic-3/engenharia-desejo-fato-fake.md` antes de alterar o banco
-   publicitário ou sua regra de pontuação.
-6. Definir a numeração e o escopo das próximas Tasks antes de abrir outra
-   branch.
+4. Na Task 3.9, incluir os diffs reais do SDK gerado que expõem períodos,
+   supressão de recompensa e intervalo mínimo.
+5. Ler `docs/epic-3/periodos-competitivos.md` antes de alterar regras de janela,
+   repetição ou atribuição ao ranking.
+6. Não iniciar a Task 3.10 antes do teste local e commit semântico da 3.9.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -317,6 +316,10 @@ já conquistados na competição.
 | 3.7 | A Ilusão do Dinheiro com seis decisões ramificadas | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco 6/6 e rodadas 3/3 | `8e76b9e` |
 
+Task 3.9 está implementada na branch
+`feat/task-3-9-competition-rules`, mas somente entrará nesta tabela como
+concluída depois do teste local, commit e merge.
+
 ### Observação sobre Task 1.1
 
 A limpeza concluiu o fluxo de autenticação visível, mas não removeu todo o
@@ -378,6 +381,36 @@ Regras preservadas para evolução do banco:
 - manter um banco auditável e revisado pelo professor;
 - usar IA apenas para ajudar na pesquisa/organização, nunca para declarar uma
   peça verdadeira sem fonte.
+
+### Fundação competitiva — Task 3.9 em validação
+
+Branch: `feat/task-3-9-competition-rules`.
+
+Decisões e implementação:
+
+- limite diário remunerado continua `null`, permitindo competição livre;
+- intervalo mínimo entre recompensas de revisão: 30 segundos;
+- tentativa rápida continua auditada com `RATE_LIMIT`, sem moedas e sem streak;
+- primeira conclusão nunca é bloqueada pelo intervalo;
+- `CompetitionPeriod` possui `DRAFT`, `SCHEDULED`, `ACTIVE`, `PAUSED` e
+  `CLOSED`;
+- um agendamento conta automaticamente somente entre `startsAt` e `endsAt`;
+- pausar interrompe a atribuição ao ranking, mas não interrompe CapiCoins,
+  progresso ou tentativas;
+- transações positivas dentro da janela recebem `competitionPeriodId`;
+- administração e sinais de abuso usam `NO_ACCESS` e ficam reservados ao
+  backend confiável do Épico 5;
+- a limpeza de dados foi apenas planejada em
+  `docs/deploy/limpeza-pre-lancamento.md`; nenhum dado real foi apagado.
+
+Arquivos centrais: schema/operações em `dataconnect/`, SDK gerado, utilitários
+`competitiveEconomy.js` e `competitionPeriod.js`, serviço
+`competitionDataService.js` e mensagens das quatro atividades.
+
+Validações já concluídas: nove suítes de testes, ESLint, build, geração do
+SDK e recarga/migração pelo emulador ativo. O build conserva o aviso conhecido
+do bundle principal, agora com aproximadamente 940 kB minificado e 273 kB
+gzip. Ainda faltam o teste local do usuário e o commit.
 
 ## 10. Task 3.7 concluída — A Ilusão do Dinheiro
 
@@ -475,14 +508,19 @@ nova ou reiniciar os dados locais do emulador de forma consciente.
 
 ### Épico 3
 
-1. definir teto alto de repetições remuneradas com o professor;
-2. revisar e aprovar todas as bases pedagógicas, incluindo os 12 cards da
-   Engenharia do Desejo;
-3. migrar rankings individual e por turma para SQL Connect;
-4. confirmar numeração final das Tasks 3.9–3.11 antes de codificar.
+1. Task 3.9, em validação: períodos competitivos controláveis, repetições
+   remuneradas sem teto diário e intervalo anti-automação de 30 segundos;
+2. Task 3.10, planejada: validar a pontuação de cada mecânica no servidor,
+   reforçar idempotência e tratar concorrência entre requisições;
+3. Task 3.11, planejada: migrar rankings individual e por turma para SQL
+   Connect, somando o total geral do período escolhido;
+4. revisar e aprovar com o professor todas as bases pedagógicas, incluindo os
+   12 cards da Engenharia do Desejo.
 
-O arquivo `docs/epic-3/economia-competitiva.md` menciona a Task 3.11 para
-rankings. A numeração intermediária ainda não foi formalmente fechada.
+A divisão por semanas internas ao período foi adiada. O primeiro piloto deve
+usar uma janela configurada de quinta a quinta e apresentar o total do período.
+Depois dos sete dias, os resultados serão encerrados e preservados para análise
+antes de definir a organização de ciclos futuros.
 
 ### Épico 4 — Tutoria inteligente
 
@@ -536,8 +574,11 @@ porque Home, ranking e dashboard dependerão das métricas e permissões finais.
 - incluir cenário conservador de 100 sessões simultâneas;
 - medir latência, erro, conexões, cotas, custo e idempotência;
 - confirmar que não há perda ou duplicação de CapiCoins.
+- executar a limpeza pré-lançamento somente com backup, alvo confirmado e
+  autorização explícita; Firebase Auth exige limpeza separada do PostgreSQL.
 
-Checklist completo: `docs/deploy/checklist-producao.md`.
+Checklists: `docs/deploy/checklist-producao.md` e
+`docs/deploy/limpeza-pre-lancamento.md`.
 
 ## 12. Ambiente local
 
@@ -600,8 +641,8 @@ incluir automaticamente nos commits das Tasks do Épico 3.
 
 ### SDK gerado do Data Connect
 
-Os arquivos abaixo aparecem como modificados por diferença LF/CRLF, mas não
-possuem diff de conteúdo:
+Historicamente os arquivos abaixo apareciam como modificados somente por
+diferença LF/CRLF:
 
 ```text
 frontend/src/lib/dataconnect-sdk/.guides/usage.md
@@ -618,6 +659,12 @@ git diff --quiet -- frontend/src/lib/dataconnect-sdk
 ```
 
 Saída `0` significa que não existe diff real de conteúdo. Não fazer stage.
+
+**Exceção da Task 3.9:** a mudança de schema/operações gerou diffs reais no
+SDK para `CompetitionPeriod`, `competitionPeriodId`,
+`rewardSuppressionReason` e
+`minimumRewardedAttemptIntervalSeconds`. Esses arquivos devem entrar no commit
+da Task 3.9. Os arquivos gerados sem diff real continuam excluídos.
 
 ## 14. Skills relevantes instaladas
 

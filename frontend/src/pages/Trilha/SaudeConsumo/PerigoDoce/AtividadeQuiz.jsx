@@ -19,6 +19,7 @@ import {
   isActivityUnlocked,
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
+import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import { generatePerigoDoceQuestions } from '../../../../services/perigoDoceAiService';
 
 const PHASE_NUMBER = 1;
@@ -410,18 +411,19 @@ export default function AtividadeQuiz() {
                       : 'Recompensa recebida'}
                   </h2>
                   <p className="mt-2 text-sm text-slate-400">
-                    {resultadoBanco?.rewardLimitReached
-                      ? 'A tentativa foi salva, mas o limite configurado de repetições remuneradas foi alcançado.'
-                      : `+${resultadoBanco?.reward ?? 0} CapiCoins. Saldo atual: ${resultadoBanco?.capicoins ?? 0}.`}
+                    {getRewardSuppressionMessage(
+                      resultadoBanco?.rewardSuppressionReason,
+                    ) ??
+                      `+${resultadoBanco?.reward ?? 0} CapiCoins. Saldo atual: ${resultadoBanco?.capicoins ?? 0}.`}
                   </p>
-                  {!resultadoBanco?.rewardLimitReached && (
+                  {!resultadoBanco?.rewardSuppressed && (
                     <p className="mt-2 text-xs font-semibold text-slate-400">
                       Base: {resultadoBanco?.baseReward ?? 0} · Streak:{' '}
                       {resultadoBanco?.multiplierPercent ?? 100}% ·
                       Bônus: +{resultadoBanco?.streakBonus ?? 0}
                     </p>
                   )}
-                  {!resultadoBanco?.rewardLimitReached && (
+                  {!resultadoBanco?.rewardSuppressed && (
                     <p className="mt-2 text-sm font-bold text-orange-400">
                       Streak atual: {resultadoBanco?.streak ?? 0}
                     </p>

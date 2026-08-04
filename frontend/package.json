@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:competitive-economy": "node ../scripts/test-competitive-economy.mjs",
+    "test:competition-period": "node ../scripts/test-competition-period.mjs",
     "test:content-materials": "node ../scripts/test-content-material-model.mjs",
     "test:custo-vicio": "node ../scripts/test-custo-vicio-case.mjs",
     "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs",

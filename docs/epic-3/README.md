@@ -17,6 +17,9 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.6 | O Custo do Vicio com personagens | Concluída | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Concluída | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco publicitário auditável | Concluída | `8e76b9e` |
+| 3.9 | Períodos competitivos, repetição ilimitada e proteção anti-automação | Em validação | Pendente |
+| 3.10 | Pontuação autoritativa e concorrência segura das atividades | Planejada | — |
+| 3.11 | Rankings individual e por turma vinculados ao período | Planejada | — |
 
 ## Estrutura visual e progressão
 
@@ -57,6 +60,12 @@ O professor revisa e aprova as fontes. O modelo editorial completo esta em
 - ranking semanal deve somar ganhos validos, não o saldo restante.
 
 Detalhes: [`economia-competitiva.md`](economia-competitiva.md).
+
+A Task 3.9 adiciona períodos controláveis (`DRAFT`, `SCHEDULED`, `ACTIVE`,
+`PAUSED`, `CLOSED`) sem interromper a economia fora da competição. O limite
+diário permanece nulo; somente revisões automatizadas em intervalo inferior a
+30 segundos deixam de pagar recompensa. Detalhes:
+[`periodos-competitivos.md`](periodos-competitivos.md).
 
 ## Atividades
 
@@ -115,6 +124,7 @@ pessoais desnecessários do aluno.
 ```powershell
 cd frontend
 npm run test:competitive-economy
+npm run test:competition-period
 npm run test:content-materials
 npm run test:custo-vicio
 npm run test:engenharia-desejo

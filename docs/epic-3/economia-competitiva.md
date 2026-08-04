@@ -18,6 +18,11 @@ O limite diário de repetições remuneradas fica nulo nesta versão. Isso
 significa "sem limite definido" e permite escolher um teto mais alto depois,
 sem alterar os componentes React ou as operações de atividade.
 
+Para reduzir automação sem limitar a competição, duas recompensas de revisão
+precisam estar separadas por pelo menos 30 segundos. Uma tentativa mais rápida
+continua registrada, mas recebe zero CapiCoins e não altera o streak. A
+primeira conclusão da fase sempre recebe a recompensa normal.
+
 ## Multiplicador de streak
 
 | Streak | Multiplicador |
@@ -41,5 +46,9 @@ livro-caixa são processados pelo PostgreSQL; o cliente não escolhe o valor da
 recompensa.
 
 Cada lançamento guarda a recompensa-base, o multiplicador, o bônus de streak,
-a fase, a turma do aluno naquele momento e a segunda-feira de início da semana
-competitiva. Esses dados alimentarão os rankings existentes na Task 3.11.
+a fase, a turma do aluno naquele momento e, quando aplicável, o período
+competitivo. A semana legada continua registrada para compatibilidade, mas a
+Task 3.11 deve agrupar o ranking pelo identificador do período.
+
+Os estados, janelas e regras de atribuição estão documentados em
+[`periodos-competitivos.md`](periodos-competitivos.md).

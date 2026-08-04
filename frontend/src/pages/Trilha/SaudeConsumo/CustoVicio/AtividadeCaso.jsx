@@ -20,6 +20,7 @@ import {
   CUSTO_VICIO_DECISION_COUNT,
   toCustoVicioActivityResult,
 } from '../../../../lib/custoVicioCase';
+import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import {
   getPhaseProgress,
   isActivityUnlocked,
@@ -531,11 +532,12 @@ export default function AtividadeCaso() {
               Análise de {caseResult.characterName}: {caseResult.score}/100.
             </p>
             <p className="mt-3 text-sm text-slate-400">
-              {savedResult.rewardLimitReached
-                ? 'A tentativa foi registrada, mas o limite configurado de repetições remuneradas foi alcançado.'
-                : `+${savedResult.reward} CapiCoins registrados. Saldo atual: ${savedResult.profile?.capicoins ?? 0}.`}
+              {getRewardSuppressionMessage(
+                savedResult.rewardSuppressionReason,
+              ) ??
+                `+${savedResult.reward} CapiCoins registrados. Saldo atual: ${savedResult.profile?.capicoins ?? 0}.`}
             </p>
-            {!savedResult.rewardLimitReached && (
+            {!savedResult.rewardSuppressed && (
               <p className="mt-2 text-xs font-semibold text-slate-400">
                 Base: {savedResult.baseReward} · Streak:{' '}
                 {savedResult.multiplierPercent}% · Bônus: +

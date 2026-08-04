@@ -122,6 +122,7 @@ mutation UpsertEconomyConfig(
   $firstActivityReward: Int!
   $repeatActivityReward: Int!
   $rewardedRepeatLimitPerDay: Int
+  $minimumRewardedAttemptIntervalSeconds: Int!
   $streakTier3Percent: Int!
   $streakTier5Percent: Int!
   $streakTier7Percent: Int!
@@ -133,11 +134,128 @@ mutation UpsertEconomyConfig(
       firstActivityReward: $firstActivityReward
       repeatActivityReward: $repeatActivityReward
       rewardedRepeatLimitPerDay: $rewardedRepeatLimitPerDay
+      minimumRewardedAttemptIntervalSeconds: $minimumRewardedAttemptIntervalSeconds
       streakTier3Percent: $streakTier3Percent
       streakTier5Percent: $streakTier5Percent
       streakTier7Percent: $streakTier7Percent
       updatedAt_expr: "request.time"
     }
+  )
+}
+
+# Criação administrativa de um período. A operação impede datas inválidas e
+# janelas sobrepostas. O navegador nunca recebe permissão para executá-la.
+mutation CreateCompetitionPeriod(
+  $periodId: UUID!
+  $name: String!
+  $startsAt: Timestamp!
+  $endsAt: Timestamp!
+  $status: CompetitionPeriodStatus!
+) @auth(level: NO_ACCESS) {
+  createdPeriod: _executeReturningFirst(
+    sql: """
+      INSERT INTO competition_periods (
+        id,
+        name,
+        status,
+        starts_at,
+        ends_at,
+        created_at,
+        updated_at
+      )
+      SELECT
+        $1::uuid,
+        BTRIM($2),
+        $5::competition_period_status,
+        $3,
+        $4,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      WHERE
+        LENGTH(BTRIM($2)) BETWEEN 3 AND 80
+        AND $3 < $4
+        AND $5::competition_period_status IN ('DRAFT', 'SCHEDULED')
+        AND NOT EXISTS (
+          SELECT 1
+          FROM competition_periods AS existing
+          WHERE
+            existing.status <> 'CLOSED'
+            AND existing.starts_at < $4
+            AND existing.ends_at > $3
+        )
+      RETURNING
+        id,
+        name,
+        status,
+        starts_at,
+        ends_at,
+        paused_at,
+        closed_at,
+        created_at,
+        updated_at
+    """
+    params: [$periodId, $name, $startsAt, $endsAt, $status]
+  )
+}
+
+# Transições permitidas: rascunho pode ser agendado/ativado/encerrado;
+# agendado pode ser ativado/pausado/encerrado; ativo pode ser pausado ou
+# encerrado; pausado pode ser retomado ou encerrado. CLOSED é imutável.
+mutation UpdateCompetitionPeriodStatus(
+  $periodId: UUID!
+  $status: CompetitionPeriodStatus!
+) @auth(level: NO_ACCESS) {
+  updatedPeriod: _executeReturningFirst(
+    sql: """
+      UPDATE competition_periods AS period
+      SET
+        status = $2::competition_period_status,
+        paused_at = CASE
+          WHEN $2::competition_period_status = 'PAUSED'
+            THEN CURRENT_TIMESTAMP
+          WHEN $2::competition_period_status = 'ACTIVE'
+            THEN NULL
+          ELSE period.paused_at
+        END,
+        closed_at = CASE
+          WHEN $2::competition_period_status = 'CLOSED'
+            THEN CURRENT_TIMESTAMP
+          ELSE period.closed_at
+        END,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        period.id = $1::uuid
+        AND period.status <> 'CLOSED'
+        AND (
+          (period.status = 'DRAFT' AND $2::competition_period_status IN (
+            'SCHEDULED', 'ACTIVE', 'CLOSED'
+          ))
+          OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN (
+            'ACTIVE', 'PAUSED', 'CLOSED'
+          ))
+          OR (period.status = 'ACTIVE' AND $2::competition_period_status IN (
+            'PAUSED', 'CLOSED'
+          ))
+          OR (period.status = 'PAUSED' AND $2::competition_period_status IN (
+            'ACTIVE', 'CLOSED'
+          ))
+        )
+        AND (
+          $2::competition_period_status NOT IN ('ACTIVE', 'SCHEDULED')
+          OR CURRENT_TIMESTAMP < period.ends_at
+        )
+      RETURNING
+        id,
+        name,
+        status,
+        starts_at,
+        ends_at,
+        paused_at,
+        closed_at,
+        created_at,
+        updated_at
+    """
+    params: [$periodId, $status]
   )
 }
 
@@ -196,6 +314,16 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
         SELECT
           (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
             AS local_date
+      ),
+      active_competition AS (
+        SELECT period.id
+        FROM competition_periods AS period
+        WHERE
+          period.status IN ('SCHEDULED', 'ACTIVE')
+          AND period.starts_at <= CURRENT_TIMESTAMP
+          AND period.ends_at > CURRENT_TIMESTAMP
+        ORDER BY period.starts_at DESC
+        LIMIT 1
       ),
       completed_progress AS (
         INSERT INTO student_progress (
@@ -298,6 +426,7 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
         source_id,
         phase_number,
         class_group,
+        competition_period_id,
         competition_week,
         created_at
       )
@@ -312,6 +441,7 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
         'introduction-0',
         0,
         credited_user.class_group,
+        (SELECT id FROM active_competition),
         (
           credited_user.local_date
           - (
@@ -358,6 +488,16 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
         SELECT
           (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
             AS local_date
+      ),
+      active_competition AS (
+        SELECT period.id
+        FROM competition_periods AS period
+        WHERE
+          period.status IN ('SCHEDULED', 'ACTIVE')
+          AND period.starts_at <= CURRENT_TIMESTAMP
+          AND period.ends_at > CURRENT_TIMESTAMP
+        ORDER BY period.starts_at DESC
+        LIMIT 1
       ),
       started_progress AS (
         INSERT INTO student_progress (
@@ -466,6 +606,7 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
         source_id,
         phase_number,
         class_group,
+        competition_period_id,
         competition_week,
         created_at
       )
@@ -480,6 +621,7 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
         CONCAT('phase-', $1::text, '-content'),
         $1,
         credited_user.class_group,
+        (SELECT id FROM active_competition),
         (
           credited_user.local_date
           - (
@@ -629,6 +771,11 @@ mutation CompleteMyCurrentPhase(
             WHERE config_key = 'default'
           )::integer AS repeat_limit,
           COALESCE((
+            SELECT minimum_rewarded_attempt_interval_seconds
+            FROM economy_config
+            WHERE config_key = 'default'
+          ), 30)::integer AS minimum_reward_interval_seconds,
+          COALESCE((
             SELECT streak_tier_3_percent
             FROM economy_config
             WHERE config_key = 'default'
@@ -648,6 +795,16 @@ mutation CompleteMyCurrentPhase(
         SELECT
           (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
             AS local_date
+      ),
+      active_competition AS (
+        SELECT period.id
+        FROM competition_periods AS period
+        WHERE
+          period.status IN ('SCHEDULED', 'ACTIVE')
+          AND period.starts_at <= CURRENT_TIMESTAMP
+          AND period.ends_at > CURRENT_TIMESTAMP
+        ORDER BY period.starts_at DESC
+        LIMIT 1
       ),
       eligible_attempt AS (
         SELECT
@@ -674,7 +831,15 @@ mutation CompleteMyCurrentPhase(
                 previous.created_at
                 AT TIME ZONE 'America/Fortaleza'
               )::date = local_clock.local_date
-          ) AS rewarded_repeats_today
+          ) AS rewarded_repeats_today,
+          (
+            SELECT MAX(previous.created_at)
+            FROM activity_attempts AS previous
+            WHERE
+              previous.user_uid = u.firebase_uid
+              AND previous.passed = TRUE
+              AND previous.reward_amount > 0
+          ) AS last_rewarded_attempt_at
         FROM users AS u
         INNER JOIN student_progress AS sp
           ON sp.user_uid = u.firebase_uid
@@ -708,7 +873,25 @@ mutation CompleteMyCurrentPhase(
             AND rewarded_repeats_today >= repeat_limit
           ) AS reward_limit_reached,
           CASE
+            WHEN NOT first_completion
+              AND last_rewarded_attempt_at IS NOT NULL
+              AND last_rewarded_attempt_at > (
+                CURRENT_TIMESTAMP
+                - minimum_reward_interval_seconds * INTERVAL '1 second'
+              ) THEN 'RATE_LIMIT'
+            WHEN NOT first_completion
+              AND repeat_limit IS NOT NULL
+              AND rewarded_repeats_today >= repeat_limit
+              THEN 'DAILY_LIMIT'
+            ELSE 'NONE'
+          END::reward_suppression_reason AS reward_suppression_reason,
+          CASE
             WHEN first_completion THEN first_reward
+            WHEN last_rewarded_attempt_at IS NOT NULL
+              AND last_rewarded_attempt_at > (
+                CURRENT_TIMESTAMP
+                - minimum_reward_interval_seconds * INTERVAL '1 second'
+              ) THEN 0
             WHEN repeat_limit IS NULL
               OR rewarded_repeats_today < repeat_limit
               THEN repeat_reward
@@ -765,6 +948,7 @@ mutation CompleteMyCurrentPhase(
           streak_bonus,
           reward_amount,
           reward_limit_reached,
+          reward_suppression_reason,
           created_at
         )
         SELECT
@@ -782,6 +966,7 @@ mutation CompleteMyCurrentPhase(
           reward_amount - reward_base,
           reward_amount,
           reward_limit_reached,
+          reward_suppression_reason,
           CURRENT_TIMESTAMP
         FROM reward_values
         ON CONFLICT (id) DO NOTHING
@@ -848,6 +1033,7 @@ mutation CompleteMyCurrentPhase(
         source_id,
         phase_number,
         class_group,
+        competition_period_id,
         competition_week,
         created_at
       )
@@ -870,6 +1056,7 @@ mutation CompleteMyCurrentPhase(
         $2,
         $3,
         rewarded_user.class_group,
+        (SELECT id FROM active_competition),
         (
           rewarded_user.local_date
           - (

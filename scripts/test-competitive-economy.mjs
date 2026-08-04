@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import {
   DEFAULT_ECONOMY_RULES,
   calculateCapiCoinReward,
+  canRewardAfterMinimumInterval,
   canRewardAnotherRepeat,
+  getRewardSuppressionMessage,
   getStreakMultiplierPercent,
   normalizeAttemptReward,
+  REWARD_SUPPRESSION_REASONS,
 } from '../frontend/src/lib/competitiveEconomy.js';
 
 assert.equal(getStreakMultiplierPercent(1), 100);
@@ -67,6 +70,35 @@ assert.equal(
   false,
 );
 
+assert.equal(
+  canRewardAfterMinimumInterval({
+    lastRewardedAttemptAt: '2026-08-04T12:00:00.000Z',
+    currentTime: '2026-08-04T12:00:29.999Z',
+    minimumIntervalSeconds: 30,
+  }),
+  false,
+);
+assert.equal(
+  canRewardAfterMinimumInterval({
+    lastRewardedAttemptAt: '2026-08-04T12:00:00.000Z',
+    currentTime: '2026-08-04T12:00:30.000Z',
+    minimumIntervalSeconds: 30,
+  }),
+  true,
+);
+assert.equal(
+  canRewardAfterMinimumInterval({
+    firstCompletion: true,
+    lastRewardedAttemptAt: '2026-08-04T12:00:29.999Z',
+    currentTime: '2026-08-04T12:00:30.000Z',
+  }),
+  true,
+);
+assert.match(
+  getRewardSuppressionMessage(REWARD_SUPPRESSION_REASONS.RATE_LIMIT),
+  /Aguarde alguns segundos/,
+);
+
 assert.deepEqual(
   normalizeAttemptReward({
     id: '8b0268ef-2e5b-4e16-8057-f9b2d419d02b',
@@ -76,6 +108,7 @@ assert.deepEqual(
     streakBonus: 4,
     firstCompletion: false,
     rewardLimitReached: false,
+    rewardSuppressionReason: 'NONE',
   }),
   {
     attemptId: '8b0268ef-2e5b-4e16-8057-f9b2d419d02b',
@@ -85,6 +118,8 @@ assert.deepEqual(
     streakBonus: 4,
     firstCompletion: false,
     rewardLimitReached: false,
+    rewardSuppressionReason: 'NONE',
+    rewardSuppressed: false,
   },
 );
 

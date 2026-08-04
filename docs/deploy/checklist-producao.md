@@ -47,6 +47,12 @@ deploy público não deve ser considerado concluído.
 ## Dados, autenticação e operação
 
 - [ ] Implantar e validar o Firebase SQL Connect de produção.
+- [ ] Executar, com backup e aprovação explícita, o
+  [`plano de limpeza pré-lançamento`](limpeza-pre-lancamento.md).
+- [ ] Criar/agendar o período oficial e confirmar que somente transações
+  dentro da janela recebem seu identificador.
+- [ ] Confirmar que o período pode ser pausado sem interromper progresso,
+  CapiCoins ou tentativas fora do ranking.
 - [ ] Confirmar persistência de progresso, CapiCoins, streak, tentativas e
   rankings individual e por turma.
 - [ ] Executar um teste de carga representando **100 alunos durante 7 dias**,

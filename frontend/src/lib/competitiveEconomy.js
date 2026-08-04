@@ -3,9 +3,16 @@ export const DEFAULT_ECONOMY_RULES = Object.freeze({
   firstActivityReward: 100,
   repeatActivityReward: 20,
   rewardedRepeatLimitPerDay: null,
+  minimumRewardedAttemptIntervalSeconds: 30,
   streakTier3Percent: 110,
   streakTier5Percent: 120,
   streakTier7Percent: 130,
+});
+
+export const REWARD_SUPPRESSION_REASONS = Object.freeze({
+  NONE: 'NONE',
+  RATE_LIMIT: 'RATE_LIMIT',
+  DAILY_LIMIT: 'DAILY_LIMIT',
 });
 
 function toNonNegativeInteger(value, fallback = 0) {
@@ -71,7 +78,50 @@ export function canRewardAnotherRepeat({
   return normalizedCount < normalizedLimit;
 }
 
+export function canRewardAfterMinimumInterval({
+  firstCompletion = false,
+  lastRewardedAttemptAt = null,
+  currentTime = new Date(),
+  minimumIntervalSeconds =
+    DEFAULT_ECONOMY_RULES.minimumRewardedAttemptIntervalSeconds,
+}) {
+  if (firstCompletion || !lastRewardedAttemptAt) {
+    return true;
+  }
+
+  const lastRewardedAt = new Date(lastRewardedAttemptAt).getTime();
+  const now = new Date(currentTime).getTime();
+  const intervalMilliseconds =
+    toNonNegativeInteger(minimumIntervalSeconds, 30) * 1_000;
+
+  if (!Number.isFinite(lastRewardedAt) || !Number.isFinite(now)) {
+    return false;
+  }
+
+  return now - lastRewardedAt >= intervalMilliseconds;
+}
+
+export function getRewardSuppressionMessage(reason) {
+  if (reason === REWARD_SUPPRESSION_REASONS.RATE_LIMIT) {
+    return 'Revisão registrada sem recompensa. Aguarde alguns segundos antes de concluir outra revisão remunerada.';
+  }
+
+  if (reason === REWARD_SUPPRESSION_REASONS.DAILY_LIMIT) {
+    return 'Revisão registrada sem recompensa porque o limite diário configurado foi alcançado.';
+  }
+
+  return null;
+}
+
 export function normalizeAttemptReward(attempt) {
+  const suppressionReason = Object.values(
+    REWARD_SUPPRESSION_REASONS,
+  ).includes(attempt?.rewardSuppressionReason)
+    ? attempt.rewardSuppressionReason
+    : attempt?.rewardLimitReached
+      ? REWARD_SUPPRESSION_REASONS.DAILY_LIMIT
+      : REWARD_SUPPRESSION_REASONS.NONE;
+
   return {
     attemptId: attempt?.id ?? null,
     reward: toNonNegativeInteger(attempt?.rewardAmount),
@@ -83,5 +133,8 @@ export function normalizeAttemptReward(attempt) {
     streakBonus: toNonNegativeInteger(attempt?.streakBonus),
     firstCompletion: Boolean(attempt?.firstCompletion),
     rewardLimitReached: Boolean(attempt?.rewardLimitReached),
+    rewardSuppressionReason: suppressionReason,
+    rewardSuppressed:
+      suppressionReason !== REWARD_SUPPRESSION_REASONS.NONE,
   };
 }

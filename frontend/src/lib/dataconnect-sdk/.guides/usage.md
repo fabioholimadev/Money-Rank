@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, upsertEconomyConfig, initializeMyTrail, completeMyIntroduction, completeMyCurrentPhaseContent, registerMyCurrentPhaseAttempt } from '@money-rank/dataconnect';
+import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, upsertEconomyConfig, createCompetitionPeriod, updateCompetitionPeriodStatus, initializeMyTrail, completeMyIntroduction } from '@money-rank/dataconnect';
 
 
 // Operation UpsertMyProfileWithAvatar:  For variables, look at type UpsertMyProfileWithAvatarVars in ../index.d.ts
@@ -35,17 +35,17 @@ const { data } = await ApplyCapiCoinTransaction(dataConnect, applyCapiCoinTransa
 // Operation UpsertEconomyConfig:  For variables, look at type UpsertEconomyConfigVars in ../index.d.ts
 const { data } = await UpsertEconomyConfig(dataConnect, upsertEconomyConfigVars);
 
+// Operation CreateCompetitionPeriod:  For variables, look at type CreateCompetitionPeriodVars in ../index.d.ts
+const { data } = await CreateCompetitionPeriod(dataConnect, createCompetitionPeriodVars);
+
+// Operation UpdateCompetitionPeriodStatus:  For variables, look at type UpdateCompetitionPeriodStatusVars in ../index.d.ts
+const { data } = await UpdateCompetitionPeriodStatus(dataConnect, updateCompetitionPeriodStatusVars);
+
 // Operation InitializeMyTrail: 
 const { data } = await InitializeMyTrail(dataConnect);
 
 // Operation CompleteMyIntroduction: 
 const { data } = await CompleteMyIntroduction(dataConnect);
-
-// Operation CompleteMyCurrentPhaseContent:  For variables, look at type CompleteMyCurrentPhaseContentVars in ../index.d.ts
-const { data } = await CompleteMyCurrentPhaseContent(dataConnect, completeMyCurrentPhaseContentVars);
-
-// Operation RegisterMyCurrentPhaseAttempt:  For variables, look at type RegisterMyCurrentPhaseAttemptVars in ../index.d.ts
-const { data } = await RegisterMyCurrentPhaseAttempt(dataConnect, registerMyCurrentPhaseAttemptVars);
 
 
 ```

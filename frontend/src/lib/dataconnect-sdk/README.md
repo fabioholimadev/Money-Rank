@@ -15,6 +15,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetMyActivityAttempt*](#getmyactivityattempt)
   - [*ListMyActivityAttempts*](#listmyactivityattempts)
   - [*GetEconomyConfig*](#geteconomyconfig)
+  - [*ListVisibleCompetitionPeriods*](#listvisiblecompetitionperiods)
+  - [*GetCompetitionAbuseSignals*](#getcompetitionabusesignals)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*UpsertMyProfileWithPhoto*](#upsertmyprofilewithphoto)
@@ -22,6 +24,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertStudentProgress*](#upsertstudentprogress)
   - [*ApplyCapiCoinTransaction*](#applycapicointransaction)
   - [*UpsertEconomyConfig*](#upserteconomyconfig)
+  - [*CreateCompetitionPeriod*](#createcompetitionperiod)
+  - [*UpdateCompetitionPeriodStatus*](#updatecompetitionperiodstatus)
   - [*InitializeMyTrail*](#initializemytrail)
   - [*CompleteMyIntroduction*](#completemyintroduction)
   - [*CompleteMyCurrentPhaseContent*](#completemycurrentphasecontent)
@@ -335,6 +339,7 @@ export interface ListMyCapiCoinTransactionsData {
     sourceId?: string | null;
     phaseNumber?: number | null;
     classGroup?: StudentClass | null;
+    competitionPeriodId?: UUIDString | null;
     competitionWeek?: DateString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
@@ -459,6 +464,7 @@ export interface GetMyCapiCoinTransactionBySourceData {
     transactionType: CapiCoinTransactionType;
     sourceId?: string | null;
     phaseNumber?: number | null;
+    competitionPeriodId?: UUIDString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
 }
@@ -583,6 +589,7 @@ export interface GetMyActivityAttemptData {
     streakBonus: number;
     rewardAmount: number;
     rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
     createdAt: TimestampString;
   } & ActivityAttempt_Key)[];
 }
@@ -708,6 +715,7 @@ export interface ListMyActivityAttemptsData {
     streakBonus: number;
     rewardAmount: number;
     rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
     createdAt: TimestampString;
   } & ActivityAttempt_Key)[];
 }
@@ -820,6 +828,7 @@ export interface GetEconomyConfigData {
     firstActivityReward: number;
     repeatActivityReward: number;
     rewardedRepeatLimitPerDay?: number | null;
+    minimumRewardedAttemptIntervalSeconds: number;
     streakTier3Percent: number;
     streakTier5Percent: number;
     streakTier7Percent: number;
@@ -875,6 +884,218 @@ console.log(data.economyConfig);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.economyConfig);
+});
+```
+
+## ListVisibleCompetitionPeriods
+You can execute the `ListVisibleCompetitionPeriods` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listVisibleCompetitionPeriods(options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
+
+interface ListVisibleCompetitionPeriodsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListVisibleCompetitionPeriodsData, undefined>;
+}
+export const listVisibleCompetitionPeriodsRef: ListVisibleCompetitionPeriodsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listVisibleCompetitionPeriods(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
+
+interface ListVisibleCompetitionPeriodsRef {
+  ...
+  (dc: DataConnect): QueryRef<ListVisibleCompetitionPeriodsData, undefined>;
+}
+export const listVisibleCompetitionPeriodsRef: ListVisibleCompetitionPeriodsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listVisibleCompetitionPeriodsRef:
+```typescript
+const name = listVisibleCompetitionPeriodsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListVisibleCompetitionPeriods` query has no variables.
+### Return Type
+Recall that executing the `ListVisibleCompetitionPeriods` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListVisibleCompetitionPeriodsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListVisibleCompetitionPeriodsData {
+  competitionPeriods: ({
+    id: UUIDString;
+    name: string;
+    status: CompetitionPeriodStatus;
+    startsAt: TimestampString;
+    endsAt: TimestampString;
+    pausedAt?: TimestampString | null;
+    closedAt?: TimestampString | null;
+    updatedAt: TimestampString;
+  } & CompetitionPeriod_Key)[];
+}
+```
+### Using `ListVisibleCompetitionPeriods`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listVisibleCompetitionPeriods } from '@money-rank/dataconnect';
+
+
+// Call the `listVisibleCompetitionPeriods()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listVisibleCompetitionPeriods();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listVisibleCompetitionPeriods(dataConnect);
+
+console.log(data.competitionPeriods);
+
+// Or, you can use the `Promise` API.
+listVisibleCompetitionPeriods().then((response) => {
+  const data = response.data;
+  console.log(data.competitionPeriods);
+});
+```
+
+### Using `ListVisibleCompetitionPeriods`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listVisibleCompetitionPeriodsRef } from '@money-rank/dataconnect';
+
+
+// Call the `listVisibleCompetitionPeriodsRef()` function to get a reference to the query.
+const ref = listVisibleCompetitionPeriodsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listVisibleCompetitionPeriodsRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.competitionPeriods);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.competitionPeriods);
+});
+```
+
+## GetCompetitionAbuseSignals
+You can execute the `GetCompetitionAbuseSignals` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getCompetitionAbuseSignals(vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+
+interface GetCompetitionAbuseSignalsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCompetitionAbuseSignalsVariables): QueryRef<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+}
+export const getCompetitionAbuseSignalsRef: GetCompetitionAbuseSignalsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getCompetitionAbuseSignals(dc: DataConnect, vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+
+interface GetCompetitionAbuseSignalsRef {
+  ...
+  (dc: DataConnect, vars: GetCompetitionAbuseSignalsVariables): QueryRef<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+}
+export const getCompetitionAbuseSignalsRef: GetCompetitionAbuseSignalsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getCompetitionAbuseSignalsRef:
+```typescript
+const name = getCompetitionAbuseSignalsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetCompetitionAbuseSignals` query requires an argument of type `GetCompetitionAbuseSignalsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetCompetitionAbuseSignalsVariables {
+  periodId: UUIDString;
+  minimumApprovedAttempts?: number | null;
+}
+```
+### Return Type
+Recall that executing the `GetCompetitionAbuseSignals` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetCompetitionAbuseSignalsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetCompetitionAbuseSignalsData {
+  signals?: unknown[] | null;
+}
+```
+### Using `GetCompetitionAbuseSignals`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getCompetitionAbuseSignals, GetCompetitionAbuseSignalsVariables } from '@money-rank/dataconnect';
+
+// The `GetCompetitionAbuseSignals` query requires an argument of type `GetCompetitionAbuseSignalsVariables`:
+const getCompetitionAbuseSignalsVars: GetCompetitionAbuseSignalsVariables = {
+  periodId: ..., 
+  minimumApprovedAttempts: ..., // optional
+};
+
+// Call the `getCompetitionAbuseSignals()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getCompetitionAbuseSignals(getCompetitionAbuseSignalsVars);
+// Variables can be defined inline as well.
+const { data } = await getCompetitionAbuseSignals({ periodId: ..., minimumApprovedAttempts: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getCompetitionAbuseSignals(dataConnect, getCompetitionAbuseSignalsVars);
+
+console.log(data.signals);
+
+// Or, you can use the `Promise` API.
+getCompetitionAbuseSignals(getCompetitionAbuseSignalsVars).then((response) => {
+  const data = response.data;
+  console.log(data.signals);
+});
+```
+
+### Using `GetCompetitionAbuseSignals`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getCompetitionAbuseSignalsRef, GetCompetitionAbuseSignalsVariables } from '@money-rank/dataconnect';
+
+// The `GetCompetitionAbuseSignals` query requires an argument of type `GetCompetitionAbuseSignalsVariables`:
+const getCompetitionAbuseSignalsVars: GetCompetitionAbuseSignalsVariables = {
+  periodId: ..., 
+  minimumApprovedAttempts: ..., // optional
+};
+
+// Call the `getCompetitionAbuseSignalsRef()` function to get a reference to the query.
+const ref = getCompetitionAbuseSignalsRef(getCompetitionAbuseSignalsVars);
+// Variables can be defined inline as well.
+const ref = getCompetitionAbuseSignalsRef({ periodId: ..., minimumApprovedAttempts: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getCompetitionAbuseSignalsRef(dataConnect, getCompetitionAbuseSignalsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.signals);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.signals);
 });
 ```
 
@@ -1532,6 +1753,7 @@ export interface UpsertEconomyConfigVariables {
   firstActivityReward: number;
   repeatActivityReward: number;
   rewardedRepeatLimitPerDay?: number | null;
+  minimumRewardedAttemptIntervalSeconds: number;
   streakTier3Percent: number;
   streakTier5Percent: number;
   streakTier7Percent: number;
@@ -1558,6 +1780,7 @@ const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
   firstActivityReward: ..., 
   repeatActivityReward: ..., 
   rewardedRepeatLimitPerDay: ..., // optional
+  minimumRewardedAttemptIntervalSeconds: ..., 
   streakTier3Percent: ..., 
   streakTier5Percent: ..., 
   streakTier7Percent: ..., 
@@ -1567,7 +1790,7 @@ const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await upsertEconomyConfig(upsertEconomyConfigVars);
 // Variables can be defined inline as well.
-const { data } = await upsertEconomyConfig({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
+const { data } = await upsertEconomyConfig({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., minimumRewardedAttemptIntervalSeconds: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1594,6 +1817,7 @@ const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
   firstActivityReward: ..., 
   repeatActivityReward: ..., 
   rewardedRepeatLimitPerDay: ..., // optional
+  minimumRewardedAttemptIntervalSeconds: ..., 
   streakTier3Percent: ..., 
   streakTier5Percent: ..., 
   streakTier7Percent: ..., 
@@ -1602,7 +1826,7 @@ const upsertEconomyConfigVars: UpsertEconomyConfigVariables = {
 // Call the `upsertEconomyConfigRef()` function to get a reference to the mutation.
 const ref = upsertEconomyConfigRef(upsertEconomyConfigVars);
 // Variables can be defined inline as well.
-const ref = upsertEconomyConfigRef({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
+const ref = upsertEconomyConfigRef({ firstContentReward: ..., firstActivityReward: ..., repeatActivityReward: ..., rewardedRepeatLimitPerDay: ..., minimumRewardedAttemptIntervalSeconds: ..., streakTier3Percent: ..., streakTier5Percent: ..., streakTier7Percent: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1618,6 +1842,239 @@ console.log(data.economyConfig_upsert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.economyConfig_upsert);
+});
+```
+
+## CreateCompetitionPeriod
+You can execute the `CreateCompetitionPeriod` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createCompetitionPeriod(vars: CreateCompetitionPeriodVariables): MutationPromise<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+
+interface CreateCompetitionPeriodRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateCompetitionPeriodVariables): MutationRef<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+}
+export const createCompetitionPeriodRef: CreateCompetitionPeriodRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createCompetitionPeriod(dc: DataConnect, vars: CreateCompetitionPeriodVariables): MutationPromise<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+
+interface CreateCompetitionPeriodRef {
+  ...
+  (dc: DataConnect, vars: CreateCompetitionPeriodVariables): MutationRef<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+}
+export const createCompetitionPeriodRef: CreateCompetitionPeriodRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createCompetitionPeriodRef:
+```typescript
+const name = createCompetitionPeriodRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateCompetitionPeriod` mutation requires an argument of type `CreateCompetitionPeriodVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  status: CompetitionPeriodStatus;
+}
+```
+### Return Type
+Recall that executing the `CreateCompetitionPeriod` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateCompetitionPeriodData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateCompetitionPeriodData {
+  createdPeriod?: unknown | null;
+}
+```
+### Using `CreateCompetitionPeriod`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createCompetitionPeriod, CreateCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `CreateCompetitionPeriod` mutation requires an argument of type `CreateCompetitionPeriodVariables`:
+const createCompetitionPeriodVars: CreateCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  status: ..., 
+};
+
+// Call the `createCompetitionPeriod()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createCompetitionPeriod(createCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const { data } = await createCompetitionPeriod({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createCompetitionPeriod(dataConnect, createCompetitionPeriodVars);
+
+console.log(data.createdPeriod);
+
+// Or, you can use the `Promise` API.
+createCompetitionPeriod(createCompetitionPeriodVars).then((response) => {
+  const data = response.data;
+  console.log(data.createdPeriod);
+});
+```
+
+### Using `CreateCompetitionPeriod`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createCompetitionPeriodRef, CreateCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `CreateCompetitionPeriod` mutation requires an argument of type `CreateCompetitionPeriodVariables`:
+const createCompetitionPeriodVars: CreateCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  status: ..., 
+};
+
+// Call the `createCompetitionPeriodRef()` function to get a reference to the mutation.
+const ref = createCompetitionPeriodRef(createCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const ref = createCompetitionPeriodRef({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createCompetitionPeriodRef(dataConnect, createCompetitionPeriodVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.createdPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.createdPeriod);
+});
+```
+
+## UpdateCompetitionPeriodStatus
+You can execute the `UpdateCompetitionPeriodStatus` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+updateCompetitionPeriodStatus(vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+
+interface UpdateCompetitionPeriodStatusRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateCompetitionPeriodStatusVariables): MutationRef<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+}
+export const updateCompetitionPeriodStatusRef: UpdateCompetitionPeriodStatusRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateCompetitionPeriodStatus(dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+
+interface UpdateCompetitionPeriodStatusRef {
+  ...
+  (dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationRef<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+}
+export const updateCompetitionPeriodStatusRef: UpdateCompetitionPeriodStatusRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateCompetitionPeriodStatusRef:
+```typescript
+const name = updateCompetitionPeriodStatusRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateCompetitionPeriodStatus` mutation requires an argument of type `UpdateCompetitionPeriodStatusVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateCompetitionPeriodStatusVariables {
+  periodId: UUIDString;
+  status: CompetitionPeriodStatus;
+}
+```
+### Return Type
+Recall that executing the `UpdateCompetitionPeriodStatus` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateCompetitionPeriodStatusData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateCompetitionPeriodStatusData {
+  updatedPeriod?: unknown | null;
+}
+```
+### Using `UpdateCompetitionPeriodStatus`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateCompetitionPeriodStatus, UpdateCompetitionPeriodStatusVariables } from '@money-rank/dataconnect';
+
+// The `UpdateCompetitionPeriodStatus` mutation requires an argument of type `UpdateCompetitionPeriodStatusVariables`:
+const updateCompetitionPeriodStatusVars: UpdateCompetitionPeriodStatusVariables = {
+  periodId: ..., 
+  status: ..., 
+};
+
+// Call the `updateCompetitionPeriodStatus()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateCompetitionPeriodStatus(updateCompetitionPeriodStatusVars);
+// Variables can be defined inline as well.
+const { data } = await updateCompetitionPeriodStatus({ periodId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateCompetitionPeriodStatus(dataConnect, updateCompetitionPeriodStatusVars);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+updateCompetitionPeriodStatus(updateCompetitionPeriodStatusVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
+});
+```
+
+### Using `UpdateCompetitionPeriodStatus`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateCompetitionPeriodStatusRef, UpdateCompetitionPeriodStatusVariables } from '@money-rank/dataconnect';
+
+// The `UpdateCompetitionPeriodStatus` mutation requires an argument of type `UpdateCompetitionPeriodStatusVariables`:
+const updateCompetitionPeriodStatusVars: UpdateCompetitionPeriodStatusVariables = {
+  periodId: ..., 
+  status: ..., 
+};
+
+// Call the `updateCompetitionPeriodStatusRef()` function to get a reference to the mutation.
+const ref = updateCompetitionPeriodStatusRef(updateCompetitionPeriodStatusVars);
+// Variables can be defined inline as well.
+const ref = updateCompetitionPeriodStatusRef({ periodId: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateCompetitionPeriodStatusRef(dataConnect, updateCompetitionPeriodStatusVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
 });
 ```
 

@@ -56,6 +56,7 @@ query ListMyCapiCoinTransactions($offset: Int = 0)
     sourceId
     phaseNumber
     classGroup
+    competitionPeriodId
     competitionWeek
     createdAt
   }
@@ -81,6 +82,7 @@ query GetMyCapiCoinTransactionBySource($sourceId: String!)
     transactionType
     sourceId
     phaseNumber
+    competitionPeriodId
     createdAt
   }
 }
@@ -110,6 +112,7 @@ query GetMyActivityAttempt($attemptId: UUID!)
     streakBonus
     rewardAmount
     rewardLimitReached
+    rewardSuppressionReason
     createdAt
   }
 }
@@ -140,6 +143,7 @@ query ListMyActivityAttempts($phaseNumber: Int!, $offset: Int = 0)
     streakBonus
     rewardAmount
     rewardLimitReached
+    rewardSuppressionReason
     createdAt
   }
 }
@@ -153,9 +157,63 @@ query GetEconomyConfig @auth(level: USER_EMAIL_VERIFIED) {
     firstActivityReward
     repeatActivityReward
     rewardedRepeatLimitPerDay
+    minimumRewardedAttemptIntervalSeconds
     streakTier3Percent
     streakTier5Percent
     streakTier7Percent
     updatedAt
   }
+}
+
+# Períodos em rascunho e encerrados não são expostos ao aluno. Um período
+# SCHEDULED passa a contar automaticamente quando o relógio entra na janela;
+# ACTIVE permite ativação manual e PAUSED mantém a janela sem contar pontos.
+query ListVisibleCompetitionPeriods
+  @auth(level: USER_EMAIL_VERIFIED) {
+  competitionPeriods(
+    where: {
+      status: { nin: [DRAFT, CLOSED] }
+      endsAt: { gt_expr: "request.time" }
+    }
+    orderBy: [{ startsAt: ASC }]
+    limit: 5
+  ) {
+    id
+    name
+    status
+    startsAt
+    endsAt
+    pausedAt
+    closedAt
+    updatedAt
+  }
+}
+
+# Consulta operacional exclusiva do backend administrativo. Ela identifica
+# rajadas de aprovações por aluno/hora sem impor teto diário de recompensas.
+query GetCompetitionAbuseSignals(
+  $periodId: UUID!
+  $minimumApprovedAttempts: Int = 20
+) @auth(level: NO_ACCESS) {
+  signals: _select(
+    sql: """
+      SELECT
+        attempts.user_uid,
+        DATE_TRUNC('hour', attempts.created_at) AS hour_bucket,
+        COUNT(*)::integer AS approved_attempts,
+        COALESCE(SUM(attempts.reward_amount), 0)::integer AS reward_amount
+      FROM activity_attempts AS attempts
+      INNER JOIN capi_coin_transactions AS transactions
+        ON transactions.attempt_id = attempts.id
+      WHERE
+        transactions.competition_period_id = $1
+        AND attempts.passed = TRUE
+      GROUP BY
+        attempts.user_uid,
+        DATE_TRUNC('hour', attempts.created_at)
+      HAVING COUNT(*) >= $2
+      ORDER BY approved_attempts DESC, hour_bucket DESC
+    """
+    params: [$periodId, $minimumApprovedAttempts]
+  )
 }

@@ -16,6 +16,7 @@ import {
   isActivityUnlocked,
   normalizeCurrentPhase,
 } from '../../lib/trailProgress';
+import { getRewardSuppressionMessage } from '../../lib/competitiveEconomy';
 import TrailLockedState from './TrailLockedState';
 import TrailPageShell from './TrailPageShell';
 
@@ -222,18 +223,19 @@ export default function SimpleTrailActivity({ activity }) {
                 : 'Fase concluída!'}
             </h1>
             <p className="mt-3 text-sm text-slate-400">
-              {result.rewardLimitReached
-                ? 'A tentativa foi registrada, mas o limite configurado de repetições remuneradas foi alcançado.'
-                : `+${result.reward} CapiCoins registrados. Saldo atual: ${result.profile?.capicoins ?? 0}.`}
+              {getRewardSuppressionMessage(
+                result.rewardSuppressionReason,
+              ) ??
+                `+${result.reward} CapiCoins registrados. Saldo atual: ${result.profile?.capicoins ?? 0}.`}
             </p>
-            {!result.rewardLimitReached && (
+            {!result.rewardSuppressed && (
               <p className="mt-2 text-xs font-semibold text-slate-400">
                 Base: {result.baseReward} · Streak:{' '}
                 {result.multiplierPercent}% · Bônus: +
                 {result.streakBonus}
               </p>
             )}
-            {!result.rewardLimitReached && (
+            {!result.rewardSuppressed && (
               <p className="mt-2 text-sm font-bold text-orange-400">
                 Streak atual: {result.profile?.streak_atual ?? 0}
               </p>

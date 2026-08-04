@@ -34,6 +34,20 @@ enum CapiCoinTransactionType {
   ACTIVITY_REPEAT_REWARD
 }
 
+enum RewardSuppressionReason {
+  NONE
+  RATE_LIMIT
+  DAILY_LIMIT
+}
+
+enum CompetitionPeriodStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
 # O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
 # manter um segundo identificador e permite filtros seguros com auth.uid.
 type User
@@ -131,6 +145,9 @@ type ActivityAttempt
   rewardLimitReached: Boolean!
     @col(name: "reward_limit_reached")
     @default(value: false)
+  rewardSuppressionReason: RewardSuppressionReason!
+    @col(name: "reward_suppression_reason")
+    @default(value: NONE)
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")
@@ -158,6 +175,9 @@ type EconomyConfig
     @default(value: 20)
   rewardedRepeatLimitPerDay: Int
     @col(name: "rewarded_repeat_limit_per_day")
+  minimumRewardedAttemptIntervalSeconds: Int!
+    @col(name: "minimum_rewarded_attempt_interval_seconds")
+    @default(value: 30)
   streakTier3Percent: Int!
     @col(name: "streak_tier_3_percent")
     @default(value: 110)
@@ -167,6 +187,30 @@ type EconomyConfig
   streakTier7Percent: Int!
     @col(name: "streak_tier_7_percent")
     @default(value: 130)
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Janela configurável da competição. DRAFT não conta pontos; SCHEDULED conta
+# automaticamente dentro do intervalo; ACTIVE conta enquanto estiver no
+# intervalo; PAUSED suspende a atribuição; CLOSED preserva o resultado.
+type CompetitionPeriod
+  @table(
+    name: "competition_periods"
+    singular: "competitionPeriod"
+    plural: "competitionPeriods"
+  )
+  @index(fields: ["status", "startsAt"], order: [ASC, ASC]) {
+  name: String! @col(dataType: "varchar(80)")
+  status: CompetitionPeriodStatus! @default(value: DRAFT)
+  startsAt: Timestamp! @col(name: "starts_at")
+  endsAt: Timestamp! @col(name: "ends_at")
+  pausedAt: Timestamp @col(name: "paused_at")
+  closedAt: Timestamp @col(name: "closed_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
   updatedAt: Timestamp!
     @col(name: "updated_at")
     @default(expr: "request.time")
@@ -186,6 +230,11 @@ type CapiCoinTransaction
     @col(name: "user_uid", dataType: "varchar(128)")
   attempt: ActivityAttempt @ref(fields: "attemptId", references: "id")
   attemptId: UUID @col(name: "attempt_id")
+  competitionPeriod: CompetitionPeriod
+    @ref(fields: "competitionPeriodId", references: "id")
+  competitionPeriodId: UUID
+    @col(name: "competition_period_id")
+    @index
   amount: Int!
   baseAmount: Int! @col(name: "base_amount") @default(value: 0)
   streakMultiplierPercent: Int!

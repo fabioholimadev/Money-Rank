@@ -28,6 +28,7 @@ import {
   evaluateEngenhariaDesejoChoice,
   toEngenhariaDesejoActivityResult,
 } from '../../../../lib/engenhariaDesejoGame';
+import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import {
   getPhaseProgress,
   isActivityUnlocked,
@@ -627,14 +628,15 @@ export default function AtividadeFatoFake() {
             {gameResult.passed ? (
               <div className="mt-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
                 <p className="font-black text-amber-300">
-                  {savedResult.rewardLimitReached
+                  {savedResult.rewardSuppressed
                     ? 'Revisão salva sem nova recompensa'
                     : `+${savedResult.reward} CapiCoins`}
                 </p>
                 <p className="mt-2 text-sm text-slate-400">
-                  {savedResult.rewardLimitReached
-                    ? 'O limite configurado de revisões remuneradas foi alcançado.'
-                    : `Base ${savedResult.baseReward} · Streak ${savedResult.multiplierPercent}% · Bônus +${savedResult.streakBonus}`}
+                  {getRewardSuppressionMessage(
+                    savedResult.rewardSuppressionReason,
+                  ) ??
+                    `Base ${savedResult.baseReward} · Streak ${savedResult.multiplierPercent}% · Bônus +${savedResult.streakBonus}`}
                 </p>
                 <p className="mt-2 text-sm font-bold text-orange-400">
                   Saldo real: {savedResult.capiCoins} CapiCoins · Streak:{' '}

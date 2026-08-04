@@ -15,6 +15,7 @@ trabalho para outro desenvolvedor ou agente sem perder o estado atual.
 | Épico 4 - Tutoria inteligente | Planejado | [`epic-4/README.md`](epic-4/README.md) |
 | Épico 5 - Dashboard do professor | Planejado | [`epic-5/README.md`](epic-5/README.md) |
 | Produção e capacidade | Preparação futura | [`deploy/checklist-producao.md`](deploy/checklist-producao.md) |
+| Limpeza antes do piloto | Procedimento planejado, não executado | [`deploy/limpeza-pre-lancamento.md`](deploy/limpeza-pre-lancamento.md) |
 
 ## Regra obrigatoria de manutenção
 

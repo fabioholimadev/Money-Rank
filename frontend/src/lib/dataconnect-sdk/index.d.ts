@@ -17,6 +17,14 @@ export enum CapiCoinTransactionType {
   ACTIVITY_REPEAT_REWARD = "ACTIVITY_REPEAT_REWARD",
 };
 
+export enum CompetitionPeriodStatus {
+  DRAFT = "DRAFT",
+  SCHEDULED = "SCHEDULED",
+  ACTIVE = "ACTIVE",
+  PAUSED = "PAUSED",
+  CLOSED = "CLOSED",
+};
+
 export enum ProfessionalAvatar {
   CAPI_CIENTISTA = "CAPI_CIENTISTA",
   CAPI_PROFESSORA = "CAPI_PROFESSORA",
@@ -30,6 +38,12 @@ export enum ProgressStatus {
   NOT_STARTED = "NOT_STARTED",
   IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
+};
+
+export enum RewardSuppressionReason {
+  NONE = "NONE",
+  RATE_LIMIT = "RATE_LIMIT",
+  DAILY_LIMIT = "DAILY_LIMIT",
 };
 
 export enum StudentClass {
@@ -67,6 +81,11 @@ export interface CapiCoinTransaction_Key {
   __typename?: 'CapiCoinTransaction_Key';
 }
 
+export interface CompetitionPeriod_Key {
+  id: UUIDString;
+  __typename?: 'CompetitionPeriod_Key';
+}
+
 export interface CompleteMyCurrentPhaseContentData {
   affectedRows?: number | null;
 }
@@ -92,9 +111,30 @@ export interface CompleteMyIntroductionData {
   affectedRows?: number | null;
 }
 
+export interface CreateCompetitionPeriodData {
+  createdPeriod?: unknown | null;
+}
+
+export interface CreateCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  status: CompetitionPeriodStatus;
+}
+
 export interface EconomyConfig_Key {
   configKey: string;
   __typename?: 'EconomyConfig_Key';
+}
+
+export interface GetCompetitionAbuseSignalsData {
+  signals?: unknown[] | null;
+}
+
+export interface GetCompetitionAbuseSignalsVariables {
+  periodId: UUIDString;
+  minimumApprovedAttempts?: number | null;
 }
 
 export interface GetEconomyConfigData {
@@ -104,6 +144,7 @@ export interface GetEconomyConfigData {
     firstActivityReward: number;
     repeatActivityReward: number;
     rewardedRepeatLimitPerDay?: number | null;
+    minimumRewardedAttemptIntervalSeconds: number;
     streakTier3Percent: number;
     streakTier5Percent: number;
     streakTier7Percent: number;
@@ -126,6 +167,7 @@ export interface GetMyActivityAttemptData {
     streakBonus: number;
     rewardAmount: number;
     rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
     createdAt: TimestampString;
   } & ActivityAttempt_Key)[];
 }
@@ -144,6 +186,7 @@ export interface GetMyCapiCoinTransactionBySourceData {
     transactionType: CapiCoinTransactionType;
     sourceId?: string | null;
     phaseNumber?: number | null;
+    competitionPeriodId?: UUIDString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
 }
@@ -190,6 +233,7 @@ export interface ListMyActivityAttemptsData {
     streakBonus: number;
     rewardAmount: number;
     rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
     createdAt: TimestampString;
   } & ActivityAttempt_Key)[];
 }
@@ -212,6 +256,7 @@ export interface ListMyCapiCoinTransactionsData {
     sourceId?: string | null;
     phaseNumber?: number | null;
     classGroup?: StudentClass | null;
+    competitionPeriodId?: UUIDString | null;
     competitionWeek?: DateString | null;
     createdAt: TimestampString;
   } & CapiCoinTransaction_Key)[];
@@ -235,6 +280,19 @@ export interface ListMyProgressData {
   })[];
 }
 
+export interface ListVisibleCompetitionPeriodsData {
+  competitionPeriods: ({
+    id: UUIDString;
+    name: string;
+    status: CompetitionPeriodStatus;
+    startsAt: TimestampString;
+    endsAt: TimestampString;
+    pausedAt?: TimestampString | null;
+    closedAt?: TimestampString | null;
+    updatedAt: TimestampString;
+  } & CompetitionPeriod_Key)[];
+}
+
 export interface RegisterMyCurrentPhaseAttemptData {
   affectedRows?: number | null;
 }
@@ -254,6 +312,15 @@ export interface StudentProgress_Key {
   __typename?: 'StudentProgress_Key';
 }
 
+export interface UpdateCompetitionPeriodStatusData {
+  updatedPeriod?: unknown | null;
+}
+
+export interface UpdateCompetitionPeriodStatusVariables {
+  periodId: UUIDString;
+  status: CompetitionPeriodStatus;
+}
+
 export interface UpsertEconomyConfigData {
   economyConfig_upsert: EconomyConfig_Key;
 }
@@ -263,6 +330,7 @@ export interface UpsertEconomyConfigVariables {
   firstActivityReward: number;
   repeatActivityReward: number;
   rewardedRepeatLimitPerDay?: number | null;
+  minimumRewardedAttemptIntervalSeconds: number;
   streakTier3Percent: number;
   streakTier5Percent: number;
   streakTier7Percent: number;
@@ -389,6 +457,30 @@ export const upsertEconomyConfigRef: UpsertEconomyConfigRef;
 
 export function upsertEconomyConfig(vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
 export function upsertEconomyConfig(dc: DataConnect, vars: UpsertEconomyConfigVariables): MutationPromise<UpsertEconomyConfigData, UpsertEconomyConfigVariables>;
+
+interface CreateCompetitionPeriodRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateCompetitionPeriodVariables): MutationRef<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateCompetitionPeriodVariables): MutationRef<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+  operationName: string;
+}
+export const createCompetitionPeriodRef: CreateCompetitionPeriodRef;
+
+export function createCompetitionPeriod(vars: CreateCompetitionPeriodVariables): MutationPromise<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+export function createCompetitionPeriod(dc: DataConnect, vars: CreateCompetitionPeriodVariables): MutationPromise<CreateCompetitionPeriodData, CreateCompetitionPeriodVariables>;
+
+interface UpdateCompetitionPeriodStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateCompetitionPeriodStatusVariables): MutationRef<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationRef<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+  operationName: string;
+}
+export const updateCompetitionPeriodStatusRef: UpdateCompetitionPeriodStatusRef;
+
+export function updateCompetitionPeriodStatus(vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
+export function updateCompetitionPeriodStatus(dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
 
 interface InitializeMyTrailRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -533,4 +625,28 @@ export const getEconomyConfigRef: GetEconomyConfigRef;
 
 export function getEconomyConfig(options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
 export function getEconomyConfig(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetEconomyConfigData, undefined>;
+
+interface ListVisibleCompetitionPeriodsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListVisibleCompetitionPeriodsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListVisibleCompetitionPeriodsData, undefined>;
+  operationName: string;
+}
+export const listVisibleCompetitionPeriodsRef: ListVisibleCompetitionPeriodsRef;
+
+export function listVisibleCompetitionPeriods(options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
+export function listVisibleCompetitionPeriods(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
+
+interface GetCompetitionAbuseSignalsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCompetitionAbuseSignalsVariables): QueryRef<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetCompetitionAbuseSignalsVariables): QueryRef<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+  operationName: string;
+}
+export const getCompetitionAbuseSignalsRef: GetCompetitionAbuseSignalsRef;
+
+export function getCompetitionAbuseSignals(vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+export function getCompetitionAbuseSignals(dc: DataConnect, vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
 

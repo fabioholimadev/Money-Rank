@@ -9,6 +9,14 @@ export const CapiCoinTransactionType = {
   ACTIVITY_REPEAT_REWARD: "ACTIVITY_REPEAT_REWARD",
 }
 
+export const CompetitionPeriodStatus = {
+  DRAFT: "DRAFT",
+  SCHEDULED: "SCHEDULED",
+  ACTIVE: "ACTIVE",
+  PAUSED: "PAUSED",
+  CLOSED: "CLOSED",
+}
+
 export const ProfessionalAvatar = {
   CAPI_CIENTISTA: "CAPI_CIENTISTA",
   CAPI_PROFESSORA: "CAPI_PROFESSORA",
@@ -22,6 +30,12 @@ export const ProgressStatus = {
   NOT_STARTED: "NOT_STARTED",
   IN_PROGRESS: "IN_PROGRESS",
   COMPLETED: "COMPLETED",
+}
+
+export const RewardSuppressionReason = {
+  NONE: "NONE",
+  RATE_LIMIT: "RATE_LIMIT",
+  DAILY_LIMIT: "DAILY_LIMIT",
 }
 
 export const StudentClass = {
@@ -109,6 +123,30 @@ upsertEconomyConfigRef.operationName = 'UpsertEconomyConfig';
 export function upsertEconomyConfig(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(upsertEconomyConfigRef(dcInstance, inputVars));
+}
+
+export const createCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateCompetitionPeriod', inputVars);
+}
+createCompetitionPeriodRef.operationName = 'CreateCompetitionPeriod';
+
+export function createCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createCompetitionPeriodRef(dcInstance, inputVars));
+}
+
+export const updateCompetitionPeriodStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateCompetitionPeriodStatus', inputVars);
+}
+updateCompetitionPeriodStatusRef.operationName = 'UpdateCompetitionPeriodStatus';
+
+export function updateCompetitionPeriodStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateCompetitionPeriodStatusRef(dcInstance, inputVars));
 }
 
 export const initializeMyTrailRef = (dc) => {
@@ -260,5 +298,31 @@ export function getEconomyConfig(dcOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(getEconomyConfigRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listVisibleCompetitionPeriodsRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListVisibleCompetitionPeriods');
+}
+listVisibleCompetitionPeriodsRef.operationName = 'ListVisibleCompetitionPeriods';
+
+export function listVisibleCompetitionPeriods(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listVisibleCompetitionPeriodsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getCompetitionAbuseSignalsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetCompetitionAbuseSignals', inputVars);
+}
+getCompetitionAbuseSignalsRef.operationName = 'GetCompetitionAbuseSignals';
+
+export function getCompetitionAbuseSignals(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getCompetitionAbuseSignalsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
