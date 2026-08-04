@@ -215,6 +215,16 @@ export interface GetCompetitionAbuseSignalsVariables {
   minimumApprovedAttempts?: number | null;
 }
 
+export interface GetCompetitionRankingsData {
+  individualRanking?: unknown[] | null;
+  classRanking?: unknown[] | null;
+}
+
+export interface GetCompetitionRankingsVariables {
+  periodId: UUIDString;
+  studentLimit?: number | null;
+}
+
 export interface GetEconomyConfigData {
   economyConfig?: {
     configKey: string;
@@ -774,6 +784,18 @@ export const listVisibleCompetitionPeriodsRef: ListVisibleCompetitionPeriodsRef;
 
 export function listVisibleCompetitionPeriods(options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
 export function listVisibleCompetitionPeriods(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListVisibleCompetitionPeriodsData, undefined>;
+
+interface GetCompetitionRankingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCompetitionRankingsVariables): QueryRef<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetCompetitionRankingsVariables): QueryRef<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+  operationName: string;
+}
+export const getCompetitionRankingsRef: GetCompetitionRankingsRef;
+
+export function getCompetitionRankings(vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+export function getCompetitionRankings(dc: DataConnect, vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
 
 interface GetCompetitionAbuseSignalsRef {
   /* Allow users to create refs without passing in DataConnect */

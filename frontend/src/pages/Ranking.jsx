@@ -1,165 +1,288 @@
-import { useState, useEffect } from 'react';
-import { Leaderboard, MonetizationOn, Groups, Person, AccountCircle } from '@mui/icons-material';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
+import {
+  AccountCircle,
+  Groups,
+  Leaderboard,
+  MonetizationOn,
+  Person,
+} from '@mui/icons-material';
+import { getAvatarOption } from '../constants/profileOptions';
+import {
+  COMPETITION_PERIOD_STATUSES,
+  getEffectiveCompetitionStatus,
+} from '../lib/competitionPeriod';
+import { fetchCompetitionRanking } from '../services/rankingDataService';
 
-export default function Ranking() {
-  const [leaderboardInd, setLeaderboardInd] = useState([]);
-  const [leaderboardTurmas, setLeaderboardTurmas] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('individual');
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+  timeZone: 'America/Fortaleza',
+});
 
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setIsLoading(true);
-        // Adicionamos avatar_url na busca
-        const { data, error } = await supabase
-          .from('alunos')
-          .select('id, nome, fase_atual, capicoins, turma, avatar_url')
-          .order('capicoins', { ascending: false });
+const statusLabels = {
+  [COMPETITION_PERIOD_STATUSES.ACTIVE]: 'Competição em andamento',
+  [COMPETITION_PERIOD_STATUSES.PAUSED]: 'Competição pausada',
+  [COMPETITION_PERIOD_STATUSES.SCHEDULED]: 'Competição agendada',
+};
 
-        if (error) throw error;
+function positionPresentation(position) {
+  switch (position) {
+    case 1:
+      return { label: '🥇', color: 'bg-amber-500/20 text-amber-400' };
+    case 2:
+      return { label: '🥈', color: 'bg-slate-500/20 text-slate-300' };
+    case 3:
+      return { label: '🥉', color: 'bg-orange-500/20 text-orange-400' };
+    default:
+      return { label: `${position}º`, color: 'text-slate-400' };
+  }
+}
 
-        setLeaderboardInd(data || []);
-
-        if (data) {
-          const turmasMap = data.reduce((acc, aluno) => {
-            const turmaNome = aluno.turma || 'Sem Turma';
-            if (!acc[turmaNome]) {
-              acc[turmaNome] = { turma: turmaNome, total_capicoins: 0, qtd_alunos: 0 };
-            }
-            acc[turmaNome].total_capicoins += (aluno.capicoins || 0);
-            acc[turmaNome].qtd_alunos += 1;
-            return acc;
-          }, {});
-
-          const turmasArr = Object.values(turmasMap).sort((a, b) => b.total_capicoins - a.total_capicoins);
-          setLeaderboardTurmas(turmasArr);
-        }
-      } catch (err) {
-        console.error('Erro ao buscar leaderboard:', err);
-        setErrorMsg('O Capi Bank está descansando. Tente novamente em instantes.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchLeaderboard();
-  }, []);
-
-  if (isLoading) {
+function RankingAvatar({ entry, isClassRanking }) {
+  if (isClassRanking) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 rounded-full border-4 border-amber-400 border-t-transparent animate-spin" />
-        <p className="text-white text-sm tracking-widest uppercase">Carregando ranking...</p>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-700 bg-slate-900 md:h-11 md:w-11">
+        <Groups sx={{ fontSize: 20 }} className="text-slate-500" />
       </div>
     );
   }
 
-  const listaAtiva = activeTab === 'individual' ? leaderboardInd : leaderboardTurmas;
+  const avatarUrl = entry.avatarUrl ||
+    getAvatarOption(entry.avatarId)?.imageUrl;
+
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={`Avatar de ${entry.preferredName}`}
+        className="h-9 w-9 shrink-0 rounded-xl border border-zinc-700 object-cover md:h-11 md:w-11"
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fbbf24 1px, transparent 1px), linear-gradient(90deg, #fbbf24 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-700 bg-slate-900 md:h-11 md:w-11">
+      <AccountCircle sx={{ fontSize: 20 }} className="text-slate-600" />
+    </div>
+  );
+}
 
-      <div className="relative max-w-4xl mx-auto mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-black tracking-tighter mb-2 flex items-center gap-3">
-            <Leaderboard sx={{ fontSize: 32, color: '#fbbf24' }} /> RANKING GERAL
-          </h1>
-          <p className="text-slate-400 text-sm">Os melhores jogadores e turmas da plataforma</p>
-        </div>
+export default function Ranking() {
+  const [ranking, setRanking] = useState({
+    period: null,
+    individuals: [],
+    classes: [],
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [activeTab, setActiveTab] = useState('individual');
+  const [reloadRevision, setReloadRevision] = useState(0);
 
-        {/* Abas — botões simétricos e centrados */}
-        <div className="flex justify-center items-center bg-slate-900 border border-slate-800 rounded-xl p-1 shrink-0 w-full md:w-auto">
-          <button
-            onClick={() => setActiveTab('individual')}
-            className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'individual' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Person sx={{ fontSize: 18 }} /> Alunos
-          </button>
-          <button
-            onClick={() => setActiveTab('turmas')}
-            className={`flex flex-1 md:flex-none items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-              activeTab === 'turmas' ? 'bg-amber-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Groups sx={{ fontSize: 18 }} /> Turmas
-          </button>
-        </div>
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadRanking() {
+      setIsLoading(true);
+      setErrorMessage('');
+
+      try {
+        const result = await fetchCompetitionRanking();
+        if (isActive) setRanking(result);
+      } catch (error) {
+        console.error('Não foi possível carregar o ranking.', error);
+        if (isActive) {
+          setErrorMessage(
+            'O Capi Bank está organizando a disputa. Tente novamente em instantes.',
+          );
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    }
+
+    loadRanking();
+    return () => {
+      isActive = false;
+    };
+  }, [reloadRevision]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
+        <p className="text-sm font-bold uppercase tracking-widest text-white">
+          Preparando a disputa...
+        </p>
       </div>
+    );
+  }
 
-      {errorMsg && (
-        <div className="relative max-w-4xl mx-auto mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl font-semibold">
-          ⚠️ {errorMsg}
+  const isClassRanking = activeTab === 'classes';
+  const activeList = isClassRanking
+    ? ranking.classes
+    : ranking.individuals;
+  const effectiveStatus = ranking.period
+    ? getEffectiveCompetitionStatus(ranking.period)
+    : null;
+
+  return (
+    <div className="relative min-h-screen bg-slate-950 p-4 text-white sm:p-6">
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(#fbbf24 1px, transparent 1px), linear-gradient(90deg, #fbbf24 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      <header className="relative mx-auto mb-8 max-w-4xl">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <h1 className="mb-2 flex items-center gap-3 text-2xl font-black tracking-tight md:text-4xl">
+              <Leaderboard sx={{ fontSize: 34, color: '#fbbf24' }} />
+              Ranking da competição
+            </h1>
+            <p className="text-sm text-slate-400">
+              Cada CapiCoin conquistada no período vira um ponto para você e
+              para sua turma.
+            </p>
+          </div>
+
+          <div className="flex w-full shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 p-1 md:w-auto">
+            <button
+              type="button"
+              aria-pressed={!isClassRanking}
+              onClick={() => setActiveTab('individual')}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-all md:flex-none ${
+                !isClassRanking
+                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <Person sx={{ fontSize: 18 }} /> Alunos
+            </button>
+            <button
+              type="button"
+              aria-pressed={isClassRanking}
+              onClick={() => setActiveTab('classes')}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-all md:flex-none ${
+                isClassRanking
+                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <Groups sx={{ fontSize: 18 }} /> Turmas
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Tabela de Ranking */}
-      <div className="relative max-w-4xl mx-auto">
-        {listaAtiva.length > 0 ? (
-          <div className="overflow-x-auto rounded-3xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm shadow-lg shadow-amber-500/5">
+        {ranking.period && (
+          <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-black text-cyan-200">{ranking.period.name}</p>
+              <p className="mt-1 text-xs text-slate-400">
+                {dateFormatter.format(new Date(ranking.period.startsAt))} até{' '}
+                {dateFormatter.format(new Date(ranking.period.endsAt))}
+              </p>
+            </div>
+            <span className="w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-black text-cyan-200">
+              {statusLabels[effectiveStatus] || 'Período configurado'}
+            </span>
+          </div>
+        )}
+      </header>
+
+      <main className="relative mx-auto max-w-4xl">
+        {errorMessage && (
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+            <p role="alert" className="font-semibold">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => setReloadRevision((value) => value + 1)}
+              className="mt-3 min-h-11 rounded-lg bg-red-300 px-4 py-2 text-sm font-black text-slate-950 hover:bg-red-200"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {!errorMessage && !ranking.period ? (
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-10 text-center shadow-lg shadow-amber-500/5">
+            <Leaderboard
+              sx={{ fontSize: 46 }}
+              className="mx-auto text-amber-400"
+            />
+            <h2 className="mt-3 text-xl font-black">
+              A próxima disputa ainda não foi aberta
+            </h2>
+            <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
+              Assim que o professor agendar o período, os pontos gerais dos
+              alunos e das turmas aparecerão aqui.
+            </p>
+          </section>
+        ) : !errorMessage && activeList.length > 0 ? (
+          <div className="overflow-x-auto rounded-3xl border border-zinc-800 bg-zinc-900/80 shadow-lg shadow-amber-500/5 backdrop-blur-sm">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-900/80 to-slate-900/60 border-b border-zinc-800">
+              <thead className="border-b border-zinc-800 bg-gradient-to-r from-slate-900/80 to-slate-900/60">
                 <tr>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-slate-300 w-16 md:w-20">Pos.</th>
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-slate-300">{activeTab === 'individual' ? 'Jogador' : 'Turma'}</th>
-                  {activeTab === 'turmas' && <th className="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-slate-300 w-20">Alunos</th>}
-                  <th className="px-3 md:px-6 py-3 md:py-4 text-right text-xs md:text-sm font-bold text-amber-400 w-28 md:w-32">CapiCoins</th>
+                  <th className="w-16 px-3 py-4 text-left text-xs font-bold text-slate-300 md:w-20 md:px-6 md:text-sm">
+                    Pos.
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold text-slate-300 md:px-6 md:text-sm">
+                    {isClassRanking ? 'Turma' : 'Jogador'}
+                  </th>
+                  {isClassRanking && (
+                    <th className="w-28 px-3 py-4 text-center text-xs font-bold text-slate-300 md:text-sm">
+                      Participação
+                    </th>
+                  )}
+                  <th className="w-28 px-3 py-4 text-right text-xs font-bold text-amber-400 md:w-36 md:px-6 md:text-sm">
+                    Pontos
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
-                {listaAtiva.map((item, index) => {
-                  let posicaoEstilo = index === 0 ? 'bg-amber-500/20 text-amber-400' : index === 1 ? 'bg-slate-500/20 text-slate-300' : index === 2 ? 'bg-orange-500/20 text-orange-400' : 'text-slate-400';
-
+                {activeList.map((entry) => {
+                  const presentation = positionPresentation(entry.position);
                   return (
-                    <tr key={activeTab === 'individual' ? item.id : item.turma} className="border-b border-zinc-800 hover:bg-slate-900/40 transition-colors">
-                      {/* Posição */}
-                      <td className={`px-3 md:px-6 py-3 md:py-4 font-bold text-sm md:text-lg whitespace-nowrap ${posicaoEstilo}`}>
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}º`}
+                    <tr
+                      key={entry.key}
+                      className="transition-colors hover:bg-slate-900/40"
+                    >
+                      <td className={`whitespace-nowrap px-3 py-4 text-sm font-bold md:px-6 md:text-lg ${presentation.color}`}>
+                        {presentation.label}
                       </td>
-
-                      {/* Avatar + Nome */}
-                      <td className="px-3 md:px-6 py-3 md:py-4">
-                        <div className="flex items-center gap-2 md:gap-4">
-                          {activeTab === 'individual' ? (
-                            item.avatar_url ? (
-                              <img src={item.avatar_url} alt="Avatar" className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover border border-zinc-700 shrink-0" />
-                            ) : (
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center shrink-0">
-                                <AccountCircle sx={{ fontSize: 18 }} className="text-slate-600" />
-                              </div>
-                            )
-                          ) : (
-                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-slate-900 border border-zinc-700 flex items-center justify-center shrink-0">
-                              <Groups sx={{ fontSize: 18 }} className="text-slate-600" />
-                            </div>
-                          )}
+                      <td className="px-3 py-4 md:px-6">
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <RankingAvatar
+                            entry={entry}
+                            isClassRanking={isClassRanking}
+                          />
                           <div className="min-w-0">
-                            <p className="font-semibold text-white text-xs md:text-base truncate">
-                              {activeTab === 'individual' ? item.nome : item.turma}
+                            <p className="truncate text-sm font-semibold text-white md:text-base">
+                              {isClassRanking
+                                ? entry.className
+                                : entry.preferredName}
                             </p>
-                            {activeTab === 'individual' && item.turma && (
-                              <p className="text-[10px] text-slate-500 font-bold tracking-wider uppercase hidden sm:block">{item.turma}</p>
+                            {!isClassRanking && (
+                              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:text-xs">
+                                {entry.className}
+                              </p>
                             )}
                           </div>
                         </div>
                       </td>
-
-                      {/* Alunos (só turmas) */}
-                      {activeTab === 'turmas' && (
-                        <td className="px-3 md:px-6 py-3 md:py-4 text-center font-bold text-slate-300 text-xs md:text-sm whitespace-nowrap">
-                          {item.qtd_alunos} membros
+                      {isClassRanking && (
+                        <td className="whitespace-nowrap px-3 py-4 text-center text-xs font-bold text-slate-300 md:text-sm">
+                          {entry.participatingStudents}/
+                          {entry.registeredStudents}
                         </td>
                       )}
-
-                      {/* CapiCoins */}
-                      <td className="px-3 md:px-6 py-3 md:py-4">
-                        <div className="flex items-center justify-end gap-1 md:gap-2 font-black text-amber-400 text-sm md:text-lg whitespace-nowrap">
-                          <MonetizationOn sx={{ fontSize: 16 }} />
-                          {activeTab === 'individual' ? (item.capicoins || 0) : item.total_capicoins}
+                      <td className="px-3 py-4 md:px-6">
+                        <div className="flex items-center justify-end gap-1 whitespace-nowrap text-sm font-black text-amber-400 md:gap-2 md:text-lg">
+                          <MonetizationOn sx={{ fontSize: 17 }} />
+                          {entry.totalPoints.toLocaleString('pt-BR')}
                         </div>
                       </td>
                     </tr>
@@ -168,15 +291,15 @@ export default function Ranking() {
               </tbody>
             </table>
           </div>
-        ) : (
-           <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-12 text-center shadow-lg shadow-amber-500/5">
-             <p className="text-slate-400 text-lg">
-               {activeTab === 'individual' ? 'Nenhum jogador registrado ainda.' : 'Nenhuma turma registrada.'}
-             </p>
-           </div>
-        )}
-      </div>
-
+        ) : !errorMessage ? (
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-10 text-center shadow-lg shadow-amber-500/5">
+            <p className="text-lg text-slate-400">
+              A disputa está pronta. Os primeiros pontos ainda não foram
+              registrados.
+            </p>
+          </section>
+        ) : null}
+      </main>
     </div>
   );
 }

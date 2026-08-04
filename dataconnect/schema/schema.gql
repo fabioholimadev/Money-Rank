@@ -266,7 +266,8 @@ type CapiCoinTransaction
     singular: "capiCoinTransaction"
     plural: "capiCoinTransactions"
   )
-  @index(fields: ["userUid", "createdAt"], order: [ASC, DESC]) {
+  @index(fields: ["userUid", "createdAt"], order: [ASC, DESC])
+  @index(fields: ["competitionPeriodId", "userUid"], order: [ASC, ASC]) {
   user: User! @ref(fields: "userUid", references: "uid")
   userUid: String!
     @col(name: "user_uid", dataType: "varchar(128)")

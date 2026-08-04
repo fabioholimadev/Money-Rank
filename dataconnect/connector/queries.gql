@@ -237,6 +237,151 @@ query ListVisibleCompetitionPeriods
   }
 }
 
+# Ranking coletivo intencionalmente visível a perfis autenticados. O SQL
+# não devolve UID ou e-mail e só soma créditos positivos atribuídos ao período.
+# A CTE authorized_viewer impede acesso por uma conta sem perfil no Capi Bank.
+query GetCompetitionRankings(
+  $periodId: UUID!
+  $studentLimit: Int = 100
+) @auth(level: USER_EMAIL_VERIFIED) {
+  individualRanking: _select(
+    sql: """
+      WITH authorized_viewer AS (
+        SELECT 1
+        FROM users AS viewer
+        WHERE
+          viewer.firebase_uid = $2
+          AND viewer.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.id
+        FROM competition_periods AS period
+        CROSS JOIN authorized_viewer
+        WHERE
+          period.id = $1::uuid
+          AND period.status IN ('SCHEDULED', 'ACTIVE', 'PAUSED')
+          AND period.ends_at > CURRENT_TIMESTAMP
+      ),
+      student_totals AS (
+        SELECT
+          student.preferred_name,
+          student.class_group,
+          student.avatar_id,
+          student.avatar_url,
+          COALESCE(SUM(transactions.amount) FILTER (
+            WHERE transactions.amount > 0
+          ), 0)::integer AS total_points
+        FROM users AS student
+        CROSS JOIN target_period AS period
+        LEFT JOIN capi_coin_transactions AS transactions
+          ON transactions.user_uid = student.firebase_uid
+          AND transactions.competition_period_id = period.id
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+        GROUP BY
+          student.firebase_uid,
+          student.preferred_name,
+          student.class_group,
+          student.avatar_id,
+          student.avatar_url
+      ),
+      ranked_students AS (
+        SELECT
+          DENSE_RANK() OVER (ORDER BY total_points DESC)::integer
+            AS position,
+          preferred_name,
+          class_group,
+          avatar_id,
+          avatar_url,
+          total_points
+        FROM student_totals
+      )
+      SELECT
+        position,
+        preferred_name AS "preferredName",
+        class_group::text AS "classGroup",
+        avatar_id::text AS "avatarId",
+        avatar_url AS "avatarUrl",
+        total_points AS "totalPoints"
+      FROM ranked_students
+      ORDER BY position ASC, preferred_name ASC
+      LIMIT LEAST(GREATEST($3, 1), 100)
+    """
+    params: [$periodId, { _expr: "auth.uid" }, $studentLimit]
+  )
+  classRanking: _select(
+    sql: """
+      WITH authorized_viewer AS (
+        SELECT 1
+        FROM users AS viewer
+        WHERE
+          viewer.firebase_uid = $2
+          AND viewer.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.id
+        FROM competition_periods AS period
+        CROSS JOIN authorized_viewer
+        WHERE
+          period.id = $1::uuid
+          AND period.status IN ('SCHEDULED', 'ACTIVE', 'PAUSED')
+          AND period.ends_at > CURRENT_TIMESTAMP
+      ),
+      student_totals AS (
+        SELECT
+          student.firebase_uid,
+          student.class_group,
+          COALESCE(SUM(transactions.amount) FILTER (
+            WHERE transactions.amount > 0
+          ), 0)::integer AS total_points
+        FROM users AS student
+        CROSS JOIN target_period AS period
+        LEFT JOIN capi_coin_transactions AS transactions
+          ON transactions.user_uid = student.firebase_uid
+          AND transactions.competition_period_id = period.id
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+        GROUP BY student.firebase_uid, student.class_group
+      ),
+      class_totals AS (
+        SELECT
+          class_group,
+          COUNT(*)::integer AS registered_students,
+          COUNT(*) FILTER (WHERE total_points > 0)::integer
+            AS participating_students,
+          COALESCE(SUM(total_points), 0)::integer AS total_points
+        FROM student_totals
+        GROUP BY class_group
+      ),
+      ranked_classes AS (
+        SELECT
+          DENSE_RANK() OVER (ORDER BY total_points DESC)::integer
+            AS position,
+          class_group,
+          registered_students,
+          participating_students,
+          total_points
+        FROM class_totals
+      )
+      SELECT
+        position,
+        class_group::text AS "classGroup",
+        registered_students AS "registeredStudents",
+        participating_students AS "participatingStudents",
+        total_points AS "totalPoints"
+      FROM ranked_classes
+      ORDER BY position ASC, class_group ASC
+    """
+    params: [$periodId, { _expr: "auth.uid" }]
+  )
+}
+
 # Consulta operacional exclusiva do backend administrativo. Ela identifica
 # rajadas de aprovações por aluno/hora sem impor teto diário de recompensas.
 query GetCompetitionAbuseSignals(

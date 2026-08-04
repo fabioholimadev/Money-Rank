@@ -16,6 +16,7 @@
     "test:engenharia-desejo": "node ../scripts/test-engenharia-desejo-game.mjs",
     "test:ilusao-dinheiro": "node ../scripts/test-ilusao-dinheiro-game.mjs",
     "test:perigo-doce-ai": "node ../scripts/test-perigo-doce-ai.mjs",
+    "test:rankings": "node ../scripts/test-ranking-data.mjs",
     "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {

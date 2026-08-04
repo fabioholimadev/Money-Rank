@@ -18,6 +18,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListMyActivityAttempts*](#listmyactivityattempts)
   - [*GetEconomyConfig*](#geteconomyconfig)
   - [*ListVisibleCompetitionPeriods*](#listvisiblecompetitionperiods)
+  - [*GetCompetitionRankings*](#getcompetitionrankings)
   - [*GetCompetitionAbuseSignals*](#getcompetitionabusesignals)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
@@ -1239,6 +1240,123 @@ console.log(data.competitionPeriods);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.competitionPeriods);
+});
+```
+
+## GetCompetitionRankings
+You can execute the `GetCompetitionRankings` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getCompetitionRankings(vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+
+interface GetCompetitionRankingsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetCompetitionRankingsVariables): QueryRef<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+}
+export const getCompetitionRankingsRef: GetCompetitionRankingsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getCompetitionRankings(dc: DataConnect, vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+
+interface GetCompetitionRankingsRef {
+  ...
+  (dc: DataConnect, vars: GetCompetitionRankingsVariables): QueryRef<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
+}
+export const getCompetitionRankingsRef: GetCompetitionRankingsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getCompetitionRankingsRef:
+```typescript
+const name = getCompetitionRankingsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetCompetitionRankings` query requires an argument of type `GetCompetitionRankingsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetCompetitionRankingsVariables {
+  periodId: UUIDString;
+  studentLimit?: number | null;
+}
+```
+### Return Type
+Recall that executing the `GetCompetitionRankings` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetCompetitionRankingsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetCompetitionRankingsData {
+  individualRanking?: unknown[] | null;
+  classRanking?: unknown[] | null;
+}
+```
+### Using `GetCompetitionRankings`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getCompetitionRankings, GetCompetitionRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetCompetitionRankings` query requires an argument of type `GetCompetitionRankingsVariables`:
+const getCompetitionRankingsVars: GetCompetitionRankingsVariables = {
+  periodId: ..., 
+  studentLimit: ..., // optional
+};
+
+// Call the `getCompetitionRankings()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getCompetitionRankings(getCompetitionRankingsVars);
+// Variables can be defined inline as well.
+const { data } = await getCompetitionRankings({ periodId: ..., studentLimit: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getCompetitionRankings(dataConnect, getCompetitionRankingsVars);
+
+console.log(data.individualRanking);
+console.log(data.classRanking);
+
+// Or, you can use the `Promise` API.
+getCompetitionRankings(getCompetitionRankingsVars).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.classRanking);
+});
+```
+
+### Using `GetCompetitionRankings`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getCompetitionRankingsRef, GetCompetitionRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetCompetitionRankings` query requires an argument of type `GetCompetitionRankingsVariables`:
+const getCompetitionRankingsVars: GetCompetitionRankingsVariables = {
+  periodId: ..., 
+  studentLimit: ..., // optional
+};
+
+// Call the `getCompetitionRankingsRef()` function to get a reference to the query.
+const ref = getCompetitionRankingsRef(getCompetitionRankingsVars);
+// Variables can be defined inline as well.
+const ref = getCompetitionRankingsRef({ periodId: ..., studentLimit: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getCompetitionRankingsRef(dataConnect, getCompetitionRankingsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.individualRanking);
+console.log(data.classRanking);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.classRanking);
 });
 ```
 
