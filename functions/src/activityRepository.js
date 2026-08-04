@@ -59,6 +59,27 @@ export async function getTeacherDashboardForChat(
   return unwrapData(response);
 }
 
+export async function getStudentMentorContext(studentUid) {
+  const options = {
+    impersonate: {
+      authClaims: {
+        sub: studentUid,
+        email_verified: true,
+      },
+    },
+  };
+  const [profileResponse, progressResponse] = await Promise.all([
+    dataConnect.executeQuery('GetMyProfile', {}, options),
+    dataConnect.executeQuery('ListMyProgress', {}, options),
+  ]);
+  const profileData = unwrapData(profileResponse);
+  const progressData = unwrapData(progressResponse);
+  return {
+    profile: profileData.user ?? null,
+    progress: progressData.studentProgressEntries ?? [],
+  };
+}
+
 export async function markActivitySessionSubmitted(sessionId, studentUid) {
   const response = await dataConnect.executeMutation(
     'MarkAuthoritativeActivitySessionSubmitted',

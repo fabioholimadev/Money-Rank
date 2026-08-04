@@ -1,21 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Pets,
   Close,
   Send,
   AutoAwesome,
   ErrorOutlined,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchApi } from '../lib/api';
+import { askStudentMentor } from '../services/mentorService';
 
 /**
  * CapiMentor — Tutor de IA flutuante do Money Rank.
  *
  * - Aparece como um botão flutuante (FAB) no canto inferior direito.
  * - Só é renderizado quando há um aluno logado (segurança + UX).
- * - Conversa com o backend em POST /api/mentor/chat usando fetchApi,
- *   responsável por configurar os cabeçalhos HTTP automaticamente.
+ * - Conversa com uma callable Function protegida por Firebase Auth e App Check.
  * - A chave da IA fica EXCLUSIVAMENTE no backend. Aqui nunca trafega segredo.
  *
  * Monte-o UMA vez, de forma global (ver App.jsx), para que o histórico
@@ -23,10 +21,12 @@ import { fetchApi } from '../lib/api';
  */
 
 const SUGESTOES = [
-  'O que é o ICMS?',
+  'Como impostos e cidadania se conectam?',
   'Por que aposta não é investimento?',
-  'Como funciona o imposto no preço do refri?',
+  'Como saúde e consumo afetam a sociedade?',
 ];
+
+const MENTOR_AVATAR = '/avatars/capi-mentor.jpg';
 
 export default function CapiMentor() {
   const { aluno } = useAuth();
@@ -38,7 +38,7 @@ export default function CapiMentor() {
     {
       role: 'assistant',
       content:
-        'Oi! Eu sou o CapiMentor 🦫 Tô aqui pra te ajudar a desvendar impostos, dinheiro e decisões financeiras. Manda sua dúvida!',
+        'Oi! Eu sou o CapiMentor 🦫 Posso ajudar com educação financeira e fiscal, cidadania, saúde, consumo, direitos e políticas públicas. Quando a pesquisa online estiver ativa, também mostro as fontes usadas. Qual tema você quer explorar?',
     },
   ]);
 
@@ -74,35 +74,17 @@ export default function CapiMentor() {
     setCarregando(true);
 
     try {
-      // Enviamos as últimas mensagens como contexto (sem a saudação inicial).
-      // O backend é stateless: todo o histórico vai junto.
-      const historico = novaConversa
-        .filter((m) => m.role === 'user' || m.role === 'assistant')
-        .slice(-10)
-        .map((m) => ({ role: m.role, content: m.content }));
+      const resposta = await askStudentMentor(texto);
 
-      const res = await fetchApi('/api/mentor/chat', {
-        method: 'POST',
-        body: { mensagem: texto, historico },
-      });
-
-      if (!res.ok) {
-        let detalhe = 'Tive um problema pra pensar agora.';
-        try {
-          const j = await res.json();
-          if (j?.error) detalhe = j.error;
-        } catch {
-          /* resposta sem JSON */
-        }
-        throw new Error(detalhe);
-      }
-
-      const data = await res.json();
-      const resposta =
-        data?.resposta?.trim() ||
-        'Hmm, não consegui formular uma resposta. Pode reformular a pergunta?';
-
-      setMensagens((prev) => [...prev, { role: 'assistant', content: resposta }]);
+      setMensagens((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: resposta.answer,
+          sources: resposta.sources,
+          searchSuggestionsHtml: resposta.searchSuggestionsHtml,
+        },
+      ]);
     } catch (e) {
       console.error('[CapiMentor] erro:', e);
       setErro(e.message || 'Falha na conexão com o mentor.');
@@ -146,7 +128,11 @@ export default function CapiMentor() {
           aria-label="Abrir o CapiMentor"
           className="fixed bottom-24 md:bottom-5 right-5 z-[60] flex items-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 font-black text-slate-950 shadow-xl shadow-amber-500/25 transition-all hover:scale-105 hover:bg-amber-300 active:scale-95"
         >
-          <Pets sx={{ fontSize: 24 }} />
+          <img
+            src={MENTOR_AVATAR}
+            alt=""
+            className="h-8 w-8 rounded-xl object-cover ring-2 ring-slate-950/20"
+          />
           <span className="hidden sm:inline">Falar com o CapiMentor</span>
           <span className="absolute -right-1 -top-1 flex h-3 w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-75" />
@@ -172,9 +158,11 @@ export default function CapiMentor() {
             {/* Header */}
             <header className="flex items-center justify-between border-b border-zinc-800 px-3 md:px-4 py-3 md:py-3.5 md:rounded-t-3xl flex-shrink-0">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 md:h-10 w-8 md:w-10 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-400 text-sm md:text-base">
-                  <Pets sx={{ fontSize: 20 }} />
-                </div>
+                <img
+                  src={MENTOR_AVATAR}
+                  alt="Avatar do CapiMentor"
+                  className="h-10 w-10 rounded-2xl object-cover ring-2 ring-amber-400/30"
+                />
                 <div>
                   <p className="flex items-center gap-1 text-xs md:text-sm font-black text-white">
                     CapiMentor
@@ -211,6 +199,35 @@ export default function CapiMentor() {
                     }`}
                   >
                     {m.content}
+                    {m.sources?.length > 0 && (
+                      <div className="mt-3 border-t border-slate-700/70 pt-2">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                          Fontes para conferir
+                        </p>
+                        <ul className="mt-1.5 space-y-1">
+                          {m.sources.map((source) => (
+                            <li key={`${source.url}-${source.title}`}>
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[11px] text-cyan-300 underline decoration-cyan-500/40 underline-offset-2 hover:text-cyan-200"
+                              >
+                                {source.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {m.searchSuggestionsHtml && (
+                      <div
+                        className="mt-2 overflow-hidden rounded-lg text-[10px]"
+                        dangerouslySetInnerHTML={{
+                          __html: m.searchSuggestionsHtml,
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
@@ -263,7 +280,7 @@ export default function CapiMentor() {
                 ref={inputRef}
                 rows={1}
                 value={rascunho}
-                onChange={(e) => setRascunho(e.target.value)}
+                onChange={(e) => setRascunho(e.target.value.slice(0, 500))}
                 onKeyDown={aoTeclar}
                 placeholder="Pergunte sobre impostos, dinheiro…"
                 className="max-h-28 flex-1 resize-none bg-transparent px-2.5 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
@@ -278,7 +295,7 @@ export default function CapiMentor() {
               </button>
             </div>
             <p className="mt-2 px-1 text-center text-[10px] text-slate-600">
-              O CapiMentor pode errar. Confira informações importantes.
+              O CapiMentor pode errar. Confira com o professor ou uma fonte oficial.
             </p>
          </div>
         </div>

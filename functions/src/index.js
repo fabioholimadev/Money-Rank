@@ -12,6 +12,7 @@ import {
   getActivityResult,
   getActivitySession,
   getTeacherDashboardForChat,
+  getStudentMentorContext,
   markActivitySessionSubmitted,
   persistActivityResult,
 } from './activityRepository.js';
@@ -20,6 +21,10 @@ import {
   buildTeacherChatResponse,
   normalizeTeacherQuestion,
 } from './teacherDataChat.js';
+import {
+  answerStudentMentor,
+  normalizeMentorQuestion,
+} from './studentMentor.js';
 
 const REGION = 'southamerica-east1';
 const SESSION_DURATION_MILLISECONDS = 45 * 60 * 1_000;
@@ -293,6 +298,56 @@ export const askTeacherData = onCall(
       throw new HttpsError(
         'failed-precondition',
         'Não foi possível preparar a análise pedagógica agora.',
+      );
+    }
+  },
+);
+
+export const askStudentMentor = onCall(
+  {
+    ...callableOptions,
+    maxInstances: 5,
+    timeoutSeconds: 45,
+    secrets: [geminiApiKey],
+  },
+  async (request) => {
+    const studentUid = requireStudent(request);
+    const question = normalizeMentorQuestion(request.data?.question);
+    if (question.length < 4) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Escreva uma pergunta um pouco mais detalhada.',
+      );
+    }
+
+    try {
+      const context = await getStudentMentorContext(studentUid);
+      const response = await answerStudentMentor({
+        question,
+        rawContext: context,
+        apiKey: geminiApiKey.value(),
+        model: geminiModel.value(),
+      });
+      if (!response) {
+        throw new HttpsError(
+          'permission-denied',
+          'O CapiMentor está disponível somente para alunos com perfil completo.',
+        );
+      }
+      return {
+        ...response,
+        limitations:
+          'O tutor pode errar e não substitui o professor nem fontes oficiais.',
+      };
+    } catch (error) {
+      logger.error('Falha no CapiMentor.', {
+        code: error?.code,
+        message: error?.message,
+      });
+      if (error instanceof HttpsError) throw error;
+      throw new HttpsError(
+        'failed-precondition',
+        'O CapiMentor não conseguiu responder agora.',
       );
     }
   },
