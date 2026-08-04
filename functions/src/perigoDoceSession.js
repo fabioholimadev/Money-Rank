@@ -199,7 +199,9 @@ const responseSchema = {
 };
 
 export async function buildAiPerigoDoceSession({ apiKey, model }) {
-  if (!apiKey) return buildFallbackPerigoDoceSession();
+  if (!apiKey || apiKey === 'local-fallback') {
+    return buildFallbackPerigoDoceSession();
+  }
 
   const definition = getPerigoDoceDefinition();
   const ai = new GoogleGenAI({ apiKey });

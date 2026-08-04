@@ -92,7 +92,8 @@ export default function AtividadeQuiz() {
 
         console.error('Não foi possível preparar o quiz.', error);
         setQuestionLoadError(
-          'Não foi possível preparar as questões. Recarregue a página para tentar novamente.',
+          error?.message ||
+            'Não foi possível preparar as questões. Tente novamente.',
         );
       } finally {
         if (isActive) {

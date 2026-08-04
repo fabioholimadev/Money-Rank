@@ -39,6 +39,21 @@ const submitSessionCallable = httpsCallable(
 );
 
 function normalizeCallableError(error, fallback) {
+  const code = String(error?.code || '').toLowerCase();
+  const unavailableCodes = [
+    'functions/deadline-exceeded',
+    'functions/internal',
+    'functions/unavailable',
+  ];
+
+  if (unavailableCodes.includes(code)) {
+    return new Error(
+      import.meta.env.DEV
+        ? 'O serviço de atividades do Capi Bank não está ativo. Inicie os emuladores locais e tente novamente.'
+        : 'O serviço de atividades do Capi Bank está temporariamente indisponível. Tente novamente em instantes.',
+    );
+  }
+
   const message = String(error?.message || '').replace(/^Firebase:\s*/i, '');
   return new Error(message || fallback);
 }
