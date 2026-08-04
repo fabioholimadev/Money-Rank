@@ -16,7 +16,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.5 | O Perigo Doce com IA e fallback local | Concluída | `8ba9a35` |
 | 3.6 | O Custo do Vicio com personagens | Concluída | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Concluída | `5c8e1ce` |
-| 3.8 | A Engenharia do Desejo | Planejada | - |
+| 3.8 | A Engenharia do Desejo com banco publicitário auditável | Testada; commit pendente | - |
 
 ## Estrutura visual e progressão
 
@@ -86,7 +86,14 @@ Detalhes e roteiro: [`ilusao-dinheiro-caminhos.md`](ilusao-dinheiro-caminhos.md)
 
 ### Fase 4 - A Engenharia do Desejo
 
-Planejamento da Task 3.8:
+Implementação da Task 3.8 validada localmente:
+
+O banco possui seis casos documentados e seis peças autorais. Cada rodada
+sorteia três de cada tipo, embaralha cards e botões e exige quatro acertos em
+seis análises. O gabarito é determinístico; IA auxilia a pesquisa editorial,
+mas não decide a resposta durante o jogo.
+
+Detalhes, fontes e roteiro: [`engenharia-desejo-fato-fake.md`](engenharia-desejo-fato-fake.md).
 
 1. montar um banco de publicidades verdadeiras com fonte, data, local e prova;
 2. criar peças falsas claramente marcadas na base interna;
@@ -110,6 +117,7 @@ cd frontend
 npm run test:competitive-economy
 npm run test:content-materials
 npm run test:custo-vicio
+npm run test:engenharia-desejo
 npm run test:ilusao-dinheiro
 npm run test:perigo-doce-ai
 npm run test:trail-progress

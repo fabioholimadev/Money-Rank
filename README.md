@@ -233,3 +233,8 @@ Consulte [`docs/epic-3/custo-vicio-estudo-caso.md`](docs/epic-3/custo-vicio-estu
 **A Ilusão do Dinheiro** usa seis decisões ramificadas, caixa narrativo e
 quatro finais sem misturar valores simulados com a carteira competitiva.
 Consulte [`docs/epic-3/ilusao-dinheiro-caminhos.md`](docs/epic-3/ilusao-dinheiro-caminhos.md).
+
+**A Engenharia do Desejo** sorteia publicidades documentadas e peças
+inventadas, revela evidências somente depois da resposta e mantém as fontes em
+um banco auditável. Consulte
+[`docs/epic-3/engenharia-desejo-fato-fake.md`](docs/epic-3/engenharia-desejo-fato-fake.md).

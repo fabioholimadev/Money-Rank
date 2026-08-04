@@ -58,6 +58,22 @@ um teto arbitrario no frontend.
 Rotas, dados e IA devem aplicar autorização no servidor; rankings devem vir do
 Capi Bank; e as métricas devem ser validadas pelo professor.
 
+## Etapa posterior — revisão visual do produto
+
+Após concluir o dashboard e os demais fluxos funcionais, executar uma Task
+transversal de design system e padronização. Ela deve abranger Landing Page,
+Home, trilhas, atividades, ranking, perfil e dashboard. A Home será reduzida e
+passará a priorizar progresso, próxima atividade, dificuldades e erros recentes
+calculados pelos dados consolidados deste Épico.
+
+As atividades **A Ilusão do Dinheiro** e **A Engenharia do Desejo** são as
+referências atuais de acabamento. As cores próprias de cada fase podem ser
+preservadas, mas precisam obedecer a uma paleta, hierarquia e componentes
+compartilhados.
+
+Essa revisão não deve começar antes das métricas e permissões estarem estáveis,
+para evitar redesenhar a Home e o ranking mais de uma vez.
+
 ## Registro de mudanças
 
 Ao iniciar cada Task, substituir o planejamento pelo resultado real, registrar

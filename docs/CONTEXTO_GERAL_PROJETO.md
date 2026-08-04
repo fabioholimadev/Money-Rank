@@ -6,17 +6,17 @@
 
 ## 1. Estado rápido da retomada
 
-| Campo | Estado em 2026-08-02 |
+| Campo | Estado em 2026-08-03 |
 | --- | --- |
 | Repositório canônico nesta máquina | `C:\Documentos\Programação\Money Rank` |
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/mvp-gamificacao-ia` |
-| Último commit funcional | `5c8e1ce feat: implementa caminhos de decisao da Ilusao do Dinheiro` |
-| Task atual | Nenhuma Task em andamento |
+| Branch para retomada | `feat/task-3-8-engenharia-desejo` |
+| Último commit funcional | `b01d792 docs: registra encerramento da Task 3.7` |
+| Task atual | Task 3.8 testada; commit e merge em andamento |
 | Estado da Task 3.7 | Concluída, testada e documentada |
-| Próxima Task prevista | Task 3.8 — A Engenharia do Desejo |
+| Próxima Task prevista | Definir a numeração e o escopo após a Task 3.8 |
 
 ### Ação imediata para quem retomar
 
@@ -27,14 +27,14 @@
    git status --short --branch
    ```
 
-2. Confirmar que `feat/mvp-gamificacao-ia` contém `597dfe3` e `5c8e1ce`.
+2. Permanecer em `feat/task-3-8-engenharia-desejo` até o teste manual.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
 4. Tratar os apontamentos em `frontend/src/lib/dataconnect-sdk/` como falsos
    diffs enquanto `git diff --quiet` retornar `0`.
-5. Antes de codificar, criar `feat/task-3-8-engenharia-desejo` a partir da
-   branch-base.
-6. Executar a Task 3.8 inteira, incluindo documentação e validação, sem
-   alterar incidentalmente o backend Supabase legado.
+5. Executar a matriz automatizada e o roteiro de
+   `docs/epic-3/engenharia-desejo-fato-fake.md`.
+6. Somente após a confirmação do usuário, criar o commit semântico, atualizar
+   o hash documental e fazer merge fast-forward em `feat/mvp-gamificacao-ia`.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -314,6 +314,7 @@ já conquistados na competição.
 | 3.5 | O Perigo Doce com Firebase AI Logic e fallback | `8ba9a35` |
 | 3.6 | O Custo do Vício com personagens e cinco análises | `8b77215` |
 | 3.7 | A Ilusão do Dinheiro com seis decisões ramificadas | `5c8e1ce` |
+| 3.8 | A Engenharia do Desejo com banco 6/6 e rodadas 3/3 | teste manual aprovado |
 
 ### Observação sobre Task 1.1
 
@@ -352,7 +353,22 @@ seguinte para auditoria da mecânica e dos testes.
 
 ### Fase 4 — A Engenharia do Desejo
 
-Ainda usa uma atividade estática temporária. A versão planejada deve:
+A atividade estática temporária foi substituída na branch
+`feat/task-3-8-engenharia-desejo`. Estado atual:
+
+- banco versionado com seis publicidades reais e seis peças inventadas;
+- rodada aleatória e equilibrada em três itens de cada tipo;
+- botões REAL/INVENTED mudam entre as posições A e B;
+- fonte, canal, local e período aparecem apenas depois da resposta;
+- quatro acertos em seis concluem a fase;
+- tentativa reprovada não paga recompensa;
+- aprovação e repetição usam as operações atômicas existentes do Capi Bank;
+- teste do motor: `npm run test:engenharia-desejo`;
+- documentação: `docs/epic-3/engenharia-desejo-fato-fake.md`;
+- validação manual aprovada em 2026-08-04;
+- revisão pedagógica do professor ainda pendente.
+
+Regras preservadas para evolução do banco:
 
 - analisar publicidades absurdas de bets e consumo;
 - pedir ao aluno para decidir se a publicidade existiu ou foi inventada;
@@ -376,7 +392,6 @@ Arquivos da Task:
 - `scripts/test-ilusao-dinheiro-game.mjs`;
 - `docs/epic-3/ilusao-dinheiro-caminhos.md`;
 - `frontend/package.json`;
-- `frontend/src/data/healthConsumptionActivities.js`;
 - `README.md`;
 - este documento.
 
@@ -404,6 +419,7 @@ npm run test:competitive-economy
 npm run test:content-materials
 npm run test:custo-vicio
 npm run test:dataconnect-mappers
+npm run test:engenharia-desejo
 npm run test:ilusao-dinheiro
 npm run test:perigo-doce-ai
 npm run test:trail-progress
@@ -458,9 +474,10 @@ nova ou reiniciar os dados locais do emulador de forma consciente.
 
 ### Épico 3
 
-1. Task 3.8 — Engenharia do Desejo;
+1. validar, commitar e integrar a Task 3.8;
 2. definir teto alto de repetições remuneradas com o professor;
-3. revisar e aprovar todas as bases pedagógicas;
+3. revisar e aprovar todas as bases pedagógicas, incluindo os 12 cards da
+   Engenharia do Desejo;
 4. migrar rankings individual e por turma para SQL Connect;
 5. confirmar numeração final das Tasks 3.9–3.11 antes de codificar.
 
@@ -484,6 +501,30 @@ rankings. A numeração intermediária ainda não foi formalmente fechada.
 - ranking semanal individual e por turma;
 - chat com os dados;
 - autorização rigorosa para impedir acesso de aluno a dados coletivos.
+
+### Etapa transversal pós-Épico 5 — padronização visual
+
+Depois da conclusão dos Épicos funcionais, executar uma revisão visual global
+sem misturá-la às entregas de banco, IA e autorização. Escopo registrado:
+
+- criar tokens de cor, tipografia, espaçamento, bordas e estados de interação;
+- definir uma cor de identidade para cada seção/fase e aplicá-la com
+  consistência, reduzindo cores concorrentes dentro da mesma tela;
+- usar **A Ilusão do Dinheiro** e **A Engenharia do Desejo** como referências
+  atuais de acabamento para as demais atividades;
+- padronizar Landing Page, Home do aluno, atividades, ranking, perfil,
+  navegação e estados de loading/erro/vazio;
+- retirar informações redundantes ou excessivamente técnicas;
+- reconstruir a Home de forma mais resumida, destacando próxima ação,
+  progresso, saldo/streak e dados úteis das atividades;
+- mostrar na Home dificuldades recentes, erros recorrentes e recomendações de
+  revisão somente depois que o modelo de dados e as métricas estiverem prontos;
+- validar contraste, responsividade, hierarquia visual e acessibilidade;
+- evitar redesenhar componentes isoladamente antes de existir um sistema
+  visual comum.
+
+Essa etapa deve começar somente depois de Épico 5 e demais fluxos essenciais,
+porque Home, ranking e dashboard dependerão das métricas e permissões finais.
 
 ### Deploy e capacidade
 
