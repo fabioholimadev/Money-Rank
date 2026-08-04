@@ -12,10 +12,16 @@ trabalho para outro desenvolvedor ou agente sem perder o estado atual.
 | Épico 1 - Infraestrutura e autenticação | Implementado, com divida legada mapeada | [`epic-1/README.md`](epic-1/README.md) |
 | Épico 2 - Firebase SQL Connect | Base implementada e integrada | [`epic-2/README.md`](epic-2/README.md) |
 | Épico 3 - Trilha e atividades | Em andamento | [`epic-3/README.md`](epic-3/README.md) |
-| Épico 4 - Tutoria inteligente | Planejado | [`epic-4/README.md`](epic-4/README.md) |
-| Épico 5 - Dashboard do professor | Planejado | [`epic-5/README.md`](epic-5/README.md) |
+| Épico 4 - Tutoria inteligente | Adiado para pós-MVP/handoff | [`epic-4/README.md`](epic-4/README.md) |
+| Épico 5 - Dashboard do professor | Próxima prioridade após o Épico 3 | [`epic-5/README.md`](epic-5/README.md) |
 | Produção e capacidade | Preparação futura | [`deploy/checklist-producao.md`](deploy/checklist-producao.md) |
 | Limpeza antes do piloto | Procedimento planejado, não executado | [`deploy/limpeza-pre-lancamento.md`](deploy/limpeza-pre-lancamento.md) |
+
+Ordem atual do MVP e critérios de corte:
+[`roadmap-mvp.md`](roadmap-mvp.md).
+
+O desenho de segurança e o roteiro da pontuação no servidor estão em
+[`epic-3/pontuacao-autoritativa.md`](epic-3/pontuacao-autoritativa.md).
 
 ## Regra obrigatoria de manutenção
 

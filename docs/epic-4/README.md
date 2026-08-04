@@ -7,14 +7,23 @@ aluno e use somente o contexto pedagógico necessário.
 
 ## Estado
 
-Planejado. Existe um componente legado `frontend/src/components/CapiMentor.jsx`
-ligado ao backend Express/Supabase. Ele e referência de interface, não a
-arquitetura final.
+Adiado para pós-MVP ou handoff. Existe um componente legado
+`frontend/src/components/CapiMentor.jsx` ligado ao Google AI Studio por um
+backend Express/Supabase. Ele é referência de interface, não a arquitetura
+final, e deve ficar desabilitado no piloto enquanto não passar pela migração
+de segurança.
 
 | Task | Como será feita | Estado |
 | --- | --- | --- |
-| 4.1 | Refatorar a interface flutuante, acessibilidade, estados e responsividade | Planejada |
-| 4.2 | Integrar agente de IA com contexto mínimo, seguranca e limites | Planejada |
+| 4.1 | Refatorar a interface flutuante, acessibilidade, estados e responsividade | Adiada pós-MVP |
+| 4.2 | Integrar agente de IA com contexto mínimo, segurança e limites | Adiada pós-MVP |
+
+## Decisão de priorização
+
+Depois do Épico 3, o trabalho segue diretamente para o Épico 5. O tutor é
+importante, mas não é requisito de abertura do primeiro piloto. Se for
+retomado, deverá remover Supabase/JWT legado, usar o Capi Bank e nunca expor a
+chave do Google AI Studio.
 
 ## Arquitetura prevista
 

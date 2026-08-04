@@ -12,12 +12,12 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/mvp-gamificacao-ia` |
-| Último commit funcional | `eefaf10 feat: implementa periodos competitivos e repeticao segura` |
-| Task atual | Task 3.9 concluída, testada e documentada |
+| Branch para retomada | `feat/task-3-10-authoritative-scoring` |
+| Último commit funcional | `a099225 feat: implementa pontuacao autoritativa das atividades` |
+| Task atual | Task 3.10 concluída; preparando Task 3.11 |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | Task 3.10 — pontuação autoritativa e concorrência segura |
+| Próxima Task prevista | Task 3.11 — rankings individual e por turma no SQL Connect |
 
 ### Ação imediata para quem retomar
 
@@ -28,15 +28,15 @@
    git status --short --branch
    ```
 
-2. Confirmar que `feat/mvp-gamificacao-ia` contém `eefaf10` e o commit
-   documental de encerramento.
+2. Finalizar os commits da Task 3.10 e abrir
+   `feat/task-3-11-sql-rankings` a partir da branch-base.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
-4. Reconhecer que os diffs do SDK em `eefaf10` são reais e expõem períodos,
-   supressão de recompensa e intervalo mínimo.
-5. Ler `docs/epic-3/periodos-competitivos.md` antes de alterar regras de janela,
-   repetição ou atribuição ao ranking.
-6. Antes da Task 3.10, confirmar o escopo da validação autoritativa por
-   mecânica e abrir uma nova branch.
+4. Reconhecer que os diffs atuais do SDK são reais: incluem
+   `ActivitySession` e operações administrativas `NO_ACCESS` da Task 3.10.
+5. Ler `docs/epic-3/pontuacao-autoritativa.md` antes de alterar sessões,
+   gabaritos, Functions ou recompensas.
+6. Iniciar a Task 3.11 pelos contratos de ranking individual e por turma,
+   usando o total geral do período competitivo.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -172,6 +172,7 @@ Tabelas principais:
 | `users` | perfil, turma, role, avatar, saldo, fase e streak |
 | `student_progress` | estado consolidado de cada aluno por fase |
 | `activity_attempts` | tentativas imutáveis e idempotentes |
+| `activity_sessions` | sessões temporárias, payload público e gabarito privado |
 | `economy_config` | recompensas, streak e limite de repetições |
 | `capi_coin_transactions` | livro-caixa auditável e dados da semana competitiva |
 
@@ -180,23 +181,24 @@ UID arbitrário para consultar outro aluno. As operações de conclusão usam SQ
 atômico para atualizar tentativa, progresso, saldo, streak e livro-caixa sem
 duplicar recompensa.
 
-### Inteligência artificial
+### Inteligência artificial e Functions
 
-- Firebase AI Logic com Gemini Developer API;
-- modelo configurável por `VITE_FIREBASE_AI_MODEL`;
-- valor local atual de exemplo: `gemini-3.6-flash`;
-- respostas estruturadas e validadas antes de renderizar;
-- fallback determinístico obrigatório;
-- IA nunca decide diretamente CapiCoins, streak, aprovação ou progressão;
-- dados pessoais como nome, e-mail, UID, turma e foto não entram no prompt do
-  quiz da Fase 1.
+- a Task 3.10 moveu a geração do quiz da Fase 1 para Cloud Functions;
+- o backend usa o SDK `@google/genai` e segredo `GEMINI_API_KEY`;
+- modelo configurável por `GEMINI_MODEL`, com exemplo `gemini-3.6-flash`;
+- respostas estruturadas são validadas antes de o payload público chegar ao
+  React;
+- sem chave ou em falha da IA, o servidor cria fallback determinístico;
+- gabarito, nota, aprovação e recompensa não são confiados ao navegador;
+- nome, e-mail, UID, turma e foto não entram no prompt do quiz.
 
 App Check:
 
 - proteção básica do Firebase AI Logic está `Enforced`;
 - `security.auth-only=true` está ativo;
 - desenvolvimento usa token debug registrado e ignorado pelo Git;
-- replay protection continua desligada;
+- as callables autoritativas exigem App Check e proteção contra replay fora
+  do emulador; no emulador ambas ficam desativadas para teste local;
 - produção ainda precisa de reCAPTCHA Enterprise;
 - detalhes bloqueantes ficam em `docs/deploy/checklist-producao.md`.
 
@@ -318,6 +320,7 @@ já conquistados na competição.
 | 3.7 | A Ilusão do Dinheiro com seis decisões ramificadas | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco 6/6 e rodadas 3/3 | `8e76b9e` |
 | 3.9 | Períodos competitivos e repetição segura sem teto diário | `eefaf10` |
+| 3.10 | pontuação autoritativa, sessões privadas e Functions | `a099225` |
 
 ### Observação sobre Task 1.1
 
@@ -411,6 +414,39 @@ SDK e recarga/migração pelo emulador ativo. O build conserva o aviso conhecido
 do bundle principal, agora com aproximadamente 940 kB minificado e 273 kB
 gzip. O usuário aprovou o teste local em 2026-08-04 e o commit funcional é
 `eefaf10`.
+
+### Pontuação autoritativa — Task 3.10 validada
+
+Branch: `feat/task-3-10-authoritative-scoring`.
+
+Estado implementado, ainda sem commit:
+
+- Cloud Functions Node.js 22 na região `southamerica-east1`;
+- callables `startActivitySession` e `submitActivitySession`;
+- Firebase Auth obrigatório e App Check/replay obrigatórios fora do emulador;
+- sessões de 45 minutos, vinculadas ao aluno e encerradas após persistência;
+- `ActivitySession.answerKey` e operações de recompensa protegidos por
+  `NO_ACCESS`;
+- ID da tentativa igual ao da sessão e relação única contra pagamento
+  duplicado;
+- motor autoritativo para as quatro fases;
+- O Perigo Doce gerado no backend com Gemini e fallback seguro;
+- frontend envia somente IDs das escolhas;
+- manifesto canônico gerado por
+  `scripts/build-authoritative-activity-manifest.mjs`;
+- detalhes em `docs/epic-3/pontuacao-autoritativa.md`.
+
+Validações automatizadas aprovadas em 2026-08-04: cinco testes das
+Functions, lint do backend, nove suítes de regressão do frontend, lint, build,
+geração do SDK e carregamento direto das duas exports. O primeiro teste do
+emulador revelou peers ausentes do `firebase-admin`; `@firebase/app` e
+`@firebase/app-compat` foram adicionados e o carregamento passou. O build
+mantém o aviso conhecido do chunk principal, agora com aproximadamente 932 kB
+minificado e 270 kB gzip. O `npm audit` das Functions informa sete achados
+moderados transitivos, sem correção não destrutiva disponível.
+
+O usuário autorizou a finalização em 2026-08-04. O commit funcional é
+`a099225`. Falta apenas integrar a branch na base depois deste registro.
 
 ## 10. Task 3.7 concluída — A Ilusão do Dinheiro
 
@@ -508,14 +544,9 @@ nova ou reiniciar os dados locais do emulador de forma consciente.
 
 ### Épico 3
 
-1. Task 3.9, concluída em `eefaf10`: períodos competitivos controláveis,
-   repetições remuneradas sem teto diário e intervalo anti-automação de
-   30 segundos;
-2. Task 3.10, planejada: validar a pontuação de cada mecânica no servidor,
-   reforçar idempotência e tratar concorrência entre requisições;
-3. Task 3.11, planejada: migrar rankings individual e por turma para SQL
+1. Task 3.11, próxima: migrar rankings individual e por turma para SQL
    Connect, somando o total geral do período escolhido;
-4. revisar e aprovar com o professor todas as bases pedagógicas, incluindo os
+2. revisar e aprovar com o professor todas as bases pedagógicas, incluindo os
    12 cards da Engenharia do Desejo.
 
 A divisão por semanas internas ao período foi adiada. O primeiro piloto deve
@@ -523,7 +554,16 @@ usar uma janela configurada de quinta a quinta e apresentar o total do período.
 Depois dos sete dias, os resultados serão encerrados e preservados para análise
 antes de definir a organização de ciclos futuros.
 
-### Épico 4 — Tutoria inteligente
+### Épico 5 — próxima prioridade depois do Épico 3
+
+- rotas protegidas para `role = TEACHER`;
+- gráficos do SQL Connect;
+- métricas de alunos e turmas;
+- rankings individual e por turma;
+- Chat de Dados como último item, adiável se o tempo do MVP ficar curto;
+- autorização rigorosa para impedir acesso de aluno a dados coletivos.
+
+### Épico 4 — adiado para pós-MVP ou handoff
 
 - revisar o CapiMentor legado;
 - remover dependência de Supabase/JWT legado;
@@ -532,14 +572,8 @@ antes de definir a organização de ciclos futuros.
 - proteger a IA com Auth e App Check;
 - criar fallback e limites de custo.
 
-### Épico 5 — Dashboard do professor
-
-- rotas protegidas para `role = TEACHER`;
-- gráficos do SQL Connect;
-- métricas de alunos e turmas;
-- ranking semanal individual e por turma;
-- chat com os dados;
-- autorização rigorosa para impedir acesso de aluno a dados coletivos.
+O componente existente usa Google AI Studio e Supabase. Se não houver tempo
+para migrá-lo, deve ficar desabilitado no piloto, não publicado parcialmente.
 
 ### Etapa transversal pós-Épico 5 — padronização visual
 
@@ -564,6 +598,9 @@ sem misturá-la às entregas de banco, IA e autorização. Escopo registrado:
 
 Essa etapa deve começar somente depois de Épico 5 e demais fluxos essenciais,
 porque Home, ranking e dashboard dependerão das métricas e permissões finais.
+
+A ordem completa, incluindo deploy, teste de 100 alunos e limpeza, está em
+`docs/roadmap-mvp.md`.
 
 ### Deploy e capacidade
 
@@ -595,6 +632,9 @@ VITE_DATA_CONNECT_ENABLED=false
 VITE_USE_DATA_CONNECT_EMULATOR=false
 VITE_DATA_CONNECT_EMULATOR_HOST=127.0.0.1
 VITE_DATA_CONNECT_EMULATOR_PORT=9399
+VITE_USE_FUNCTIONS_EMULATOR=false
+VITE_FUNCTIONS_EMULATOR_HOST=127.0.0.1
+VITE_FUNCTIONS_EMULATOR_PORT=5001
 VITE_FIREBASE_AI_ENABLED=false
 VITE_FIREBASE_AI_MODEL=gemini-3.6-flash
 VITE_RECAPTCHA_ENTERPRISE_SITE_KEY=
@@ -610,11 +650,11 @@ npm install
 npm run dev
 ```
 
-Em outro terminal, iniciar SQL Connect:
+Em outro terminal, iniciar SQL Connect e Functions juntos:
 
 ```powershell
 cd "C:\Documentos\Programação\Money Rank"
-npx -y firebase-tools@latest emulators:start --only dataconnect
+npx -y firebase-tools@latest emulators:start --only dataconnect,functions
 ```
 
 No Windows, se a política de execução bloquear o processo do emulador:
@@ -666,6 +706,10 @@ SDK para `CompetitionPeriod`, `competitionPeriodId`,
 `rewardSuppressionReason` e
 `minimumRewardedAttemptIntervalSeconds`. Esses arquivos devem entrar no commit
 da Task 3.9. Os arquivos gerados sem diff real continuam excluídos.
+
+**Exceção da Task 3.10:** `ActivitySession`, a relação única da tentativa
+e as operações administrativas geraram novos diffs reais no SDK. Esses
+arquivos entram no commit funcional; `vite.config.js` continua excluído.
 
 ## 14. Skills relevantes instaladas
 

@@ -7,14 +7,18 @@ e conversem com uma IA baseada em dados autorizados do Capi Bank.
 
 ## Estado
 
-Planejado. O ranking visual ja existe, mas ainda consulta Supabase e não deve
-ser considerado migrado.
+Próximo Épico prioritário após a Task 3.11. O ranking visual já existe, mas
+ainda consulta Supabase e não deve ser considerado migrado.
 
 | Task | Como será feita | Estado |
 | --- | --- | --- |
 | 5.1 | Criar rotas protegidas para `role = TEACHER` | Planejada |
 | 5.2 | Criar métricas e gráficos a partir do SQL Connect | Planejada |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Planejada |
+
+O caminho mínimo do MVP prioriza 5.1 e 5.2. Caso o tempo fique curto, o Chat
+de Dados pode ser adiado sem impedir o piloto, desde que o professor tenha as
+métricas e os rankings essenciais.
 
 ## Task 5.1 - Acesso do professor
 
