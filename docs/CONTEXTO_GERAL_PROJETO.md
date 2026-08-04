@@ -14,10 +14,10 @@
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
 | Branch para retomada | `feat/task-5-2-teacher-analytics` |
 | Último commit funcional | `99d8108 feat: protege acesso do professor por papel` |
-| Task atual | Task 5.1 concluída; iniciar Task 5.2 |
+| Task atual | Task 5.2 implementada; aguardando validação local |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | Task 5.2 — métricas e gráficos do professor |
+| Próxima Task prevista | concluir Task 5.2; depois decidir o escopo da Task 5.3 |
 
 ### Ação imediata para quem retomar
 
@@ -35,8 +35,8 @@
    `ActivitySession` e operações administrativas `NO_ACCESS` da Task 3.10.
 5. Ler `docs/epic-3/pontuacao-autoritativa.md` antes de alterar sessões,
    gabaritos, Functions ou recompensas.
-6. Antes de implementar a Task 5.2, definir contratos agregados que repitam a
-   autorização `TEACHER` no servidor e não exponham dados desnecessários.
+6. Executar `docs/epic-5/metricas-professor.md` com uma conta `TEACHER` antes
+   do commit da Task 5.2.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência

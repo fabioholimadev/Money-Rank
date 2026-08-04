@@ -14,7 +14,7 @@ períodos e análises pedagógicas.
 | Task | Como será feita | Estado |
 | --- | --- | --- |
 | 5.1 | Criar rotas protegidas para `role = TEACHER` | Concluída (`99d8108`) |
-| 5.2 | Criar métricas e gráficos a partir do SQL Connect | Planejada |
+| 5.2 | Criar métricas e gráficos a partir do SQL Connect | Em validação local |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Planejada |
 
 O caminho mínimo do MVP prioriza 5.1 e 5.2. Caso o tempo fique curto, o Chat
@@ -35,12 +35,16 @@ Detalhes e roteiro: [`acesso-professor.md`](acesso-professor.md).
 
 ## Task 5.2 - Metricas e rankings
 
-- reutilizar o ranking individual e por turma entregue na Task 3.11;
-- permitir selecionar o período no fuso `America/Fortaleza`;
-- somar transações competitivas positivas do período;
-- mostrar progresso, tentativas, dificuldade e participação;
-- evitar comparacoes humilhantes ou exposicao indevida de alunos;
-- criar índices e paginacao para apróximadamente 100 alunos.
+- seletor de até 20 períodos no fuso `America/Fortaleza`;
+- pontos derivados de transações positivas vinculadas ao período;
+- tentativas, notas, erros e participação filtrados pela janela escolhida;
+- progresso geral claramente separado das métricas do período;
+- comparação entre DSA e DSB e diagnóstico das quatro fases;
+- lista limitada a 100 alunos sem retorno de UID ou e-mail;
+- autorização `TEACHER` repetida em cada agregação no servidor;
+- novo índice temporal para tentativas.
+
+Detalhes e roteiro: [`metricas-professor.md`](metricas-professor.md).
 
 O limite de pontos/repeticoes ainda será definido com o professor. Não fixar
 um teto arbitrario no frontend.
