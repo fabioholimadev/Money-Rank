@@ -12,12 +12,12 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/task-3-10-authoritative-scoring` |
-| Último commit funcional | `a099225 feat: implementa pontuacao autoritativa das atividades` |
-| Task atual | Task 3.10 concluída; preparando Task 3.11 |
+| Branch para retomada | `feat/task-5-1-teacher-access` |
+| Último commit funcional | `d92a311 fix: evita ambiente local parcial nas atividades` |
+| Task atual | Épico 3 concluído; iniciar Task 5.1 |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | Task 3.11 — rankings individual e por turma no SQL Connect |
+| Próxima Task prevista | Task 5.1 — acesso e rotas do professor |
 
 ### Ação imediata para quem retomar
 
@@ -28,15 +28,15 @@
    git status --short --branch
    ```
 
-2. Finalizar os commits da Task 3.10 e abrir
-   `feat/task-3-11-sql-rankings` a partir da branch-base.
+2. Trabalhar em `feat/task-5-1-teacher-access`, criada a partir de
+   `feat/mvp-gamificacao-ia` depois do encerramento do Épico 3.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
 4. Reconhecer que os diffs atuais do SDK são reais: incluem
    `ActivitySession` e operações administrativas `NO_ACCESS` da Task 3.10.
 5. Ler `docs/epic-3/pontuacao-autoritativa.md` antes de alterar sessões,
    gabaritos, Functions ou recompensas.
-6. Iniciar a Task 3.11 pelos contratos de ranking individual e por turma,
-   usando o total geral do período competitivo.
+6. Antes de alterar permissões, ler `docs/epic-5/README.md` e auditar o modelo
+   atual de usuário, AuthContext e proteções do SQL Connect.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -204,14 +204,13 @@ App Check:
 
 ### Backend legado — não confundir com a arquitetura final
 
-O diretório `backend/` ainda usa Express e Supabase. O frontend também ainda
-possui `frontend/src/lib/supabase.js`, e `frontend/src/pages/Ranking.jsx` lê o
-ranking pelo Supabase.
+O diretório `backend/` ainda usa Express e Supabase. O frontend também possui
+`frontend/src/lib/supabase.js` porque o CapiMentor legado ainda depende desse
+backend. A Task 3.11 removeu o Supabase de `frontend/src/pages/Ranking.jsx`.
 
-Esse código é legado e **não representa a arquitetura final**, mas ainda não
-deve ser apagado sem uma Task de migração porque o ranking depende dele. A
-migração dos rankings individual e por turma para SQL Connect permanece
-pendente.
+Esse código legado **não representa a arquitetura final**, mas não deve ser
+apagado fora de uma Task de migração do tutor. O ranking já usa o Capi Bank;
+o CapiMentor deve ficar desabilitado no piloto se o Épico 4 continuar adiado.
 
 ## 5. Linguagem e padrões visuais
 
@@ -446,7 +445,40 @@ minificado e 270 kB gzip. O `npm audit` das Functions informa sete achados
 moderados transitivos, sem correção não destrutiva disponível.
 
 O usuário autorizou a finalização em 2026-08-04. O commit funcional é
-`a099225`. Falta apenas integrar a branch na base depois deste registro.
+`a099225`, o registro documental é `cc0293e` e ambos já estão integrados na
+branch-base por fast-forward.
+
+### Rankings no Capi Bank — Task 3.11 concluída
+
+Branch: `feat/task-3-11-sql-rankings`.
+
+Estado implementado e validado:
+
+- `Ranking.jsx` não importa mais Supabase;
+- pontos são a soma dos créditos positivos associados ao período, não o
+  saldo atual da carteira;
+- ranking individual limitado a 100 perfis completos;
+- ranking coletivo apenas para `3º DSA` e `3º DSB`;
+- empates usam `DENSE_RANK()`;
+- consulta não retorna UID nem e-mail;
+- CTE autoriza somente um perfil autenticado e completo;
+- linhas `Any` do SQL nativo são normalizadas e validadas no frontend;
+- índice composto por período e aluno aplicado pelo emulador;
+- utilitário administrativo recusa hosts fora do emulador local;
+- documentação: `docs/epic-3/rankings-sql-connect.md`.
+
+Commit funcional: `6860943`. Correção do ambiente local: `d92a311`.
+
+Validações concluídas: `dataconnect:compile`, geração do SDK, teste puro dos
+mapeadores, consulta autenticada real com dois alunos e duas turmas, dez
+suítes de regressão do frontend, testes das Functions, ambos os linters e
+build. O período temporário foi encerrado depois do teste. A retirada do
+Supabase da página reduziu o chunk principal de aproximadamente 932 kB para
+737 kB minificado, embora o aviso acima de 500 kB continue.
+
+O inventário de conteúdo das quatro atividades, incluindo bancos, diretrizes
+e quantidade de possibilidades, está em
+`docs/epic-3/organizacao-bancos-atividades.md`.
 
 ## 10. Task 3.7 concluída — A Ilusão do Dinheiro
 
@@ -544,9 +576,9 @@ nova ou reiniciar os dados locais do emulador de forma consciente.
 
 ### Épico 3
 
-1. Task 3.11, próxima: migrar rankings individual e por turma para SQL
-   Connect, somando o total geral do período escolhido;
-2. revisar e aprovar com o professor todas as bases pedagógicas, incluindo os
+1. Tasks 3.1 a 3.11 concluídas e testadas;
+2. pendência pré-piloto: revisar e aprovar com o professor todas as bases
+   pedagógicas, incluindo os
    12 cards da Engenharia do Desejo.
 
 A divisão por semanas internas ao período foi adiada. O primeiro piloto deve
@@ -554,7 +586,7 @@ usar uma janela configurada de quinta a quinta e apresentar o total do período.
 Depois dos sete dias, os resultados serão encerrados e preservados para análise
 antes de definir a organização de ciclos futuros.
 
-### Épico 5 — próxima prioridade depois do Épico 3
+### Épico 5 — prioridade atual
 
 - rotas protegidas para `role = TEACHER`;
 - gráficos do SQL Connect;
@@ -654,14 +686,23 @@ Em outro terminal, iniciar SQL Connect e Functions juntos:
 
 ```powershell
 cd "C:\Documentos\Programação\Money Rank"
-npx -y firebase-tools@latest emulators:start --only dataconnect,functions
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1
 ```
+
+Não iniciar somente o SQL Connect para testar atividades: o frontend também
+chama as Functions autoritativas na porta 5001. O script recusa o estado
+parcial e cria somente configurações locais ignoradas pelo Git. Sem chave do
+Gemini, O Perigo Doce usa o fallback científico do servidor.
 
 No Windows, se a política de execução bloquear o processo do emulador:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-dataconnect-docker.ps1
 ```
+
+Esse último comando é apenas uma alternativa de diagnóstico para o processo
+do PostgreSQL. Depois dele, as Functions ainda precisam ser iniciadas; para o
+fluxo normal, preferir sempre `start-local-emulators.ps1`.
 
 Para compilar e validar o conector:
 
@@ -764,7 +805,7 @@ Verificaria invariantes:
 - conteúdo repetido vale zero;
 - streak usa Fortaleza;
 - tentativa é idempotente;
-- ranking semanal usa livro-caixa;
+- ranking do período usa livro-caixa;
 - escolhas simuladas não inflam a carteira real.
 
 ### `money-rank-ai-safety`

@@ -6,8 +6,8 @@ O caminho crítico foi reorganizado em 2026-08-04 para concentrar o trabalho
 restante nas funções indispensáveis ao piloto com aproximadamente 100 alunos.
 
 ```text
-concluir Épico 3
-  -> executar Épico 5
+Épico 3 concluído
+  -> executar Épico 5 (etapa atual)
   -> preparar e validar o deploy
   -> testar capacidade para 100 alunos
   -> fazer backup e limpar dados de teste
@@ -15,7 +15,7 @@ concluir Épico 3
   -> executar Épico 4 e redesign como pós-MVP
 ```
 
-## Fase A — concluir o Épico 3
+## Fase A — Épico 3 concluído
 
 1. encerrar a Task 3.10, com pontuação autoritativa;
 2. executar a Task 3.11, migrando os rankings individual e por turma do
@@ -24,7 +24,11 @@ concluir Épico 3
    primeiro piloto;
 4. validar tentativas, recompensas, streak e ranking com dados consistentes.
 
-## Fase B — antecipar o Épico 5
+As Tasks 3.10 e 3.11 foram concluídas em 2026-08-04. O inventário final dos
+bancos e das possibilidades está em
+[`epic-3/organizacao-bancos-atividades.md`](epic-3/organizacao-bancos-atividades.md).
+
+## Fase B — executar o Épico 5 (atual)
 
 O dashboard é parte essencial do piloto porque permite ao professor observar
 os dados coletados e validar a experiência. A ordem recomendada é:

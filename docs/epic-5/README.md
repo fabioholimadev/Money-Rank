@@ -7,12 +7,13 @@ e conversem com uma IA baseada em dados autorizados do Capi Bank.
 
 ## Estado
 
-Próximo Épico prioritário após a Task 3.11. O ranking visual já existe, mas
-ainda consulta Supabase e não deve ser considerado migrado.
+Épico prioritário atual. O ranking do aluno já consulta o Capi Bank; este
+Épico acrescentará autorização do professor, seleção administrativa de
+períodos e análises pedagógicas.
 
 | Task | Como será feita | Estado |
 | --- | --- | --- |
-| 5.1 | Criar rotas protegidas para `role = TEACHER` | Planejada |
+| 5.1 | Criar rotas protegidas para `role = TEACHER` | Próxima |
 | 5.2 | Criar métricas e gráficos a partir do SQL Connect | Planejada |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Planejada |
 
@@ -29,8 +30,8 @@ métricas e os rankings essenciais.
 
 ## Task 5.2 - Metricas e rankings
 
-- migrar ranking individual e por turma do Supabase;
-- definir semana no fuso `America/Fortaleza`;
+- reutilizar o ranking individual e por turma entregue na Task 3.11;
+- permitir selecionar o período no fuso `America/Fortaleza`;
 - somar transações competitivas positivas do período;
 - mostrar progresso, tentativas, dificuldade e participação;
 - evitar comparacoes humilhantes ou exposicao indevida de alunos;

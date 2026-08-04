@@ -19,7 +19,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.8 | A Engenharia do Desejo com banco publicitário auditável | Concluída | `8e76b9e` |
 | 3.9 | Períodos competitivos, repetição ilimitada e proteção anti-automação | Concluída | `eefaf10` |
 | 3.10 | Pontuação autoritativa e concorrência segura das atividades | Concluída e validada | `a099225` |
-| 3.11 | Rankings individual e por turma vinculados ao período | Planejada | — |
+| 3.11 | Rankings individual e por turma vinculados ao período | Concluída e validada | `6860943` |
 
 ## Estrutura visual e progressão
 
@@ -72,6 +72,36 @@ autenticadas. Sessões privadas e operações `NO_ACCESS` impedem o navegador de
 escolher nota, aprovação ou recompensa. App Check e replay são obrigatórios
 fora do emulador. Detalhes e roteiro:
 [`pontuacao-autoritativa.md`](pontuacao-autoritativa.md).
+
+A Task 3.11 remove o Supabase da tela de ranking e soma os créditos positivos
+do livro-caixa vinculados ao período atual. O ranking individual e o das duas
+turmas usam total geral, empates com `DENSE_RANK()` e não expõem UID ou e-mail.
+Detalhes: [`rankings-sql-connect.md`](rankings-sql-connect.md).
+
+O inventário consolidado dos bancos, diretrizes e quantidades de variações
+está em
+[`organizacao-bancos-atividades.md`](organizacao-bancos-atividades.md).
+
+## Ambiente local completo
+
+Atividades autoritativas exigem Capi Bank e Functions ativos ao mesmo tempo.
+No primeiro terminal, execute:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1
+```
+
+No segundo terminal, execute:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+O inicializador recusa um ambiente parcialmente ativo para impedir que a tela
+pareça conectada ao banco enquanto o serviço seguro das atividades está
+indisponível. Sem chave local do Gemini, a Fase 1 usa automaticamente o
+fallback baseado nas mesmas fontes científicas.
 
 ## Atividades
 
@@ -136,6 +166,7 @@ npm run test:custo-vicio
 npm run test:engenharia-desejo
 npm run test:ilusao-dinheiro
 npm run test:perigo-doce-ai
+npm run test:rankings
 npm run test:trail-progress
 npm run lint
 npm run build
