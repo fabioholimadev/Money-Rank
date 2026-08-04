@@ -12,12 +12,12 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/task-5-2-teacher-analytics` |
-| Último commit funcional | `99d8108 feat: protege acesso do professor por papel` |
-| Task atual | Task 5.2 implementada; aguardando validação local |
+| Branch para retomada | `feat/task-5-3-teacher-data-chat` |
+| Último commit funcional | `3882996 feat: adiciona chat de dados do professor` |
+| Task atual | Task 5.3 concluída e validada localmente |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | concluir Task 5.2; depois decidir o escopo da Task 5.3 |
+| Próxima Task prevista | definir e executar a administração auditada da Task 5.4 |
 
 ### Ação imediata para quem retomar
 
@@ -28,15 +28,15 @@
    git status --short --branch
    ```
 
-2. Trabalhar em `feat/task-5-2-teacher-analytics`, criada a partir de
-   `feat/mvp-gamificacao-ia` depois do encerramento da Task 5.1.
+2. Trabalhar em `feat/task-5-3-teacher-data-chat`, criada a partir de
+   `feat/mvp-gamificacao-ia` depois do encerramento da Task 5.2.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
 4. Reconhecer que os diffs atuais do SDK são reais: incluem
    `ActivitySession` e operações administrativas `NO_ACCESS` da Task 3.10.
 5. Ler `docs/epic-3/pontuacao-autoritativa.md` antes de alterar sessões,
    gabaritos, Functions ou recompensas.
-6. Executar `docs/epic-5/metricas-professor.md` com uma conta `TEACHER` antes
-   do commit da Task 5.2.
+6. A Task 5.3 foi testada com uma conta `TEACHER`; preservar as garantias de
+   `docs/epic-5/chat-dados-professor.md` ao ampliar o painel.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
@@ -594,6 +594,10 @@ antes de definir a organização de ciclos futuros.
 - rankings individual e por turma;
 - Chat de Dados como último item, adiável se o tempo do MVP ficar curto;
 - autorização rigorosa para impedir acesso de aluno a dados coletivos.
+- Task 5.3 usa intenções fechadas e consulta impersonada; Gemini não gera SQL
+  nem números e recebe somente agregados do período.
+- administração de períodos e encerramento auditado ficou proposta como 5.4;
+  apagar moedas/histórico nunca deve ser uma ação simples ou sem backup.
 
 ### Épico 4 — adiado para pós-MVP ou handoff
 

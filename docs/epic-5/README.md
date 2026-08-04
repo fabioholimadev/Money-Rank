@@ -14,8 +14,9 @@ períodos e análises pedagógicas.
 | Task | Como será feita | Estado |
 | --- | --- | --- |
 | 5.1 | Criar rotas protegidas para `role = TEACHER` | Concluída (`99d8108`) |
-| 5.2 | Criar métricas e gráficos a partir do SQL Connect | Em validação local |
-| 5.3 | Implementar Chat de Dados com consultas autorizadas | Planejada |
+| 5.2 | Criar métricas e gráficos a partir do SQL Connect | Concluída (`406f387`) |
+| 5.3 | Implementar Chat de Dados com consultas autorizadas | Concluída (`3882996`) |
+| 5.4 | Administrar períodos e encerramento auditado | Planejada para depois da 5.3 |
 
 O caminho mínimo do MVP prioriza 5.1 e 5.2. Caso o tempo fique curto, o Chat
 de Dados pode ser adiado sem impedir o piloto, desde que o professor tenha as
@@ -56,6 +57,18 @@ um teto arbitrario no frontend.
 3. dados sao agregados antes de chegar a IA sempre que possivel;
 4. IA responde com período, escopo e limitacoes visiveis;
 5. nenhuma SQL ou GraphQL arbitraria gerada pela IA e executada diretamente.
+
+A implementação usa a consulta agregada da Task 5.2 com impersonação do
+professor, cinco intenções fechadas, cálculo factual determinístico e Gemini
+limitado a uma recomendação pedagógica sem números. Detalhes e roteiro:
+[`chat-dados-professor.md`](chat-dados-professor.md).
+
+## Task 5.4 - Administração da competição
+
+Planejada, mas não iniciada. Permitirá criar, agendar, pausar, retomar e
+encerrar períodos. Novo ciclo, ajuste de saldo, limpeza pré-piloto e exclusão
+definitiva serão ações distintas. Qualquer limpeza exigirá backup, confirmação
+forte, autorização no servidor e registro de auditoria.
 
 ## Testes previstos
 
