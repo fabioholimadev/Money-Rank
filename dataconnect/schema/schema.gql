@@ -130,7 +130,8 @@ type ActivityAttempt
   @index(
     fields: ["userUid", "phaseNumber", "createdAt"]
     order: [ASC, ASC, DESC]
-  ) {
+  )
+  @index(fields: ["createdAt", "userUid"], order: [DESC, ASC]) {
   user: User! @ref(fields: "userUid", references: "uid")
   userUid: String!
     @col(name: "user_uid", dataType: "varchar(128)")

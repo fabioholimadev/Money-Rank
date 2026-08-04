@@ -302,6 +302,18 @@ export interface GetMyProfileData {
   } & User_Key;
 }
 
+export interface GetTeacherDashboardData {
+  summary?: unknown | null;
+  classMetrics?: unknown[] | null;
+  phaseMetrics?: unknown[] | null;
+  studentMetrics?: unknown[] | null;
+}
+
+export interface GetTeacherDashboardVariables {
+  periodId: UUIDString;
+  studentLimit?: number | null;
+}
+
 export interface InitializeMyTrailData {
   affectedRows?: number | null;
 }
@@ -366,6 +378,14 @@ export interface ListMyProgressData {
     completedAt?: TimestampString | null;
     updatedAt: TimestampString;
   })[];
+}
+
+export interface ListTeacherCompetitionPeriodsData {
+  periods?: unknown[] | null;
+}
+
+export interface ListTeacherCompetitionPeriodsVariables {
+  limit?: number | null;
 }
 
 export interface ListVisibleCompetitionPeriodsData {
@@ -829,4 +849,28 @@ export const getCompetitionAbuseSignalsRef: GetCompetitionAbuseSignalsRef;
 
 export function getCompetitionAbuseSignals(vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
 export function getCompetitionAbuseSignals(dc: DataConnect, vars: GetCompetitionAbuseSignalsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
+
+interface ListTeacherCompetitionPeriodsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListTeacherCompetitionPeriodsVariables): QueryRef<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars?: ListTeacherCompetitionPeriodsVariables): QueryRef<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+  operationName: string;
+}
+export const listTeacherCompetitionPeriodsRef: ListTeacherCompetitionPeriodsRef;
+
+export function listTeacherCompetitionPeriods(vars?: ListTeacherCompetitionPeriodsVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+export function listTeacherCompetitionPeriods(dc: DataConnect, vars?: ListTeacherCompetitionPeriodsVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+
+interface GetTeacherDashboardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherDashboardVariables): QueryRef<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetTeacherDashboardVariables): QueryRef<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+  operationName: string;
+}
+export const getTeacherDashboardRef: GetTeacherDashboardRef;
+
+export function getTeacherDashboard(vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+export function getTeacherDashboard(dc: DataConnect, vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
 

@@ -20,6 +20,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListVisibleCompetitionPeriods*](#listvisiblecompetitionperiods)
   - [*GetCompetitionRankings*](#getcompetitionrankings)
   - [*GetCompetitionAbuseSignals*](#getcompetitionabusesignals)
+  - [*ListTeacherCompetitionPeriods*](#listteachercompetitionperiods)
+  - [*GetTeacherDashboard*](#getteacherdashboard)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*UpsertMyProfileWithPhoto*](#upsertmyprofilewithphoto)
@@ -1470,6 +1472,246 @@ console.log(data.signals);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.signals);
+});
+```
+
+## ListTeacherCompetitionPeriods
+You can execute the `ListTeacherCompetitionPeriods` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listTeacherCompetitionPeriods(vars?: ListTeacherCompetitionPeriodsVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+
+interface ListTeacherCompetitionPeriodsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListTeacherCompetitionPeriodsVariables): QueryRef<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+}
+export const listTeacherCompetitionPeriodsRef: ListTeacherCompetitionPeriodsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listTeacherCompetitionPeriods(dc: DataConnect, vars?: ListTeacherCompetitionPeriodsVariables, options?: ExecuteQueryOptions): QueryPromise<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+
+interface ListTeacherCompetitionPeriodsRef {
+  ...
+  (dc: DataConnect, vars?: ListTeacherCompetitionPeriodsVariables): QueryRef<ListTeacherCompetitionPeriodsData, ListTeacherCompetitionPeriodsVariables>;
+}
+export const listTeacherCompetitionPeriodsRef: ListTeacherCompetitionPeriodsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listTeacherCompetitionPeriodsRef:
+```typescript
+const name = listTeacherCompetitionPeriodsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListTeacherCompetitionPeriods` query has an optional argument of type `ListTeacherCompetitionPeriodsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListTeacherCompetitionPeriodsVariables {
+  limit?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListTeacherCompetitionPeriods` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListTeacherCompetitionPeriodsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListTeacherCompetitionPeriodsData {
+  periods?: unknown[] | null;
+}
+```
+### Using `ListTeacherCompetitionPeriods`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listTeacherCompetitionPeriods, ListTeacherCompetitionPeriodsVariables } from '@money-rank/dataconnect';
+
+// The `ListTeacherCompetitionPeriods` query has an optional argument of type `ListTeacherCompetitionPeriodsVariables`:
+const listTeacherCompetitionPeriodsVars: ListTeacherCompetitionPeriodsVariables = {
+  limit: ..., // optional
+};
+
+// Call the `listTeacherCompetitionPeriods()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listTeacherCompetitionPeriods(listTeacherCompetitionPeriodsVars);
+// Variables can be defined inline as well.
+const { data } = await listTeacherCompetitionPeriods({ limit: ..., });
+// Since all variables are optional for this query, you can omit the `ListTeacherCompetitionPeriodsVariables` argument.
+const { data } = await listTeacherCompetitionPeriods();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listTeacherCompetitionPeriods(dataConnect, listTeacherCompetitionPeriodsVars);
+
+console.log(data.periods);
+
+// Or, you can use the `Promise` API.
+listTeacherCompetitionPeriods(listTeacherCompetitionPeriodsVars).then((response) => {
+  const data = response.data;
+  console.log(data.periods);
+});
+```
+
+### Using `ListTeacherCompetitionPeriods`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listTeacherCompetitionPeriodsRef, ListTeacherCompetitionPeriodsVariables } from '@money-rank/dataconnect';
+
+// The `ListTeacherCompetitionPeriods` query has an optional argument of type `ListTeacherCompetitionPeriodsVariables`:
+const listTeacherCompetitionPeriodsVars: ListTeacherCompetitionPeriodsVariables = {
+  limit: ..., // optional
+};
+
+// Call the `listTeacherCompetitionPeriodsRef()` function to get a reference to the query.
+const ref = listTeacherCompetitionPeriodsRef(listTeacherCompetitionPeriodsVars);
+// Variables can be defined inline as well.
+const ref = listTeacherCompetitionPeriodsRef({ limit: ..., });
+// Since all variables are optional for this query, you can omit the `ListTeacherCompetitionPeriodsVariables` argument.
+const ref = listTeacherCompetitionPeriodsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listTeacherCompetitionPeriodsRef(dataConnect, listTeacherCompetitionPeriodsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.periods);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.periods);
+});
+```
+
+## GetTeacherDashboard
+You can execute the `GetTeacherDashboard` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getTeacherDashboard(vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+
+interface GetTeacherDashboardRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherDashboardVariables): QueryRef<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+}
+export const getTeacherDashboardRef: GetTeacherDashboardRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getTeacherDashboard(dc: DataConnect, vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+
+interface GetTeacherDashboardRef {
+  ...
+  (dc: DataConnect, vars: GetTeacherDashboardVariables): QueryRef<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+}
+export const getTeacherDashboardRef: GetTeacherDashboardRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getTeacherDashboardRef:
+```typescript
+const name = getTeacherDashboardRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetTeacherDashboard` query requires an argument of type `GetTeacherDashboardVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetTeacherDashboardVariables {
+  periodId: UUIDString;
+  studentLimit?: number | null;
+}
+```
+### Return Type
+Recall that executing the `GetTeacherDashboard` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetTeacherDashboardData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetTeacherDashboardData {
+  summary?: unknown | null;
+  classMetrics?: unknown[] | null;
+  phaseMetrics?: unknown[] | null;
+  studentMetrics?: unknown[] | null;
+}
+```
+### Using `GetTeacherDashboard`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getTeacherDashboard, GetTeacherDashboardVariables } from '@money-rank/dataconnect';
+
+// The `GetTeacherDashboard` query requires an argument of type `GetTeacherDashboardVariables`:
+const getTeacherDashboardVars: GetTeacherDashboardVariables = {
+  periodId: ..., 
+  studentLimit: ..., // optional
+};
+
+// Call the `getTeacherDashboard()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getTeacherDashboard(getTeacherDashboardVars);
+// Variables can be defined inline as well.
+const { data } = await getTeacherDashboard({ periodId: ..., studentLimit: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getTeacherDashboard(dataConnect, getTeacherDashboardVars);
+
+console.log(data.summary);
+console.log(data.classMetrics);
+console.log(data.phaseMetrics);
+console.log(data.studentMetrics);
+
+// Or, you can use the `Promise` API.
+getTeacherDashboard(getTeacherDashboardVars).then((response) => {
+  const data = response.data;
+  console.log(data.summary);
+  console.log(data.classMetrics);
+  console.log(data.phaseMetrics);
+  console.log(data.studentMetrics);
+});
+```
+
+### Using `GetTeacherDashboard`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getTeacherDashboardRef, GetTeacherDashboardVariables } from '@money-rank/dataconnect';
+
+// The `GetTeacherDashboard` query requires an argument of type `GetTeacherDashboardVariables`:
+const getTeacherDashboardVars: GetTeacherDashboardVariables = {
+  periodId: ..., 
+  studentLimit: ..., // optional
+};
+
+// Call the `getTeacherDashboardRef()` function to get a reference to the query.
+const ref = getTeacherDashboardRef(getTeacherDashboardVars);
+// Variables can be defined inline as well.
+const ref = getTeacherDashboardRef({ periodId: ..., studentLimit: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getTeacherDashboardRef(dataConnect, getTeacherDashboardVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.summary);
+console.log(data.classMetrics);
+console.log(data.phaseMetrics);
+console.log(data.studentMetrics);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.summary);
+  console.log(data.classMetrics);
+  console.log(data.phaseMetrics);
+  console.log(data.studentMetrics);
 });
 ```
 

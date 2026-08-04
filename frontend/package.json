@@ -18,6 +18,7 @@
     "test:perigo-doce-ai": "node ../scripts/test-perigo-doce-ai.mjs",
     "test:rankings": "node ../scripts/test-ranking-data.mjs",
     "test:role-access": "node ../scripts/test-role-access.mjs",
+    "test:teacher-analytics": "node ../scripts/test-teacher-analytics.mjs",
     "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {

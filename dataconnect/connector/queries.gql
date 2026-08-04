@@ -410,3 +410,406 @@ query GetCompetitionAbuseSignals(
     params: [$periodId, $minimumApprovedAttempts]
   )
 }
+
+# Períodos visíveis apenas para um professor autenticado no Capi Bank. O
+# navegador não informa o UID nem consegue substituir o papel persistido.
+query ListTeacherCompetitionPeriods($limit: Int = 20)
+  @auth(level: USER_EMAIL_VERIFIED) {
+  periods: _select(
+    sql: """
+      WITH authorized_teacher AS (
+        SELECT 1
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $1
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      )
+      SELECT
+        period.id,
+        period.name,
+        period.status::text AS "status",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt",
+        period.paused_at AS "pausedAt",
+        period.closed_at AS "closedAt"
+      FROM competition_periods AS period
+      CROSS JOIN authorized_teacher
+      ORDER BY period.starts_at DESC
+      LIMIT LEAST(GREATEST($2, 1), 50)
+    """
+    params: [{ _expr: "auth.uid" }, $limit]
+  )
+}
+
+# Painel agregado da Task 5.2. Cada raiz repete a autorização no banco porque
+# esconder a rota no React não protege os dados coletivos dos estudantes.
+query GetTeacherDashboard(
+  $periodId: UUID!
+  $studentLimit: Int = 100
+) @auth(level: USER_EMAIL_VERIFIED) {
+  summary: _selectFirst(
+    sql: """
+      WITH authorized_teacher AS (
+        SELECT 1
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $2
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.id, period.starts_at, period.ends_at
+        FROM competition_periods AS period
+        CROSS JOIN authorized_teacher
+        WHERE period.id = $1::uuid
+      ),
+      students AS (
+        SELECT student.firebase_uid
+        FROM users AS student
+        CROSS JOIN target_period
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+      ),
+      period_attempts AS (
+        SELECT attempt.*
+        FROM activity_attempts AS attempt
+        INNER JOIN students ON students.firebase_uid = attempt.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          attempt.created_at >= period.starts_at
+          AND attempt.created_at < period.ends_at
+      ),
+      period_transactions AS (
+        SELECT transaction.user_uid, transaction.amount
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN students ON students.firebase_uid = transaction.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          transaction.competition_period_id = period.id
+          AND transaction.amount > 0
+      ),
+      participants AS (
+        SELECT user_uid FROM period_attempts
+        UNION
+        SELECT user_uid FROM period_transactions
+      )
+      SELECT
+        COUNT(DISTINCT students.firebase_uid)::integer AS "totalStudents",
+        COUNT(DISTINCT participants.user_uid)::integer
+          AS "participatingStudents",
+        COALESCE((SELECT SUM(amount) FROM period_transactions), 0)::integer
+          AS "totalPoints",
+        (SELECT COUNT(*) FROM period_attempts)::integer AS "totalAttempts",
+        (SELECT COUNT(*) FROM period_attempts WHERE passed = TRUE)::integer
+          AS "approvedAttempts",
+        COALESCE((SELECT ROUND(AVG(score)) FROM period_attempts), 0)::integer
+          AS "averageScore",
+        COUNT(DISTINCT students.firebase_uid) FILTER (
+          WHERE EXISTS (
+            SELECT 1
+            FROM student_progress AS progress
+            WHERE
+              progress.user_uid = students.firebase_uid
+              AND progress.phase_number = 4
+              AND progress.status = 'COMPLETED'
+          )
+        )::integer AS "completedTrailStudents"
+      FROM students
+      LEFT JOIN participants
+        ON participants.user_uid = students.firebase_uid
+    """
+    params: [$periodId, { _expr: "auth.uid" }]
+  )
+  classMetrics: _select(
+    sql: """
+      WITH authorized_teacher AS (
+        SELECT 1
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $2
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.id, period.starts_at, period.ends_at
+        FROM competition_periods AS period
+        CROSS JOIN authorized_teacher
+        WHERE period.id = $1::uuid
+      ),
+      students AS (
+        SELECT student.firebase_uid, student.class_group
+        FROM users AS student
+        CROSS JOIN target_period
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+      ),
+      period_attempts AS (
+        SELECT attempt.*
+        FROM activity_attempts AS attempt
+        INNER JOIN students ON students.firebase_uid = attempt.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          attempt.created_at >= period.starts_at
+          AND attempt.created_at < period.ends_at
+      ),
+      period_transactions AS (
+        SELECT transaction.user_uid, transaction.amount
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN students ON students.firebase_uid = transaction.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          transaction.competition_period_id = period.id
+          AND transaction.amount > 0
+      ),
+      participants AS (
+        SELECT user_uid FROM period_attempts
+        UNION
+        SELECT user_uid FROM period_transactions
+      ),
+      attempt_totals AS (
+        SELECT
+          user_uid,
+          COUNT(*)::integer AS attempts,
+          ROUND(AVG(score))::integer AS average_score
+        FROM period_attempts
+        GROUP BY user_uid
+      ),
+      point_totals AS (
+        SELECT user_uid, SUM(amount)::integer AS points
+        FROM period_transactions
+        GROUP BY user_uid
+      ),
+      progress_totals AS (
+        SELECT
+          progress.user_uid,
+          COUNT(*) FILTER (
+            WHERE
+              progress.phase_number BETWEEN 0 AND 4
+              AND progress.status = 'COMPLETED'
+          )::integer AS completed_steps
+        FROM student_progress AS progress
+        INNER JOIN students ON students.firebase_uid = progress.user_uid
+        GROUP BY progress.user_uid
+      )
+      SELECT
+        students.class_group::text AS "classGroup",
+        COUNT(*)::integer AS "registeredStudents",
+        COUNT(*) FILTER (
+          WHERE participants.user_uid IS NOT NULL
+        )::integer AS "participatingStudents",
+        COALESCE(SUM(point_totals.points), 0)::integer AS "totalPoints",
+        COALESCE(SUM(attempt_totals.attempts), 0)::integer
+          AS "totalAttempts",
+        COALESCE(ROUND(AVG(attempt_totals.average_score)), 0)::integer
+          AS "averageScore",
+        COALESCE(
+          ROUND(AVG(COALESCE(progress_totals.completed_steps, 0)) * 20),
+          0
+        )::integer AS "progressPercent"
+      FROM students
+      LEFT JOIN participants
+        ON participants.user_uid = students.firebase_uid
+      LEFT JOIN attempt_totals
+        ON attempt_totals.user_uid = students.firebase_uid
+      LEFT JOIN point_totals
+        ON point_totals.user_uid = students.firebase_uid
+      LEFT JOIN progress_totals
+        ON progress_totals.user_uid = students.firebase_uid
+      GROUP BY students.class_group
+      ORDER BY students.class_group ASC
+    """
+    params: [$periodId, { _expr: "auth.uid" }]
+  )
+  phaseMetrics: _select(
+    sql: """
+      WITH authorized_teacher AS (
+        SELECT 1
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $2
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.starts_at, period.ends_at
+        FROM competition_periods AS period
+        CROSS JOIN authorized_teacher
+        WHERE period.id = $1::uuid
+      ),
+      students AS (
+        SELECT student.firebase_uid
+        FROM users AS student
+        CROSS JOIN target_period
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+      ),
+      phases AS (
+        SELECT GENERATE_SERIES(1, 4)::integer AS phase_number
+      ),
+      attempts AS (
+        SELECT attempt.*
+        FROM activity_attempts AS attempt
+        INNER JOIN students ON students.firebase_uid = attempt.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          attempt.created_at >= period.starts_at
+          AND attempt.created_at < period.ends_at
+      ),
+      attempt_totals AS (
+        SELECT
+          phase_number,
+          COUNT(*)::integer AS total_attempts,
+          COUNT(*) FILTER (WHERE passed = TRUE)::integer
+            AS approved_attempts,
+          ROUND(AVG(score))::integer AS average_score,
+          SUM(correct_answers)::integer AS correct_answers,
+          SUM(wrong_answers)::integer AS wrong_answers
+        FROM attempts
+        GROUP BY phase_number
+      ),
+      progress_totals AS (
+        SELECT
+          progress.phase_number,
+          COUNT(*) FILTER (
+            WHERE progress.status IN ('IN_PROGRESS', 'COMPLETED')
+          )::integer AS students_reached,
+          COUNT(*) FILTER (
+            WHERE progress.status = 'COMPLETED'
+          )::integer AS students_completed
+        FROM student_progress AS progress
+        INNER JOIN students ON students.firebase_uid = progress.user_uid
+        WHERE progress.phase_number BETWEEN 1 AND 4
+        GROUP BY progress.phase_number
+      )
+      SELECT
+        phases.phase_number AS "phaseNumber",
+        COALESCE(progress_totals.students_reached, 0)::integer
+          AS "studentsReached",
+        COALESCE(progress_totals.students_completed, 0)::integer
+          AS "studentsCompleted",
+        COALESCE(attempt_totals.total_attempts, 0)::integer
+          AS "totalAttempts",
+        COALESCE(attempt_totals.approved_attempts, 0)::integer
+          AS "approvedAttempts",
+        COALESCE(attempt_totals.average_score, 0)::integer
+          AS "averageScore",
+        COALESCE(attempt_totals.correct_answers, 0)::integer
+          AS "correctAnswers",
+        COALESCE(attempt_totals.wrong_answers, 0)::integer
+          AS "wrongAnswers"
+      FROM phases
+      LEFT JOIN attempt_totals
+        ON attempt_totals.phase_number = phases.phase_number
+      LEFT JOIN progress_totals
+        ON progress_totals.phase_number = phases.phase_number
+      ORDER BY phases.phase_number ASC
+    """
+    params: [$periodId, { _expr: "auth.uid" }]
+  )
+  studentMetrics: _select(
+    sql: """
+      WITH authorized_teacher AS (
+        SELECT 1
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $2
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      ),
+      target_period AS (
+        SELECT period.id, period.starts_at, period.ends_at
+        FROM competition_periods AS period
+        CROSS JOIN authorized_teacher
+        WHERE period.id = $1::uuid
+      ),
+      students AS (
+        SELECT
+          student.firebase_uid,
+          student.preferred_name,
+          student.class_group,
+          student.current_phase,
+          student.capi_coins
+        FROM users AS student
+        CROSS JOIN target_period
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+      ),
+      attempt_totals AS (
+        SELECT
+          attempt.user_uid,
+          COUNT(*)::integer AS attempts,
+          ROUND(AVG(attempt.score))::integer AS average_score,
+          SUM(attempt.wrong_answers)::integer AS wrong_answers,
+          MAX(attempt.created_at) AS last_activity_at
+        FROM activity_attempts AS attempt
+        INNER JOIN students ON students.firebase_uid = attempt.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          attempt.created_at >= period.starts_at
+          AND attempt.created_at < period.ends_at
+        GROUP BY attempt.user_uid
+      ),
+      point_totals AS (
+        SELECT
+          transaction.user_uid,
+          SUM(transaction.amount)::integer AS points
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN students ON students.firebase_uid = transaction.user_uid
+        CROSS JOIN target_period AS period
+        WHERE
+          transaction.competition_period_id = period.id
+          AND transaction.amount > 0
+        GROUP BY transaction.user_uid
+      ),
+      progress_totals AS (
+        SELECT
+          progress.user_uid,
+          COUNT(*) FILTER (
+            WHERE
+              progress.phase_number BETWEEN 0 AND 4
+              AND progress.status = 'COMPLETED'
+          )::integer AS completed_steps
+        FROM student_progress AS progress
+        INNER JOIN students ON students.firebase_uid = progress.user_uid
+        GROUP BY progress.user_uid
+      )
+      SELECT
+        students.preferred_name AS "preferredName",
+        students.class_group::text AS "classGroup",
+        students.current_phase AS "currentPhase",
+        students.capi_coins AS "capiCoins",
+        COALESCE(progress_totals.completed_steps, 0)::integer
+          AS "completedSteps",
+        COALESCE(attempt_totals.attempts, 0)::integer AS "totalAttempts",
+        COALESCE(attempt_totals.average_score, 0)::integer
+          AS "averageScore",
+        COALESCE(attempt_totals.wrong_answers, 0)::integer AS "wrongAnswers",
+        COALESCE(point_totals.points, 0)::integer AS "totalPoints",
+        attempt_totals.last_activity_at AS "lastActivityAt"
+      FROM students
+      LEFT JOIN attempt_totals
+        ON attempt_totals.user_uid = students.firebase_uid
+      LEFT JOIN point_totals
+        ON point_totals.user_uid = students.firebase_uid
+      LEFT JOIN progress_totals
+        ON progress_totals.user_uid = students.firebase_uid
+      ORDER BY students.class_group ASC, students.preferred_name ASC
+      LIMIT LEAST(GREATEST($3, 1), 100)
+    """
+    params: [$periodId, { _expr: "auth.uid" }, $studentLimit]
+  )
+}

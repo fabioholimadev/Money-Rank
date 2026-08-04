@@ -472,3 +472,33 @@ exports.getCompetitionAbuseSignals = function getCompetitionAbuseSignals(dcOrVar
   return executeQuery(getCompetitionAbuseSignalsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
+
+const listTeacherCompetitionPeriodsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListTeacherCompetitionPeriods', inputVars);
+}
+listTeacherCompetitionPeriodsRef.operationName = 'ListTeacherCompetitionPeriods';
+exports.listTeacherCompetitionPeriodsRef = listTeacherCompetitionPeriodsRef;
+
+exports.listTeacherCompetitionPeriods = function listTeacherCompetitionPeriods(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(listTeacherCompetitionPeriodsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getTeacherDashboardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetTeacherDashboard', inputVars);
+}
+getTeacherDashboardRef.operationName = 'GetTeacherDashboard';
+exports.getTeacherDashboardRef = getTeacherDashboardRef;
+
+exports.getTeacherDashboard = function getTeacherDashboard(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getTeacherDashboardRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
