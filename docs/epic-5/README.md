@@ -13,7 +13,7 @@ períodos e análises pedagógicas.
 
 | Task | Como será feita | Estado |
 | --- | --- | --- |
-| 5.1 | Criar rotas protegidas para `role = TEACHER` | Próxima |
+| 5.1 | Criar rotas protegidas para `role = TEACHER` | Concluída (`99d8108`) |
 | 5.2 | Criar métricas e gráficos a partir do SQL Connect | Planejada |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Planejada |
 
@@ -23,10 +23,15 @@ métricas e os rankings essenciais.
 
 ## Task 5.1 - Acesso do professor
 
-- persistir o papel no Capi Bank;
-- validar permissão no servidor, não apenas esconder elementos;
-- separar layout de aluno e professor;
-- testar acesso anonimo, aluno, professor e sessão expirada.
+- papel lido do perfil autenticado no Capi Bank;
+- rotas de aluno e professor isoladas por `ProtectedRoute`;
+- dashboard inicial do professor sem métricas fictícias;
+- promoção local por operação `NO_ACCESS` e script restrito ao emulador;
+- acesso anônimo validado manualmente e regras de aluno/professor cobertas
+  pelo teste automatizado; o roteiro de promoção permanece disponível para
+  testar uma conta real.
+
+Detalhes e roteiro: [`acesso-professor.md`](acesso-professor.md).
 
 ## Task 5.2 - Metricas e rankings
 

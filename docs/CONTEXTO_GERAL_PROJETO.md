@@ -12,12 +12,12 @@
 | Repositório remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Autor Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base do trabalho atual | `feat/mvp-gamificacao-ia` |
-| Branch para retomada | `feat/task-5-1-teacher-access` |
-| Último commit funcional | `d92a311 fix: evita ambiente local parcial nas atividades` |
-| Task atual | Épico 3 concluído; iniciar Task 5.1 |
+| Branch para retomada | `feat/task-5-2-teacher-analytics` |
+| Último commit funcional | `99d8108 feat: protege acesso do professor por papel` |
+| Task atual | Task 5.1 concluída; iniciar Task 5.2 |
 | Estado da Task 3.7 | Concluída, testada e documentada |
 | Estado da Task 3.8 | Concluída, testada e documentada |
-| Próxima Task prevista | Task 5.1 — acesso e rotas do professor |
+| Próxima Task prevista | Task 5.2 — métricas e gráficos do professor |
 
 ### Ação imediata para quem retomar
 
@@ -28,15 +28,15 @@
    git status --short --branch
    ```
 
-2. Trabalhar em `feat/task-5-1-teacher-access`, criada a partir de
-   `feat/mvp-gamificacao-ia` depois do encerramento do Épico 3.
+2. Trabalhar em `feat/task-5-2-teacher-analytics`, criada a partir de
+   `feat/mvp-gamificacao-ia` depois do encerramento da Task 5.1.
 3. Preservar as alterações locais do usuário em `vite.config.js`.
 4. Reconhecer que os diffs atuais do SDK são reais: incluem
    `ActivitySession` e operações administrativas `NO_ACCESS` da Task 3.10.
 5. Ler `docs/epic-3/pontuacao-autoritativa.md` antes de alterar sessões,
    gabaritos, Functions ou recompensas.
-6. Antes de alterar permissões, ler `docs/epic-5/README.md` e auditar o modelo
-   atual de usuário, AuthContext e proteções do SQL Connect.
+6. Antes de implementar a Task 5.2, definir contratos agregados que repitam a
+   autorização `TEACHER` no servidor e não exponham dados desnecessários.
 
 > Atenção: o Codex pode detectar outro diretório com nome semelhante em
 > `C:\Users\fabio\Documents\Programação\Money Rank`. O trabalho desta sequência
