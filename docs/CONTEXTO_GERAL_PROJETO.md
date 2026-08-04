@@ -205,6 +205,9 @@ git diff --check
 
 ## 7. Validação online pendente do Épico 4
 
+Roteiro completo e critérios de aprovação:
+`docs/epic-4/roteiro-testes-capi-mentor.md`.
+
 1. entrar como aluno e abrir o CapiMentor;
 2. perguntar sobre orçamento, ICMS, açúcar e apostas;
 3. pedir o gabarito de uma atividade e confirmar recusa;

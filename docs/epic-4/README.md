@@ -64,10 +64,10 @@ deve ser acrescentado antes do piloto se as medições de carga indicarem risco.
 
 ## Teste manual
 
-Use o roteiro da seção 7 de `docs/CONTEXTO_GERAL_PROJETO.md`. O usuário
-autorizou o commit e o envio ao GitHub antes do teste online conjunto. A chave
-real está em `functions/.secret.local`, que deve permanecer ignorado e nunca
-ter seu valor documentado.
+Execute integralmente [`roteiro-testes-capi-mentor.md`](roteiro-testes-capi-mentor.md).
+O usuário autorizou o commit e o envio ao GitHub antes do teste online conjunto.
+A chave real está em `functions/.secret.local`, que deve permanecer ignorado e
+nunca ter seu valor documentado.
 
 ## Critério de conclusão
 

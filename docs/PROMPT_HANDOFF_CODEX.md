@@ -14,6 +14,7 @@ segurança e o ciclo de versionamento abaixo.
 1. Leia integralmente `docs/CONTEXTO_GERAL_PROJETO.md`.
 2. Leia `docs/README.md`, `docs/roadmap-mvp.md` e o README do Épico em trabalho.
 3. Para o próximo trabalho, leia também:
+   - `docs/epic-4/roteiro-testes-capi-mentor.md`;
    - `docs/epic-5/README.md`;
    - `docs/epic-5/estudio-professor.md`;
    - `docs/deploy/checklist-producao.md`.
@@ -34,6 +35,14 @@ segurança e o ciclo de versionamento abaixo.
   versione e nunca o copie para documentação ou logs.
 - A validação automática do Épico 4 passou: 14 testes de Functions, lints e
   build. Ainda é necessário confirmar manualmente o modo online e as fontes.
+
+## Primeira ação obrigatória
+
+Antes de alterar a Task 5.4, confira com o usuário o resultado do roteiro
+`docs/epic-4/roteiro-testes-capi-mentor.md`. Se o Gemini real, as fontes ou a
+interface falharem, diagnostique e corrija o Épico 4 em uma branch específica.
+Se tudo passar, atualize o README do Épico 4 e o contexto geral, registrando a
+validação sem copiar respostas com dados pessoais ou qualquer credencial.
 
 ## Próxima execução
 
@@ -80,6 +89,8 @@ de moedas devem ser transações compensatórias, nunca exclusões silenciosas.
   backend, não apenas na rota React.
 - App Check com reCAPTCHA Enterprise é obrigatório no deploy. O token debug é
   apenas local.
+- Confirme o nome do modelo na lista atual do Firebase AI Logic antes de
+  homologação ou deploy; não confie em nomes antigos documentados localmente.
 - O modelo atende 3º DSA e 3º DSB.
 - Não exponha gabaritos, prompts internos, UID ou dados pessoais ao Gemini.
 
