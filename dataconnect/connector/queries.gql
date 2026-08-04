@@ -117,6 +117,54 @@ query GetMyActivityAttempt($attemptId: UUID!)
   }
 }
 
+# As duas consultas abaixo contêm gabarito e resultados coletivos da operação
+# confiável. Somente Firebase Admin SDK pode executá-las.
+query GetAuthoritativeActivitySession($sessionId: UUID!)
+  @auth(level: NO_ACCESS) {
+  activitySession(id: $sessionId) {
+    id
+    userUid
+    activityId
+    phaseNumber
+    variantId
+    contentVersion
+    publicPayload
+    answerKey
+    status
+    expiresAt
+    submittedAt
+    createdAt
+  }
+}
+
+query GetAuthoritativeActivityResult($sessionId: UUID!)
+  @auth(level: NO_ACCESS) {
+  activityAttempts(
+    where: { activitySessionId: { eq: $sessionId } }
+    limit: 1
+  ) {
+    id
+    activityId
+    phaseNumber
+    score
+    correctAnswers
+    wrongAnswers
+    passed
+    firstCompletion
+    rewardBase
+    streakMultiplierPercent
+    streakBonus
+    rewardAmount
+    rewardLimitReached
+    rewardSuppressionReason
+    createdAt
+    user {
+      capiCoins
+      currentStreak
+    }
+  }
+}
+
 # Histórico paginado de tentativas do aluno. Será usado nas atividades e,
 # futuramente, nos relatórios pedagógicos.
 query ListMyActivityAttempts($phaseNumber: Int!, $offset: Int = 0)

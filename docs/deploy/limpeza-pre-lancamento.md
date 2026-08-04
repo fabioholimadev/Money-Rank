@@ -40,9 +40,10 @@ Task 3.9, os dados dependentes são removidos antes dos pais:
 
 1. `capi_coin_transactions`;
 2. `activity_attempts`;
-3. `student_progress`;
-4. `competition_periods` de teste;
-5. `users` de teste.
+3. `activity_sessions`;
+4. `student_progress`;
+5. `competition_periods` de teste;
+6. `users` de teste.
 
 `economy_config` não deve ser simplesmente apagada: deve ser validada ou
 recriada com valores aprovados. Firebase Auth é outro sistema e não é limpo

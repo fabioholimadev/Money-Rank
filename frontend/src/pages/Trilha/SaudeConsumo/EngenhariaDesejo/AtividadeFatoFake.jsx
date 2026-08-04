@@ -19,6 +19,7 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import {
   ENGENHARIA_DESEJO_ACTIVITY,
   ENGENHARIA_DESEJO_CONTENT_VERSION,
+  engenhariaDesejoAdBank,
 } from '../../../../data/engenhariaDesejoAds';
 import {
   buildEngenhariaDesejoSession,
@@ -26,7 +27,6 @@ import {
   ENGENHARIA_DESEJO_CARD_COUNT,
   ENGENHARIA_DESEJO_CLASSIFICATIONS,
   evaluateEngenhariaDesejoChoice,
-  toEngenhariaDesejoActivityResult,
 } from '../../../../lib/engenhariaDesejoGame';
 import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import {
@@ -35,9 +35,9 @@ import {
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
 import {
-  completePhaseActivity,
-  registerPhaseAttempt,
-} from '../../../../services/studentDataService';
+  startAuthoritativeActivitySession,
+  submitAuthoritativeActivitySession,
+} from '../../../../services/activitySessionService';
 
 const PHASE_NUMBER = 4;
 
@@ -130,6 +130,8 @@ export default function AtividadeFatoFake() {
   const [session, setSession] = useState(() =>
     buildEngenhariaDesejoSession(createAttemptSeed()),
   );
+  const [activitySessionId, setActivitySessionId] = useState(null);
+  const [isStarting, setIsStarting] = useState(false);
   const [stage, setStage] = useState('introduction');
   const [cardIndex, setCardIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -174,48 +176,58 @@ export default function AtividadeFatoFake() {
     setCardIndex((currentIndex) => currentIndex + 1);
   };
 
+  const startInvestigation = async () => {
+    setIsStarting(true);
+    setSaveError('');
+    try {
+      const secureSession = await startAuthoritativeActivitySession(
+        PHASE_NUMBER,
+      );
+      const selectedCards = secureSession.cardIds
+        .map((cardId) =>
+          engenhariaDesejoAdBank.find((card) => card.id === cardId),
+        )
+        .filter(Boolean);
+      if (selectedCards.length !== ENGENHARIA_DESEJO_CARD_COUNT) {
+        throw new Error('O banco seguro devolveu uma rodada incompleta.');
+      }
+
+      setActivitySessionId(secureSession.sessionId);
+      setSession(
+        buildEngenhariaDesejoSession(createAttemptSeed(), selectedCards),
+      );
+      setStage('challenge');
+    } catch (error) {
+      setSaveError(
+        error?.message || 'Não foi possível iniciar a investigação segura.',
+      );
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
   const saveActivity = async () => {
-    if (!gameResult) return;
+    if (!gameResult || !activitySessionId) return;
 
     setIsSaving(true);
     setSaveError('');
 
     try {
-      const activityResult = toEngenhariaDesejoActivityResult(gameResult);
+      const completion = await submitAuthoritativeActivitySession(
+        activitySessionId,
+        answers.map(({ cardId, selectedClassification }) => ({
+          cardId,
+          selectedClassification,
+        })),
+      );
+      const synchronizedState = await refreshTrailState();
 
-      if (gameResult.passed) {
-        const completion = await completePhaseActivity(
-          PHASE_NUMBER,
-          activityResult,
-          ENGENHARIA_DESEJO_ACTIVITY.id,
-        );
-        const synchronizedState = await refreshTrailState();
-
-        setSavedResult({
-          ...completion,
-          capiCoins: synchronizedState.profile?.capicoins ?? 0,
-          streak: synchronizedState.profile?.streak_atual ?? 0,
-          wasReview: !completion.firstCompletion,
-        });
-      } else {
-        await registerPhaseAttempt(
-          PHASE_NUMBER,
-          activityResult,
-          ENGENHARIA_DESEJO_ACTIVITY.id,
-        );
-        const synchronizedState = await refreshTrailState();
-
-        setSavedResult({
-          reward: 0,
-          capiCoins:
-            synchronizedState.profile?.capicoins ?? aluno?.capicoins ?? 0,
-          streak:
-            synchronizedState.profile?.streak_atual ??
-            aluno?.streak_atual ??
-            0,
-          wasReview: false,
-        });
-      }
+      setSavedResult({
+        ...completion,
+        capiCoins: synchronizedState.profile?.capicoins ?? 0,
+        streak: synchronizedState.profile?.streak_atual ?? 0,
+        wasReview: completion.passed && !completion.firstCompletion,
+      });
 
       setStage('saved');
     } catch (error) {
@@ -231,6 +243,7 @@ export default function AtividadeFatoFake() {
 
   const restartActivity = () => {
     setSession(buildEngenhariaDesejoSession(createAttemptSeed()));
+    setActivitySessionId(null);
     setStage('introduction');
     setCardIndex(0);
     setAnswers([]);
@@ -335,12 +348,20 @@ export default function AtividadeFatoFake() {
 
               <button
                 type="button"
-                onClick={() => setStage('challenge')}
+                onClick={startInvestigation}
+                disabled={isStarting}
                 className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-400 px-5 py-3 text-sm font-black text-slate-950 hover:bg-fuchsia-300"
               >
-                Iniciar investigação
+                {isStarting
+                  ? 'Abrindo investigação segura...'
+                  : 'Iniciar investigação'}
                 <ArrowForward sx={{ fontSize: 18 }} aria-hidden="true" />
               </button>
+              {saveError && (
+                <p className="mt-3 text-sm font-bold text-red-300" role="alert">
+                  {saveError}
+                </p>
+              )}
             </section>
           </>
         )}

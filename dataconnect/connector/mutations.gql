@@ -259,6 +259,57 @@ mutation UpdateCompetitionPeriodStatus(
   )
 }
 
+# Somente a callable function confiável pode preparar uma rodada. O gabarito
+# fica no banco e nunca integra uma consulta autorizada ao navegador.
+mutation CreateAuthoritativeActivitySession(
+  $sessionId: UUID!
+  $studentUid: String!
+  $activityId: String!
+  $phaseNumber: Int!
+  $variantId: String
+  $contentVersion: String!
+  $publicPayload: Any!
+  $answerKey: Any!
+  $expiresAt: Timestamp!
+) @auth(level: NO_ACCESS) {
+  activitySession_insert(
+    data: {
+      id: $sessionId
+      userUid: $studentUid
+      activityId: $activityId
+      phaseNumber: $phaseNumber
+      variantId: $variantId
+      contentVersion: $contentVersion
+      publicPayload: $publicPayload
+      answerKey: $answerKey
+      status: OPEN
+      expiresAt: $expiresAt
+      createdAt_expr: "request.time"
+      updatedAt_expr: "request.time"
+    }
+  )
+}
+
+mutation MarkAuthoritativeActivitySessionSubmitted(
+  $sessionId: UUID!
+  $studentUid: String!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE activity_sessions
+      SET
+        status = 'SUBMITTED',
+        submitted_at = COALESCE(submitted_at, CURRENT_TIMESTAMP),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        id = $1::uuid
+        AND user_uid = $2
+        AND status = 'OPEN'
+    """
+    params: [$sessionId, $studentUid]
+  )
+}
+
 # Migração segura para perfis criados antes do Passo 0. Somente alunos que
 # ainda não possuem nenhum progresso podem voltar de 1 para 0.
 mutation InitializeMyTrail @auth(level: USER_EMAIL_VERIFIED) {
@@ -639,13 +690,15 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
 # a próxima fase e não gera moedas.
 mutation RegisterMyCurrentPhaseAttempt(
   $attemptId: UUID!
+  $sessionId: UUID!
+  $studentUid: String!
   $activityId: String!
   $phaseNumber: Int!
   $score: Int!
   $correctAnswers: Int!
   $wrongAnswers: Int!
 )
-  @auth(level: USER_EMAIL_VERIFIED) {
+  @auth(level: NO_ACCESS) {
   affectedRows: _execute(
     sql: """
       WITH eligible_attempt AS (
@@ -656,29 +709,41 @@ mutation RegisterMyCurrentPhaseAttempt(
         INNER JOIN users AS u
           ON u.firebase_uid = sp.user_uid
         WHERE
-          sp.user_uid = $7
-          AND sp.phase_number = $3
+          sp.user_uid = $8
+          AND sp.phase_number = $4
+          AND EXISTS (
+            SELECT 1
+            FROM activity_sessions AS session
+            WHERE
+              session.id = $2::uuid
+              AND session.user_uid = $8
+              AND session.activity_id = $3
+              AND session.phase_number = $4
+              AND session.status = 'OPEN'
+              AND session.expires_at > CURRENT_TIMESTAMP
+          )
           AND (
             (
               sp.status = 'IN_PROGRESS'
-              AND u.current_phase = $3
+              AND u.current_phase = $4
             )
             OR (
               sp.status = 'COMPLETED'
-              AND $3 <= u.current_phase
+              AND $4 <= u.current_phase
             )
           )
-          AND $3 BETWEEN 1 AND 4
-          AND $4 BETWEEN 0 AND 59
-          AND $5 >= 0
+          AND $4 BETWEEN 1 AND 4
+          AND $5 BETWEEN 0 AND 59
           AND $6 >= 0
-          AND LENGTH($2) BETWEEN 1 AND 128
+          AND $7 >= 0
+          AND LENGTH($3) BETWEEN 1 AND 128
       ),
       created_attempt AS (
         INSERT INTO activity_attempts (
           id,
           user_uid,
           activity_id,
+          activity_session_id,
           phase_number,
           score,
           correct_answers,
@@ -695,11 +760,12 @@ mutation RegisterMyCurrentPhaseAttempt(
         SELECT
           $1::uuid,
           eligible_attempt.user_uid,
-          $2,
           $3,
+          $2::uuid,
           $4,
           $5,
           $6,
+          $7,
           FALSE,
           FALSE,
           0,
@@ -714,10 +780,10 @@ mutation RegisterMyCurrentPhaseAttempt(
       )
       UPDATE student_progress AS sp
       SET
-        score = GREATEST(sp.score, $4),
+        score = GREATEST(sp.score, $5),
         attempts = sp.attempts + 1,
-        correct_answers = GREATEST(sp.correct_answers, $5),
-        wrong_answers = sp.wrong_answers + $6,
+        correct_answers = GREATEST(sp.correct_answers, $6),
+        wrong_answers = sp.wrong_answers + $7,
         updated_at = CURRENT_TIMESTAMP
       FROM created_attempt
       WHERE
@@ -726,12 +792,13 @@ mutation RegisterMyCurrentPhaseAttempt(
     """
     params: [
       $attemptId
+      $sessionId
       $activityId
       $phaseNumber
       $score
       $correctAnswers
       $wrongAnswers
-      { _expr: "auth.uid" }
+      $studentUid
     ]
   )
 }
@@ -744,13 +811,15 @@ mutation RegisterMyCurrentPhaseAttempt(
 # - intervalo maior: reinicia em um.
 mutation CompleteMyCurrentPhase(
   $attemptId: UUID!
+  $sessionId: UUID!
+  $studentUid: String!
   $activityId: String!
   $phaseNumber: Int!
   $score: Int!
   $correctAnswers: Int!
   $wrongAnswers: Int!
 )
-  @auth(level: USER_EMAIL_VERIFIED) {
+  @auth(level: NO_ACCESS) {
   affectedRows: _execute(
     sql: """
       WITH settings AS (
@@ -809,7 +878,8 @@ mutation CompleteMyCurrentPhase(
       eligible_attempt AS (
         SELECT
           $1::uuid AS attempt_id,
-          $2 AS activity_id,
+          $2::uuid AS activity_session_id,
+          $3 AS activity_id,
           u.firebase_uid,
           u.class_group,
           u.current_phase,
@@ -843,26 +913,37 @@ mutation CompleteMyCurrentPhase(
         FROM users AS u
         INNER JOIN student_progress AS sp
           ON sp.user_uid = u.firebase_uid
-          AND sp.phase_number = $3
+          AND sp.phase_number = $4
         CROSS JOIN settings
         CROSS JOIN local_clock
         WHERE
-          u.firebase_uid = $7
+          u.firebase_uid = $8
+          AND EXISTS (
+            SELECT 1
+            FROM activity_sessions AS session
+            WHERE
+              session.id = $2::uuid
+              AND session.user_uid = $8
+              AND session.activity_id = $3
+              AND session.phase_number = $4
+              AND session.status = 'OPEN'
+              AND session.expires_at > CURRENT_TIMESTAMP
+          )
           AND (
             (
               sp.status = 'IN_PROGRESS'
-              AND u.current_phase = $3
+              AND u.current_phase = $4
             )
             OR (
               sp.status = 'COMPLETED'
-              AND $3 <= u.current_phase
+              AND $4 <= u.current_phase
             )
           )
-          AND $3 BETWEEN 1 AND 4
-          AND $4 BETWEEN 60 AND 100
-          AND $5 >= 1
-          AND $6 >= 0
-          AND LENGTH($2) BETWEEN 1 AND 128
+          AND $4 BETWEEN 1 AND 4
+          AND $5 BETWEEN 60 AND 100
+          AND $6 >= 1
+          AND $7 >= 0
+          AND LENGTH($3) BETWEEN 1 AND 128
       ),
       reward_policy AS (
         SELECT
@@ -937,6 +1018,7 @@ mutation CompleteMyCurrentPhase(
           id,
           user_uid,
           activity_id,
+          activity_session_id,
           phase_number,
           score,
           correct_answers,
@@ -954,11 +1036,12 @@ mutation CompleteMyCurrentPhase(
         SELECT
           attempt_id,
           firebase_uid,
-          $2,
-          $3,
+          activity_id,
+          activity_session_id,
           $4,
           $5,
           $6,
+          $7,
           TRUE,
           first_completion,
           reward_base,
@@ -976,10 +1059,10 @@ mutation CompleteMyCurrentPhase(
         UPDATE student_progress AS sp
         SET
           status = 'COMPLETED',
-          score = GREATEST(sp.score, $4),
+          score = GREATEST(sp.score, $5),
           attempts = sp.attempts + 1,
-          correct_answers = GREATEST(sp.correct_answers, $5),
-          wrong_answers = sp.wrong_answers + $6,
+          correct_answers = GREATEST(sp.correct_answers, $6),
+          wrong_answers = sp.wrong_answers + $7,
           completed_at = COALESCE(sp.completed_at, CURRENT_TIMESTAMP),
           updated_at = CURRENT_TIMESTAMP
         FROM created_attempt
@@ -1050,11 +1133,11 @@ mutation CompleteMyCurrentPhase(
         END::capi_coin_transaction_type,
         CASE
           WHEN rewarded_user.first_completion
-            THEN CONCAT('Atividade da Fase ', $3::text)
-          ELSE CONCAT('Revisão da atividade da Fase ', $3::text)
+            THEN CONCAT('Atividade da Fase ', $4::text)
+          ELSE CONCAT('Revisão da atividade da Fase ', $4::text)
         END,
-        $2,
         $3,
+        $4,
         rewarded_user.class_group,
         (SELECT id FROM active_competition),
         (
@@ -1069,12 +1152,13 @@ mutation CompleteMyCurrentPhase(
     """
     params: [
       $attemptId
+      $sessionId
       $activityId
       $phaseNumber
       $score
       $correctAnswers
       $wrongAnswers
-      { _expr: "auth.uid" }
+      $studentUid
     ]
   )
 }

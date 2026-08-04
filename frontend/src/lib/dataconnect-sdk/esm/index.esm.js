@@ -1,5 +1,11 @@
 import { queryRef, executeQuery, validateArgsWithOptions, mutationRef, executeMutation, validateArgs } from 'firebase/data-connect';
 
+export const ActivitySessionStatus = {
+  OPEN: "OPEN",
+  SUBMITTED: "SUBMITTED",
+  EXPIRED: "EXPIRED",
+}
+
 export const CapiCoinTransactionType = {
   CONTENT_REWARD: "CONTENT_REWARD",
   ACTIVITY_REWARD: "ACTIVITY_REWARD",
@@ -149,6 +155,30 @@ export function updateCompetitionPeriodStatus(dcOrVars, vars) {
   return executeMutation(updateCompetitionPeriodStatusRef(dcInstance, inputVars));
 }
 
+export const createAuthoritativeActivitySessionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateAuthoritativeActivitySession', inputVars);
+}
+createAuthoritativeActivitySessionRef.operationName = 'CreateAuthoritativeActivitySession';
+
+export function createAuthoritativeActivitySession(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createAuthoritativeActivitySessionRef(dcInstance, inputVars));
+}
+
+export const markAuthoritativeActivitySessionSubmittedRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'MarkAuthoritativeActivitySessionSubmitted', inputVars);
+}
+markAuthoritativeActivitySessionSubmittedRef.operationName = 'MarkAuthoritativeActivitySessionSubmitted';
+
+export function markAuthoritativeActivitySessionSubmitted(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(markAuthoritativeActivitySessionSubmittedRef(dcInstance, inputVars));
+}
+
 export const initializeMyTrailRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -272,6 +302,32 @@ export function getMyActivityAttempt(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getMyActivityAttemptRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getAuthoritativeActivitySessionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetAuthoritativeActivitySession', inputVars);
+}
+getAuthoritativeActivitySessionRef.operationName = 'GetAuthoritativeActivitySession';
+
+export function getAuthoritativeActivitySession(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getAuthoritativeActivitySessionRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getAuthoritativeActivityResultRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetAuthoritativeActivityResult', inputVars);
+}
+getAuthoritativeActivityResultRef.operationName = 'GetAuthoritativeActivityResult';
+
+export function getAuthoritativeActivityResult(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getAuthoritativeActivityResultRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listMyActivityAttemptsRef = (dcOrVars, vars) => {

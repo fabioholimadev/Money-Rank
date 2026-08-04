@@ -1,0 +1,625 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "frontend/src/data",
+  "activities": {
+    "perigo-doce-quiz": {
+      "phaseNumber": 1,
+      "contentVersion": "2026-08-01",
+      "passingScore": 60,
+      "questionCount": 5,
+      "knowledge": [
+        {
+          "id": "who-free-sugars-limit",
+          "topic": "Consumo de açúcares livres",
+          "difficulty": "facil",
+          "claim": "A OMS recomenda reduzir os açúcares livres para menos de 10% da ingestão energética total e indica benefícios adicionais abaixo de 5%.",
+          "explanation": "A recomendação trabalha com proporção da energia diária, não com a proibição absoluta de qualquer alimento doce.",
+          "misconceptions": [
+            "A OMS recomenda que metade da energia diária venha de açúcares livres.",
+            "A recomendação da OMS vale somente para atletas profissionais.",
+            "A OMS considera desnecessário observar a quantidade de açúcar na alimentação."
+          ],
+          "teachingAngle": "Relacionar escolhas de consumo frequentes com prevenção e planejamento financeiro de longo prazo.",
+          "source": {
+            "publisher": "Organização Mundial da Saúde",
+            "title": "Guideline: Sugars intake for adults and children",
+            "url": "https://www.who.int/publications-detail-redirect/WHO-NMH-NHD-15.3",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "anvisa-front-label-thresholds",
+          "topic": "Rotulagem nutricional frontal",
+          "difficulty": "media",
+          "claim": "A regra brasileira exige a lupa de “alto em açúcar adicionado” a partir de 15 g por 100 g em alimentos sólidos e 7,5 g por 100 ml em líquidos.",
+          "explanation": "Os limites diferem entre sólidos e líquidos; a lupa alerta para alto teor, mas não substitui a leitura do restante da tabela nutricional.",
+          "misconceptions": [
+            "A lupa aparece em qualquer produto que tenha uma quantidade mínima de açúcar natural.",
+            "O mesmo limite de 1 g é aplicado a sólidos e líquidos no Brasil.",
+            "A rotulagem frontal informa somente o preço do produto por porção."
+          ],
+          "teachingAngle": "Ensinar o aluno a comparar produtos usando uma informação padronizada da embalagem.",
+          "source": {
+            "publisher": "Agência Nacional de Vigilância Sanitária",
+            "title": "Rotulagem nutricional",
+            "url": "https://www.gov.br/anvisa/pt-br/assuntos/alimentos/rotulagem/rotulagem-nutricional",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "anvisa-informed-choice",
+          "topic": "Informação e decisão de compra",
+          "difficulty": "facil",
+          "claim": "A rotulagem frontal destaca nutrientes críticos para tornar a informação mais clara e apoiar escolhas de consumo conscientes.",
+          "explanation": "O destaque frontal facilita identificar rapidamente altos teores antes de comparar preço, quantidade e composição.",
+          "misconceptions": [
+            "A rotulagem frontal existe para esconder a composição dos alimentos.",
+            "A lupa frontal define o preço máximo que o mercado pode cobrar.",
+            "O rótulo torna todos os produtos com embalagens parecidas nutricionalmente iguais."
+          ],
+          "teachingAngle": "Apresentar a rotulagem como uma ferramenta para reduzir a diferença de informação entre fornecedor e consumidor.",
+          "source": {
+            "publisher": "Agência Nacional de Vigilância Sanitária",
+            "title": "Rotulagem nutricional",
+            "url": "https://www.gov.br/anvisa/pt-br/assuntos/alimentos/rotulagem/rotulagem-nutricional",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "health-guide-food-priority",
+          "topic": "Escolhas alimentares",
+          "difficulty": "facil",
+          "claim": "O Guia Alimentar brasileiro orienta priorizar alimentos in natura ou minimamente processados e evitar alimentos ultraprocessados.",
+          "explanation": "A orientação trata do padrão alimentar: itens in natura ou minimamente processados devem formar a base da alimentação.",
+          "misconceptions": [
+            "O Guia Alimentar recomenda que ultraprocessados sejam a base de todas as refeições.",
+            "O Guia Alimentar considera que apenas o preço define a qualidade de um alimento.",
+            "A recomendação oficial proíbe o consumo de água durante as refeições."
+          ],
+          "teachingAngle": "Comparar conveniência, orçamento e consequências de escolhas recorrentes sem culpabilizar o aluno.",
+          "source": {
+            "publisher": "Ministério da Saúde",
+            "title": "Guia Alimentar para a População Brasileira — 2ª edição",
+            "url": "https://www.gov.br/saude/pt-br/assuntos/saude-brasil/publicacoes-para-promocao-a-saude/guia_alimentar_populacao_brasileira_2ed.pdf/@@download/file/guia_alimentar_populacao_brasileira_2ed.pdf",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "brazil-selective-tax-sugary-drinks",
+          "topic": "Imposto Seletivo no Brasil",
+          "difficulty": "media",
+          "claim": "A Lei Complementar nº 214/2025 inclui bebidas açucaradas entre os bens sujeitos ao Imposto Seletivo por serem considerados prejudiciais à saúde ou ao meio ambiente.",
+          "explanation": "O Imposto Seletivo usa a tributação também para desestimular o consumo de determinados produtos; alíquotas e aplicação dependem da regulamentação vigente.",
+          "misconceptions": [
+            "A Lei Complementar nº 214/2025 criou um subsídio obrigatório para refrigerantes.",
+            "O Imposto Seletivo brasileiro incide apenas sobre livros didáticos.",
+            "A lei determina que bebidas açucaradas sejam distribuídas gratuitamente nas escolas."
+          ],
+          "teachingAngle": "Conectar tributação, preço e objetivos de saúde pública sem afirmar que o tributo sozinho resolve o problema.",
+          "source": {
+            "publisher": "Câmara dos Deputados",
+            "title": "Lei Complementar nº 214, de 16 de janeiro de 2025",
+            "url": "https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "who-fiscal-policy-demand",
+          "topic": "Preço e comportamento de consumo",
+          "difficulty": "media",
+          "claim": "A OMS aponta que impostos sobre bebidas açucaradas podem elevar preços e contribuir para reduzir a demanda e o consumo.",
+          "explanation": "A política altera o incentivo de compra; seus resultados dependem do desenho do imposto, do repasse ao preço e das alternativas disponíveis.",
+          "misconceptions": [
+            "Impostos sobre bebidas açucaradas reduzem obrigatoriamente o preço final desses produtos.",
+            "A OMS afirma que consumidores nunca mudam escolhas quando preços mudam.",
+            "A única finalidade possível de um tributo é aumentar o lucro do fabricante."
+          ],
+          "teachingAngle": "Trabalhar o preço como um incentivo econômico, sem garantir que todas as pessoas reagirão da mesma forma.",
+          "source": {
+            "publisher": "Organização Mundial da Saúde",
+            "title": "WHO launches new guideline on fiscal policies to promote healthy diets",
+            "url": "https://www.who.int/news/item/14-06-2024-who-launches-new-guideline-on-fiscal-policies-to-promote-healthy-diets",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "paho-tax-triple-win",
+          "topic": "Custos sociais e receita pública",
+          "difficulty": "desafiadora",
+          "claim": "A OPAS descreve a tributação de bebidas açucaradas como uma medida capaz de combinar ganhos de saúde, geração de receita e redução de custos econômicos associados a doenças.",
+          "explanation": "A expressão “ganho triplo” reúne três efeitos potenciais; ela não significa que a arrecadação substitua políticas de prevenção e educação.",
+          "misconceptions": [
+            "A OPAS afirma que a tributação elimina imediatamente todas as doenças crônicas.",
+            "A medida é descrita como incapaz de gerar qualquer receita pública.",
+            "Os custos econômicos de doenças nunca afetam famílias ou serviços públicos."
+          ],
+          "teachingAngle": "Analisar custos que não aparecem no preço de compra e podem afetar famílias, produtividade e orçamento público.",
+          "source": {
+            "publisher": "Organização Pan-Americana da Saúde",
+            "title": "Sugar-sweetened beverage taxation: a triple win for health, revenue and health equity",
+            "url": "https://www.paho.org/en/node/78468",
+            "accessedAt": "2026-08-01"
+          }
+        },
+        {
+          "id": "world-bank-tax-design",
+          "topic": "Desenho de políticas públicas",
+          "difficulty": "desafiadora",
+          "claim": "A avaliação de impostos sobre bebidas açucaradas deve observar preço, demanda, substituição por outros produtos e efeitos econômicos para orientar o desenho da política.",
+          "explanation": "Analisar vários indicadores ajuda a verificar se o incentivo mudou escolhas e se surgiram efeitos não planejados.",
+          "misconceptions": [
+            "Uma política tributária deve ignorar qualquer mudança de demanda ou substituição.",
+            "Avaliar a política significa observar somente a cor das embalagens.",
+            "O desenho do imposto não pode ser ajustado depois de sua implementação."
+          ],
+          "teachingAngle": "Mostrar que uma política pública precisa ser medida e ajustada com dados, em vez de depender de uma única suposição.",
+          "source": {
+            "publisher": "Banco Mundial",
+            "title": "Health Taxes on Sugar-Sweetened Beverages",
+            "url": "https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099131211272311932",
+            "accessedAt": "2026-08-01"
+          }
+        }
+      ]
+    },
+    "custo-vicio": {
+      "phaseNumber": 2,
+      "contentVersion": "2026-08-01",
+      "passingScore": 60,
+      "cases": [
+        {
+          "id": "rafael-vape",
+          "decisions": [
+            {
+              "id": "rafael-1-small-purchases",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "rafael-2-delayed-goal",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "rafael-3-online-claim",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "rafael-4-peer-pressure",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "rafael-5-new-plan",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "beatriz-alcool",
+          "decisions": [
+            {
+              "id": "beatriz-1-visible-cost",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "beatriz-2-social-budget",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "beatriz-3-next-day",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "beatriz-4-certification",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "beatriz-5-support-plan",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "diego-tabaco",
+          "decisions": [
+            {
+              "id": "diego-1-daily-cost",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "diego-2-social-cost",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "diego-3-future-work",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "diego-4-blame",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            },
+            {
+              "id": "diego-5-tool-fund",
+              "options": [
+                {
+                  "id": "A",
+                  "points": 1
+                },
+                {
+                  "id": "B",
+                  "points": 2
+                },
+                {
+                  "id": "C",
+                  "points": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "ilusao-dinheiro-caminhos-v1": {
+      "phaseNumber": 3,
+      "contentVersion": "2026-08-01",
+      "passingScore": 60,
+      "decisions": [
+        {
+          "id": "flash-sale",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -160
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": -95
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": 0
+            }
+          ]
+        },
+        {
+          "id": "group-pressure",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -100
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": -45
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": -15
+            }
+          ]
+        },
+        {
+          "id": "small-installment",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -180
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": -80
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": 0
+            }
+          ]
+        },
+        {
+          "id": "free-trial",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -40
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": 0
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": 0
+            }
+          ]
+        },
+        {
+          "id": "unexpected-transport",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -105
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": -80
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": -80
+            }
+          ]
+        },
+        {
+          "id": "goal-upgrade",
+          "choices": [
+            {
+              "id": "A",
+              "analysisPoints": 0,
+              "balanceDelta": -120
+            },
+            {
+              "id": "B",
+              "analysisPoints": 1,
+              "balanceDelta": -40
+            },
+            {
+              "id": "C",
+              "analysisPoints": 2,
+              "balanceDelta": 0
+            }
+          ]
+        }
+      ]
+    },
+    "engenharia-desejo-fato-fake-v1": {
+      "phaseNumber": 4,
+      "contentVersion": "2026-08-03",
+      "passingCorrectAnswers": 4,
+      "cards": [
+        {
+          "id": "real-paddy-power-family",
+          "classification": "REAL"
+        },
+        {
+          "id": "real-playojo-hot-cold",
+          "classification": "REAL"
+        },
+        {
+          "id": "real-betvictor-footballers",
+          "classification": "REAL"
+        },
+        {
+          "id": "real-kwiff-hamilton",
+          "classification": "REAL"
+        },
+        {
+          "id": "real-freebets-mason-mount",
+          "classification": "REAL"
+        },
+        {
+          "id": "real-sean-graham-voucher",
+          "classification": "REAL"
+        },
+        {
+          "id": "invented-luck-recovery",
+          "classification": "INVENTED"
+        },
+        {
+          "id": "invented-school-ranking",
+          "classification": "INVENTED"
+        },
+        {
+          "id": "invented-loss-insurance",
+          "classification": "INVENTED"
+        },
+        {
+          "id": "invented-lucky-minute",
+          "classification": "INVENTED"
+        },
+        {
+          "id": "invented-financial-certificate",
+          "classification": "INVENTED"
+        },
+        {
+          "id": "invented-meal-cashback",
+          "classification": "INVENTED"
+        }
+      ]
+    }
+  }
+}

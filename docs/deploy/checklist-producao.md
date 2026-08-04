@@ -17,10 +17,22 @@ deploy público não deve ser considerado concluído.
   Firebase AI Logic continua como `Enforced`.
 - [ ] Testar no domínio publicado que uma requisição legítima recebe token e
   que uma requisição sem App Check é rejeitada.
-- [ ] Avaliar a proteção contra repetição. Se ela for habilitada, configurar o
-  SDK com `useLimitedUseAppCheckTokens: true` antes de marcar a opção como
-  `Enforced` no Console.
+- [ ] Confirmar que as callables usam `limitedUseAppCheckTokens: true`; a
+  proteção contra repetição do backend depende desses tokens de uso limitado.
 - [ ] Remover os tokens de depuração que não forem mais necessários.
+- [ ] Confirmar que `startActivitySession` e `submitActivitySession` rejeitam
+  chamadas sem App Check e que tokens de uso limitado não podem ser repetidos.
+
+## Cloud Functions e pontuação autoritativa
+
+- [ ] Implantar o schema e as operações do Data Connect antes das Functions.
+- [ ] Criar `GEMINI_API_KEY` no Secret Manager; nunca expor a chave ao Vite.
+- [ ] Confirmar Node.js 22 e região `southamerica-east1` nas duas callables.
+- [ ] Validar que o bundle e as respostas HTTP não expõem o gabarito do quiz.
+- [ ] Reenviar a mesma sessão e confirmar uma tentativa e uma recompensa.
+- [ ] Tentar enviar sessão de outro usuário e confirmar resposta `not-found`.
+- [ ] Reavaliar o `npm audit` de `functions/` sem usar correção forçada
+  incompatível.
 
 ## Configuração e controle de custos da IA
 

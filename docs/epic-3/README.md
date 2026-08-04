@@ -18,7 +18,7 @@ atividades repetiveis, recompensa competitiva e uso controlado de IA.
 | 3.7 | A Ilusão do Dinheiro com caminhos de decisão | Concluída | `5c8e1ce` |
 | 3.8 | A Engenharia do Desejo com banco publicitário auditável | Concluída | `8e76b9e` |
 | 3.9 | Períodos competitivos, repetição ilimitada e proteção anti-automação | Concluída | `eefaf10` |
-| 3.10 | Pontuação autoritativa e concorrência segura das atividades | Planejada | — |
+| 3.10 | Pontuação autoritativa e concorrência segura das atividades | Concluída e validada | commit pendente |
 | 3.11 | Rankings individual e por turma vinculados ao período | Planejada | — |
 
 ## Estrutura visual e progressão
@@ -66,6 +66,12 @@ A Task 3.9 adiciona períodos controláveis (`DRAFT`, `SCHEDULED`, `ACTIVE`,
 diário permanece nulo; somente revisões automatizadas em intervalo inferior a
 30 segundos deixam de pagar recompensa. Detalhes:
 [`periodos-competitivos.md`](periodos-competitivos.md).
+
+A Task 3.10 transfere a correção das quatro atividades para Cloud Functions
+autenticadas. Sessões privadas e operações `NO_ACCESS` impedem o navegador de
+escolher nota, aprovação ou recompensa. App Check e replay são obrigatórios
+fora do emulador. Detalhes e roteiro:
+[`pontuacao-autoritativa.md`](pontuacao-autoritativa.md).
 
 ## Atividades
 
@@ -133,6 +139,10 @@ npm run test:perigo-doce-ai
 npm run test:trail-progress
 npm run lint
 npm run build
+
+cd ..\functions
+npm test
+npm run lint
 ```
 
 Cada atividade tambem exige teste manual de reprovação, aprovação, repeticao,

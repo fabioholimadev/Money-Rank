@@ -8,6 +8,12 @@ export type Int64String = string;
 export type DateString = string;
 
 
+export enum ActivitySessionStatus {
+  OPEN = "OPEN",
+  SUBMITTED = "SUBMITTED",
+  EXPIRED = "EXPIRED",
+};
+
 export enum CapiCoinTransactionType {
   CONTENT_REWARD = "CONTENT_REWARD",
   ACTIVITY_REWARD = "ACTIVITY_REWARD",
@@ -63,6 +69,11 @@ export interface ActivityAttempt_Key {
   __typename?: 'ActivityAttempt_Key';
 }
 
+export interface ActivitySession_Key {
+  id: UUIDString;
+  __typename?: 'ActivitySession_Key';
+}
+
 export interface ApplyCapiCoinTransactionData {
   user_update?: User_Key | null;
   capiCoinTransaction_insert: CapiCoinTransaction_Key;
@@ -100,6 +111,8 @@ export interface CompleteMyCurrentPhaseData {
 
 export interface CompleteMyCurrentPhaseVariables {
   attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
   activityId: string;
   phaseNumber: number;
   score: number;
@@ -109,6 +122,22 @@ export interface CompleteMyCurrentPhaseVariables {
 
 export interface CompleteMyIntroductionData {
   affectedRows?: number | null;
+}
+
+export interface CreateAuthoritativeActivitySessionData {
+  activitySession_insert: ActivitySession_Key;
+}
+
+export interface CreateAuthoritativeActivitySessionVariables {
+  sessionId: UUIDString;
+  studentUid: string;
+  activityId: string;
+  phaseNumber: number;
+  variantId?: string | null;
+  contentVersion: string;
+  publicPayload: unknown;
+  answerKey: unknown;
+  expiresAt: TimestampString;
 }
 
 export interface CreateCompetitionPeriodData {
@@ -126,6 +155,55 @@ export interface CreateCompetitionPeriodVariables {
 export interface EconomyConfig_Key {
   configKey: string;
   __typename?: 'EconomyConfig_Key';
+}
+
+export interface GetAuthoritativeActivityResultData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
+    createdAt: TimestampString;
+    user: {
+      capiCoins: number;
+      currentStreak: number;
+    };
+  } & ActivityAttempt_Key)[];
+}
+
+export interface GetAuthoritativeActivityResultVariables {
+  sessionId: UUIDString;
+}
+
+export interface GetAuthoritativeActivitySessionData {
+  activitySession?: {
+    id: UUIDString;
+    userUid: string;
+    activityId: string;
+    phaseNumber: number;
+    variantId?: string | null;
+    contentVersion: string;
+    publicPayload: unknown;
+    answerKey: unknown;
+    status: ActivitySessionStatus;
+    expiresAt: TimestampString;
+    submittedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & ActivitySession_Key;
+}
+
+export interface GetAuthoritativeActivitySessionVariables {
+  sessionId: UUIDString;
 }
 
 export interface GetCompetitionAbuseSignalsData {
@@ -293,12 +371,23 @@ export interface ListVisibleCompetitionPeriodsData {
   } & CompetitionPeriod_Key)[];
 }
 
+export interface MarkAuthoritativeActivitySessionSubmittedData {
+  affectedRows?: number | null;
+}
+
+export interface MarkAuthoritativeActivitySessionSubmittedVariables {
+  sessionId: UUIDString;
+  studentUid: string;
+}
+
 export interface RegisterMyCurrentPhaseAttemptData {
   affectedRows?: number | null;
 }
 
 export interface RegisterMyCurrentPhaseAttemptVariables {
   attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
   activityId: string;
   phaseNumber: number;
   score: number;
@@ -482,6 +571,30 @@ export const updateCompetitionPeriodStatusRef: UpdateCompetitionPeriodStatusRef;
 export function updateCompetitionPeriodStatus(vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
 export function updateCompetitionPeriodStatus(dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
 
+interface CreateAuthoritativeActivitySessionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+  operationName: string;
+}
+export const createAuthoritativeActivitySessionRef: CreateAuthoritativeActivitySessionRef;
+
+export function createAuthoritativeActivitySession(vars: CreateAuthoritativeActivitySessionVariables): MutationPromise<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+export function createAuthoritativeActivitySession(dc: DataConnect, vars: CreateAuthoritativeActivitySessionVariables): MutationPromise<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+
+interface MarkAuthoritativeActivitySessionSubmittedRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationRef<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationRef<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+  operationName: string;
+}
+export const markAuthoritativeActivitySessionSubmittedRef: MarkAuthoritativeActivitySessionSubmittedRef;
+
+export function markAuthoritativeActivitySessionSubmitted(vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationPromise<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+export function markAuthoritativeActivitySessionSubmitted(dc: DataConnect, vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationPromise<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+
 interface InitializeMyTrailRef {
   /* Allow users to create refs without passing in DataConnect */
   (): MutationRef<InitializeMyTrailData, undefined>;
@@ -601,6 +714,30 @@ export const getMyActivityAttemptRef: GetMyActivityAttemptRef;
 
 export function getMyActivityAttempt(vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
 export function getMyActivityAttempt(dc: DataConnect, vars: GetMyActivityAttemptVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyActivityAttemptData, GetMyActivityAttemptVariables>;
+
+interface GetAuthoritativeActivitySessionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetAuthoritativeActivitySessionVariables): QueryRef<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetAuthoritativeActivitySessionVariables): QueryRef<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+  operationName: string;
+}
+export const getAuthoritativeActivitySessionRef: GetAuthoritativeActivitySessionRef;
+
+export function getAuthoritativeActivitySession(vars: GetAuthoritativeActivitySessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+export function getAuthoritativeActivitySession(dc: DataConnect, vars: GetAuthoritativeActivitySessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+
+interface GetAuthoritativeActivityResultRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetAuthoritativeActivityResultVariables): QueryRef<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetAuthoritativeActivityResultVariables): QueryRef<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+  operationName: string;
+}
+export const getAuthoritativeActivityResultRef: GetAuthoritativeActivityResultRef;
+
+export function getAuthoritativeActivityResult(vars: GetAuthoritativeActivityResultVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+export function getAuthoritativeActivityResult(dc: DataConnect, vars: GetAuthoritativeActivityResultVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
 
 interface ListMyActivityAttemptsRef {
   /* Allow users to create refs without passing in DataConnect */

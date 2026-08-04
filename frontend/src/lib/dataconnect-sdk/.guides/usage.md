@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, upsertEconomyConfig, createCompetitionPeriod, updateCompetitionPeriodStatus, initializeMyTrail, completeMyIntroduction } from '@money-rank/dataconnect';
+import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, upsertStudentProgress, applyCapiCoinTransaction, upsertEconomyConfig, createCompetitionPeriod, updateCompetitionPeriodStatus, createAuthoritativeActivitySession, markAuthoritativeActivitySessionSubmitted } from '@money-rank/dataconnect';
 
 
 // Operation UpsertMyProfileWithAvatar:  For variables, look at type UpsertMyProfileWithAvatarVars in ../index.d.ts
@@ -41,11 +41,11 @@ const { data } = await CreateCompetitionPeriod(dataConnect, createCompetitionPer
 // Operation UpdateCompetitionPeriodStatus:  For variables, look at type UpdateCompetitionPeriodStatusVars in ../index.d.ts
 const { data } = await UpdateCompetitionPeriodStatus(dataConnect, updateCompetitionPeriodStatusVars);
 
-// Operation InitializeMyTrail: 
-const { data } = await InitializeMyTrail(dataConnect);
+// Operation CreateAuthoritativeActivitySession:  For variables, look at type CreateAuthoritativeActivitySessionVars in ../index.d.ts
+const { data } = await CreateAuthoritativeActivitySession(dataConnect, createAuthoritativeActivitySessionVars);
 
-// Operation CompleteMyIntroduction: 
-const { data } = await CompleteMyIntroduction(dataConnect);
+// Operation MarkAuthoritativeActivitySessionSubmitted:  For variables, look at type MarkAuthoritativeActivitySessionSubmittedVars in ../index.d.ts
+const { data } = await MarkAuthoritativeActivitySessionSubmitted(dataConnect, markAuthoritativeActivitySessionSubmittedVars);
 
 
 ```

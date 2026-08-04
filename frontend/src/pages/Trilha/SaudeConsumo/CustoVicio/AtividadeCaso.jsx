@@ -18,7 +18,6 @@ import {
   buildCustoVicioCaseSession,
   calculateCustoVicioResult,
   CUSTO_VICIO_DECISION_COUNT,
-  toCustoVicioActivityResult,
 } from '../../../../lib/custoVicioCase';
 import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import {
@@ -26,7 +25,10 @@ import {
   isActivityUnlocked,
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
-import { completePhaseActivity } from '../../../../services/studentDataService';
+import {
+  startAuthoritativeActivitySession,
+  submitAuthoritativeActivitySession,
+} from '../../../../services/activitySessionService';
 
 const PHASE_NUMBER = 2;
 
@@ -56,6 +58,8 @@ export default function AtividadeCaso() {
   } = useAuth();
   const [selectedCaseId, setSelectedCaseId] = useState(null);
   const [caseSession, setCaseSession] = useState(null);
+  const [activitySessionId, setActivitySessionId] = useState(null);
+  const [isStarting, setIsStarting] = useState(false);
   const [stage, setStage] = useState('selection');
   const [decisionIndex, setDecisionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
@@ -83,18 +87,32 @@ export default function AtividadeCaso() {
       ? calculateCustoVicioResult(selectedCase.id, answers)
       : null;
 
-  const startCase = () => {
+  const startCase = async () => {
     if (!selectedCase) return;
 
-    setCaseSession(
-      buildCustoVicioCaseSession(selectedCase.id, createAttemptSeed()),
-    );
-    setStage('analysis');
-    setDecisionIndex(0);
-    setSelectedOptionId(null);
-    setAnswers([]);
-    setSavedResult(null);
+    setIsStarting(true);
     setSaveError('');
+    try {
+      const secureSession = await startAuthoritativeActivitySession(
+        PHASE_NUMBER,
+        selectedCase.id,
+      );
+      setActivitySessionId(secureSession.sessionId);
+      setCaseSession(
+        buildCustoVicioCaseSession(selectedCase.id, createAttemptSeed()),
+      );
+      setStage('analysis');
+      setDecisionIndex(0);
+      setSelectedOptionId(null);
+      setAnswers([]);
+      setSavedResult(null);
+    } catch (error) {
+      setSaveError(
+        error?.message || 'Não foi possível iniciar a análise segura.',
+      );
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   const advanceDecision = () => {
@@ -120,16 +138,18 @@ export default function AtividadeCaso() {
   };
 
   const saveCompletion = async () => {
-    if (!selectedCase || !caseResult) return;
+    if (!selectedCase || !caseResult || !activitySessionId) return;
 
     setIsSaving(true);
     setSaveError('');
 
     try {
-      const completion = await completePhaseActivity(
-        PHASE_NUMBER,
-        toCustoVicioActivityResult(caseResult),
-        `custo-vicio-case-${selectedCase.id}`,
+      const completion = await submitAuthoritativeActivitySession(
+        activitySessionId,
+        answers.map(({ decisionId, optionId }) => ({
+          decisionId,
+          optionId,
+        })),
       );
       const synchronizedState = await refreshTrailState();
 
@@ -153,6 +173,7 @@ export default function AtividadeCaso() {
   const restartActivity = () => {
     setSelectedCaseId(null);
     setCaseSession(null);
+    setActivitySessionId(null);
     setStage('selection');
     setDecisionIndex(0);
     setSelectedOptionId(null);
@@ -302,14 +323,25 @@ export default function AtividadeCaso() {
                         <button
                           type="button"
                           onClick={startCase}
+                          disabled={isStarting}
                           className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-950 hover:bg-amber-400 sm:w-auto"
                         >
-                          Começar análise de {caseItem.name}
+                          {isStarting
+                            ? 'Abrindo análise segura...'
+                            : `Começar análise de ${caseItem.name}`}
                           <ArrowForward
                             sx={{ fontSize: 18 }}
                             aria-hidden="true"
                           />
                         </button>
+                        {saveError && (
+                          <p
+                            className="mt-3 text-sm font-bold text-red-300"
+                            role="alert"
+                          >
+                            {saveError}
+                          </p>
+                        )}
                       </div>
                     )}
                   </article>

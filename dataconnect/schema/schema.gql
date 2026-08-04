@@ -48,6 +48,12 @@ enum CompetitionPeriodStatus {
   CLOSED
 }
 
+enum ActivitySessionStatus {
+  OPEN
+  SUBMITTED
+  EXPIRED
+}
+
 # O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
 # manter um segundo identificador e permite filtros seguros com auth.uid.
 type User
@@ -130,6 +136,11 @@ type ActivityAttempt
     @col(name: "user_uid", dataType: "varchar(128)")
   activityId: String!
     @col(name: "activity_id", dataType: "varchar(128)")
+  activitySession: ActivitySession
+    @ref(fields: "activitySessionId", references: "id")
+  activitySessionId: UUID
+    @col(name: "activity_session_id")
+    @unique
   phaseNumber: Int! @col(name: "phase_number")
   score: Int!
   correctAnswers: Int! @col(name: "correct_answers")
@@ -150,6 +161,37 @@ type ActivityAttempt
     @default(value: NONE)
   createdAt: Timestamp!
     @col(name: "created_at")
+    @default(expr: "request.time")
+}
+
+# Sessão preparada por backend confiável. O payload público pode ser
+# devolvido ao aluno; answerKey nunca aparece em operações do SDK Web.
+type ActivitySession
+  @table(
+    name: "activity_sessions"
+    singular: "activitySession"
+    plural: "activitySessions"
+  )
+  @index(fields: ["userUid", "status", "createdAt"], order: [ASC, ASC, DESC]) {
+  user: User! @ref(fields: "userUid", references: "uid")
+  userUid: String!
+    @col(name: "user_uid", dataType: "varchar(128)")
+  activityId: String!
+    @col(name: "activity_id", dataType: "varchar(128)")
+  phaseNumber: Int! @col(name: "phase_number")
+  variantId: String @col(name: "variant_id", dataType: "varchar(128)")
+  contentVersion: String!
+    @col(name: "content_version", dataType: "varchar(32)")
+  publicPayload: Any! @col(name: "public_payload")
+  answerKey: Any! @col(name: "answer_key")
+  status: ActivitySessionStatus! @default(value: OPEN) @index
+  expiresAt: Timestamp! @col(name: "expires_at") @index
+  submittedAt: Timestamp @col(name: "submitted_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
     @default(expr: "request.time")
 }
 

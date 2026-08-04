@@ -13,6 +13,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListMyCapiCoinTransactions*](#listmycapicointransactions)
   - [*GetMyCapiCoinTransactionBySource*](#getmycapicointransactionbysource)
   - [*GetMyActivityAttempt*](#getmyactivityattempt)
+  - [*GetAuthoritativeActivitySession*](#getauthoritativeactivitysession)
+  - [*GetAuthoritativeActivityResult*](#getauthoritativeactivityresult)
   - [*ListMyActivityAttempts*](#listmyactivityattempts)
   - [*GetEconomyConfig*](#geteconomyconfig)
   - [*ListVisibleCompetitionPeriods*](#listvisiblecompetitionperiods)
@@ -26,6 +28,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertEconomyConfig*](#upserteconomyconfig)
   - [*CreateCompetitionPeriod*](#createcompetitionperiod)
   - [*UpdateCompetitionPeriodStatus*](#updatecompetitionperiodstatus)
+  - [*CreateAuthoritativeActivitySession*](#createauthoritativeactivitysession)
+  - [*MarkAuthoritativeActivitySessionSubmitted*](#markauthoritativeactivitysessionsubmitted)
   - [*InitializeMyTrail*](#initializemytrail)
   - [*CompleteMyIntroduction*](#completemyintroduction)
   - [*CompleteMyCurrentPhaseContent*](#completemycurrentphasecontent)
@@ -643,6 +647,257 @@ const ref = getMyActivityAttemptRef({ attemptId: ..., });
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = getMyActivityAttemptRef(dataConnect, getMyActivityAttemptVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+## GetAuthoritativeActivitySession
+You can execute the `GetAuthoritativeActivitySession` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getAuthoritativeActivitySession(vars: GetAuthoritativeActivitySessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+
+interface GetAuthoritativeActivitySessionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetAuthoritativeActivitySessionVariables): QueryRef<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+}
+export const getAuthoritativeActivitySessionRef: GetAuthoritativeActivitySessionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getAuthoritativeActivitySession(dc: DataConnect, vars: GetAuthoritativeActivitySessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+
+interface GetAuthoritativeActivitySessionRef {
+  ...
+  (dc: DataConnect, vars: GetAuthoritativeActivitySessionVariables): QueryRef<GetAuthoritativeActivitySessionData, GetAuthoritativeActivitySessionVariables>;
+}
+export const getAuthoritativeActivitySessionRef: GetAuthoritativeActivitySessionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getAuthoritativeActivitySessionRef:
+```typescript
+const name = getAuthoritativeActivitySessionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetAuthoritativeActivitySession` query requires an argument of type `GetAuthoritativeActivitySessionVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetAuthoritativeActivitySessionVariables {
+  sessionId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetAuthoritativeActivitySession` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetAuthoritativeActivitySessionData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetAuthoritativeActivitySessionData {
+  activitySession?: {
+    id: UUIDString;
+    userUid: string;
+    activityId: string;
+    phaseNumber: number;
+    variantId?: string | null;
+    contentVersion: string;
+    publicPayload: unknown;
+    answerKey: unknown;
+    status: ActivitySessionStatus;
+    expiresAt: TimestampString;
+    submittedAt?: TimestampString | null;
+    createdAt: TimestampString;
+  } & ActivitySession_Key;
+}
+```
+### Using `GetAuthoritativeActivitySession`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getAuthoritativeActivitySession, GetAuthoritativeActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `GetAuthoritativeActivitySession` query requires an argument of type `GetAuthoritativeActivitySessionVariables`:
+const getAuthoritativeActivitySessionVars: GetAuthoritativeActivitySessionVariables = {
+  sessionId: ..., 
+};
+
+// Call the `getAuthoritativeActivitySession()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getAuthoritativeActivitySession(getAuthoritativeActivitySessionVars);
+// Variables can be defined inline as well.
+const { data } = await getAuthoritativeActivitySession({ sessionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getAuthoritativeActivitySession(dataConnect, getAuthoritativeActivitySessionVars);
+
+console.log(data.activitySession);
+
+// Or, you can use the `Promise` API.
+getAuthoritativeActivitySession(getAuthoritativeActivitySessionVars).then((response) => {
+  const data = response.data;
+  console.log(data.activitySession);
+});
+```
+
+### Using `GetAuthoritativeActivitySession`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getAuthoritativeActivitySessionRef, GetAuthoritativeActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `GetAuthoritativeActivitySession` query requires an argument of type `GetAuthoritativeActivitySessionVariables`:
+const getAuthoritativeActivitySessionVars: GetAuthoritativeActivitySessionVariables = {
+  sessionId: ..., 
+};
+
+// Call the `getAuthoritativeActivitySessionRef()` function to get a reference to the query.
+const ref = getAuthoritativeActivitySessionRef(getAuthoritativeActivitySessionVars);
+// Variables can be defined inline as well.
+const ref = getAuthoritativeActivitySessionRef({ sessionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getAuthoritativeActivitySessionRef(dataConnect, getAuthoritativeActivitySessionVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activitySession);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activitySession);
+});
+```
+
+## GetAuthoritativeActivityResult
+You can execute the `GetAuthoritativeActivityResult` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getAuthoritativeActivityResult(vars: GetAuthoritativeActivityResultVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+
+interface GetAuthoritativeActivityResultRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetAuthoritativeActivityResultVariables): QueryRef<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+}
+export const getAuthoritativeActivityResultRef: GetAuthoritativeActivityResultRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getAuthoritativeActivityResult(dc: DataConnect, vars: GetAuthoritativeActivityResultVariables, options?: ExecuteQueryOptions): QueryPromise<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+
+interface GetAuthoritativeActivityResultRef {
+  ...
+  (dc: DataConnect, vars: GetAuthoritativeActivityResultVariables): QueryRef<GetAuthoritativeActivityResultData, GetAuthoritativeActivityResultVariables>;
+}
+export const getAuthoritativeActivityResultRef: GetAuthoritativeActivityResultRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getAuthoritativeActivityResultRef:
+```typescript
+const name = getAuthoritativeActivityResultRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetAuthoritativeActivityResult` query requires an argument of type `GetAuthoritativeActivityResultVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetAuthoritativeActivityResultVariables {
+  sessionId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetAuthoritativeActivityResult` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetAuthoritativeActivityResultData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetAuthoritativeActivityResultData {
+  activityAttempts: ({
+    id: UUIDString;
+    activityId: string;
+    phaseNumber: number;
+    score: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    passed: boolean;
+    firstCompletion: boolean;
+    rewardBase: number;
+    streakMultiplierPercent: number;
+    streakBonus: number;
+    rewardAmount: number;
+    rewardLimitReached: boolean;
+    rewardSuppressionReason: RewardSuppressionReason;
+    createdAt: TimestampString;
+    user: {
+      capiCoins: number;
+      currentStreak: number;
+    };
+  } & ActivityAttempt_Key)[];
+}
+```
+### Using `GetAuthoritativeActivityResult`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getAuthoritativeActivityResult, GetAuthoritativeActivityResultVariables } from '@money-rank/dataconnect';
+
+// The `GetAuthoritativeActivityResult` query requires an argument of type `GetAuthoritativeActivityResultVariables`:
+const getAuthoritativeActivityResultVars: GetAuthoritativeActivityResultVariables = {
+  sessionId: ..., 
+};
+
+// Call the `getAuthoritativeActivityResult()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getAuthoritativeActivityResult(getAuthoritativeActivityResultVars);
+// Variables can be defined inline as well.
+const { data } = await getAuthoritativeActivityResult({ sessionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getAuthoritativeActivityResult(dataConnect, getAuthoritativeActivityResultVars);
+
+console.log(data.activityAttempts);
+
+// Or, you can use the `Promise` API.
+getAuthoritativeActivityResult(getAuthoritativeActivityResultVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityAttempts);
+});
+```
+
+### Using `GetAuthoritativeActivityResult`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getAuthoritativeActivityResultRef, GetAuthoritativeActivityResultVariables } from '@money-rank/dataconnect';
+
+// The `GetAuthoritativeActivityResult` query requires an argument of type `GetAuthoritativeActivityResultVariables`:
+const getAuthoritativeActivityResultVars: GetAuthoritativeActivityResultVariables = {
+  sessionId: ..., 
+};
+
+// Call the `getAuthoritativeActivityResultRef()` function to get a reference to the query.
+const ref = getAuthoritativeActivityResultRef(getAuthoritativeActivityResultVars);
+// Variables can be defined inline as well.
+const ref = getAuthoritativeActivityResultRef({ sessionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getAuthoritativeActivityResultRef(dataConnect, getAuthoritativeActivityResultVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -2078,6 +2333,251 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## CreateAuthoritativeActivitySession
+You can execute the `CreateAuthoritativeActivitySession` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createAuthoritativeActivitySession(vars: CreateAuthoritativeActivitySessionVariables): MutationPromise<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+
+interface CreateAuthoritativeActivitySessionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+}
+export const createAuthoritativeActivitySessionRef: CreateAuthoritativeActivitySessionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createAuthoritativeActivitySession(dc: DataConnect, vars: CreateAuthoritativeActivitySessionVariables): MutationPromise<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+
+interface CreateAuthoritativeActivitySessionRef {
+  ...
+  (dc: DataConnect, vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
+}
+export const createAuthoritativeActivitySessionRef: CreateAuthoritativeActivitySessionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createAuthoritativeActivitySessionRef:
+```typescript
+const name = createAuthoritativeActivitySessionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateAuthoritativeActivitySession` mutation requires an argument of type `CreateAuthoritativeActivitySessionVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateAuthoritativeActivitySessionVariables {
+  sessionId: UUIDString;
+  studentUid: string;
+  activityId: string;
+  phaseNumber: number;
+  variantId?: string | null;
+  contentVersion: string;
+  publicPayload: unknown;
+  answerKey: unknown;
+  expiresAt: TimestampString;
+}
+```
+### Return Type
+Recall that executing the `CreateAuthoritativeActivitySession` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateAuthoritativeActivitySessionData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateAuthoritativeActivitySessionData {
+  activitySession_insert: ActivitySession_Key;
+}
+```
+### Using `CreateAuthoritativeActivitySession`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createAuthoritativeActivitySession, CreateAuthoritativeActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `CreateAuthoritativeActivitySession` mutation requires an argument of type `CreateAuthoritativeActivitySessionVariables`:
+const createAuthoritativeActivitySessionVars: CreateAuthoritativeActivitySessionVariables = {
+  sessionId: ..., 
+  studentUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  variantId: ..., // optional
+  contentVersion: ..., 
+  publicPayload: ..., 
+  answerKey: ..., 
+  expiresAt: ..., 
+};
+
+// Call the `createAuthoritativeActivitySession()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createAuthoritativeActivitySession(createAuthoritativeActivitySessionVars);
+// Variables can be defined inline as well.
+const { data } = await createAuthoritativeActivitySession({ sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., variantId: ..., contentVersion: ..., publicPayload: ..., answerKey: ..., expiresAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createAuthoritativeActivitySession(dataConnect, createAuthoritativeActivitySessionVars);
+
+console.log(data.activitySession_insert);
+
+// Or, you can use the `Promise` API.
+createAuthoritativeActivitySession(createAuthoritativeActivitySessionVars).then((response) => {
+  const data = response.data;
+  console.log(data.activitySession_insert);
+});
+```
+
+### Using `CreateAuthoritativeActivitySession`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createAuthoritativeActivitySessionRef, CreateAuthoritativeActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `CreateAuthoritativeActivitySession` mutation requires an argument of type `CreateAuthoritativeActivitySessionVariables`:
+const createAuthoritativeActivitySessionVars: CreateAuthoritativeActivitySessionVariables = {
+  sessionId: ..., 
+  studentUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  variantId: ..., // optional
+  contentVersion: ..., 
+  publicPayload: ..., 
+  answerKey: ..., 
+  expiresAt: ..., 
+};
+
+// Call the `createAuthoritativeActivitySessionRef()` function to get a reference to the mutation.
+const ref = createAuthoritativeActivitySessionRef(createAuthoritativeActivitySessionVars);
+// Variables can be defined inline as well.
+const ref = createAuthoritativeActivitySessionRef({ sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., variantId: ..., contentVersion: ..., publicPayload: ..., answerKey: ..., expiresAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createAuthoritativeActivitySessionRef(dataConnect, createAuthoritativeActivitySessionVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.activitySession_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activitySession_insert);
+});
+```
+
+## MarkAuthoritativeActivitySessionSubmitted
+You can execute the `MarkAuthoritativeActivitySessionSubmitted` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+markAuthoritativeActivitySessionSubmitted(vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationPromise<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+
+interface MarkAuthoritativeActivitySessionSubmittedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationRef<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+}
+export const markAuthoritativeActivitySessionSubmittedRef: MarkAuthoritativeActivitySessionSubmittedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+markAuthoritativeActivitySessionSubmitted(dc: DataConnect, vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationPromise<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+
+interface MarkAuthoritativeActivitySessionSubmittedRef {
+  ...
+  (dc: DataConnect, vars: MarkAuthoritativeActivitySessionSubmittedVariables): MutationRef<MarkAuthoritativeActivitySessionSubmittedData, MarkAuthoritativeActivitySessionSubmittedVariables>;
+}
+export const markAuthoritativeActivitySessionSubmittedRef: MarkAuthoritativeActivitySessionSubmittedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the markAuthoritativeActivitySessionSubmittedRef:
+```typescript
+const name = markAuthoritativeActivitySessionSubmittedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `MarkAuthoritativeActivitySessionSubmitted` mutation requires an argument of type `MarkAuthoritativeActivitySessionSubmittedVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface MarkAuthoritativeActivitySessionSubmittedVariables {
+  sessionId: UUIDString;
+  studentUid: string;
+}
+```
+### Return Type
+Recall that executing the `MarkAuthoritativeActivitySessionSubmitted` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `MarkAuthoritativeActivitySessionSubmittedData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface MarkAuthoritativeActivitySessionSubmittedData {
+  affectedRows?: number | null;
+}
+```
+### Using `MarkAuthoritativeActivitySessionSubmitted`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, markAuthoritativeActivitySessionSubmitted, MarkAuthoritativeActivitySessionSubmittedVariables } from '@money-rank/dataconnect';
+
+// The `MarkAuthoritativeActivitySessionSubmitted` mutation requires an argument of type `MarkAuthoritativeActivitySessionSubmittedVariables`:
+const markAuthoritativeActivitySessionSubmittedVars: MarkAuthoritativeActivitySessionSubmittedVariables = {
+  sessionId: ..., 
+  studentUid: ..., 
+};
+
+// Call the `markAuthoritativeActivitySessionSubmitted()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await markAuthoritativeActivitySessionSubmitted(markAuthoritativeActivitySessionSubmittedVars);
+// Variables can be defined inline as well.
+const { data } = await markAuthoritativeActivitySessionSubmitted({ sessionId: ..., studentUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await markAuthoritativeActivitySessionSubmitted(dataConnect, markAuthoritativeActivitySessionSubmittedVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+markAuthoritativeActivitySessionSubmitted(markAuthoritativeActivitySessionSubmittedVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `MarkAuthoritativeActivitySessionSubmitted`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, markAuthoritativeActivitySessionSubmittedRef, MarkAuthoritativeActivitySessionSubmittedVariables } from '@money-rank/dataconnect';
+
+// The `MarkAuthoritativeActivitySessionSubmitted` mutation requires an argument of type `MarkAuthoritativeActivitySessionSubmittedVariables`:
+const markAuthoritativeActivitySessionSubmittedVars: MarkAuthoritativeActivitySessionSubmittedVariables = {
+  sessionId: ..., 
+  studentUid: ..., 
+};
+
+// Call the `markAuthoritativeActivitySessionSubmittedRef()` function to get a reference to the mutation.
+const ref = markAuthoritativeActivitySessionSubmittedRef(markAuthoritativeActivitySessionSubmittedVars);
+// Variables can be defined inline as well.
+const ref = markAuthoritativeActivitySessionSubmittedRef({ sessionId: ..., studentUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = markAuthoritativeActivitySessionSubmittedRef(dataConnect, markAuthoritativeActivitySessionSubmittedVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
 ## InitializeMyTrail
 You can execute the `InitializeMyTrail` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
 ```typescript
@@ -2404,6 +2904,8 @@ The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `Regis
 ```typescript
 export interface RegisterMyCurrentPhaseAttemptVariables {
   attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
   activityId: string;
   phaseNumber: number;
   score: number;
@@ -2429,6 +2931,8 @@ import { connectorConfig, registerMyCurrentPhaseAttempt, RegisterMyCurrentPhaseA
 // The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
 const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
   attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
   activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
@@ -2440,7 +2944,7 @@ const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables 
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await registerMyCurrentPhaseAttempt(registerMyCurrentPhaseAttemptVars);
 // Variables can be defined inline as well.
-const { data } = await registerMyCurrentPhaseAttempt({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const { data } = await registerMyCurrentPhaseAttempt({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2464,6 +2968,8 @@ import { connectorConfig, registerMyCurrentPhaseAttemptRef, RegisterMyCurrentPha
 // The `RegisterMyCurrentPhaseAttempt` mutation requires an argument of type `RegisterMyCurrentPhaseAttemptVariables`:
 const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables = {
   attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
   activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
@@ -2474,7 +2980,7 @@ const registerMyCurrentPhaseAttemptVars: RegisterMyCurrentPhaseAttemptVariables 
 // Call the `registerMyCurrentPhaseAttemptRef()` function to get a reference to the mutation.
 const ref = registerMyCurrentPhaseAttemptRef(registerMyCurrentPhaseAttemptVars);
 // Variables can be defined inline as well.
-const ref = registerMyCurrentPhaseAttemptRef({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const ref = registerMyCurrentPhaseAttemptRef({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2528,6 +3034,8 @@ The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCu
 ```typescript
 export interface CompleteMyCurrentPhaseVariables {
   attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
   activityId: string;
   phaseNumber: number;
   score: number;
@@ -2553,6 +3061,8 @@ import { connectorConfig, completeMyCurrentPhase, CompleteMyCurrentPhaseVariable
 // The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
 const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
   attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
   activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
@@ -2564,7 +3074,7 @@ const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await completeMyCurrentPhase(completeMyCurrentPhaseVars);
 // Variables can be defined inline as well.
-const { data } = await completeMyCurrentPhase({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const { data } = await completeMyCurrentPhase({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -2588,6 +3098,8 @@ import { connectorConfig, completeMyCurrentPhaseRef, CompleteMyCurrentPhaseVaria
 // The `CompleteMyCurrentPhase` mutation requires an argument of type `CompleteMyCurrentPhaseVariables`:
 const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
   attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
   activityId: ..., 
   phaseNumber: ..., 
   score: ..., 
@@ -2598,7 +3110,7 @@ const completeMyCurrentPhaseVars: CompleteMyCurrentPhaseVariables = {
 // Call the `completeMyCurrentPhaseRef()` function to get a reference to the mutation.
 const ref = completeMyCurrentPhaseRef(completeMyCurrentPhaseVars);
 // Variables can be defined inline as well.
-const ref = completeMyCurrentPhaseRef({ attemptId: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+const ref = completeMyCurrentPhaseRef({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

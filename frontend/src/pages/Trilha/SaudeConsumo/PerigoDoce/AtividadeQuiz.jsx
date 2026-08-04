@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowBack,
   ArrowForward,
@@ -11,20 +11,17 @@ import TrailLockedState from '../../../../components/trail/TrailLockedState';
 import TrailPageShell from '../../../../components/trail/TrailPageShell';
 import { useAuth } from '../../../../contexts/AuthContext';
 import {
-  completePhaseActivity,
-  registerPhaseAttempt,
-} from '../../../../services/studentDataService';
+  startAuthoritativeActivitySession,
+  submitAuthoritativeActivitySession,
+} from '../../../../services/activitySessionService';
 import {
   getPhaseProgress,
   isActivityUnlocked,
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
 import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
-import { generatePerigoDoceQuestions } from '../../../../services/perigoDoceAiService';
 
 const PHASE_NUMBER = 1;
-const MINIMUM_CORRECT_ANSWERS = 3;
-const ACTIVITY_ID = 'perigo-doce-quiz';
 
 export default function AtividadeQuiz() {
   const navigate = useNavigate();
@@ -37,11 +34,10 @@ export default function AtividadeQuiz() {
   const [questoesSorteadas, setQuestoesSorteadas] = useState([]);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [questionSource, setQuestionSource] = useState(null);
-  const [questionNotice, setQuestionNotice] = useState('');
   const [questionLoadError, setQuestionLoadError] = useState('');
-  const questionGenerationRef = useRef(null);
+  const [activitySessionId, setActivitySessionId] = useState(null);
   const [perguntaAtual, setPerguntaAtual] = useState(0);
-  const [pontuacao, setPontuacao] = useState(0);
+  const [answers, setAnswers] = useState([]);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
   const [respondido, setRespondido] = useState(false);
   const [jogoFinalizado, setJogoFinalizado] = useState(false);
@@ -72,22 +68,25 @@ export default function AtividadeQuiz() {
       setQuestionLoadError('');
 
       try {
-        if (!questionGenerationRef.current) {
-          questionGenerationRef.current = generatePerigoDoceQuestions({
-            currentPhase,
-            capiCoins: aluno?.capicoins,
-            streak: aluno?.streak_atual,
-            progressEntries: trailProgress,
-          });
-        }
-
-        const result = await questionGenerationRef.current;
+        const result = await startAuthoritativeActivitySession(
+          PHASE_NUMBER,
+        );
 
         if (!isActive) return;
 
-        setQuestoesSorteadas(result.questions);
+        setActivitySessionId(result.sessionId);
+        setQuestoesSorteadas(
+          result.questions.map((question) => ({
+            id: question.id,
+            nivel: question.difficulty,
+            enunciado: question.prompt,
+            alternativas: question.options.map(
+              (option) => `${option.id}) ${option.text}`,
+            ),
+            optionIds: question.options.map((option) => option.id),
+          })),
+        );
         setQuestionSource(result.source);
-        setQuestionNotice(result.notice);
       } catch (error) {
         if (!isActive) return;
 
@@ -109,12 +108,8 @@ export default function AtividadeQuiz() {
     };
   }, [
     activityUnlocked,
-    aluno?.capicoins,
-    aluno?.streak_atual,
-    currentPhase,
     jogoFinalizado,
     trailLoading,
-    trailProgress,
   ]);
 
   const handleResponder = (selectedIndex) => {
@@ -122,13 +117,14 @@ export default function AtividadeQuiz() {
 
     setOpcaoSelecionada(selectedIndex);
     setRespondido(true);
-
-    if (
-      selectedIndex ===
-      questoesSorteadas[perguntaAtual].respostaCorreta
-    ) {
-      setPontuacao((currentScore) => currentScore + 1);
-    }
+    const question = questoesSorteadas[perguntaAtual];
+    setAnswers((currentAnswers) => [
+      ...currentAnswers,
+      {
+        questionId: question.id,
+        optionId: question.optionIds[selectedIndex],
+      },
+    ]);
   };
 
   const finishGame = async () => {
@@ -136,47 +132,25 @@ export default function AtividadeQuiz() {
     setIsSubmitting(true);
     setErroRecompensa('');
 
-    const totalQuestions = questoesSorteadas.length;
-    const score = Math.round((pontuacao / totalQuestions) * 100);
-    const passed = pontuacao >= MINIMUM_CORRECT_ANSWERS;
+    if (!activitySessionId) {
+      setErroRecompensa('A sessão segura não foi encontrada.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      if (passed) {
-        const completion = await completePhaseActivity(
-          PHASE_NUMBER,
-          {
-            score,
-            correctAnswers: pontuacao,
-            wrongAnswers: totalQuestions - pontuacao,
-          },
-          ACTIVITY_ID,
-        );
-        const synchronizedState = await refreshTrailState();
+      const completion = await submitAuthoritativeActivitySession(
+        activitySessionId,
+        answers,
+      );
+      const synchronizedState = await refreshTrailState();
 
-        setResultadoBanco({
-          ...completion,
-          capicoins: synchronizedState.profile?.capicoins ?? 0,
-          streak: synchronizedState.profile?.streak_atual ?? 0,
-          wasReview: !completion.firstCompletion,
-        });
-      } else {
-        await registerPhaseAttempt(
-          PHASE_NUMBER,
-          {
-            score,
-            correctAnswers: pontuacao,
-            wrongAnswers: totalQuestions - pontuacao,
-          },
-          ACTIVITY_ID,
-        );
-        await refreshTrailState();
-        setResultadoBanco({
-          reward: 0,
-          capicoins: aluno?.capicoins ?? 0,
-          streak: aluno?.streak_atual ?? 0,
-          wasReview: false,
-        });
-      }
+      setResultadoBanco({
+        ...completion,
+        capicoins: synchronizedState.profile?.capicoins ?? 0,
+        streak: synchronizedState.profile?.streak_atual ?? 0,
+        wasReview: completion.passed && !completion.firstCompletion,
+      });
     } catch (error) {
       console.error('Não foi possível salvar o resultado do quiz.', error);
       setErroRecompensa(
@@ -250,7 +224,7 @@ export default function AtividadeQuiz() {
   }
 
   const question = questoesSorteadas[perguntaAtual];
-  const passed = pontuacao >= MINIMUM_CORRECT_ANSWERS;
+  const passed = Boolean(resultadoBanco?.passed);
 
   return (
     <TrailPageShell>
@@ -278,24 +252,15 @@ export default function AtividadeQuiz() {
                       ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
                       : 'border-slate-700 bg-slate-800 text-slate-300'
                   }`}
-                  title={questionNotice}
                 >
                   {questionSource === 'ai'
                     ? 'Gerado pela IA com fontes validadas'
-                    : 'Modo local seguro'}
+                    : 'Fallback seguro do servidor'}
                 </p>
               </div>
               <span className="rounded-full border border-slate-700 bg-slate-800 px-4 py-1.5 text-xs font-bold">
-                Acertos:{' '}
-                <span
-                  className={
-                    pontuacao > 0
-                      ? 'text-green-400'
-                      : 'text-slate-400'
-                  }
-                >
-                  {pontuacao}
-                </span>
+                Respondidas:{' '}
+                <span className="text-amber-300">{answers.length}</span>
               </span>
             </div>
 
@@ -314,12 +279,9 @@ export default function AtividadeQuiz() {
                   'border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/50';
 
                 if (respondido) {
-                  if (index === question.respostaCorreta) {
+                  if (index === opcaoSelecionada) {
                     buttonColor =
-                      'border-green-500 bg-green-900/40 text-green-300';
-                  } else if (index === opcaoSelecionada) {
-                    buttonColor =
-                      'border-red-500 bg-red-900/40 text-red-300';
+                      'border-amber-500 bg-amber-900/30 text-amber-200';
                   } else {
                     buttonColor =
                       'border-slate-800 bg-slate-900/50 text-slate-600 opacity-50';
@@ -343,32 +305,16 @@ export default function AtividadeQuiz() {
             {respondido && (
               <div className="mt-7">
                 <div
-                  className={`mb-5 rounded-xl border p-4 text-sm ${
-                    opcaoSelecionada === question.respostaCorreta
-                      ? 'border-green-900/50 bg-green-900/20 text-green-200'
-                      : 'border-red-900/50 bg-red-900/20 text-red-200'
-                  }`}
+                  className="mb-5 rounded-xl border border-cyan-900/50 bg-cyan-900/20 p-4 text-sm text-cyan-100"
                 >
                   <p className="mb-1 flex items-center gap-2 font-bold">
-                    {opcaoSelecionada === question.respostaCorreta ? (
-                      <>
-                        <CheckCircle
-                          sx={{ fontSize: 18 }}
-                          aria-hidden="true"
-                        />
-                        Mandou bem!
-                      </>
-                    ) : (
-                      <>
-                        <Cancel
-                          sx={{ fontSize: 18 }}
-                          aria-hidden="true"
-                        />
-                        Errou, mas faz parte!
-                      </>
-                    )}
+                    <CheckCircle sx={{ fontSize: 18 }} aria-hidden="true" />
+                    Resposta registrada
                   </p>
-                  <p className="opacity-90">{question.justificativa}</p>
+                  <p className="opacity-90">
+                    O gabarito permanece protegido. O Capi Bank revelará sua
+                    pontuação depois das cinco respostas.
+                  </p>
                 </div>
 
                 <button
@@ -386,11 +332,16 @@ export default function AtividadeQuiz() {
         ) : (
           <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6 text-center shadow-2xl sm:p-8">
             <h1 className="text-2xl font-black sm:text-3xl">
-              {passed ? 'Missão concluída!' : 'Continue treinando!'}
+              {isSubmitting
+                ? 'Validando resultado...'
+                : passed
+                  ? 'Missão concluída!'
+                  : 'Continue treinando!'}
             </h1>
             <p className="mt-2 text-sm text-slate-400">
-              Você acertou {pontuacao} de {questoesSorteadas.length}{' '}
-              questões.
+              {resultadoBanco
+                ? `Você acertou ${resultadoBanco.correctAnswers} de ${questoesSorteadas.length} questões.`
+                : 'O Capi Bank está conferindo suas cinco respostas.'}
             </p>
 
             <div className="my-7 rounded-2xl border border-slate-800 bg-slate-950 p-5">
@@ -398,6 +349,21 @@ export default function AtividadeQuiz() {
                 <p className="font-bold text-amber-400">
                   Guardando no Capi Bank...
                 </p>
+              ) : erroRecompensa ? (
+                <>
+                  <Cancel
+                    sx={{ fontSize: 50 }}
+                    className="mx-auto text-red-400"
+                    aria-hidden="true"
+                  />
+                  <h2 className="mt-2 text-xl font-bold text-red-400">
+                    Resultado ainda não confirmado
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Suas respostas continuam nesta tela. Tente enviar novamente
+                    antes de sair.
+                  </p>
+                </>
               ) : passed ? (
                 <>
                   <MonetizationOn
@@ -448,17 +414,21 @@ export default function AtividadeQuiz() {
             </div>
 
             {erroRecompensa && (
-              <p
-                role="alert"
-                className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300"
-              >
-                {erroRecompensa}
-              </p>
+              <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+                <p role="alert">{erroRecompensa}</p>
+                <button
+                  type="button"
+                  onClick={finishGame}
+                  className="mt-3 min-h-11 rounded-lg bg-red-400 px-4 py-2 font-black text-slate-950 transition-colors hover:bg-red-300"
+                >
+                  Tentar confirmar novamente
+                </button>
+              </div>
             )}
 
             <button
               type="button"
-              disabled={isSubmitting}
+              disabled={isSubmitting || Boolean(erroRecompensa)}
               onClick={() =>
                 navigate(
                   passed

@@ -13,12 +13,10 @@ import { useNavigate } from 'react-router-dom';
 import TrailLockedState from '../../../../components/trail/TrailLockedState';
 import TrailPageShell from '../../../../components/trail/TrailPageShell';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { ilusaoDinheiroMission } from '../../../../data/ilusaoDinheiroPaths';
 import {
   buildIlusaoDinheiroSession,
   calculateIlusaoDinheiroResult,
   ILUSAO_DINHEIRO_DECISION_COUNT,
-  toIlusaoDinheiroActivityResult,
 } from '../../../../lib/ilusaoDinheiroGame';
 import { getRewardSuppressionMessage } from '../../../../lib/competitiveEconomy';
 import {
@@ -27,9 +25,9 @@ import {
   normalizeCurrentPhase,
 } from '../../../../lib/trailProgress';
 import {
-  completePhaseActivity,
-  registerPhaseAttempt,
-} from '../../../../services/studentDataService';
+  startAuthoritativeActivitySession,
+  submitAuthoritativeActivitySession,
+} from '../../../../services/activitySessionService';
 
 const PHASE_NUMBER = 3;
 
@@ -61,6 +59,8 @@ export default function AtividadeCaminhos() {
   const [session, setSession] = useState(() =>
     buildIlusaoDinheiroSession(createAttemptSeed()),
   );
+  const [activitySessionId, setActivitySessionId] = useState(null);
+  const [isStarting, setIsStarting] = useState(false);
   const [stage, setStage] = useState('introduction');
   const [decisionIndex, setDecisionIndex] = useState(0);
   const [selectedChoiceId, setSelectedChoiceId] = useState(null);
@@ -89,9 +89,22 @@ export default function AtividadeCaminhos() {
       ? calculateIlusaoDinheiroResult(answers)
       : null;
 
-  const startMission = () => {
-    setStage('decision');
+  const startMission = async () => {
+    setIsStarting(true);
     setSaveError('');
+    try {
+      const secureSession = await startAuthoritativeActivitySession(
+        PHASE_NUMBER,
+      );
+      setActivitySessionId(secureSession.sessionId);
+      setStage('decision');
+    } catch (error) {
+      setSaveError(
+        error?.message || 'Não foi possível iniciar os caminhos seguros.',
+      );
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   const advanceDecision = () => {
@@ -118,47 +131,27 @@ export default function AtividadeCaminhos() {
   };
 
   const saveMission = async () => {
-    if (!gameResult) return;
+    if (!gameResult || !activitySessionId) return;
 
     setIsSaving(true);
     setSaveError('');
 
     try {
-      const activityResult = toIlusaoDinheiroActivityResult(gameResult);
+      const completion = await submitAuthoritativeActivitySession(
+        activitySessionId,
+        answers.map(({ decisionId, choiceId }) => ({
+          decisionId,
+          choiceId,
+        })),
+      );
+      const synchronizedState = await refreshTrailState();
 
-      if (gameResult.passed) {
-        const completion = await completePhaseActivity(
-          PHASE_NUMBER,
-          activityResult,
-          ilusaoDinheiroMission.id,
-        );
-        const synchronizedState = await refreshTrailState();
-
-        setSavedResult({
-          ...completion,
-          capiCoins: synchronizedState.profile?.capicoins ?? 0,
-          streak: synchronizedState.profile?.streak_atual ?? 0,
-          wasReview: !completion.firstCompletion,
-        });
-      } else {
-        await registerPhaseAttempt(
-          PHASE_NUMBER,
-          activityResult,
-          ilusaoDinheiroMission.id,
-        );
-        const synchronizedState = await refreshTrailState();
-
-        setSavedResult({
-          reward: 0,
-          capiCoins:
-            synchronizedState.profile?.capicoins ?? aluno?.capicoins ?? 0,
-          streak:
-            synchronizedState.profile?.streak_atual ??
-            aluno?.streak_atual ??
-            0,
-          wasReview: false,
-        });
-      }
+      setSavedResult({
+        ...completion,
+        capiCoins: synchronizedState.profile?.capicoins ?? 0,
+        streak: synchronizedState.profile?.streak_atual ?? 0,
+        wasReview: completion.passed && !completion.firstCompletion,
+      });
 
       setStage('saved');
     } catch (error) {
@@ -174,6 +167,7 @@ export default function AtividadeCaminhos() {
 
   const restartMission = () => {
     setSession(buildIlusaoDinheiroSession(createAttemptSeed()));
+    setActivitySessionId(null);
     setStage('introduction');
     setDecisionIndex(0);
     setSelectedChoiceId(null);
@@ -276,11 +270,19 @@ export default function AtividadeCaminhos() {
               <button
                 type="button"
                 onClick={startMission}
+                disabled={isStarting}
                 className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-sm font-black text-slate-950 hover:bg-cyan-300"
               >
-                Começar os caminhos
+                {isStarting
+                  ? 'Preparando caminhos seguros...'
+                  : 'Começar os caminhos'}
                 <ArrowForward sx={{ fontSize: 18 }} aria-hidden="true" />
               </button>
+              {saveError && (
+                <p className="mt-3 text-sm font-bold text-red-300" role="alert">
+                  {saveError}
+                </p>
+              )}
             </section>
           </>
         )}
