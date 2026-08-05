@@ -6,16 +6,16 @@
 
 ## 1. Retomada imediata
 
-| Campo | Estado em 2026-08-04 |
+| Campo | Estado em 2026-08-05 |
 | --- | --- |
 | Repositório canônico | `C:\Documentos\Programação\Money Rank` |
 | Remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base | `feat/mvp-gamificacao-ia` |
-| Branch em desenvolvimento | `feat/task-5-4-teacher-studio` |
-| Último commit funcional | `7440824 feat: conclui area do professor` |
-| Alteração em teste | Tasks 5.4 e 5.5 implementadas e commitadas; roteiro manual ampliado permanece disponível |
-| Próxima entrega | Preparar ambiente online, App Check, Hosting, deploy e teste de carga |
+| Branch em desenvolvimento | `chore/firebase-deploy-prep` |
+| Último commit funcional | `9718165 chore: prepara deploy no firebase` |
+| Alteração em teste | Arquitetura sem Blaze preparada; migracao Firestore/API Render ainda nao iniciada |
+| Próxima entrega | Migrar persistencia para Firestore Spark e backend para Render Free |
 
 Procedimento de retomada:
 
@@ -246,36 +246,24 @@ em 2026-08-04. Ele permanece documentado para regressão antes do deploy.
 
 ## 8. Deploy recomendado
 
-Não reutilizar a versão antiga da Render: ela é Express/Supabase. O alvo atual
-é Firebase Hosting + Functions + SQL Connect.
+O usuario decidiu nao ativar Blaze. O alvo passa a ser Render Static Site para
+o frontend, Firestore Standard no Spark e uma API Express no Render Free. Nao
+publicar o `backend/` antigo: ele usa Supabase e nao representa as regras
+autoritativas atuais.
 
 Ordem:
 
-1. criar projeto/ambiente de homologação separado de produção;
-2. configurar cobrança Blaze, orçamento e alertas;
-3. confirmar apps, projeto ativo e CLI;
-4. provisionar SQL Connect/Cloud SQL;
-5. configurar `GEMINI_API_KEY` no Secret Manager;
-6. definir `GEMINI_MODEL` com modelo suportado e, depois, Remote Config;
-7. registrar domínio no Google Auth;
-8. configurar App Check com reCAPTCHA Enterprise e domínio final;
-9. buildar o frontend com a chave pública do reCAPTCHA;
-10. implantar nesta ordem:
+1. confirmar Firestore Standard `(default)` em `southamerica-east1`;
+2. migrar schema/repositorios SQL para documentos e transacoes Firestore;
+3. portar `functions/src` para uma API Express com Firebase Admin;
+4. substituir callables e SDK SQL no frontend por HTTP autenticado;
+5. desativar upload e manter materiais por URL HTTPS;
+6. validar localmente e executar carga de 100 usuarios;
+7. criar Web Service Free e Static Site pelo `render.yaml`;
+8. autorizar o dominio Render no Firebase Auth/App Check;
+9. executar smoke de aluno/professor e registrar rollback.
 
-```powershell
-npx -y firebase-tools@latest deploy --only dataconnect
-npx -y firebase-tools@latest deploy --only functions
-npx -y firebase-tools@latest deploy --only hosting
-```
-
-11. executar smoke test de aluno e professor;
-12. testar chamadas sem Auth/App Check e confirmar rejeição;
-13. validar quatro atividades, moedas, streak, ranking, painel e chats;
-14. monitorar logs, latência, erros e custo;
-15. registrar hashes implantados e procedimento de rollback.
-
-O `firebase.json` ainda precisa receber a configuração de Hosting antes do
-deploy. Não executar `firebase init` aceitando sobrescritas sem revisar o diff.
+Detalhes e limites: `docs/deploy/arquitetura-firebase.md`.
 
 ## 9. Capacidade para 100 alunos/7 dias
 

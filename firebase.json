@@ -6,56 +6,6 @@
     "source": "functions",
     "runtime": "nodejs22"
   },
-  "hosting": {
-    "public": "frontend/dist",
-    "predeploy": [
-      "npm --prefix frontend run build"
-    ],
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "SAMEORIGIN"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          },
-          {
-            "key": "Permissions-Policy",
-            "value": "camera=(), geolocation=(), microphone=()"
-          }
-        ]
-      },
-      {
-        "source": "/index.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache"
-          }
-        ]
-      }
-    ],
-    "trailingSlash": false
-  },
   "storage": {
     "rules": "storage.rules"
   },
@@ -66,9 +16,6 @@
     },
     "functions": {
       "port": 5001
-    },
-    "hosting": {
-      "port": 5000
     },
     "storage": {
       "port": 9199

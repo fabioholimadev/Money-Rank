@@ -1,188 +1,232 @@
-# Arquitetura de deploy no Firebase
+# Arquitetura gratuita: Render + Firebase Spark
 
-## Decisao
+## Decisao de custo
 
-O Firebase suporta o frontend e o backend atuais do Money Rank. O alvo do MVP
-fica organizado assim:
+O Money Rank nao pode publicar a arquitetura atual inteira no Firebase sem
+Blaze. Cloud Functions e Cloud Storage exigem Blaze. O SQL Connect funciona no
+Spark apenas como teste de 90 dias e deixa de responder depois desse prazo.
 
-| Camada | Servico | Origem no repositorio |
+Para buscar custo recorrente zero, o alvo passa a ser:
+
+| Camada | Alvo gratuito | Observacao |
 | --- | --- | --- |
-| SPA React/Vite | Firebase Hosting (Classic) | `frontend/dist` |
-| Backend confiavel | Cloud Functions for Firebase v2, Node.js 22 | `functions/` |
-| Banco relacional | Firebase SQL Connect + Cloud SQL PostgreSQL | `dataconnect/` |
-| Login Google | Firebase Authentication | `frontend/src/lib/firebaseConfig.js` |
-| Materiais editoriais | Cloud Storage for Firebase | `storage.rules` e Functions |
-| Protecao contra abuso | Firebase App Check + reCAPTCHA Enterprise | frontend e callables |
-| Segredos | Google Secret Manager por parametros das Functions | `GEMINI_API_KEY` |
+| Frontend React/Vite | Render Static Site | HTTPS/CDN e sem processo servidor |
+| Login Google | Firebase Authentication Spark | Limite muito acima dos 100 alunos |
+| Banco definitivo | Firestore Standard Spark | Requer migracao do modelo SQL |
+| Backend autoritativo | Render Web Service Free | Express + Firebase Admin |
+| Arquivos editoriais | Links HTTPS externos | Upload fica desligado sem Storage |
+| IA | Opcional com fallback local | Nunca bloquear atividade por falta de cota |
 
-Firebase **App Hosting** nao e necessario: o frontend e uma SPA estatica, sem
-SSR. O Hosting Classic e mais simples, possui CDN/HTTPS, canais temporarios de
-preview e aceita o rewrite de todas as rotas React para `index.html`.
+O arquivo `render.yaml` prepara somente o frontend. Ele nao deve ser promovido
+como sistema funcional ate a API e o banco Firestore substituirem as callables
+e o SQL Connect.
 
-## Estado auditado em 5 de agosto de 2026
+## Por que o SQL Connect foi descartado para producao gratuita
+
+No plano Spark, o SQL Connect oferece no maximo 8.300 operacoes diarias e uma
+instancia Cloud SQL de teste por 90 dias. Ao fim do periodo a instancia e
+arquivada e, sem upgrade, pode ser apagada depois de mais 90 dias.
+
+Para 100 estudantes, 8.300 operacoes equivalem a apenas 83 operacoes por aluno
+por dia antes de reservar trafego para professor, ranking e administracao. A
+cota talvez atendesse um piloto leve, mas a expiracao torna essa opcao
+inadequada como banco definitivo.
+
+## Por que Cloud Functions e Storage nao entram
+
+- Cloud Functions nao podem ser implantadas no Spark.
+- Cloud Storage for Firebase exige Blaze inclusive para o bucket padrao.
+- O backend atual depende das Functions para pontuacao, CapiCoins, professor,
+  publicacao editorial e chats.
+- O upload editorial depende de Storage e nao pode ser salvo no disco do
+  Render Free, porque esse disco e efemero.
+
+Consequencia: nao basta trocar apenas o host do frontend. E necessario mover as
+callables para HTTP e trocar a persistencia relacional por Firestore.
+
+## Estado remoto auditado em 5 de agosto de 2026
 
 - projeto Firebase ativo: `money-rank`;
-- aplicativo Web ativo: `Money Rank Web`;
-- site Hosting padrao reservado: `https://money-rank.web.app`;
-- nenhum servico SQL Connect esta implantado no projeto;
-- o repositorio ja possui schema, conectores, Functions, Auth, App Check e
-  regras de Storage;
-- o `firebase.json` agora publica `frontend/dist`, recompila antes do deploy e
-  atende rotas profundas da SPA;
-- Node.js local 24.15.0 e Firebase CLI 15.25.1 foram validados;
-- a sessao local da CLI esta autenticada e o alias ativo aponta para
-  `money-rank`;
-- o MCP do Firebase nao esta exposto neste ambiente Codex; as verificacoes
-  remotas desta etapa usam somente a CLI oficial e comandos de leitura.
+- aplicativo Web `Money Rank Web` ativo;
+- nenhum servico SQL Connect implantado;
+- nenhuma base Firestore criada;
+- `southamerica-east1` (Sao Paulo) esta disponivel para Firestore;
+- a CLI nao informa o plano de faturamento nem o saldo de creditos;
+- nenhum recurso pago ou banco foi criado durante esta auditoria.
 
-Validacoes locais desta etapa:
+Antes de criar o Firestore, confirmar explicitamente:
 
-- lint e build do frontend aprovados;
-- lint e 46 testes das Functions aprovados;
-- SQL Connect compilado e SDK regenerado sem diferenca no Git;
-- dry-run oficial do Hosting aprovado, incluindo o predeploy de build;
-- raiz e rota profunda `/login` retornaram a mesma SPA no emulador Hosting.
+1. edicao **Standard**;
+2. banco `(default)`;
+3. regiao `southamerica-east1`;
+4. modo inicial fechado, sem acesso direto do navegador;
+5. protecao contra exclusao habilitada, se disponivel no Spark.
 
-O projeto remoto ainda nao deve ser tratado como producao pronta. Criar o
-Cloud SQL, ativar cobranca, gravar segredos e publicar recursos sao alteracoes
-remotas e exigem confirmacao explicita.
+A localizacao do banco e uma escolha duradoura e nao deve ser criada por
+suposicao.
 
-## Bloqueadores atuais
+## Capacidade estimada para 100 estudantes
 
-1. decidir se `money-rank` sera producao ou homologacao;
-2. confirmar/vincular Blaze e criar orcamentos antes de Functions, Storage e
-   Cloud SQL;
-3. criar `frontend/.env.production.local` com a chave publica do App Check;
-4. revisar e justificar no schema os alertas do compilador para
-   `GetEconomyConfig` e `ListVisibleCompetitionPeriods`: hoje qualquer usuario
-   autenticado pode consultar esses dois conjuntos globais;
-5. registrar dominios do Hosting no Google Auth e no reCAPTCHA Enterprise;
-6. criar o servico SQL Connect, pois a consulta remota retornou lista vazia;
-7. confirmar a API/primeiro deploy das Functions, que ainda nao puderam ser
-   listadas no projeto remoto;
-8. reduzir o bundle principal de aproximadamente 837 kB com divisao de codigo.
+### Firebase Authentication
 
-O tamanho do bundle e uma pendencia de desempenho, nao um impedimento tecnico
-para o primeiro preview restrito. Os itens de ambiente, cobranca, App Check e
-banco sao bloqueantes para um teste online funcional.
+O Spark suporta ate 3.000 usuarios ativos por dia para login social. Cem alunos
+usariam cerca de 3,3% desse limite.
 
-## Ambientes
+### Firestore Standard
 
-Recomendacao:
+A primeira base gratuita do projeto oferece diariamente:
 
-1. `demo-money-rank`: emuladores locais, descartavel e sem recursos reais;
-2. um projeto Firebase separado de homologacao: contas, banco e arquivos de
-   teste isolados;
-3. `money-rank`: producao, sem dados de desenvolvimento.
+- 50.000 leituras de documentos;
+- 20.000 escritas;
+- 20.000 exclusoes;
+- 1 GiB armazenado;
+- 10 GiB mensais de transferencia de saida.
 
-Um canal de preview do Hosting isola somente o frontend. Ele ainda aponta para
-o backend definido no build; portanto, nao substitui um projeto de homologacao
-quando os testes alteram Auth, PostgreSQL ou Storage.
+Para 100 alunos, o teto teorico e 500 leituras e 200 escritas por aluno/dia.
+Reservando 20% para professor, ranking e operacao, o orcamento de projeto deve
+ser no maximo 400 leituras e 160 escritas por aluno/dia.
 
-Antes de criar o segundo projeto, deve ser decidido se `money-rank` sera a
-producao definitiva ou a homologacao inicial. Nao altere `.firebaserc` nem
-provisione recursos antes dessa decisao.
+O desenho Firestore precisa evitar consultas que leem uma colecao inteira:
 
-## Faturamento e limites
+- ranking materializado em documentos pequenos por turma e periodo;
+- painel do professor alimentado por agregados incrementais;
+- perfil e progresso em documentos conhecidos pelo UID;
+- transacao unica para tentativa, recompensa e saldo;
+- conteudo publicado separado dos rascunhos editoriais;
+- paginacao no historico e nenhuma escuta em tempo real desnecessaria.
 
-- Cloud Functions e Cloud Storage exigem o plano Blaze para deploy/uso atual.
-- SQL Connect cobra separadamente as operacoes do servico e a instancia Cloud
-  SQL PostgreSQL. A instancia e o principal custo fixo da arquitetura.
-- Hosting possui cota gratuita e cobra armazenamento/transferencia excedentes.
-- Orcamentos do Google Cloud enviam alertas, mas nao interrompem gastos.
-- A regiao `southamerica-east1` reduz distancia para os usuarios brasileiros,
-  mas o preco real do Cloud SQL deve ser estimado nela antes da criacao.
+Mapa inicial para a migracao (ainda sujeito aos testes de seguranca):
 
-Antes do primeiro recurso pago:
+| Caminho | Finalidade |
+| --- | --- |
+| `users_private/{uid}` | perfil completo, papel e dados privados |
+| `users_public/{uid}` | nome/avatar minimo usado no ranking |
+| `users_private/{uid}/progress/{phase}` | progresso consolidado por fase |
+| `activity_sessions/{sessionId}` | payload publico e gabarito protegido |
+| `activity_attempts/{sessionId}` | resultado idempotente da sessao |
+| `coin_transactions/{transactionId}` | livro-caixa imutavel e auditavel |
+| `competition_periods/{periodId}` | janela, status e escopo competitivo |
+| `ranking_snapshots/{periodClass}` | ranking materializado por periodo/turma |
+| `editorial_versions/{versionId}` | rascunho, revisao e conteudo publicado |
+| `research_reviews/{reviewId}` | fontes e aprovacao pedagogica |
 
-1. vincular a conta de faturamento escolhida;
-2. configurar alertas em 50%, 80%, 100% e um valor absoluto aprovado;
-3. escolher a menor instancia Cloud SQL adequada para homologacao;
-4. registrar responsavel pelos alertas e pelo desligamento emergencial;
-5. medir custo e latencia no teste de carga antes de abrir para turmas.
+Dados privados e dados exibidos no ranking devem ficar em documentos distintos;
+as regras do Firestore nao escondem campos individuais dentro de um documento.
+No primeiro backend, o navegador nao gravara diretamente: regras `deny all` e
+Firebase Admin na API reduzem a superficie durante a migracao. Aberturas
+seletivas ao SDK web so devem ocorrer depois de regras e testes dedicados.
 
-## Variaveis e segredos
+Com esse desenho, 100 alunos ativos cabem nas cotas. Isso nao prova que 100
+alunos simultaneos terao boa latencia: a API Render Free ainda e o gargalo.
 
-O template versionado e `frontend/.env.production.example`. O arquivo efetivo
-deve ser `frontend/.env.production.local`, que e ignorado pelo Git.
+### Render Free
 
-Regras:
+O Static Site e adequado para o frontend. O Web Service gratuito possui 512 MB
+de RAM, 0,1 CPU e uma unica instancia, hiberna apos 15 minutos sem trafego e
+pode levar aproximadamente um minuto para acordar. Tambem nao possui SLA nem
+escalonamento horizontal gratuito.
 
-- `VITE_DATA_CONNECT_ENABLED=true` somente depois do SQL Connect implantado;
-- `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` e publica, mas precisa corresponder ao
-  dominio do ambiente;
-- App Check debug deve permanecer desligado e sem token em qualquer build
-  online;
-- `GEMINI_API_KEY` deve ser criada no Secret Manager pelas Functions e nunca
-  usar prefixo `VITE_`;
-- nao usar `backend/.env`: `backend/` e a implementacao Express/Supabase legada.
+Para uma aula com 100 acessos simultaneos:
 
-## Ordem do primeiro deploy
+- abrir o sistema com antecedencia aquece a API, mas nao elimina o limite de
+  CPU;
+- endpoints precisam ser curtos, assincronos e sem processar arquivos;
+- chamadas de IA precisam de timeout e fallback deterministico;
+- rankings devem vir prontos, sem agregar 100 alunos a cada requisicao;
+- um teste de carga real e bloqueante antes do piloto.
 
-Cada etapa deve terminar com smoke test antes da proxima:
+Conclusao: o plano gratuito e plausivel para 100 alunos cadastrados e uso
+distribuido. Para 100 requisicoes simultaneas, ainda nao ha garantia; o Render
+Free deve ser validado e e o componente com maior risco.
 
-1. **Projeto e custos**: confirmar ambiente, Blaze, orcamento, APIs e regioes.
-2. **Auth e App Check**: Google habilitado, dominios autorizados, chave
-   reCAPTCHA Enterprise registrada; monitorar tokens antes de enforcement.
-3. **SQL Connect**: compilar, revisar diff/migracao e implantar schema e
-   conectores.
-4. **Seed controlado**: criar configuracao economica, professor autorizado e
-   conteudo inicial; nunca importar contas/tentativas locais.
-5. **Storage**: criar o bucket correto e implantar `storage.rules`.
-6. **Segredos e Functions**: registrar `GEMINI_API_KEY`, confirmar parametros e
-   implantar callables na regiao `southamerica-east1`.
-7. **Build de homologacao**: criar `.env.production.local`, compilar e procurar
-   localhost, Supabase, segredos e token debug no artefato.
-8. **Hosting preview**: publicar um canal temporario e executar login, aluno,
-   professor, atividades, ranking, chat, upload e exportacao.
-9. **Live**: promover o artefato aprovado, executar smoke test e registrar
-   commit, horario e responsavel.
+## Migracao em blocos
 
-Comandos previstos, sempre a partir da raiz:
+### Bloco 1 - infraestrutura sem publicar
 
-```powershell
-npx -y firebase-tools@latest dataconnect:compile
-npx -y firebase-tools@latest dataconnect:sql:diff
-npx -y firebase-tools@latest deploy --only dataconnect
-npx -y firebase-tools@latest deploy --only storage
-npx -y firebase-tools@latest functions:secrets:set GEMINI_API_KEY
-npx -y firebase-tools@latest deploy --only functions
-npx -y firebase-tools@latest hosting:channel:deploy homologacao --expires 7d
-```
+- manter `render.yaml` com apenas o Static Site;
+- manter Data Connect e Functions apenas como referencia/testes locais;
+- criar contrato HTTP equivalente as callables;
+- impedir que o frontend use localhost, SQL Connect ou Functions no build.
 
-Os comandos de deploy acima sao roteiro, nao autorizacao para executa-los.
+### Bloco 2 - Firestore
 
-## Validacao local por blocos
+- criar o banco Standard somente apos confirmar regiao;
+- modelar users, progress, sessions, attempts, transactions, periods,
+  rankings, editorial versions e research reviews;
+- criar indices e regras inicialmente fechadas;
+- portar os repositorios com transacoes e testes de idempotencia;
+- criar contadores de uso para acompanhar leituras/escritas diarias.
 
-Executar separadamente evita um processo unico longo e deixa a falha clara:
+### Bloco 3 - API Render
 
-```powershell
-npm --prefix frontend run lint
-npm --prefix frontend run build
-npm --prefix functions run lint
-npm --prefix functions test
-npx -y firebase-tools@latest dataconnect:compile
-```
+- substituir `backend/` legado por Express moderno em ESM;
+- reutilizar a logica testada de `functions/src`, sem os wrappers `onCall`;
+- verificar Firebase ID Token em toda rota autenticada;
+- verificar papel TEACHER no banco antes de operacoes administrativas;
+- guardar credencial Firebase Admin e chave Gemini somente nos secrets do
+  Render;
+- limitar CORS ao dominio `onrender.com` definitivo e ao dominio personalizado;
+- adicionar health check que nao consulta banco nem IA;
+- aplicar limites por usuario e idempotency keys nas tentativas.
 
-Depois do build, validar o Hosting local:
+O `backend/` atual nao deve ser implantado: ele usa JWT e tabelas do Supabase,
+aceita pontuacao enviada pelo cliente em fluxos antigos e nao possui as features
+recentes do professor.
 
-```powershell
-npx -y firebase-tools@latest emulators:start --only hosting
-```
+### Bloco 4 - frontend
 
-Abrir `http://127.0.0.1:5000` e tambem uma rota profunda, como
-`http://127.0.0.1:5000/login`, para confirmar o rewrite da SPA.
+- substituir `httpsCallable` por cliente HTTP com Firebase ID Token;
+- substituir SDK SQL Connect por endpoints/leituras Firestore definidos;
+- manter fallback local apenas em desenvolvimento, nunca silenciosamente em
+  producao;
+- configurar `VITE_API_URL` no Render;
+- adicionar o dominio Render aos dominios autorizados do Firebase Auth;
+- desativar upload e apresentar somente campo de link externo.
 
-## Rollback
+### Bloco 5 - carga e publicacao
 
-- Hosting: manter a release anterior e promover/reativar a ultima versao
-  aprovada.
-- Functions: reimplantar o commit anterior; nao alterar configuracao manual no
-  console sem registrar a mudanca.
-- SQL Connect: toda migracao exige diff, backup e plano de reversao. Nao usar
-  `--force` automaticamente.
-- Storage: regras podem ser reimplantadas; arquivos e metadados precisam de
-  politica propria de retencao e restauracao.
+- executar 100 logins e 100 inicios/submissoes concorrentes;
+- medir p50, p95, erros, cold start, memoria e uso Firestore;
+- reprovar se houver moedas duplicadas, tentativas perdidas ou estouro de cota;
+- publicar primeiro para equipe/professor e depois para os alunos.
 
-O registro de cada release deve conter projeto, commit, ambiente, migration
-diff, URL, resultado do smoke test e responsavel pela aprovacao.
+## Credito de USD 300 do Google Cloud
+
+O credito de boas-vindas e destinado a novos clientes elegiveis, vale por 90
+dias e nao e uma camada gratuita permanente. Vincular uma conta de faturamento
+ao projeto Firebase transforma o projeto Spark em Blaze.
+
+Portanto, o credito nao faz parte desta arquitetura sem Blaze. Ele pode servir
+para um teste temporario futuro, mas cria uma data de expiracao e exige um plano
+de desligamento ou pagamento.
+
+Para verificar manualmente se existe credito ativo:
+
+1. abrir Google Cloud Console com a mesma conta do Firebase;
+2. acessar **Billing > Overview** e identificar a conta ligada ao projeto;
+3. abrir **Billing > Credits** e conferir saldo, validade e produtos cobertos;
+4. no Firebase, abrir **Usage and billing > Details & settings** e confirmar se
+   o projeto mostra Spark ou Blaze.
+
+Se `money-rank` estiver em Spark, ele nao esta consumindo o credito geral de USD
+300 nesse projeto. Se aparecer Blaze, existe uma conta de faturamento vinculada,
+mas ainda e necessario abrir a pagina de creditos para saber se ha saldo.
+
+Nao ativar teste, Blaze ou cartao apenas para inspecionar elegibilidade.
+
+## Criterio de custo zero
+
+O sistema e considerado gratuito somente enquanto:
+
+- Firebase permanecer Spark;
+- Firestore ficar abaixo das cotas e for a unica base gratuita do projeto;
+- Auth ficar abaixo dos limites diarios;
+- Render nao tiver metodo de cobranca automatica para excedentes ou possuir
+  limite de gasto zero;
+- arquivos forem hospedados externamente por links;
+- IA usar cota gratuita opcional e sempre possuir fallback;
+- nenhum servico temporario for confundido com solucao permanente.
+
+Ao atingir uma cota Spark, o servico correspondente pode parar ate o proximo
+ciclo. Monitoramento e reducao de consumo sao requisitos funcionais, nao apenas
+financeiros.

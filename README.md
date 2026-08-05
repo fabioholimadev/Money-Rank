@@ -222,9 +222,10 @@ npm run test:dataconnect-mappers
 
 Antes de publicar o Money Rank para alunos e professores, revise e conclua o
 arquivo [`docs/deploy/checklist-producao.md`](docs/deploy/checklist-producao.md).
-Ele registra as pendências de App Check com reCAPTCHA Enterprise, proteção
-contra repetição, custos da IA, aprovação pedagógica, SQL Connect de produção e
-testes do ambiente final. O modo debug do App Check nunca deve ser publicado.
+O alvo sem Blaze usa Render para frontend/API, Firebase Auth e Firestore Spark.
+SQL Connect, Cloud Functions e Storage permanecem apenas como implementacao de
+referencia ate a migracao. Consulte tambem
+[`docs/deploy/arquitetura-firebase.md`](docs/deploy/arquitetura-firebase.md).
 
 ## 🧠 Atividades do Épico 3
 

@@ -4,7 +4,7 @@ Este documento deve ser revisado antes de disponibilizar o Money Rank para
 alunos e professores. Enquanto qualquer item bloqueante estiver pendente, o
 deploy público não deve ser considerado concluído.
 
-## Firebase App Check e Firebase AI Logic
+## Firebase App Check e API externa
 
 - [ ] Registrar o aplicativo Web com **reCAPTCHA Enterprise** no Firebase App
   Check usando somente os domínios reais da aplicação.
@@ -13,45 +13,34 @@ deploy público não deve ser considerado concluído.
 - [ ] Garantir `VITE_FIREBASE_APPCHECK_DEBUG=false` no build de produção.
 - [ ] Garantir que `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` não exista no ambiente
   de produção, no Git ou nos artefatos publicados.
-- [ ] Confirmar em **Security > App Check > APIs** que a proteção básica do
-  Firebase AI Logic continua como `Enforced`.
-- [ ] Testar no domínio publicado que uma requisição legítima recebe token e
-  que uma requisição sem App Check é rejeitada.
-- [ ] Confirmar que as callables usam `limitedUseAppCheckTokens: true`; a
-  proteção contra repetição do backend depende desses tokens de uso limitado.
+- [ ] Enviar token de uso limitado para a API Render e valida-lo com Firebase
+  Admin, junto do Firebase ID Token.
+- [ ] Testar no dominio publicado que uma requisicao legitima recebe token e
+  que uma requisicao sem Auth/App Check e rejeitada.
 - [ ] Remover os tokens de depuração que não forem mais necessários.
-- [ ] Confirmar que `startActivitySession` e `submitActivitySession` rejeitam
-  chamadas sem App Check e que tokens de uso limitado não podem ser repetidos.
-- [ ] Confirmar o mesmo comportamento em `askTeacherData` e
-  `askStudentMentor`, nas callables editoriais e em `uploadTeacherStudioAsset`.
+- [ ] Confirmar protecao contra repeticao nas rotas de inicio/fim de atividade,
+  professor, editorial e chats.
 
-## Cloud Functions e pontuação autoritativa
+## API Render e pontuacao autoritativa
 
-- [ ] Implantar o schema e as operações do Data Connect antes das Functions.
-- [ ] Criar `GEMINI_API_KEY` no Secret Manager; nunca expor a chave ao Vite.
-- [ ] Confirmar Node.js 22 e região `southamerica-east1` em todas as callables.
+- [ ] Portar a logica testada de `functions/src` para Express sem usar o backend
+  Supabase legado.
+- [ ] Criar `GEMINI_API_KEY` como secret no Render; nunca expor a chave ao Vite.
+- [ ] Confirmar Node.js 22, CORS restrito e health check sem banco/IA.
+- [ ] Verificar Firebase ID Token e papel do professor em todas as rotas.
 - [ ] Validar que o bundle e as respostas HTTP não expõem o gabarito do quiz.
 - [ ] Reenviar a mesma sessão e confirmar uma tentativa e uma recompensa.
 - [ ] Tentar enviar sessão de outro usuário e confirmar resposta `not-found`.
-- [ ] Reavaliar o `npm audit` de `functions/` sem usar correção forçada
+- [ ] Reavaliar o `npm audit` da API sem usar correção forçada
   incompatível.
 
 ## Configuração e controle de custos da IA
 
-- [ ] Confirmar o modelo estável suportado pelo Firebase AI Logic e atualizar
-  `VITE_FIREBASE_AI_MODEL` sem depender de um modelo descontinuado.
-- [ ] Migrar o nome do modelo e os principais limites para Firebase Remote
-  Config, permitindo troca sem novo deploy.
-- [ ] Configurar orçamento, alertas de cobrança e limites de uso antes de abrir
-  o acesso para as turmas.
-- [ ] Medir o CapiMentor com `maxInstances: 5` e decidir se será necessário um
-  rate limit persistente por aluno antes do piloto.
-- [ ] Manter `security.auth-only=true` e validar que usuários sem Firebase Auth
+- [ ] Manter a IA opcional e confirmar fallback deterministico sem chave/cota.
+- [ ] Configurar limite diario por usuario sem depender de memoria do processo.
+- [ ] Validar que usuarios sem Firebase Auth
   recebem erro de autenticação.
-- [ ] Revisar a amostragem do AI Monitoring para não armazenar conteúdo além do
-  necessário para diagnóstico.
-- [ ] Confirmar preço, cota e orçamento do Google Search Grounding; cada busca
-  pode gerar cobrança adicional.
+- [ ] Nao ativar Google Search Grounding ou outro recurso pago no MVP gratuito.
 - [ ] Validar que respostas fundamentadas do CapiMentor exibem fontes e o
   `searchEntryPoint.renderedContent` exigido pelos termos do Google Search.
 - [ ] Confirmar que o fallback institucional continua disponível quando não há
@@ -70,20 +59,19 @@ deploy público não deve ser considerado concluído.
 - [ ] Executar uma tentativa completa de cada atividade com uma conta de aluno
   e outra de professor.
 
-## Firebase Storage
+## Materiais sem Firebase Storage
 
-- [ ] Implantar `storage.rules` e confirmar negação de leitura e escrita direta
-  do cliente, inclusive em caminhos fora de `teacher-studio/`.
-- [ ] Validar upload administrativo de PDF, PPT/PPTX e DOC/DOCX até 8 MiB.
-- [ ] Confirmar rejeição de extensão, MIME, assinatura ou tamanho divergentes.
-- [ ] Forçar falha de metadado em homologação e confirmar a remoção
-  compensatória do arquivo sem registrar Base64 em logs ou no Capi Bank.
-- [ ] Definir retenção e limpeza auditada de assets que deixarem de ser
-  referenciados antes de abrir o Estúdio em produção.
+- [ ] Desativar o botao de upload no build online.
+- [ ] Aceitar apenas links HTTPS externos aprovados pelo professor.
+- [ ] Confirmar acesso aos videos e documentos em Chrome e Firefox sem login
+  adicional no provedor do arquivo.
+- [ ] Nao salvar Base64, arquivos ou banco no disco efemero do Render.
 
 ## Dados, autenticação e operação
 
-- [ ] Implantar e validar o Firebase SQL Connect de produção.
+- [ ] Criar e validar um unico Firestore Standard gratuito em
+  `southamerica-east1`, apos aprovacao explicita da localizacao.
+- [ ] Implantar regras inicialmente fechadas e indices revisados.
 - [ ] Executar, com backup e aprovação explícita, o
   [`plano de limpeza pré-lançamento`](limpeza-pre-lancamento.md).
 - [ ] Criar/agendar o período oficial e confirmar que somente transações
@@ -95,8 +83,8 @@ deploy público não deve ser considerado concluído.
 - [ ] Executar um teste de carga representando **100 alunos durante 7 dias**,
   incluindo o cenário conservador de até 100 sessões simultâneas em horário de
   atividade coletiva.
-- [ ] Medir nesse teste latência, taxa de erros, conexões do PostgreSQL,
-  geração de questões pelo Gemini, consumo de cotas e custo estimado por aluno.
+- [ ] Medir nesse teste latencia, taxa de erros, cold start/CPU do Render,
+  leituras/escritas do Firestore e consumo de cota por aluno.
 - [ ] Definir critérios de aprovação: nenhuma perda ou duplicação de moedas,
   nenhuma tentativa perdida, respostas principais dentro do tempo acordado e
   fallback local disponível quando a IA atingir limite ou ficar indisponível.
@@ -105,16 +93,19 @@ deploy público não deve ser considerado concluído.
 - [ ] Executar lint, build, testes automatizados e smoke test no ambiente final.
 - [ ] Criar um procedimento de rollback e registrar a versão implantada.
 
-## Hosting e ordem de implantação
+## Render e ordem de implantação sem Blaze
 
-- [x] Adicionar Firebase Hosting ao `firebase.json` para `frontend/dist`, com
-  rewrite SPA para `/index.html`, sem sobrescrever Data Connect/Functions.
+- [x] Adicionar o Static Site do Render ao `render.yaml` para `frontend/dist`,
+  com rewrite SPA para `/index.html`.
 - [ ] Executar `npm run build` e confirmar que nenhum `.env.local`, segredo ou
   token debug entrou em `dist`.
-- [ ] Implantar na ordem: `dataconnect`, `functions`, `hosting`.
-- [ ] Não reutilizar a aplicação antiga da Render, pois ela depende da
-  arquitetura Express/Supabase.
+- [ ] Migrar SQL Connect para Firestore Standard antes do deploy funcional.
+- [ ] Migrar as callables para uma API Express segura no Render.
+- [ ] Não publicar `backend/` como está: ele usa Supabase e não representa o
+  backend autoritativo atual.
+- [ ] Manter uploads de arquivos desativados enquanto não houver armazenamento
+  persistente gratuito; aceitar somente links HTTPS externos.
 - [ ] Executar primeiro em homologação e somente depois repetir em produção.
 
 Consulte tambem a
-[`arquitetura e ordem de deploy no Firebase`](arquitetura-firebase.md).
+[`arquitetura gratuita com Render e Firebase Spark`](arquitetura-firebase.md).

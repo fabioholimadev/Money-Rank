@@ -7,7 +7,8 @@
   -> painel inicial do Épico 5 concluído
   -> Estúdio do Professor (5.4) em validação
   -> administração de períodos (5.5) implementada, em validação
-  -> homologação e deploy
+  -> migracao gratuita para Firestore + API Render
+  -> homologacao e deploy
   -> carga para 100 alunos
   -> backup e limpeza de testes
   -> piloto quinta–quinta
@@ -39,13 +40,13 @@ Testar criação/edição/pausa/retomada de períodos, exportação CSV e chat
 flutuante. O novo período zera o ranking por escopo; ajustes de saldo continuam
 como transações compensatórias.
 
-### 3. Deploy e capacidade
+### 3. Migracao gratuita, deploy e capacidade
 
-- Firebase Hosting para Vite;
-- SQL Connect antes de Functions e Hosting;
-- reCAPTCHA Enterprise/App Check;
-- Secret Manager, orçamento e alertas;
-- homologação separada;
+- Render Static Site para Vite;
+- Firestore Standard Spark no lugar do SQL Connect temporario;
+- API Express no Render Free no lugar das Cloud Functions;
+- Firebase Auth e App Check sem Blaze;
+- uploads desativados e materiais por links HTTPS externos;
 - teste conservador com até 100 sessões simultâneas por sete dias.
 
 ### 4. Limpeza e piloto
