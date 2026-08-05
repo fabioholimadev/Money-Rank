@@ -16,8 +16,8 @@ períodos e análises pedagógicas.
 | 5.1 | Criar rotas protegidas para `role = TEACHER` | Concluída (`99d8108`) |
 | 5.2 | Criar métricas e gráficos a partir do SQL Connect | Concluída (`406f387`) |
 | 5.3 | Implementar Chat de Dados com consultas autorizadas | Concluída (`3882996`) |
-| 5.4 | Criar Estúdio de conteúdos, atividades e revisão | Especificada; não iniciada |
-| 5.5 | Administrar períodos e encerramento auditado | Planejada após o Estúdio |
+| 5.4 | Criar Estúdio de conteúdos, atividades e revisão | Implementada (`7440824`) |
+| 5.5 | Administrar períodos, exportar dados e reorganizar o chat | Implementada (`7440824`) |
 
 O caminho mínimo do MVP prioriza 5.1 e 5.2. Caso o tempo fique curto, o Chat
 de Dados pode ser adiado sem impedir o piloto, desde que o professor tenha as
@@ -66,16 +66,34 @@ limitado a uma recomendação pedagógica sem números. Detalhes e roteiro:
 
 ## Task 5.4 - Estúdio do Professor
 
-Planejada, mas não iniciada. Permitirá editar materiais, revisar pesquisas e
-versionar as bases das quatro atividades com rascunho, prévia e publicação.
-Detalhes: [`estudio-professor.md`](estudio-professor.md).
+Implementada na branch `feat/task-5-4-teacher-studio`. O professor pode editar
+materiais por URL HTTPS ou enviar PDF, PPT/PPTX e DOC/DOCX ao Firebase Storage,
+revisar pesquisas e versionar as bases das quatro atividades com rascunho,
+revisão, prévia e publicação. O aluno e o motor de recompensas carregam
+somente a versão publicada, com fallback estático durante a migração.
+
+O upload é administrativo: a Function valida professor, formato, assinatura e
+limite de 8 MiB; o Capi Bank aceita os metadados somente para uma versão
+`DRAFT`; e as regras do Storage negam leitura e escrita direta do cliente.
+Detalhes e roteiro: [`estudio-professor.md`](estudio-professor.md).
 
 ## Task 5.5 - Administração da competição
 
-Permitirá criar, agendar, pausar, retomar e encerrar períodos. Novo ciclo,
-ajuste de saldo, limpeza pré-piloto e exclusão definitiva serão ações distintas.
-Qualquer limpeza exigirá backup, confirmação forte, autorização no servidor e
-registro de auditoria.
+Implementada na branch atual. O professor pode criar, editar, ampliar, reduzir,
+agendar, ativar, pausar, retomar e encerrar períodos sem apagar histórico. O
+painel também exporta os agregados para CSV compatível com Excel e o Capi
+Analista passou a funcionar em painel flutuante. Detalhes, segurança e roteiro:
+[`administracao-competicao.md`](administracao-competicao.md).
+
+Novo ciclo, ajuste de saldo, limpeza pré-piloto e exclusão definitiva continuam
+ações distintas. Qualquer limpeza exigirá backup, confirmação forte,
+autorização no servidor e registro de auditoria.
+
+Antes da homologação também será necessário decidir a governança de acesso:
+se `TEACHER` e um futuro `ADMIN` serão papéis separados, quantos administradores
+existirão e se usarão o mesmo painel com permissões ou painéis distintos. A
+análise está registrada em [`acesso-professor.md`](acesso-professor.md) e não
+autoriza a criação de um botão de promoção no frontend.
 
 ## Testes previstos
 

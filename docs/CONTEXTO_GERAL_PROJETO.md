@@ -12,10 +12,10 @@
 | Remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
 | Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
 | Branch-base | `feat/mvp-gamificacao-ia` |
-| Branch em desenvolvimento | `feat/epic-4-mentor-firebase` |
-| Último commit funcional | `616394e feat: migra CapiMentor para Firebase` |
-| Alteração em teste | CapiMentor online com chave local real e fontes dinâmicas |
-| Próxima entrega | Estúdio do Professor, depois deploy/carga/limpeza |
+| Branch em desenvolvimento | `feat/task-5-4-teacher-studio` |
+| Último commit funcional | `7440824 feat: conclui area do professor` |
+| Alteração em teste | Tasks 5.4 e 5.5 implementadas e commitadas; roteiro manual ampliado permanece disponível |
+| Próxima entrega | Preparar ambiente online, App Check, Hosting, deploy e teste de carga |
 
 Procedimento de retomada:
 
@@ -38,8 +38,8 @@ não é o repositório canônico usado nesta sequência.
 Money Rank é uma plataforma gamificada de educação financeira, fiscal e cidadã
 para alunos de escolas técnicas. O piloto atende apenas **3º DSA** e **3º DSB**.
 O aluno consome conteúdo, resolve atividades, recebe CapiCoins e participa de
-rankings. O professor acompanha métricas, conversa com o Chat de Dados e, na
-próxima etapa, administrará conteúdo e períodos.
+rankings. O professor acompanha métricas, conversa com o Chat de Dados,
+administra conteúdo e períodos e exporta relatórios pedagógicos.
 
 Stack:
 
@@ -80,15 +80,17 @@ Supabase ainda existe apenas em arquivos legados que não devem ser publicados.
 - banco e possibilidades documentados em
   `docs/epic-3/organizacao-bancos-atividades.md`.
 
-### Épico 5 — painel inicial concluído
+### Épico 5 — Área do professor em validação
 
 - 5.1: papel `TEACHER` e rota protegida (`99d8108`);
 - 5.2: métricas, comparação DSA/DSB, fases e até 100 alunos (`406f387`);
 - 5.3: Chat de Dados com intenções fechadas (`3882996`);
-- 5.4: Estúdio do Professor especificado, ainda não implementado;
-- 5.5: administração auditada de períodos, ainda não implementada.
+- 5.4: Estúdio implementado no commit `7440824`; roteiro manual ampliado
+  permanece disponível;
+- 5.5: períodos mutáveis, exportação CSV e chat flutuante implementados no
+  commit `7440824`; roteiro manual ampliado permanece disponível.
 
-### Épico 4 — implementado e versionado; validação online pendente
+### Épico 4 — concluído, versionado e aprovado
 
 Implementação registrada no commit `616394e`:
 
@@ -104,7 +106,8 @@ Implementação registrada no commit `616394e`:
   sugestões de pesquisa previstas nos termos do serviço;
 - respostas são mais longas e oferecem aprofundamento;
 - novo avatar em `frontend/public/avatars/capi-mentor.jpg`;
-- 14 testes, lint e build passaram.
+- testes, lint, build e validação manual online passaram;
+- o usuário aprovou o CapiMentor em 2026-08-04.
 
 Arquivos principais:
 
@@ -118,18 +121,17 @@ Arquivos principais:
 
 A chave Gemini real foi configurada pelo usuário apenas em
 `functions/.secret.local`, arquivo ignorado e não rastreado pelo Git. Nunca
-copiar seu valor para código, documentação, logs ou mensagens. O fallback já
-foi validado; falta confirmar a resposta real com fontes após os emuladores
-reiniciarem.
+copiar seu valor para código, documentação, logs ou mensagens. O fallback e a
+resposta real foram validados.
 
-## 4. Estúdio do Professor — próxima implementação
+## 4. Estúdio do Professor — implementado, aguardando validação manual
 
 O professor quer editar vídeos do YouTube, PDFs, PPTX/DOCX, resumos, sugestões
 de questões, personagens e bases das atividades, além de aprovar pesquisas
 propostas por Codex/Gemini.
 
-Decisão arquitetural: não editar arquivos estáticos nem aceitar JSON livre no
-motor valendo moedas. Implementar:
+Decisão arquitetural aplicada: não editar arquivos estáticos nem aceitar JSON
+livre no motor valendo moedas. A Task 5.4 implementou:
 
 1. tabelas `LearningModuleVersion`, `ActivityDefinitionVersion` e
    `ResearchReview` no SQL Connect;
@@ -138,13 +140,36 @@ motor valendo moedas. Implementar:
 4. aluno lê apenas versão publicada;
 5. Functions carregam a mesma versão publicada usada pela interface;
 6. toda publicação registra autor, data, versão e resumo da mudança;
-7. arquivos são armazenados no Firebase Storage; o banco guarda URL, tipo,
-   tamanho, hash e nome — nunca Base64;
+7. PDF, PPT/PPTX e DOC/DOCX de até 8 MiB são enviados por Function para o
+   Firebase Storage; o SQL guarda URL, caminho, MIME, tamanho e SHA-256;
 8. YouTube e documentos externos exigem URL HTTPS validada;
 9. cada atividade tem editor próprio, não uma caixa JSON genérica;
-10. publicar executa validação estrutural e uma sessão de prévia sem recompensa.
+10. publicar executa validação estrutural e há prévia sem recompensa;
+11. o catálogo estático atual vira seed publicado e continua como fallback;
+12. aluno e motor autoritativo consomem somente a versão publicada;
+13. o fluxo é estrito: `DRAFT` pode ser editado, `IN_REVIEW` é somente
+    leitura e apenas ele pode ser publicado;
+14. fontes verificadas precisam de `ResearchReview` aprovado e vinculado por
+    atividade, fato, URL, alegação, revisor e data.
 
-Editores previstos:
+Validação automática atual: 37 testes de Functions, lints, compilação do
+Data Connect, geração do SDK e build aprovados. O smoke anterior do catálogo
+editorial no emulador passou; o novo upload ainda precisa do roteiro manual.
+O emulador de Storage não iniciou neste computador porque Java não está
+instalado ou disponível no `PATH`.
+
+Regressão corrigida durante o teste manual: a confirmação de salvamento era
+apagada pelo recarregamento, a prévia não renderizava o vídeo e o envio para
+revisão não salvava automaticamente alterações ainda no formulário. Links
+comuns do YouTube agora são normalizados para `/embed/` no servidor.
+
+O teste manual seguinte revelou a causa raiz do salvamento: o Capi Bank devolve
+UUIDs editoriais compactos, enquanto as callables aceitavam apenas UUID com
+hífens. A normalização agora aceita os dois formatos; salvar, revisar, publicar
+e enviar assets usam o UUID canônico. O lateral também lista todas as versões do
+item para alternância explícita.
+
+Editores implementados:
 
 - Perigo Doce: fatos, fontes, equívocos, sugestões de questões e aprovação;
 - Custo do Vício: personagens, história, cinco decisões e pesos 1/2/3;
@@ -203,10 +228,10 @@ npx -y firebase-tools@latest dataconnect:compile --project money-rank
 git diff --check
 ```
 
-## 7. Validação online pendente do Épico 4
+## 7. Validação do Épico 4
 
-Roteiro completo e critérios de aprovação:
-`docs/epic-4/roteiro-testes-capi-mentor.md`.
+O roteiro `docs/epic-4/roteiro-testes-capi-mentor.md` foi aprovado pelo usuário
+em 2026-08-04. Ele permanece documentado para regressão antes do deploy.
 
 1. entrar como aluno e abrir o CapiMentor;
 2. perguntar sobre orçamento, ICMS, açúcar e apostas;

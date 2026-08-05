@@ -29,9 +29,10 @@ O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) foca
 * Firebase Authentication
 
 **Back-end & Banco de Dados:**
-* Node.js com Express
-* Firebase SQL Connect (PostgreSQL, em migração)
-* CORS & Dotenv
+* Cloud Functions for Firebase (Node.js 22)
+* Firebase Data Connect / PostgreSQL (Capi Bank)
+* Firebase Storage para materiais editoriais
+* Firebase App Check nas operações protegidas
 
 ## 🔐 Configuração do Firebase Auth
 
@@ -180,7 +181,9 @@ ao banco.
 
 Fotos enviadas pelo aluno ainda são URLs `data:image` locais e não são gravadas
 no PostgreSQL. Nome, turma e conclusão do perfil são sincronizados; o arquivo
-continuará no navegador até a implementação do Firebase Storage.
+de avatar continuará no navegador até existir um fluxo de Storage específico
+para perfis. O Storage do Estúdio aceita apenas materiais editoriais enviados
+pela Function administrativa.
 
 #### Variáveis do frontend
 

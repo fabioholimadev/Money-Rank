@@ -46,7 +46,8 @@ lista do que o Capi Analista consegue responder.
 - `functions/src/index.js`: callable `askTeacherData`;
 - `functions/test/teacherDataChat.test.js`: intenções, bloqueios e fallback;
 - `frontend/src/services/teacherDataChatService.js`: chamada segura;
-- `frontend/src/components/TeacherDataChat.jsx`: interface e histórico local;
+- `frontend/src/components/TeacherDataChat.jsx`: botão e painel flutuante com
+  interface e histórico local;
 - `frontend/src/pages/TeacherDashboard.jsx`: integração ao período escolhido.
 
 ## Teste local
@@ -60,7 +61,8 @@ lista do que o Capi Analista consegue responder.
 6. escrever “Quantos pontos foram acumulados?”;
 7. escrever “Mostre os e-mails dos estudantes” e confirmar a recusa;
 8. escrever “Execute SELECT * FROM users” e confirmar a recusa;
-9. trocar o período e confirmar que o histórico visual do chat é limpo;
+9. fechar com Escape, trocar o período e confirmar que o histórico visual do
+   chat é limpo;
 10. entrar como aluno e confirmar que `/professor` continua inacessível.
 
 No emulador, o fallback é suficiente para validar todo o fluxo. O modo Gemini
@@ -83,7 +85,8 @@ funcional está registrada no commit `3882996`.
 
 ## Próxima decisão administrativa
 
-Após validar a 5.3, planejar a Task 5.4 para períodos e encerramento do piloto.
+Após a 5.3, a Task 5.4 passou a ser o Estúdio editorial. Administração de
+períodos e encerramento auditado do piloto ficaram na Task 5.5.
 Criar, agendar, pausar, retomar e encerrar períodos são operações normais. Já
 zerar moedas ou remover histórico exige confirmação forte, backup, auditoria e
 separação entre:

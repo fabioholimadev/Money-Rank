@@ -121,7 +121,8 @@ npx -y firebase-tools@latest dataconnect:compile --project money-rank
 ## Limitações conscientes
 
 1. O painel não possui atualização em tempo real; o professor usa `Atualizar`.
-2. Resultados não são exportados nesta Task.
+2. A Task 5.5 acrescentou exportação CSV UTF-8 compatível com Excel, limitada
+   aos dados já autorizados no painel e sem UID ou e-mail.
 3. Ainda não existe detalhamento das respostas por questão, pois as
    tentativas atuais guardam totais de acertos e erros por atividade.
 4. O Chat de Dados pertence à Task 5.3 e consumirá somente agregações

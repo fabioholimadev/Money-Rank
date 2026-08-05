@@ -108,3 +108,30 @@ npx -y firebase-tools@latest dataconnect:compile --project money-rank
 3. revogar imediatamente professores removidos do projeto;
 4. repetir a autorização dentro de todas as consultas da Task 5.2;
 5. testar expiração de sessão e revogação antes do piloto.
+
+## Decisão futura — governança administrativa
+
+O modelo atual possui apenas `STUDENT` e `TEACHER`. Na interface, alguns textos
+legados ainda usam a palavra "admin", mas isso não representa um terceiro papel
+nem autoriza uma conta a promover outra. Antes de criar botão ou papel novo,
+será necessário decidir:
+
+- se `TEACHER` continuará acumulando gestão pedagógica e administrativa ou se
+  existirá um papel `ADMIN` separado;
+- se haverá um único administrador inicial ou vários administradores;
+- como o primeiro administrador será criado fora do navegador, sem permitir
+  autoelevação;
+- se professores e administradores usarão o mesmo painel com controles por
+  permissão ou painéis distintos;
+- quem poderá convidar, promover, revogar ou desativar outro responsável;
+- se o acesso será global ou limitado por turma, período e funcionalidade;
+- como registrar autor, data, motivo e papel anterior/novo em cada alteração;
+- como impedir a remoção do último administrador e exigir reautenticação
+  para mudanças sensíveis;
+- como revisar acessos antes do piloto e revogá-los imediatamente quando uma
+  pessoa deixar o projeto.
+
+Até essa análise ser concluída, não deve existir um botão de "tornar admin"
+no frontend. A promoção local permanece restrita ao utilitário do emulador; em
+produção, a concessão deverá ser administrativa, auditável e inacessível ao
+navegador comum.

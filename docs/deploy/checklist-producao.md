@@ -23,7 +23,7 @@ deploy público não deve ser considerado concluído.
 - [ ] Confirmar que `startActivitySession` e `submitActivitySession` rejeitam
   chamadas sem App Check e que tokens de uso limitado não podem ser repetidos.
 - [ ] Confirmar o mesmo comportamento em `askTeacherData` e
-  `askStudentMentor`.
+  `askStudentMentor`, nas callables editoriais e em `uploadTeacherStudioAsset`.
 
 ## Cloud Functions e pontuação autoritativa
 
@@ -63,10 +63,23 @@ deploy público não deve ser considerado concluído.
   `teacher_approved` somente depois da revisão do professor responsável.
 - [ ] Verificar se links, vídeos, slides e resumos estão publicados e acessíveis
   pelo domínio final.
-- [ ] Enquanto o Estúdio não existir, validar e versionar manualmente os arquivos
-  em `frontend/src/data`; não editar conteúdo direto em produção.
+- [ ] Validar no Estúdio o fluxo completo `DRAFT -> IN_REVIEW -> PUBLISHED` e
+  confirmar que a versão anterior vira `ARCHIVED`.
+- [ ] Confirmar que pesquisas e conteúdos criados pelo projeto não publicam sem
+  aprovação pedagógica do professor.
 - [ ] Executar uma tentativa completa de cada atividade com uma conta de aluno
   e outra de professor.
+
+## Firebase Storage
+
+- [ ] Implantar `storage.rules` e confirmar negação de leitura e escrita direta
+  do cliente, inclusive em caminhos fora de `teacher-studio/`.
+- [ ] Validar upload administrativo de PDF, PPT/PPTX e DOC/DOCX até 8 MiB.
+- [ ] Confirmar rejeição de extensão, MIME, assinatura ou tamanho divergentes.
+- [ ] Forçar falha de metadado em homologação e confirmar a remoção
+  compensatória do arquivo sem registrar Base64 em logs ou no Capi Bank.
+- [ ] Definir retenção e limpeza auditada de assets que deixarem de ser
+  referenciados antes de abrir o Estúdio em produção.
 
 ## Dados, autenticação e operação
 

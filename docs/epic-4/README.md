@@ -4,13 +4,13 @@
 
 Implementado e versionado na branch `feat/epic-4-mentor-firebase` pelo commit
 `616394e`. O fluxo Express/Supabase foi removido do componente usado pelo aluno.
-O fallback e as validações automáticas passaram; falta validar a resposta online
-com a chave real mantida somente no ambiente local.
+O fallback, as validações automáticas e o teste manual com a chave local real
+foram aprovados pelo usuário em 2026-08-04.
 
 | Task | Resultado | Estado |
 | --- | --- | --- |
 | 4.1 | Interface flutuante responsiva, teclado, estados e limite de entrada | Implementada |
-| 4.2 | Callable Firebase com contexto mínimo, Gemini e fallback | Validação online pendente |
+| 4.2 | Callable Firebase com contexto mínimo, Gemini e fallback | Concluída e aprovada |
 
 ## Arquitetura implementada
 
@@ -64,8 +64,8 @@ deve ser acrescentado antes do piloto se as medições de carga indicarem risco.
 
 ## Teste manual
 
-Execute integralmente [`roteiro-testes-capi-mentor.md`](roteiro-testes-capi-mentor.md).
-O usuário autorizou o commit e o envio ao GitHub antes do teste online conjunto.
+O roteiro [`roteiro-testes-capi-mentor.md`](roteiro-testes-capi-mentor.md) foi
+executado e o CapiMentor foi aprovado pelo usuário.
 A chave real está em `functions/.secret.local`, que deve permanecer ignorado e
 nunca ter seu valor documentado.
 

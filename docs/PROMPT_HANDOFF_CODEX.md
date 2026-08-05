@@ -14,7 +14,6 @@ segurança e o ciclo de versionamento abaixo.
 1. Leia integralmente `docs/CONTEXTO_GERAL_PROJETO.md`.
 2. Leia `docs/README.md`, `docs/roadmap-mvp.md` e o README do Épico em trabalho.
 3. Para o próximo trabalho, leia também:
-   - `docs/epic-4/roteiro-testes-capi-mentor.md`;
    - `docs/epic-5/README.md`;
    - `docs/epic-5/estudio-professor.md`;
    - `docs/deploy/checklist-producao.md`.
@@ -33,21 +32,21 @@ segurança e o ciclo de versionamento abaixo.
 - A chave Gemini real foi configurada pelo usuário exclusivamente em
   `functions/.secret.local`. Nunca leia seu valor para a resposta, nunca o
   versione e nunca o copie para documentação ou logs.
-- A validação automática do Épico 4 passou: 14 testes de Functions, lints e
-  build. Ainda é necessário confirmar manualmente o modo online e as fontes.
+- A validação automática e manual do Épico 4 passou; o usuário aprovou o
+  CapiMentor em 2026-08-04.
+- A Task 5.4 está implementada na branch `feat/task-5-4-teacher-studio`, com
+  alterações ainda sem commit e aguardando teste manual do usuário.
 
 ## Primeira ação obrigatória
 
-Antes de alterar a Task 5.4, confira com o usuário o resultado do roteiro
-`docs/epic-4/roteiro-testes-capi-mentor.md`. Se o Gemini real, as fontes ou a
-interface falharem, diagnostique e corrija o Épico 4 em uma branch específica.
-Se tudo passar, atualize o README do Épico 4 e o contexto geral, registrando a
-validação sem copiar respostas com dados pessoais ou qualquer credencial.
+Não reimplemente a Task 5.4. Inspecione o diff da branch atual, execute os
+testes registrados em `docs/epic-5/estudio-professor.md` e peça ao usuário o
+resultado do roteiro manual. Preserve `vite.config.js`, que contém uma alteração
+local do usuário e não pertence ao commit.
 
-## Próxima execução
+## Implementação atual da Task 5.4
 
-Implemente primeiro a **Task 5.4 — Estúdio do Professor**, conforme
-`docs/epic-5/estudio-professor.md`:
+A branch atual já possui:
 
 - conteúdos e atividades devem ter versões `DRAFT`, `IN_REVIEW`, `PUBLISHED`
   e `ARCHIVED`;
@@ -58,12 +57,18 @@ Implemente primeiro a **Task 5.4 — Estúdio do Professor**, conforme
 - fontes pesquisadas por Codex/Gemini entram como rascunho e exigem aprovação
   do professor;
 - não use editor JSON genérico para dados que geram recompensa;
-- arquivos binários ficam no Firebase Storage; o SQL guarda metadados e URL.
+- materiais por URL HTTPS e upload administrativo de PDF, PPT/PPTX e DOC/DOCX
+  de até 8 MiB, com regras de Storage em negação por padrão;
+- seed determinístico dos 5 módulos e 4 atividades, fallback estático e motor
+  autoritativo lendo a versão publicada;
+- 46 testes de Functions, lints, SDK, build e compilação Data Connect
+  aprovados. O smoke do Storage ainda depende de Java no ambiente local.
 
-Depois, implemente a **Task 5.5 — Administração de períodos**, permitindo
-agendar, ativar, pausar, retomar e encerrar competições com auditoria. Um novo
-período zera o ranking da disputa por recorte, sem apagar o livro-caixa. Ajustes
-de moedas devem ser transações compensatórias, nunca exclusões silenciosas.
+As Tasks 5.4 e 5.5 estão implementadas no commit `7440824`; os roteiros manuais
+ampliados permanecem disponíveis. A 5.5 permite criar, editar, agendar, ativar, pausar, retomar e
+encerrar períodos, exportar CSV compatível com Excel e usar o Capi Analista em
+painel flutuante. Um novo período zera o ranking apenas por recorte, sem apagar
+o livro-caixa. Ajustes de moedas continuam transações compensatórias.
 
 ## Fluxo obrigatório de cada Task
 
@@ -105,8 +110,8 @@ Siga esta ordem:
 5. realizar o redesign global de Landing, Home, trilha, atividades, ranking,
    perfil e professor, padronizando cores, tipografia e espaçamentos.
 
-Antes de começar a Task 5.4, apresente um relatório curto do estado encontrado,
-dos riscos e dos arquivos que pretende alterar. Não suponha que um documento
-substitui a inspeção do código e do Git.
+Antes do deploy, execute os smokes proporcionais ao ambiente de homologação e
+confirme a integração da branch. Não suponha que um documento substitui a
+inspeção do código e Git.
 
 ---
