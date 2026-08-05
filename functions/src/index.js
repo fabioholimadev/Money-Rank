@@ -25,6 +25,43 @@ import {
   answerStudentMentor,
   normalizeMentorQuestion,
 } from './studentMentor.js';
+import {
+  buildTeacherStudioPayload,
+  normalizeDraftInput,
+  normalizeEditorialKey,
+  normalizeEditorialType,
+  normalizeResearchInput,
+  normalizeResearchReviewInput,
+  normalizeVersionId,
+} from './teacherStudio.js';
+import {
+  createContentAssetMetadata,
+  createEditorialDraft,
+  createResearchReview,
+  getEditorialActorProfile,
+  getPublishedActivityDefinition,
+  getPublishedLearningModule,
+  listEditorialStudioData,
+  publishEditorialVersion,
+  reviewResearch,
+  submitEditorialForReview,
+  updateEditorialDraft,
+} from './editorialRepository.js';
+import { getActivityKeyForPhase } from './editorialValidation.js';
+import {
+  deleteTeacherStudioFile,
+  uploadTeacherStudioFile,
+} from './teacherStudioStorage.js';
+import {
+  normalizeCompetitionPeriodCreateInput,
+  normalizeCompetitionPeriodStatusInput,
+  normalizeCompetitionPeriodUpdateInput,
+} from './competitionPeriod.js';
+import {
+  createCompetitionPeriodAsTeacher,
+  setCompetitionPeriodStatusAsTeacher,
+  updateCompetitionPeriodAsTeacher,
+} from './competitionPeriodRepository.js';
 
 const REGION = 'southamerica-east1';
 const SESSION_DURATION_MILLISECONDS = 45 * 60 * 1_000;
@@ -63,6 +100,30 @@ function requireStudent(request) {
     );
   }
   return request.auth.uid;
+}
+
+async function requireTeacher(request) {
+  const uid = requireStudent(request);
+  const profile = await getEditorialActorProfile(uid);
+  if (!profile || profile.role !== 'TEACHER' || !profile.profileCompleted) {
+    throw new HttpsError(
+      'permission-denied',
+      'Somente um professor autorizado pode usar o Estúdio.',
+    );
+  }
+  return uid;
+}
+
+function editorialError(error, fallbackMessage) {
+  if (error instanceof HttpsError) return error;
+  const message = String(error?.message ?? '').trim();
+  const isExpectedEditorialError =
+    /inválid|precisa|deve|não pode|somente|excede|encontrad|alterad|recusad/i
+      .test(message);
+  return new HttpsError(
+    isExpectedEditorialError ? 'failed-precondition' : 'internal',
+    isExpectedEditorialError ? message : fallbackMessage,
+  );
 }
 
 function normalizeUuid(value, message) {
@@ -141,12 +202,26 @@ export const startActivitySession = onCall(
 
     try {
       getActivityDefinition(phaseNumber);
+      const activityKey = getActivityKeyForPhase(phaseNumber);
+      const publishedVersion = activityKey
+        ? await getPublishedActivityDefinition(activityKey)
+        : null;
+      const editorialDefinition = publishedVersion
+        ? {
+            ...publishedVersion.payload,
+            contentVersion: `studio-${publishedVersion.version}`,
+          }
+        : null;
       const prepared = phaseNumber === 1
         ? await buildAiPerigoDoceSession({
             apiKey: geminiApiKey.value(),
             model: geminiModel.value(),
+            definition: editorialDefinition,
           })
-        : buildStaticSession(phaseNumber, { variantId });
+        : buildStaticSession(phaseNumber, {
+            variantId,
+            definition: editorialDefinition,
+          });
       const sessionId = randomUUID();
       const expiresAt = new Date(
         Date.now() + SESSION_DURATION_MILLISECONDS,
@@ -349,6 +424,286 @@ export const askStudentMentor = onCall(
         'failed-precondition',
         'O CapiMentor não conseguiu responder agora.',
       );
+    }
+  },
+);
+
+export const getTeacherStudio = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const data = await listEditorialStudioData();
+      return {
+        ...buildTeacherStudioPayload(data),
+        teacher: { authorized: true },
+      };
+    } catch (error) {
+      logger.error('Falha ao carregar o Estúdio do Professor.', {
+        teacherUid,
+        message: error?.message,
+      });
+      throw editorialError(error, 'Não foi possível abrir o Estúdio.');
+    }
+  },
+);
+
+export const createTeacherStudioDraft = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const type = normalizeEditorialType(request.data?.type);
+      const key = normalizeEditorialKey(request.data?.key);
+      const version = await createEditorialDraft({
+        type,
+        key,
+        actorUid: teacherUid,
+      });
+      return { versionId: version.id, version: Number(version.version) };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível criar o rascunho.');
+    }
+  },
+);
+
+export const createTeacherCompetitionPeriod = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeCompetitionPeriodCreateInput(request.data);
+      return await createCompetitionPeriodAsTeacher({
+        ...input,
+        actorUid: teacherUid,
+      });
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível criar o período.');
+    }
+  },
+);
+
+export const updateTeacherCompetitionPeriod = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeCompetitionPeriodUpdateInput(request.data);
+      return await updateCompetitionPeriodAsTeacher({
+        ...input,
+        actorUid: teacherUid,
+      });
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível alterar o período.');
+    }
+  },
+);
+
+export const setTeacherCompetitionPeriodStatus = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeCompetitionPeriodStatusInput(request.data);
+      return await setCompetitionPeriodStatusAsTeacher({
+        ...input,
+        actorUid: teacherUid,
+      });
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível mudar o período.');
+    }
+  },
+);
+
+export const saveTeacherStudioDraft = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeDraftInput(request.data);
+      const version = await updateEditorialDraft({
+        ...input,
+        actorUid: teacherUid,
+      });
+      return {
+        versionId: version.id,
+        status: version.status,
+        updatedAt: version.updatedAt,
+      };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível salvar o rascunho.');
+    }
+  },
+);
+
+export const submitTeacherStudioReview = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const type = normalizeEditorialType(request.data?.type);
+      const versionId = normalizeVersionId(request.data?.versionId);
+      const version = await submitEditorialForReview({
+        type,
+        versionId,
+        actorUid: teacherUid,
+      });
+      return { versionId: version.id, status: version.status };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível enviar para revisão.');
+    }
+  },
+);
+
+export const publishTeacherStudioVersion = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const type = normalizeEditorialType(request.data?.type);
+      const versionId = normalizeVersionId(request.data?.versionId);
+      const version = await publishEditorialVersion({
+        type,
+        versionId,
+        actorUid: teacherUid,
+      });
+      return {
+        versionId: version.id,
+        status: version.status,
+        publishedAt: version.publishedAt,
+      };
+    } catch (error) {
+      logger.warn('Publicação editorial recusada.', {
+        teacherUid,
+        message: error?.message,
+      });
+      throw editorialError(error, 'Não foi possível publicar a versão.');
+    }
+  },
+);
+
+export const createTeacherResearchReview = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeResearchInput(request.data);
+      const reviewId = await createResearchReview({
+        ...input,
+        actorUid: teacherUid,
+      });
+      return { reviewId, status: 'PENDING_TEACHER_REVIEW' };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível registrar a pesquisa.');
+    }
+  },
+);
+
+export const reviewTeacherResearch = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeResearchReviewInput(request.data);
+      return await reviewResearch({ ...input, actorUid: teacherUid });
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível revisar a pesquisa.');
+    }
+  },
+);
+
+export const uploadTeacherStudioAsset = onCall(
+  {
+    ...callableOptions,
+    timeoutSeconds: 90,
+    memory: '512MiB',
+  },
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    let uploaded = null;
+    try {
+      const entityType = normalizeEditorialType(request.data?.type);
+      const entityId = normalizeVersionId(request.data?.versionId);
+      uploaded = await uploadTeacherStudioFile({
+        actorUid: teacherUid,
+        entityType,
+        entityId,
+        fileName: request.data?.fileName,
+        mimeType: request.data?.mimeType,
+        base64: request.data?.base64,
+      });
+      const asset = await createContentAssetMetadata({
+        ...uploaded,
+        actorUid: teacherUid,
+      });
+      return { asset };
+    } catch (error) {
+      if (uploaded?.storagePath) {
+        try {
+          await deleteTeacherStudioFile(uploaded.storagePath);
+        } catch (cleanupError) {
+          logger.error('Falha ao compensar upload editorial.', {
+            storagePath: uploaded.storagePath,
+            message: cleanupError?.message,
+          });
+        }
+      }
+      throw editorialError(error, 'Não foi possível enviar o arquivo.');
+    }
+  },
+);
+
+export const getPublishedLearningContent = onCall(
+  callableOptions,
+  async (request) => {
+    requireStudent(request);
+    try {
+      const moduleKey = normalizeEditorialKey(request.data?.moduleKey);
+      const version = await getPublishedLearningModule(moduleKey);
+      if (!version) {
+        throw new HttpsError('not-found', 'Conteúdo publicado não encontrado.');
+      }
+      return {
+        moduleKey: version.moduleKey,
+        phaseNumber: Number(version.phaseNumber),
+        version: Number(version.version),
+        title: version.title,
+        payload: version.payload,
+        publishedAt: version.publishedAt,
+      };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível carregar o conteúdo.');
+    }
+  },
+);
+
+export const getPublishedActivityCatalog = onCall(
+  callableOptions,
+  async (request) => {
+    requireStudent(request);
+    try {
+      const activityKey = normalizeEditorialKey(request.data?.activityKey);
+      const version = await getPublishedActivityDefinition(activityKey);
+      if (!version) {
+        throw new HttpsError('not-found', 'Atividade publicada não encontrada.');
+      }
+      if (Number(version.phaseNumber) === 1) {
+        return {
+          activityKey,
+          phaseNumber: 1,
+          version: Number(version.version),
+          payload: null,
+        };
+      }
+      return {
+        activityKey: version.activityKey,
+        phaseNumber: Number(version.phaseNumber),
+        version: Number(version.version),
+        payload: version.payload,
+        publishedAt: version.publishedAt,
+      };
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível carregar a atividade.');
     }
   },
 );

@@ -26,6 +26,30 @@ const CompetitionPeriodStatus = {
 }
 exports.CompetitionPeriodStatus = CompetitionPeriodStatus;
 
+const ContentAssetType = {
+  VIDEO: "VIDEO",
+  SLIDES: "SLIDES",
+  DOCUMENT: "DOCUMENT",
+  SUMMARY: "SUMMARY",
+  EXTERNAL_LINK: "EXTERNAL_LINK",
+}
+exports.ContentAssetType = ContentAssetType;
+
+const EditorialEntityType = {
+  LEARNING_MODULE: "LEARNING_MODULE",
+  ACTIVITY_DEFINITION: "ACTIVITY_DEFINITION",
+  RESEARCH_REVIEW: "RESEARCH_REVIEW",
+}
+exports.EditorialEntityType = EditorialEntityType;
+
+const EditorialStatus = {
+  DRAFT: "DRAFT",
+  IN_REVIEW: "IN_REVIEW",
+  PUBLISHED: "PUBLISHED",
+  ARCHIVED: "ARCHIVED",
+}
+exports.EditorialStatus = EditorialStatus;
+
 const ProfessionalAvatar = {
   CAPI_CIENTISTA: "CAPI_CIENTISTA",
   CAPI_PROFESSORA: "CAPI_PROFESSORA",
@@ -42,6 +66,13 @@ const ProgressStatus = {
   COMPLETED: "COMPLETED",
 }
 exports.ProgressStatus = ProgressStatus;
+
+const ResearchReviewStatus = {
+  PENDING_TEACHER_REVIEW: "PENDING_TEACHER_REVIEW",
+  TEACHER_APPROVED: "TEACHER_APPROVED",
+  REJECTED: "REJECTED",
+}
+exports.ResearchReviewStatus = ResearchReviewStatus;
 
 const RewardSuppressionReason = {
   NONE: "NONE",
@@ -80,6 +111,160 @@ exports.upsertMyProfileWithAvatarRef = upsertMyProfileWithAvatarRef;
 exports.upsertMyProfileWithAvatar = function upsertMyProfileWithAvatar(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(upsertMyProfileWithAvatarRef(dcInstance, inputVars));
+}
+;
+
+const createLearningModuleVersionEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateLearningModuleVersionEditorial', inputVars);
+}
+createLearningModuleVersionEditorialRef.operationName = 'CreateLearningModuleVersionEditorial';
+exports.createLearningModuleVersionEditorialRef = createLearningModuleVersionEditorialRef;
+
+exports.createLearningModuleVersionEditorial = function createLearningModuleVersionEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createLearningModuleVersionEditorialRef(dcInstance, inputVars));
+}
+;
+
+const createActivityDefinitionVersionEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateActivityDefinitionVersionEditorial', inputVars);
+}
+createActivityDefinitionVersionEditorialRef.operationName = 'CreateActivityDefinitionVersionEditorial';
+exports.createActivityDefinitionVersionEditorialRef = createActivityDefinitionVersionEditorialRef;
+
+exports.createActivityDefinitionVersionEditorial = function createActivityDefinitionVersionEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createActivityDefinitionVersionEditorialRef(dcInstance, inputVars));
+}
+;
+
+const updateLearningModuleDraftEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateLearningModuleDraftEditorial', inputVars);
+}
+updateLearningModuleDraftEditorialRef.operationName = 'UpdateLearningModuleDraftEditorial';
+exports.updateLearningModuleDraftEditorialRef = updateLearningModuleDraftEditorialRef;
+
+exports.updateLearningModuleDraftEditorial = function updateLearningModuleDraftEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateLearningModuleDraftEditorialRef(dcInstance, inputVars));
+}
+;
+
+const updateActivityDefinitionDraftEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateActivityDefinitionDraftEditorial', inputVars);
+}
+updateActivityDefinitionDraftEditorialRef.operationName = 'UpdateActivityDefinitionDraftEditorial';
+exports.updateActivityDefinitionDraftEditorialRef = updateActivityDefinitionDraftEditorialRef;
+
+exports.updateActivityDefinitionDraftEditorial = function updateActivityDefinitionDraftEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateActivityDefinitionDraftEditorialRef(dcInstance, inputVars));
+}
+;
+
+const submitLearningModuleForReviewEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SubmitLearningModuleForReviewEditorial', inputVars);
+}
+submitLearningModuleForReviewEditorialRef.operationName = 'SubmitLearningModuleForReviewEditorial';
+exports.submitLearningModuleForReviewEditorialRef = submitLearningModuleForReviewEditorialRef;
+
+exports.submitLearningModuleForReviewEditorial = function submitLearningModuleForReviewEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(submitLearningModuleForReviewEditorialRef(dcInstance, inputVars));
+}
+;
+
+const submitActivityDefinitionForReviewEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SubmitActivityDefinitionForReviewEditorial', inputVars);
+}
+submitActivityDefinitionForReviewEditorialRef.operationName = 'SubmitActivityDefinitionForReviewEditorial';
+exports.submitActivityDefinitionForReviewEditorialRef = submitActivityDefinitionForReviewEditorialRef;
+
+exports.submitActivityDefinitionForReviewEditorial = function submitActivityDefinitionForReviewEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(submitActivityDefinitionForReviewEditorialRef(dcInstance, inputVars));
+}
+;
+
+const publishLearningModuleVersionEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'PublishLearningModuleVersionEditorial', inputVars);
+}
+publishLearningModuleVersionEditorialRef.operationName = 'PublishLearningModuleVersionEditorial';
+exports.publishLearningModuleVersionEditorialRef = publishLearningModuleVersionEditorialRef;
+
+exports.publishLearningModuleVersionEditorial = function publishLearningModuleVersionEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(publishLearningModuleVersionEditorialRef(dcInstance, inputVars));
+}
+;
+
+const publishActivityDefinitionVersionEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'PublishActivityDefinitionVersionEditorial', inputVars);
+}
+publishActivityDefinitionVersionEditorialRef.operationName = 'PublishActivityDefinitionVersionEditorial';
+exports.publishActivityDefinitionVersionEditorialRef = publishActivityDefinitionVersionEditorialRef;
+
+exports.publishActivityDefinitionVersionEditorial = function publishActivityDefinitionVersionEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(publishActivityDefinitionVersionEditorialRef(dcInstance, inputVars));
+}
+;
+
+const createResearchReviewEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateResearchReviewEditorial', inputVars);
+}
+createResearchReviewEditorialRef.operationName = 'CreateResearchReviewEditorial';
+exports.createResearchReviewEditorialRef = createResearchReviewEditorialRef;
+
+exports.createResearchReviewEditorial = function createResearchReviewEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createResearchReviewEditorialRef(dcInstance, inputVars));
+}
+;
+
+const reviewResearchEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ReviewResearchEditorial', inputVars);
+}
+reviewResearchEditorialRef.operationName = 'ReviewResearchEditorial';
+exports.reviewResearchEditorialRef = reviewResearchEditorialRef;
+
+exports.reviewResearchEditorial = function reviewResearchEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(reviewResearchEditorialRef(dcInstance, inputVars));
+}
+;
+
+const createContentAssetEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateContentAssetEditorial', inputVars);
+}
+createContentAssetEditorialRef.operationName = 'CreateContentAssetEditorial';
+exports.createContentAssetEditorialRef = createContentAssetEditorialRef;
+
+exports.createContentAssetEditorial = function createContentAssetEditorial(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createContentAssetEditorialRef(dcInstance, inputVars));
 }
 ;
 
@@ -195,6 +380,48 @@ exports.updateCompetitionPeriodStatus = function updateCompetitionPeriodStatus(d
 }
 ;
 
+const createTeacherCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateTeacherCompetitionPeriod', inputVars);
+}
+createTeacherCompetitionPeriodRef.operationName = 'CreateTeacherCompetitionPeriod';
+exports.createTeacherCompetitionPeriodRef = createTeacherCompetitionPeriodRef;
+
+exports.createTeacherCompetitionPeriod = function createTeacherCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createTeacherCompetitionPeriodRef(dcInstance, inputVars));
+}
+;
+
+const updateTeacherCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateTeacherCompetitionPeriod', inputVars);
+}
+updateTeacherCompetitionPeriodRef.operationName = 'UpdateTeacherCompetitionPeriod';
+exports.updateTeacherCompetitionPeriodRef = updateTeacherCompetitionPeriodRef;
+
+exports.updateTeacherCompetitionPeriod = function updateTeacherCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateTeacherCompetitionPeriodRef(dcInstance, inputVars));
+}
+;
+
+const setTeacherCompetitionPeriodStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetTeacherCompetitionPeriodStatus', inputVars);
+}
+setTeacherCompetitionPeriodStatusRef.operationName = 'SetTeacherCompetitionPeriodStatus';
+exports.setTeacherCompetitionPeriodStatusRef = setTeacherCompetitionPeriodStatusRef;
+
+exports.setTeacherCompetitionPeriodStatus = function setTeacherCompetitionPeriodStatus(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setTeacherCompetitionPeriodStatusRef(dcInstance, inputVars));
+}
+;
+
 const createAuthoritativeActivitySessionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -305,6 +532,96 @@ exports.getMyProfile = function getMyProfile(dcOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
   return executeQuery(getMyProfileRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getEditorialSeedStateRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetEditorialSeedState');
+}
+getEditorialSeedStateRef.operationName = 'GetEditorialSeedState';
+exports.getEditorialSeedStateRef = getEditorialSeedStateRef;
+
+exports.getEditorialSeedState = function getEditorialSeedState(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getEditorialSeedStateRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listEditorialStudioDataRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListEditorialStudioData');
+}
+listEditorialStudioDataRef.operationName = 'ListEditorialStudioData';
+exports.listEditorialStudioDataRef = listEditorialStudioDataRef;
+
+exports.listEditorialStudioData = function listEditorialStudioData(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(listEditorialStudioDataRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getLearningModuleVersionForEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetLearningModuleVersionForEditorial', inputVars);
+}
+getLearningModuleVersionForEditorialRef.operationName = 'GetLearningModuleVersionForEditorial';
+exports.getLearningModuleVersionForEditorialRef = getLearningModuleVersionForEditorialRef;
+
+exports.getLearningModuleVersionForEditorial = function getLearningModuleVersionForEditorial(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getLearningModuleVersionForEditorialRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getActivityDefinitionVersionForEditorialRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetActivityDefinitionVersionForEditorial', inputVars);
+}
+getActivityDefinitionVersionForEditorialRef.operationName = 'GetActivityDefinitionVersionForEditorial';
+exports.getActivityDefinitionVersionForEditorialRef = getActivityDefinitionVersionForEditorialRef;
+
+exports.getActivityDefinitionVersionForEditorial = function getActivityDefinitionVersionForEditorial(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getActivityDefinitionVersionForEditorialRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getPublishedLearningModuleForStudentRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetPublishedLearningModuleForStudent', inputVars);
+}
+getPublishedLearningModuleForStudentRef.operationName = 'GetPublishedLearningModuleForStudent';
+exports.getPublishedLearningModuleForStudentRef = getPublishedLearningModuleForStudentRef;
+
+exports.getPublishedLearningModuleForStudent = function getPublishedLearningModuleForStudent(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPublishedLearningModuleForStudentRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getPublishedActivityDefinitionForSessionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetPublishedActivityDefinitionForSession', inputVars);
+}
+getPublishedActivityDefinitionForSessionRef.operationName = 'GetPublishedActivityDefinitionForSession';
+exports.getPublishedActivityDefinitionForSessionRef = getPublishedActivityDefinitionForSessionRef;
+
+exports.getPublishedActivityDefinitionForSession = function getPublishedActivityDefinitionForSession(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPublishedActivityDefinitionForSessionRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 

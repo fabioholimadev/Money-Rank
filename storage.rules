@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Arquivos do Estúdio são gravados exclusivamente por uma Cloud Function.
+    // O Admin SDK valida o papel TEACHER no Capi Bank e ignora estas regras.
+    match /teacher-studio/{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Default-deny impede que um caminho novo seja exposto por acidente.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

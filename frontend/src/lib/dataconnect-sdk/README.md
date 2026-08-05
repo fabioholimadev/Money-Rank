@@ -9,6 +9,12 @@ This README will guide you through the process of using the generated JavaScript
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
 - [**Queries**](#queries)
   - [*GetMyProfile*](#getmyprofile)
+  - [*GetEditorialSeedState*](#geteditorialseedstate)
+  - [*ListEditorialStudioData*](#listeditorialstudiodata)
+  - [*GetLearningModuleVersionForEditorial*](#getlearningmoduleversionforeditorial)
+  - [*GetActivityDefinitionVersionForEditorial*](#getactivitydefinitionversionforeditorial)
+  - [*GetPublishedLearningModuleForStudent*](#getpublishedlearningmoduleforstudent)
+  - [*GetPublishedActivityDefinitionForSession*](#getpublishedactivitydefinitionforsession)
   - [*ListMyProgress*](#listmyprogress)
   - [*ListMyCapiCoinTransactions*](#listmycapicointransactions)
   - [*GetMyCapiCoinTransactionBySource*](#getmycapicointransactionbysource)
@@ -24,6 +30,17 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetTeacherDashboard*](#getteacherdashboard)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
+  - [*CreateLearningModuleVersionEditorial*](#createlearningmoduleversioneditorial)
+  - [*CreateActivityDefinitionVersionEditorial*](#createactivitydefinitionversioneditorial)
+  - [*UpdateLearningModuleDraftEditorial*](#updatelearningmoduledrafteditorial)
+  - [*UpdateActivityDefinitionDraftEditorial*](#updateactivitydefinitiondrafteditorial)
+  - [*SubmitLearningModuleForReviewEditorial*](#submitlearningmoduleforrevieweditorial)
+  - [*SubmitActivityDefinitionForReviewEditorial*](#submitactivitydefinitionforrevieweditorial)
+  - [*PublishLearningModuleVersionEditorial*](#publishlearningmoduleversioneditorial)
+  - [*PublishActivityDefinitionVersionEditorial*](#publishactivitydefinitionversioneditorial)
+  - [*CreateResearchReviewEditorial*](#createresearchrevieweditorial)
+  - [*ReviewResearchEditorial*](#reviewresearcheditorial)
+  - [*CreateContentAssetEditorial*](#createcontentasseteditorial)
   - [*UpsertMyProfileWithPhoto*](#upsertmyprofilewithphoto)
   - [*UpsertMyProfileWithoutSyncedPhoto*](#upsertmyprofilewithoutsyncedphoto)
   - [*SetUserRoleByEmail*](#setuserrolebyemail)
@@ -32,6 +49,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertEconomyConfig*](#upserteconomyconfig)
   - [*CreateCompetitionPeriod*](#createcompetitionperiod)
   - [*UpdateCompetitionPeriodStatus*](#updatecompetitionperiodstatus)
+  - [*CreateTeacherCompetitionPeriod*](#createteachercompetitionperiod)
+  - [*UpdateTeacherCompetitionPeriod*](#updateteachercompetitionperiod)
+  - [*SetTeacherCompetitionPeriodStatus*](#setteachercompetitionperiodstatus)
   - [*CreateAuthoritativeActivitySession*](#createauthoritativeactivitysession)
   - [*MarkAuthoritativeActivitySessionSubmitted*](#markauthoritativeactivitysessionsubmitted)
   - [*InitializeMyTrail*](#initializemytrail)
@@ -188,6 +208,764 @@ console.log(data.user);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.user);
+});
+```
+
+## GetEditorialSeedState
+You can execute the `GetEditorialSeedState` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getEditorialSeedState(options?: ExecuteQueryOptions): QueryPromise<GetEditorialSeedStateData, undefined>;
+
+interface GetEditorialSeedStateRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetEditorialSeedStateData, undefined>;
+}
+export const getEditorialSeedStateRef: GetEditorialSeedStateRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getEditorialSeedState(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetEditorialSeedStateData, undefined>;
+
+interface GetEditorialSeedStateRef {
+  ...
+  (dc: DataConnect): QueryRef<GetEditorialSeedStateData, undefined>;
+}
+export const getEditorialSeedStateRef: GetEditorialSeedStateRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getEditorialSeedStateRef:
+```typescript
+const name = getEditorialSeedStateRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetEditorialSeedState` query has no variables.
+### Return Type
+Recall that executing the `GetEditorialSeedState` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetEditorialSeedStateData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetEditorialSeedStateData {
+  learningModules: ({
+    moduleKey: string;
+  })[];
+  activities: ({
+    activityKey: string;
+  })[];
+}
+```
+### Using `GetEditorialSeedState`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getEditorialSeedState } from '@money-rank/dataconnect';
+
+
+// Call the `getEditorialSeedState()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getEditorialSeedState();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getEditorialSeedState(dataConnect);
+
+console.log(data.learningModules);
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+getEditorialSeedState().then((response) => {
+  const data = response.data;
+  console.log(data.learningModules);
+  console.log(data.activities);
+});
+```
+
+### Using `GetEditorialSeedState`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getEditorialSeedStateRef } from '@money-rank/dataconnect';
+
+
+// Call the `getEditorialSeedStateRef()` function to get a reference to the query.
+const ref = getEditorialSeedStateRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getEditorialSeedStateRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.learningModules);
+console.log(data.activities);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModules);
+  console.log(data.activities);
+});
+```
+
+## ListEditorialStudioData
+You can execute the `ListEditorialStudioData` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listEditorialStudioData(options?: ExecuteQueryOptions): QueryPromise<ListEditorialStudioDataData, undefined>;
+
+interface ListEditorialStudioDataRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListEditorialStudioDataData, undefined>;
+}
+export const listEditorialStudioDataRef: ListEditorialStudioDataRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listEditorialStudioData(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListEditorialStudioDataData, undefined>;
+
+interface ListEditorialStudioDataRef {
+  ...
+  (dc: DataConnect): QueryRef<ListEditorialStudioDataData, undefined>;
+}
+export const listEditorialStudioDataRef: ListEditorialStudioDataRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listEditorialStudioDataRef:
+```typescript
+const name = listEditorialStudioDataRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListEditorialStudioData` query has no variables.
+### Return Type
+Recall that executing the `ListEditorialStudioData` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListEditorialStudioDataData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListEditorialStudioDataData {
+  learningModules: ({
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & LearningModuleVersion_Key)[];
+  activities: ({
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ActivityDefinitionVersion_Key)[];
+  research: ({
+    id: UUIDString;
+    activityKey: string;
+    factKey: string;
+    title: string;
+    claim: string;
+    sourceUrl: string;
+    proposedBy: string;
+    status: ResearchReviewStatus;
+    reviewNotes?: string | null;
+    createdByUid: string;
+    reviewedByUid?: string | null;
+    reviewedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ResearchReview_Key)[];
+  assets: ({
+    id: UUIDString;
+    entityType: EditorialEntityType;
+    entityId: UUIDString;
+    assetType: ContentAssetType;
+    displayName: string;
+    url: string;
+    storagePath?: string | null;
+    mimeType?: string | null;
+    sizeBytes?: Int64String | null;
+    sha256?: string | null;
+    createdByUid: string;
+    createdAt: TimestampString;
+  } & ContentAsset_Key)[];
+  audit: ({
+    id: UUIDString;
+    entityType: EditorialEntityType;
+    entityId: UUIDString;
+    entityKey: string;
+    version: number;
+    action: string;
+    actorUid: string;
+    summary: string;
+    details?: unknown | null;
+    createdAt: TimestampString;
+  } & EditorialAuditLog_Key)[];
+}
+```
+### Using `ListEditorialStudioData`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listEditorialStudioData } from '@money-rank/dataconnect';
+
+
+// Call the `listEditorialStudioData()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listEditorialStudioData();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listEditorialStudioData(dataConnect);
+
+console.log(data.learningModules);
+console.log(data.activities);
+console.log(data.research);
+console.log(data.assets);
+console.log(data.audit);
+
+// Or, you can use the `Promise` API.
+listEditorialStudioData().then((response) => {
+  const data = response.data;
+  console.log(data.learningModules);
+  console.log(data.activities);
+  console.log(data.research);
+  console.log(data.assets);
+  console.log(data.audit);
+});
+```
+
+### Using `ListEditorialStudioData`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listEditorialStudioDataRef } from '@money-rank/dataconnect';
+
+
+// Call the `listEditorialStudioDataRef()` function to get a reference to the query.
+const ref = listEditorialStudioDataRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listEditorialStudioDataRef(dataConnect);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.learningModules);
+console.log(data.activities);
+console.log(data.research);
+console.log(data.assets);
+console.log(data.audit);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModules);
+  console.log(data.activities);
+  console.log(data.research);
+  console.log(data.assets);
+  console.log(data.audit);
+});
+```
+
+## GetLearningModuleVersionForEditorial
+You can execute the `GetLearningModuleVersionForEditorial` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getLearningModuleVersionForEditorial(vars: GetLearningModuleVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+
+interface GetLearningModuleVersionForEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetLearningModuleVersionForEditorialVariables): QueryRef<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+}
+export const getLearningModuleVersionForEditorialRef: GetLearningModuleVersionForEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getLearningModuleVersionForEditorial(dc: DataConnect, vars: GetLearningModuleVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+
+interface GetLearningModuleVersionForEditorialRef {
+  ...
+  (dc: DataConnect, vars: GetLearningModuleVersionForEditorialVariables): QueryRef<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+}
+export const getLearningModuleVersionForEditorialRef: GetLearningModuleVersionForEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getLearningModuleVersionForEditorialRef:
+```typescript
+const name = getLearningModuleVersionForEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetLearningModuleVersionForEditorial` query requires an argument of type `GetLearningModuleVersionForEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetLearningModuleVersionForEditorialVariables {
+  versionId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetLearningModuleVersionForEditorial` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetLearningModuleVersionForEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetLearningModuleVersionForEditorialData {
+  learningModuleVersion?: {
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & LearningModuleVersion_Key;
+}
+```
+### Using `GetLearningModuleVersionForEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getLearningModuleVersionForEditorial, GetLearningModuleVersionForEditorialVariables } from '@money-rank/dataconnect';
+
+// The `GetLearningModuleVersionForEditorial` query requires an argument of type `GetLearningModuleVersionForEditorialVariables`:
+const getLearningModuleVersionForEditorialVars: GetLearningModuleVersionForEditorialVariables = {
+  versionId: ..., 
+};
+
+// Call the `getLearningModuleVersionForEditorial()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getLearningModuleVersionForEditorial(getLearningModuleVersionForEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await getLearningModuleVersionForEditorial({ versionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getLearningModuleVersionForEditorial(dataConnect, getLearningModuleVersionForEditorialVars);
+
+console.log(data.learningModuleVersion);
+
+// Or, you can use the `Promise` API.
+getLearningModuleVersionForEditorial(getLearningModuleVersionForEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion);
+});
+```
+
+### Using `GetLearningModuleVersionForEditorial`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getLearningModuleVersionForEditorialRef, GetLearningModuleVersionForEditorialVariables } from '@money-rank/dataconnect';
+
+// The `GetLearningModuleVersionForEditorial` query requires an argument of type `GetLearningModuleVersionForEditorialVariables`:
+const getLearningModuleVersionForEditorialVars: GetLearningModuleVersionForEditorialVariables = {
+  versionId: ..., 
+};
+
+// Call the `getLearningModuleVersionForEditorialRef()` function to get a reference to the query.
+const ref = getLearningModuleVersionForEditorialRef(getLearningModuleVersionForEditorialVars);
+// Variables can be defined inline as well.
+const ref = getLearningModuleVersionForEditorialRef({ versionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getLearningModuleVersionForEditorialRef(dataConnect, getLearningModuleVersionForEditorialVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.learningModuleVersion);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion);
+});
+```
+
+## GetActivityDefinitionVersionForEditorial
+You can execute the `GetActivityDefinitionVersionForEditorial` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getActivityDefinitionVersionForEditorial(vars: GetActivityDefinitionVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+
+interface GetActivityDefinitionVersionForEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetActivityDefinitionVersionForEditorialVariables): QueryRef<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+}
+export const getActivityDefinitionVersionForEditorialRef: GetActivityDefinitionVersionForEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getActivityDefinitionVersionForEditorial(dc: DataConnect, vars: GetActivityDefinitionVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+
+interface GetActivityDefinitionVersionForEditorialRef {
+  ...
+  (dc: DataConnect, vars: GetActivityDefinitionVersionForEditorialVariables): QueryRef<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+}
+export const getActivityDefinitionVersionForEditorialRef: GetActivityDefinitionVersionForEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getActivityDefinitionVersionForEditorialRef:
+```typescript
+const name = getActivityDefinitionVersionForEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetActivityDefinitionVersionForEditorial` query requires an argument of type `GetActivityDefinitionVersionForEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetActivityDefinitionVersionForEditorialVariables {
+  versionId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetActivityDefinitionVersionForEditorial` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetActivityDefinitionVersionForEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetActivityDefinitionVersionForEditorialData {
+  activityDefinitionVersion?: {
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ActivityDefinitionVersion_Key;
+}
+```
+### Using `GetActivityDefinitionVersionForEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getActivityDefinitionVersionForEditorial, GetActivityDefinitionVersionForEditorialVariables } from '@money-rank/dataconnect';
+
+// The `GetActivityDefinitionVersionForEditorial` query requires an argument of type `GetActivityDefinitionVersionForEditorialVariables`:
+const getActivityDefinitionVersionForEditorialVars: GetActivityDefinitionVersionForEditorialVariables = {
+  versionId: ..., 
+};
+
+// Call the `getActivityDefinitionVersionForEditorial()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getActivityDefinitionVersionForEditorial(getActivityDefinitionVersionForEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await getActivityDefinitionVersionForEditorial({ versionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getActivityDefinitionVersionForEditorial(dataConnect, getActivityDefinitionVersionForEditorialVars);
+
+console.log(data.activityDefinitionVersion);
+
+// Or, you can use the `Promise` API.
+getActivityDefinitionVersionForEditorial(getActivityDefinitionVersionForEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion);
+});
+```
+
+### Using `GetActivityDefinitionVersionForEditorial`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getActivityDefinitionVersionForEditorialRef, GetActivityDefinitionVersionForEditorialVariables } from '@money-rank/dataconnect';
+
+// The `GetActivityDefinitionVersionForEditorial` query requires an argument of type `GetActivityDefinitionVersionForEditorialVariables`:
+const getActivityDefinitionVersionForEditorialVars: GetActivityDefinitionVersionForEditorialVariables = {
+  versionId: ..., 
+};
+
+// Call the `getActivityDefinitionVersionForEditorialRef()` function to get a reference to the query.
+const ref = getActivityDefinitionVersionForEditorialRef(getActivityDefinitionVersionForEditorialVars);
+// Variables can be defined inline as well.
+const ref = getActivityDefinitionVersionForEditorialRef({ versionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getActivityDefinitionVersionForEditorialRef(dataConnect, getActivityDefinitionVersionForEditorialVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityDefinitionVersion);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion);
+});
+```
+
+## GetPublishedLearningModuleForStudent
+You can execute the `GetPublishedLearningModuleForStudent` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getPublishedLearningModuleForStudent(vars: GetPublishedLearningModuleForStudentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+
+interface GetPublishedLearningModuleForStudentRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPublishedLearningModuleForStudentVariables): QueryRef<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+}
+export const getPublishedLearningModuleForStudentRef: GetPublishedLearningModuleForStudentRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getPublishedLearningModuleForStudent(dc: DataConnect, vars: GetPublishedLearningModuleForStudentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+
+interface GetPublishedLearningModuleForStudentRef {
+  ...
+  (dc: DataConnect, vars: GetPublishedLearningModuleForStudentVariables): QueryRef<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+}
+export const getPublishedLearningModuleForStudentRef: GetPublishedLearningModuleForStudentRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getPublishedLearningModuleForStudentRef:
+```typescript
+const name = getPublishedLearningModuleForStudentRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetPublishedLearningModuleForStudent` query requires an argument of type `GetPublishedLearningModuleForStudentVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetPublishedLearningModuleForStudentVariables {
+  moduleKey: string;
+}
+```
+### Return Type
+Recall that executing the `GetPublishedLearningModuleForStudent` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetPublishedLearningModuleForStudentData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetPublishedLearningModuleForStudentData {
+  learningModuleVersions: ({
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    title: string;
+    payload: unknown;
+    publishedAt?: TimestampString | null;
+  } & LearningModuleVersion_Key)[];
+}
+```
+### Using `GetPublishedLearningModuleForStudent`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getPublishedLearningModuleForStudent, GetPublishedLearningModuleForStudentVariables } from '@money-rank/dataconnect';
+
+// The `GetPublishedLearningModuleForStudent` query requires an argument of type `GetPublishedLearningModuleForStudentVariables`:
+const getPublishedLearningModuleForStudentVars: GetPublishedLearningModuleForStudentVariables = {
+  moduleKey: ..., 
+};
+
+// Call the `getPublishedLearningModuleForStudent()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getPublishedLearningModuleForStudent(getPublishedLearningModuleForStudentVars);
+// Variables can be defined inline as well.
+const { data } = await getPublishedLearningModuleForStudent({ moduleKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getPublishedLearningModuleForStudent(dataConnect, getPublishedLearningModuleForStudentVars);
+
+console.log(data.learningModuleVersions);
+
+// Or, you can use the `Promise` API.
+getPublishedLearningModuleForStudent(getPublishedLearningModuleForStudentVars).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersions);
+});
+```
+
+### Using `GetPublishedLearningModuleForStudent`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getPublishedLearningModuleForStudentRef, GetPublishedLearningModuleForStudentVariables } from '@money-rank/dataconnect';
+
+// The `GetPublishedLearningModuleForStudent` query requires an argument of type `GetPublishedLearningModuleForStudentVariables`:
+const getPublishedLearningModuleForStudentVars: GetPublishedLearningModuleForStudentVariables = {
+  moduleKey: ..., 
+};
+
+// Call the `getPublishedLearningModuleForStudentRef()` function to get a reference to the query.
+const ref = getPublishedLearningModuleForStudentRef(getPublishedLearningModuleForStudentVars);
+// Variables can be defined inline as well.
+const ref = getPublishedLearningModuleForStudentRef({ moduleKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getPublishedLearningModuleForStudentRef(dataConnect, getPublishedLearningModuleForStudentVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.learningModuleVersions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersions);
+});
+```
+
+## GetPublishedActivityDefinitionForSession
+You can execute the `GetPublishedActivityDefinitionForSession` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getPublishedActivityDefinitionForSession(vars: GetPublishedActivityDefinitionForSessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+
+interface GetPublishedActivityDefinitionForSessionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPublishedActivityDefinitionForSessionVariables): QueryRef<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+}
+export const getPublishedActivityDefinitionForSessionRef: GetPublishedActivityDefinitionForSessionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getPublishedActivityDefinitionForSession(dc: DataConnect, vars: GetPublishedActivityDefinitionForSessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+
+interface GetPublishedActivityDefinitionForSessionRef {
+  ...
+  (dc: DataConnect, vars: GetPublishedActivityDefinitionForSessionVariables): QueryRef<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+}
+export const getPublishedActivityDefinitionForSessionRef: GetPublishedActivityDefinitionForSessionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getPublishedActivityDefinitionForSessionRef:
+```typescript
+const name = getPublishedActivityDefinitionForSessionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetPublishedActivityDefinitionForSession` query requires an argument of type `GetPublishedActivityDefinitionForSessionVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetPublishedActivityDefinitionForSessionVariables {
+  activityKey: string;
+}
+```
+### Return Type
+Recall that executing the `GetPublishedActivityDefinitionForSession` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetPublishedActivityDefinitionForSessionData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetPublishedActivityDefinitionForSessionData {
+  activityDefinitionVersions: ({
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    title: string;
+    payload: unknown;
+    publishedAt?: TimestampString | null;
+  } & ActivityDefinitionVersion_Key)[];
+}
+```
+### Using `GetPublishedActivityDefinitionForSession`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getPublishedActivityDefinitionForSession, GetPublishedActivityDefinitionForSessionVariables } from '@money-rank/dataconnect';
+
+// The `GetPublishedActivityDefinitionForSession` query requires an argument of type `GetPublishedActivityDefinitionForSessionVariables`:
+const getPublishedActivityDefinitionForSessionVars: GetPublishedActivityDefinitionForSessionVariables = {
+  activityKey: ..., 
+};
+
+// Call the `getPublishedActivityDefinitionForSession()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getPublishedActivityDefinitionForSession(getPublishedActivityDefinitionForSessionVars);
+// Variables can be defined inline as well.
+const { data } = await getPublishedActivityDefinitionForSession({ activityKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getPublishedActivityDefinitionForSession(dataConnect, getPublishedActivityDefinitionForSessionVars);
+
+console.log(data.activityDefinitionVersions);
+
+// Or, you can use the `Promise` API.
+getPublishedActivityDefinitionForSession(getPublishedActivityDefinitionForSessionVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersions);
+});
+```
+
+### Using `GetPublishedActivityDefinitionForSession`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getPublishedActivityDefinitionForSessionRef, GetPublishedActivityDefinitionForSessionVariables } from '@money-rank/dataconnect';
+
+// The `GetPublishedActivityDefinitionForSession` query requires an argument of type `GetPublishedActivityDefinitionForSessionVariables`:
+const getPublishedActivityDefinitionForSessionVars: GetPublishedActivityDefinitionForSessionVariables = {
+  activityKey: ..., 
+};
+
+// Call the `getPublishedActivityDefinitionForSessionRef()` function to get a reference to the query.
+const ref = getPublishedActivityDefinitionForSessionRef(getPublishedActivityDefinitionForSessionVars);
+// Variables can be defined inline as well.
+const ref = getPublishedActivityDefinitionForSessionRef({ activityKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getPublishedActivityDefinitionForSessionRef(dataConnect, getPublishedActivityDefinitionForSessionVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.activityDefinitionVersions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersions);
 });
 ```
 
@@ -1845,6 +2623,1382 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## CreateLearningModuleVersionEditorial
+You can execute the `CreateLearningModuleVersionEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createLearningModuleVersionEditorial(vars: CreateLearningModuleVersionEditorialVariables): MutationPromise<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+
+interface CreateLearningModuleVersionEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateLearningModuleVersionEditorialVariables): MutationRef<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+}
+export const createLearningModuleVersionEditorialRef: CreateLearningModuleVersionEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createLearningModuleVersionEditorial(dc: DataConnect, vars: CreateLearningModuleVersionEditorialVariables): MutationPromise<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+
+interface CreateLearningModuleVersionEditorialRef {
+  ...
+  (dc: DataConnect, vars: CreateLearningModuleVersionEditorialVariables): MutationRef<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+}
+export const createLearningModuleVersionEditorialRef: CreateLearningModuleVersionEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createLearningModuleVersionEditorialRef:
+```typescript
+const name = createLearningModuleVersionEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateLearningModuleVersionEditorial` mutation requires an argument of type `CreateLearningModuleVersionEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateLearningModuleVersionEditorialVariables {
+  versionId: UUIDString;
+  moduleKey: string;
+  phaseNumber: number;
+  version: number;
+  status: EditorialStatus;
+  publicationKey?: string | null;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+  publishedByUid?: string | null;
+  publishedAt?: TimestampString | null;
+}
+```
+### Return Type
+Recall that executing the `CreateLearningModuleVersionEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateLearningModuleVersionEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateLearningModuleVersionEditorialData {
+  learningModuleVersion_insert: LearningModuleVersion_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+```
+### Using `CreateLearningModuleVersionEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createLearningModuleVersionEditorial, CreateLearningModuleVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateLearningModuleVersionEditorial` mutation requires an argument of type `CreateLearningModuleVersionEditorialVariables`:
+const createLearningModuleVersionEditorialVars: CreateLearningModuleVersionEditorialVariables = {
+  versionId: ..., 
+  moduleKey: ..., 
+  phaseNumber: ..., 
+  version: ..., 
+  status: ..., 
+  publicationKey: ..., // optional
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+  publishedByUid: ..., // optional
+  publishedAt: ..., // optional
+};
+
+// Call the `createLearningModuleVersionEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createLearningModuleVersionEditorial(createLearningModuleVersionEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await createLearningModuleVersionEditorial({ versionId: ..., moduleKey: ..., phaseNumber: ..., version: ..., status: ..., publicationKey: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., publishedByUid: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createLearningModuleVersionEditorial(dataConnect, createLearningModuleVersionEditorialVars);
+
+console.log(data.learningModuleVersion_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+createLearningModuleVersionEditorial(createLearningModuleVersionEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+### Using `CreateLearningModuleVersionEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createLearningModuleVersionEditorialRef, CreateLearningModuleVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateLearningModuleVersionEditorial` mutation requires an argument of type `CreateLearningModuleVersionEditorialVariables`:
+const createLearningModuleVersionEditorialVars: CreateLearningModuleVersionEditorialVariables = {
+  versionId: ..., 
+  moduleKey: ..., 
+  phaseNumber: ..., 
+  version: ..., 
+  status: ..., 
+  publicationKey: ..., // optional
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+  publishedByUid: ..., // optional
+  publishedAt: ..., // optional
+};
+
+// Call the `createLearningModuleVersionEditorialRef()` function to get a reference to the mutation.
+const ref = createLearningModuleVersionEditorialRef(createLearningModuleVersionEditorialVars);
+// Variables can be defined inline as well.
+const ref = createLearningModuleVersionEditorialRef({ versionId: ..., moduleKey: ..., phaseNumber: ..., version: ..., status: ..., publicationKey: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., publishedByUid: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createLearningModuleVersionEditorialRef(dataConnect, createLearningModuleVersionEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.learningModuleVersion_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+## CreateActivityDefinitionVersionEditorial
+You can execute the `CreateActivityDefinitionVersionEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createActivityDefinitionVersionEditorial(vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+
+interface CreateActivityDefinitionVersionEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateActivityDefinitionVersionEditorialVariables): MutationRef<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+}
+export const createActivityDefinitionVersionEditorialRef: CreateActivityDefinitionVersionEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createActivityDefinitionVersionEditorial(dc: DataConnect, vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+
+interface CreateActivityDefinitionVersionEditorialRef {
+  ...
+  (dc: DataConnect, vars: CreateActivityDefinitionVersionEditorialVariables): MutationRef<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+}
+export const createActivityDefinitionVersionEditorialRef: CreateActivityDefinitionVersionEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createActivityDefinitionVersionEditorialRef:
+```typescript
+const name = createActivityDefinitionVersionEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateActivityDefinitionVersionEditorial` mutation requires an argument of type `CreateActivityDefinitionVersionEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateActivityDefinitionVersionEditorialVariables {
+  versionId: UUIDString;
+  activityKey: string;
+  phaseNumber: number;
+  version: number;
+  status: EditorialStatus;
+  publicationKey?: string | null;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+  publishedByUid?: string | null;
+  publishedAt?: TimestampString | null;
+}
+```
+### Return Type
+Recall that executing the `CreateActivityDefinitionVersionEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateActivityDefinitionVersionEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateActivityDefinitionVersionEditorialData {
+  activityDefinitionVersion_insert: ActivityDefinitionVersion_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+```
+### Using `CreateActivityDefinitionVersionEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createActivityDefinitionVersionEditorial, CreateActivityDefinitionVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateActivityDefinitionVersionEditorial` mutation requires an argument of type `CreateActivityDefinitionVersionEditorialVariables`:
+const createActivityDefinitionVersionEditorialVars: CreateActivityDefinitionVersionEditorialVariables = {
+  versionId: ..., 
+  activityKey: ..., 
+  phaseNumber: ..., 
+  version: ..., 
+  status: ..., 
+  publicationKey: ..., // optional
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+  publishedByUid: ..., // optional
+  publishedAt: ..., // optional
+};
+
+// Call the `createActivityDefinitionVersionEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createActivityDefinitionVersionEditorial(createActivityDefinitionVersionEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await createActivityDefinitionVersionEditorial({ versionId: ..., activityKey: ..., phaseNumber: ..., version: ..., status: ..., publicationKey: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., publishedByUid: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createActivityDefinitionVersionEditorial(dataConnect, createActivityDefinitionVersionEditorialVars);
+
+console.log(data.activityDefinitionVersion_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+createActivityDefinitionVersionEditorial(createActivityDefinitionVersionEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+### Using `CreateActivityDefinitionVersionEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createActivityDefinitionVersionEditorialRef, CreateActivityDefinitionVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateActivityDefinitionVersionEditorial` mutation requires an argument of type `CreateActivityDefinitionVersionEditorialVariables`:
+const createActivityDefinitionVersionEditorialVars: CreateActivityDefinitionVersionEditorialVariables = {
+  versionId: ..., 
+  activityKey: ..., 
+  phaseNumber: ..., 
+  version: ..., 
+  status: ..., 
+  publicationKey: ..., // optional
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+  publishedByUid: ..., // optional
+  publishedAt: ..., // optional
+};
+
+// Call the `createActivityDefinitionVersionEditorialRef()` function to get a reference to the mutation.
+const ref = createActivityDefinitionVersionEditorialRef(createActivityDefinitionVersionEditorialVars);
+// Variables can be defined inline as well.
+const ref = createActivityDefinitionVersionEditorialRef({ versionId: ..., activityKey: ..., phaseNumber: ..., version: ..., status: ..., publicationKey: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., publishedByUid: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createActivityDefinitionVersionEditorialRef(dataConnect, createActivityDefinitionVersionEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.activityDefinitionVersion_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+## UpdateLearningModuleDraftEditorial
+You can execute the `UpdateLearningModuleDraftEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+updateLearningModuleDraftEditorial(vars: UpdateLearningModuleDraftEditorialVariables): MutationPromise<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+
+interface UpdateLearningModuleDraftEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateLearningModuleDraftEditorialVariables): MutationRef<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+}
+export const updateLearningModuleDraftEditorialRef: UpdateLearningModuleDraftEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateLearningModuleDraftEditorial(dc: DataConnect, vars: UpdateLearningModuleDraftEditorialVariables): MutationPromise<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+
+interface UpdateLearningModuleDraftEditorialRef {
+  ...
+  (dc: DataConnect, vars: UpdateLearningModuleDraftEditorialVariables): MutationRef<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+}
+export const updateLearningModuleDraftEditorialRef: UpdateLearningModuleDraftEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateLearningModuleDraftEditorialRef:
+```typescript
+const name = updateLearningModuleDraftEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateLearningModuleDraftEditorial` mutation requires an argument of type `UpdateLearningModuleDraftEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateLearningModuleDraftEditorialVariables {
+  versionId: UUIDString;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `UpdateLearningModuleDraftEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateLearningModuleDraftEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateLearningModuleDraftEditorialData {
+  updatedCount?: number | null;
+}
+```
+### Using `UpdateLearningModuleDraftEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateLearningModuleDraftEditorial, UpdateLearningModuleDraftEditorialVariables } from '@money-rank/dataconnect';
+
+// The `UpdateLearningModuleDraftEditorial` mutation requires an argument of type `UpdateLearningModuleDraftEditorialVariables`:
+const updateLearningModuleDraftEditorialVars: UpdateLearningModuleDraftEditorialVariables = {
+  versionId: ..., 
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateLearningModuleDraftEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateLearningModuleDraftEditorial(updateLearningModuleDraftEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await updateLearningModuleDraftEditorial({ versionId: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateLearningModuleDraftEditorial(dataConnect, updateLearningModuleDraftEditorialVars);
+
+console.log(data.updatedCount);
+
+// Or, you can use the `Promise` API.
+updateLearningModuleDraftEditorial(updateLearningModuleDraftEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedCount);
+});
+```
+
+### Using `UpdateLearningModuleDraftEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateLearningModuleDraftEditorialRef, UpdateLearningModuleDraftEditorialVariables } from '@money-rank/dataconnect';
+
+// The `UpdateLearningModuleDraftEditorial` mutation requires an argument of type `UpdateLearningModuleDraftEditorialVariables`:
+const updateLearningModuleDraftEditorialVars: UpdateLearningModuleDraftEditorialVariables = {
+  versionId: ..., 
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateLearningModuleDraftEditorialRef()` function to get a reference to the mutation.
+const ref = updateLearningModuleDraftEditorialRef(updateLearningModuleDraftEditorialVars);
+// Variables can be defined inline as well.
+const ref = updateLearningModuleDraftEditorialRef({ versionId: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateLearningModuleDraftEditorialRef(dataConnect, updateLearningModuleDraftEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedCount);
+});
+```
+
+## UpdateActivityDefinitionDraftEditorial
+You can execute the `UpdateActivityDefinitionDraftEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+updateActivityDefinitionDraftEditorial(vars: UpdateActivityDefinitionDraftEditorialVariables): MutationPromise<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+
+interface UpdateActivityDefinitionDraftEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateActivityDefinitionDraftEditorialVariables): MutationRef<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+}
+export const updateActivityDefinitionDraftEditorialRef: UpdateActivityDefinitionDraftEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateActivityDefinitionDraftEditorial(dc: DataConnect, vars: UpdateActivityDefinitionDraftEditorialVariables): MutationPromise<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+
+interface UpdateActivityDefinitionDraftEditorialRef {
+  ...
+  (dc: DataConnect, vars: UpdateActivityDefinitionDraftEditorialVariables): MutationRef<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+}
+export const updateActivityDefinitionDraftEditorialRef: UpdateActivityDefinitionDraftEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateActivityDefinitionDraftEditorialRef:
+```typescript
+const name = updateActivityDefinitionDraftEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateActivityDefinitionDraftEditorial` mutation requires an argument of type `UpdateActivityDefinitionDraftEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateActivityDefinitionDraftEditorialVariables {
+  versionId: UUIDString;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `UpdateActivityDefinitionDraftEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateActivityDefinitionDraftEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateActivityDefinitionDraftEditorialData {
+  updatedCount?: number | null;
+}
+```
+### Using `UpdateActivityDefinitionDraftEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateActivityDefinitionDraftEditorial, UpdateActivityDefinitionDraftEditorialVariables } from '@money-rank/dataconnect';
+
+// The `UpdateActivityDefinitionDraftEditorial` mutation requires an argument of type `UpdateActivityDefinitionDraftEditorialVariables`:
+const updateActivityDefinitionDraftEditorialVars: UpdateActivityDefinitionDraftEditorialVariables = {
+  versionId: ..., 
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateActivityDefinitionDraftEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateActivityDefinitionDraftEditorial(updateActivityDefinitionDraftEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await updateActivityDefinitionDraftEditorial({ versionId: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateActivityDefinitionDraftEditorial(dataConnect, updateActivityDefinitionDraftEditorialVars);
+
+console.log(data.updatedCount);
+
+// Or, you can use the `Promise` API.
+updateActivityDefinitionDraftEditorial(updateActivityDefinitionDraftEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedCount);
+});
+```
+
+### Using `UpdateActivityDefinitionDraftEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateActivityDefinitionDraftEditorialRef, UpdateActivityDefinitionDraftEditorialVariables } from '@money-rank/dataconnect';
+
+// The `UpdateActivityDefinitionDraftEditorial` mutation requires an argument of type `UpdateActivityDefinitionDraftEditorialVariables`:
+const updateActivityDefinitionDraftEditorialVars: UpdateActivityDefinitionDraftEditorialVariables = {
+  versionId: ..., 
+  title: ..., 
+  changeSummary: ..., 
+  payload: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateActivityDefinitionDraftEditorialRef()` function to get a reference to the mutation.
+const ref = updateActivityDefinitionDraftEditorialRef(updateActivityDefinitionDraftEditorialVars);
+// Variables can be defined inline as well.
+const ref = updateActivityDefinitionDraftEditorialRef({ versionId: ..., title: ..., changeSummary: ..., payload: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateActivityDefinitionDraftEditorialRef(dataConnect, updateActivityDefinitionDraftEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedCount);
+});
+```
+
+## SubmitLearningModuleForReviewEditorial
+You can execute the `SubmitLearningModuleForReviewEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+submitLearningModuleForReviewEditorial(vars: SubmitLearningModuleForReviewEditorialVariables): MutationPromise<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+
+interface SubmitLearningModuleForReviewEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SubmitLearningModuleForReviewEditorialVariables): MutationRef<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+}
+export const submitLearningModuleForReviewEditorialRef: SubmitLearningModuleForReviewEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+submitLearningModuleForReviewEditorial(dc: DataConnect, vars: SubmitLearningModuleForReviewEditorialVariables): MutationPromise<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+
+interface SubmitLearningModuleForReviewEditorialRef {
+  ...
+  (dc: DataConnect, vars: SubmitLearningModuleForReviewEditorialVariables): MutationRef<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+}
+export const submitLearningModuleForReviewEditorialRef: SubmitLearningModuleForReviewEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the submitLearningModuleForReviewEditorialRef:
+```typescript
+const name = submitLearningModuleForReviewEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SubmitLearningModuleForReviewEditorial` mutation requires an argument of type `SubmitLearningModuleForReviewEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SubmitLearningModuleForReviewEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `SubmitLearningModuleForReviewEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SubmitLearningModuleForReviewEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SubmitLearningModuleForReviewEditorialData {
+  submittedCount?: number | null;
+}
+```
+### Using `SubmitLearningModuleForReviewEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, submitLearningModuleForReviewEditorial, SubmitLearningModuleForReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `SubmitLearningModuleForReviewEditorial` mutation requires an argument of type `SubmitLearningModuleForReviewEditorialVariables`:
+const submitLearningModuleForReviewEditorialVars: SubmitLearningModuleForReviewEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `submitLearningModuleForReviewEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await submitLearningModuleForReviewEditorial(submitLearningModuleForReviewEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await submitLearningModuleForReviewEditorial({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await submitLearningModuleForReviewEditorial(dataConnect, submitLearningModuleForReviewEditorialVars);
+
+console.log(data.submittedCount);
+
+// Or, you can use the `Promise` API.
+submitLearningModuleForReviewEditorial(submitLearningModuleForReviewEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.submittedCount);
+});
+```
+
+### Using `SubmitLearningModuleForReviewEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, submitLearningModuleForReviewEditorialRef, SubmitLearningModuleForReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `SubmitLearningModuleForReviewEditorial` mutation requires an argument of type `SubmitLearningModuleForReviewEditorialVariables`:
+const submitLearningModuleForReviewEditorialVars: SubmitLearningModuleForReviewEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `submitLearningModuleForReviewEditorialRef()` function to get a reference to the mutation.
+const ref = submitLearningModuleForReviewEditorialRef(submitLearningModuleForReviewEditorialVars);
+// Variables can be defined inline as well.
+const ref = submitLearningModuleForReviewEditorialRef({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = submitLearningModuleForReviewEditorialRef(dataConnect, submitLearningModuleForReviewEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.submittedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.submittedCount);
+});
+```
+
+## SubmitActivityDefinitionForReviewEditorial
+You can execute the `SubmitActivityDefinitionForReviewEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+submitActivityDefinitionForReviewEditorial(vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationPromise<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+
+interface SubmitActivityDefinitionForReviewEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationRef<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+}
+export const submitActivityDefinitionForReviewEditorialRef: SubmitActivityDefinitionForReviewEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+submitActivityDefinitionForReviewEditorial(dc: DataConnect, vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationPromise<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+
+interface SubmitActivityDefinitionForReviewEditorialRef {
+  ...
+  (dc: DataConnect, vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationRef<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+}
+export const submitActivityDefinitionForReviewEditorialRef: SubmitActivityDefinitionForReviewEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the submitActivityDefinitionForReviewEditorialRef:
+```typescript
+const name = submitActivityDefinitionForReviewEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SubmitActivityDefinitionForReviewEditorial` mutation requires an argument of type `SubmitActivityDefinitionForReviewEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SubmitActivityDefinitionForReviewEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `SubmitActivityDefinitionForReviewEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SubmitActivityDefinitionForReviewEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SubmitActivityDefinitionForReviewEditorialData {
+  submittedCount?: number | null;
+}
+```
+### Using `SubmitActivityDefinitionForReviewEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, submitActivityDefinitionForReviewEditorial, SubmitActivityDefinitionForReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `SubmitActivityDefinitionForReviewEditorial` mutation requires an argument of type `SubmitActivityDefinitionForReviewEditorialVariables`:
+const submitActivityDefinitionForReviewEditorialVars: SubmitActivityDefinitionForReviewEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `submitActivityDefinitionForReviewEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await submitActivityDefinitionForReviewEditorial(submitActivityDefinitionForReviewEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await submitActivityDefinitionForReviewEditorial({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await submitActivityDefinitionForReviewEditorial(dataConnect, submitActivityDefinitionForReviewEditorialVars);
+
+console.log(data.submittedCount);
+
+// Or, you can use the `Promise` API.
+submitActivityDefinitionForReviewEditorial(submitActivityDefinitionForReviewEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.submittedCount);
+});
+```
+
+### Using `SubmitActivityDefinitionForReviewEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, submitActivityDefinitionForReviewEditorialRef, SubmitActivityDefinitionForReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `SubmitActivityDefinitionForReviewEditorial` mutation requires an argument of type `SubmitActivityDefinitionForReviewEditorialVariables`:
+const submitActivityDefinitionForReviewEditorialVars: SubmitActivityDefinitionForReviewEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `submitActivityDefinitionForReviewEditorialRef()` function to get a reference to the mutation.
+const ref = submitActivityDefinitionForReviewEditorialRef(submitActivityDefinitionForReviewEditorialVars);
+// Variables can be defined inline as well.
+const ref = submitActivityDefinitionForReviewEditorialRef({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = submitActivityDefinitionForReviewEditorialRef(dataConnect, submitActivityDefinitionForReviewEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.submittedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.submittedCount);
+});
+```
+
+## PublishLearningModuleVersionEditorial
+You can execute the `PublishLearningModuleVersionEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+publishLearningModuleVersionEditorial(vars: PublishLearningModuleVersionEditorialVariables): MutationPromise<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+
+interface PublishLearningModuleVersionEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: PublishLearningModuleVersionEditorialVariables): MutationRef<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+}
+export const publishLearningModuleVersionEditorialRef: PublishLearningModuleVersionEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+publishLearningModuleVersionEditorial(dc: DataConnect, vars: PublishLearningModuleVersionEditorialVariables): MutationPromise<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+
+interface PublishLearningModuleVersionEditorialRef {
+  ...
+  (dc: DataConnect, vars: PublishLearningModuleVersionEditorialVariables): MutationRef<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+}
+export const publishLearningModuleVersionEditorialRef: PublishLearningModuleVersionEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the publishLearningModuleVersionEditorialRef:
+```typescript
+const name = publishLearningModuleVersionEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `PublishLearningModuleVersionEditorial` mutation requires an argument of type `PublishLearningModuleVersionEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface PublishLearningModuleVersionEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `PublishLearningModuleVersionEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `PublishLearningModuleVersionEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface PublishLearningModuleVersionEditorialData {
+  publishedCount?: number | null;
+}
+```
+### Using `PublishLearningModuleVersionEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, publishLearningModuleVersionEditorial, PublishLearningModuleVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `PublishLearningModuleVersionEditorial` mutation requires an argument of type `PublishLearningModuleVersionEditorialVariables`:
+const publishLearningModuleVersionEditorialVars: PublishLearningModuleVersionEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `publishLearningModuleVersionEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await publishLearningModuleVersionEditorial(publishLearningModuleVersionEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await publishLearningModuleVersionEditorial({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await publishLearningModuleVersionEditorial(dataConnect, publishLearningModuleVersionEditorialVars);
+
+console.log(data.publishedCount);
+
+// Or, you can use the `Promise` API.
+publishLearningModuleVersionEditorial(publishLearningModuleVersionEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.publishedCount);
+});
+```
+
+### Using `PublishLearningModuleVersionEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, publishLearningModuleVersionEditorialRef, PublishLearningModuleVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `PublishLearningModuleVersionEditorial` mutation requires an argument of type `PublishLearningModuleVersionEditorialVariables`:
+const publishLearningModuleVersionEditorialVars: PublishLearningModuleVersionEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `publishLearningModuleVersionEditorialRef()` function to get a reference to the mutation.
+const ref = publishLearningModuleVersionEditorialRef(publishLearningModuleVersionEditorialVars);
+// Variables can be defined inline as well.
+const ref = publishLearningModuleVersionEditorialRef({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = publishLearningModuleVersionEditorialRef(dataConnect, publishLearningModuleVersionEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.publishedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.publishedCount);
+});
+```
+
+## PublishActivityDefinitionVersionEditorial
+You can execute the `PublishActivityDefinitionVersionEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+publishActivityDefinitionVersionEditorial(vars: PublishActivityDefinitionVersionEditorialVariables): MutationPromise<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+
+interface PublishActivityDefinitionVersionEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: PublishActivityDefinitionVersionEditorialVariables): MutationRef<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+}
+export const publishActivityDefinitionVersionEditorialRef: PublishActivityDefinitionVersionEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+publishActivityDefinitionVersionEditorial(dc: DataConnect, vars: PublishActivityDefinitionVersionEditorialVariables): MutationPromise<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+
+interface PublishActivityDefinitionVersionEditorialRef {
+  ...
+  (dc: DataConnect, vars: PublishActivityDefinitionVersionEditorialVariables): MutationRef<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+}
+export const publishActivityDefinitionVersionEditorialRef: PublishActivityDefinitionVersionEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the publishActivityDefinitionVersionEditorialRef:
+```typescript
+const name = publishActivityDefinitionVersionEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `PublishActivityDefinitionVersionEditorial` mutation requires an argument of type `PublishActivityDefinitionVersionEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface PublishActivityDefinitionVersionEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `PublishActivityDefinitionVersionEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `PublishActivityDefinitionVersionEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface PublishActivityDefinitionVersionEditorialData {
+  publishedCount?: number | null;
+}
+```
+### Using `PublishActivityDefinitionVersionEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, publishActivityDefinitionVersionEditorial, PublishActivityDefinitionVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `PublishActivityDefinitionVersionEditorial` mutation requires an argument of type `PublishActivityDefinitionVersionEditorialVariables`:
+const publishActivityDefinitionVersionEditorialVars: PublishActivityDefinitionVersionEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `publishActivityDefinitionVersionEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await publishActivityDefinitionVersionEditorial(publishActivityDefinitionVersionEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await publishActivityDefinitionVersionEditorial({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await publishActivityDefinitionVersionEditorial(dataConnect, publishActivityDefinitionVersionEditorialVars);
+
+console.log(data.publishedCount);
+
+// Or, you can use the `Promise` API.
+publishActivityDefinitionVersionEditorial(publishActivityDefinitionVersionEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.publishedCount);
+});
+```
+
+### Using `PublishActivityDefinitionVersionEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, publishActivityDefinitionVersionEditorialRef, PublishActivityDefinitionVersionEditorialVariables } from '@money-rank/dataconnect';
+
+// The `PublishActivityDefinitionVersionEditorial` mutation requires an argument of type `PublishActivityDefinitionVersionEditorialVariables`:
+const publishActivityDefinitionVersionEditorialVars: PublishActivityDefinitionVersionEditorialVariables = {
+  versionId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `publishActivityDefinitionVersionEditorialRef()` function to get a reference to the mutation.
+const ref = publishActivityDefinitionVersionEditorialRef(publishActivityDefinitionVersionEditorialVars);
+// Variables can be defined inline as well.
+const ref = publishActivityDefinitionVersionEditorialRef({ versionId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = publishActivityDefinitionVersionEditorialRef(dataConnect, publishActivityDefinitionVersionEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.publishedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.publishedCount);
+});
+```
+
+## CreateResearchReviewEditorial
+You can execute the `CreateResearchReviewEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createResearchReviewEditorial(vars: CreateResearchReviewEditorialVariables): MutationPromise<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+
+interface CreateResearchReviewEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateResearchReviewEditorialVariables): MutationRef<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+}
+export const createResearchReviewEditorialRef: CreateResearchReviewEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createResearchReviewEditorial(dc: DataConnect, vars: CreateResearchReviewEditorialVariables): MutationPromise<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+
+interface CreateResearchReviewEditorialRef {
+  ...
+  (dc: DataConnect, vars: CreateResearchReviewEditorialVariables): MutationRef<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+}
+export const createResearchReviewEditorialRef: CreateResearchReviewEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createResearchReviewEditorialRef:
+```typescript
+const name = createResearchReviewEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateResearchReviewEditorial` mutation requires an argument of type `CreateResearchReviewEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateResearchReviewEditorialVariables {
+  reviewId: UUIDString;
+  activityKey: string;
+  factKey: string;
+  title: string;
+  claim: string;
+  sourceUrl: string;
+  proposedBy: string;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `CreateResearchReviewEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateResearchReviewEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateResearchReviewEditorialData {
+  researchReview_insert: ResearchReview_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+```
+### Using `CreateResearchReviewEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createResearchReviewEditorial, CreateResearchReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateResearchReviewEditorial` mutation requires an argument of type `CreateResearchReviewEditorialVariables`:
+const createResearchReviewEditorialVars: CreateResearchReviewEditorialVariables = {
+  reviewId: ..., 
+  activityKey: ..., 
+  factKey: ..., 
+  title: ..., 
+  claim: ..., 
+  sourceUrl: ..., 
+  proposedBy: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createResearchReviewEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createResearchReviewEditorial(createResearchReviewEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await createResearchReviewEditorial({ reviewId: ..., activityKey: ..., factKey: ..., title: ..., claim: ..., sourceUrl: ..., proposedBy: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createResearchReviewEditorial(dataConnect, createResearchReviewEditorialVars);
+
+console.log(data.researchReview_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+createResearchReviewEditorial(createResearchReviewEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.researchReview_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+### Using `CreateResearchReviewEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createResearchReviewEditorialRef, CreateResearchReviewEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateResearchReviewEditorial` mutation requires an argument of type `CreateResearchReviewEditorialVariables`:
+const createResearchReviewEditorialVars: CreateResearchReviewEditorialVariables = {
+  reviewId: ..., 
+  activityKey: ..., 
+  factKey: ..., 
+  title: ..., 
+  claim: ..., 
+  sourceUrl: ..., 
+  proposedBy: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createResearchReviewEditorialRef()` function to get a reference to the mutation.
+const ref = createResearchReviewEditorialRef(createResearchReviewEditorialVars);
+// Variables can be defined inline as well.
+const ref = createResearchReviewEditorialRef({ reviewId: ..., activityKey: ..., factKey: ..., title: ..., claim: ..., sourceUrl: ..., proposedBy: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createResearchReviewEditorialRef(dataConnect, createResearchReviewEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.researchReview_insert);
+console.log(data.editorialAuditLog_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.researchReview_insert);
+  console.log(data.editorialAuditLog_insert);
+});
+```
+
+## ReviewResearchEditorial
+You can execute the `ReviewResearchEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+reviewResearchEditorial(vars: ReviewResearchEditorialVariables): MutationPromise<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+
+interface ReviewResearchEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ReviewResearchEditorialVariables): MutationRef<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+}
+export const reviewResearchEditorialRef: ReviewResearchEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+reviewResearchEditorial(dc: DataConnect, vars: ReviewResearchEditorialVariables): MutationPromise<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+
+interface ReviewResearchEditorialRef {
+  ...
+  (dc: DataConnect, vars: ReviewResearchEditorialVariables): MutationRef<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+}
+export const reviewResearchEditorialRef: ReviewResearchEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the reviewResearchEditorialRef:
+```typescript
+const name = reviewResearchEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ReviewResearchEditorial` mutation requires an argument of type `ReviewResearchEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ReviewResearchEditorialVariables {
+  reviewId: UUIDString;
+  status: ResearchReviewStatus;
+  reviewNotes?: string | null;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `ReviewResearchEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ReviewResearchEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ReviewResearchEditorialData {
+  reviewedCount?: number | null;
+}
+```
+### Using `ReviewResearchEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, reviewResearchEditorial, ReviewResearchEditorialVariables } from '@money-rank/dataconnect';
+
+// The `ReviewResearchEditorial` mutation requires an argument of type `ReviewResearchEditorialVariables`:
+const reviewResearchEditorialVars: ReviewResearchEditorialVariables = {
+  reviewId: ..., 
+  status: ..., 
+  reviewNotes: ..., // optional
+  actorUid: ..., 
+};
+
+// Call the `reviewResearchEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await reviewResearchEditorial(reviewResearchEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await reviewResearchEditorial({ reviewId: ..., status: ..., reviewNotes: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await reviewResearchEditorial(dataConnect, reviewResearchEditorialVars);
+
+console.log(data.reviewedCount);
+
+// Or, you can use the `Promise` API.
+reviewResearchEditorial(reviewResearchEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.reviewedCount);
+});
+```
+
+### Using `ReviewResearchEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, reviewResearchEditorialRef, ReviewResearchEditorialVariables } from '@money-rank/dataconnect';
+
+// The `ReviewResearchEditorial` mutation requires an argument of type `ReviewResearchEditorialVariables`:
+const reviewResearchEditorialVars: ReviewResearchEditorialVariables = {
+  reviewId: ..., 
+  status: ..., 
+  reviewNotes: ..., // optional
+  actorUid: ..., 
+};
+
+// Call the `reviewResearchEditorialRef()` function to get a reference to the mutation.
+const ref = reviewResearchEditorialRef(reviewResearchEditorialVars);
+// Variables can be defined inline as well.
+const ref = reviewResearchEditorialRef({ reviewId: ..., status: ..., reviewNotes: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = reviewResearchEditorialRef(dataConnect, reviewResearchEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.reviewedCount);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.reviewedCount);
+});
+```
+
+## CreateContentAssetEditorial
+You can execute the `CreateContentAssetEditorial` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createContentAssetEditorial(vars: CreateContentAssetEditorialVariables): MutationPromise<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+
+interface CreateContentAssetEditorialRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateContentAssetEditorialVariables): MutationRef<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+}
+export const createContentAssetEditorialRef: CreateContentAssetEditorialRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createContentAssetEditorial(dc: DataConnect, vars: CreateContentAssetEditorialVariables): MutationPromise<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+
+interface CreateContentAssetEditorialRef {
+  ...
+  (dc: DataConnect, vars: CreateContentAssetEditorialVariables): MutationRef<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+}
+export const createContentAssetEditorialRef: CreateContentAssetEditorialRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createContentAssetEditorialRef:
+```typescript
+const name = createContentAssetEditorialRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateContentAssetEditorial` mutation requires an argument of type `CreateContentAssetEditorialVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateContentAssetEditorialVariables {
+  assetId: UUIDString;
+  entityType: EditorialEntityType;
+  entityId: UUIDString;
+  assetType: ContentAssetType;
+  displayName: string;
+  url: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: Int64String;
+  sha256: string;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `CreateContentAssetEditorial` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateContentAssetEditorialData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateContentAssetEditorialData {
+  createdAsset?: unknown | null;
+}
+```
+### Using `CreateContentAssetEditorial`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createContentAssetEditorial, CreateContentAssetEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateContentAssetEditorial` mutation requires an argument of type `CreateContentAssetEditorialVariables`:
+const createContentAssetEditorialVars: CreateContentAssetEditorialVariables = {
+  assetId: ..., 
+  entityType: ..., 
+  entityId: ..., 
+  assetType: ..., 
+  displayName: ..., 
+  url: ..., 
+  storagePath: ..., 
+  mimeType: ..., 
+  sizeBytes: ..., 
+  sha256: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createContentAssetEditorial()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createContentAssetEditorial(createContentAssetEditorialVars);
+// Variables can be defined inline as well.
+const { data } = await createContentAssetEditorial({ assetId: ..., entityType: ..., entityId: ..., assetType: ..., displayName: ..., url: ..., storagePath: ..., mimeType: ..., sizeBytes: ..., sha256: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createContentAssetEditorial(dataConnect, createContentAssetEditorialVars);
+
+console.log(data.createdAsset);
+
+// Or, you can use the `Promise` API.
+createContentAssetEditorial(createContentAssetEditorialVars).then((response) => {
+  const data = response.data;
+  console.log(data.createdAsset);
+});
+```
+
+### Using `CreateContentAssetEditorial`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createContentAssetEditorialRef, CreateContentAssetEditorialVariables } from '@money-rank/dataconnect';
+
+// The `CreateContentAssetEditorial` mutation requires an argument of type `CreateContentAssetEditorialVariables`:
+const createContentAssetEditorialVars: CreateContentAssetEditorialVariables = {
+  assetId: ..., 
+  entityType: ..., 
+  entityId: ..., 
+  assetType: ..., 
+  displayName: ..., 
+  url: ..., 
+  storagePath: ..., 
+  mimeType: ..., 
+  sizeBytes: ..., 
+  sha256: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createContentAssetEditorialRef()` function to get a reference to the mutation.
+const ref = createContentAssetEditorialRef(createContentAssetEditorialVars);
+// Variables can be defined inline as well.
+const ref = createContentAssetEditorialRef({ assetId: ..., entityType: ..., entityId: ..., assetType: ..., displayName: ..., url: ..., storagePath: ..., mimeType: ..., sizeBytes: ..., sha256: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createContentAssetEditorialRef(dataConnect, createContentAssetEditorialVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.createdAsset);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.createdAsset);
+});
+```
+
 ## UpsertMyProfileWithPhoto
 You can execute the `UpsertMyProfileWithPhoto` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
 ```typescript
@@ -2792,6 +4946,366 @@ const ref = updateCompetitionPeriodStatusRef({ periodId: ..., status: ..., });
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = updateCompetitionPeriodStatusRef(dataConnect, updateCompetitionPeriodStatusVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
+});
+```
+
+## CreateTeacherCompetitionPeriod
+You can execute the `CreateTeacherCompetitionPeriod` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createTeacherCompetitionPeriod(vars: CreateTeacherCompetitionPeriodVariables): MutationPromise<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+
+interface CreateTeacherCompetitionPeriodRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateTeacherCompetitionPeriodVariables): MutationRef<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+}
+export const createTeacherCompetitionPeriodRef: CreateTeacherCompetitionPeriodRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createTeacherCompetitionPeriod(dc: DataConnect, vars: CreateTeacherCompetitionPeriodVariables): MutationPromise<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+
+interface CreateTeacherCompetitionPeriodRef {
+  ...
+  (dc: DataConnect, vars: CreateTeacherCompetitionPeriodVariables): MutationRef<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+}
+export const createTeacherCompetitionPeriodRef: CreateTeacherCompetitionPeriodRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createTeacherCompetitionPeriodRef:
+```typescript
+const name = createTeacherCompetitionPeriodRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateTeacherCompetitionPeriod` mutation requires an argument of type `CreateTeacherCompetitionPeriodVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  status: CompetitionPeriodStatus;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `CreateTeacherCompetitionPeriod` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateTeacherCompetitionPeriodData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateTeacherCompetitionPeriodData {
+  createdPeriod?: unknown | null;
+}
+```
+### Using `CreateTeacherCompetitionPeriod`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createTeacherCompetitionPeriod, CreateTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `CreateTeacherCompetitionPeriod` mutation requires an argument of type `CreateTeacherCompetitionPeriodVariables`:
+const createTeacherCompetitionPeriodVars: CreateTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  status: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createTeacherCompetitionPeriod()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createTeacherCompetitionPeriod(createTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const { data } = await createTeacherCompetitionPeriod({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., status: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createTeacherCompetitionPeriod(dataConnect, createTeacherCompetitionPeriodVars);
+
+console.log(data.createdPeriod);
+
+// Or, you can use the `Promise` API.
+createTeacherCompetitionPeriod(createTeacherCompetitionPeriodVars).then((response) => {
+  const data = response.data;
+  console.log(data.createdPeriod);
+});
+```
+
+### Using `CreateTeacherCompetitionPeriod`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createTeacherCompetitionPeriodRef, CreateTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `CreateTeacherCompetitionPeriod` mutation requires an argument of type `CreateTeacherCompetitionPeriodVariables`:
+const createTeacherCompetitionPeriodVars: CreateTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  status: ..., 
+  actorUid: ..., 
+};
+
+// Call the `createTeacherCompetitionPeriodRef()` function to get a reference to the mutation.
+const ref = createTeacherCompetitionPeriodRef(createTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const ref = createTeacherCompetitionPeriodRef({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., status: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createTeacherCompetitionPeriodRef(dataConnect, createTeacherCompetitionPeriodVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.createdPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.createdPeriod);
+});
+```
+
+## UpdateTeacherCompetitionPeriod
+You can execute the `UpdateTeacherCompetitionPeriod` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+updateTeacherCompetitionPeriod(vars: UpdateTeacherCompetitionPeriodVariables): MutationPromise<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+
+interface UpdateTeacherCompetitionPeriodRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateTeacherCompetitionPeriodVariables): MutationRef<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+}
+export const updateTeacherCompetitionPeriodRef: UpdateTeacherCompetitionPeriodRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updateTeacherCompetitionPeriod(dc: DataConnect, vars: UpdateTeacherCompetitionPeriodVariables): MutationPromise<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+
+interface UpdateTeacherCompetitionPeriodRef {
+  ...
+  (dc: DataConnect, vars: UpdateTeacherCompetitionPeriodVariables): MutationRef<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+}
+export const updateTeacherCompetitionPeriodRef: UpdateTeacherCompetitionPeriodRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateTeacherCompetitionPeriodRef:
+```typescript
+const name = updateTeacherCompetitionPeriodRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdateTeacherCompetitionPeriod` mutation requires an argument of type `UpdateTeacherCompetitionPeriodVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdateTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `UpdateTeacherCompetitionPeriod` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdateTeacherCompetitionPeriodData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdateTeacherCompetitionPeriodData {
+  updatedPeriod?: unknown | null;
+}
+```
+### Using `UpdateTeacherCompetitionPeriod`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updateTeacherCompetitionPeriod, UpdateTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `UpdateTeacherCompetitionPeriod` mutation requires an argument of type `UpdateTeacherCompetitionPeriodVariables`:
+const updateTeacherCompetitionPeriodVars: UpdateTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateTeacherCompetitionPeriod()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updateTeacherCompetitionPeriod(updateTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const { data } = await updateTeacherCompetitionPeriod({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updateTeacherCompetitionPeriod(dataConnect, updateTeacherCompetitionPeriodVars);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+updateTeacherCompetitionPeriod(updateTeacherCompetitionPeriodVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
+});
+```
+
+### Using `UpdateTeacherCompetitionPeriod`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updateTeacherCompetitionPeriodRef, UpdateTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `UpdateTeacherCompetitionPeriod` mutation requires an argument of type `UpdateTeacherCompetitionPeriodVariables`:
+const updateTeacherCompetitionPeriodVars: UpdateTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  name: ..., 
+  startsAt: ..., 
+  endsAt: ..., 
+  actorUid: ..., 
+};
+
+// Call the `updateTeacherCompetitionPeriodRef()` function to get a reference to the mutation.
+const ref = updateTeacherCompetitionPeriodRef(updateTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const ref = updateTeacherCompetitionPeriodRef({ periodId: ..., name: ..., startsAt: ..., endsAt: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updateTeacherCompetitionPeriodRef(dataConnect, updateTeacherCompetitionPeriodVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
+});
+```
+
+## SetTeacherCompetitionPeriodStatus
+You can execute the `SetTeacherCompetitionPeriodStatus` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+setTeacherCompetitionPeriodStatus(vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+
+interface SetTeacherCompetitionPeriodStatusRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetTeacherCompetitionPeriodStatusVariables): MutationRef<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+}
+export const setTeacherCompetitionPeriodStatusRef: SetTeacherCompetitionPeriodStatusRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setTeacherCompetitionPeriodStatus(dc: DataConnect, vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+
+interface SetTeacherCompetitionPeriodStatusRef {
+  ...
+  (dc: DataConnect, vars: SetTeacherCompetitionPeriodStatusVariables): MutationRef<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+}
+export const setTeacherCompetitionPeriodStatusRef: SetTeacherCompetitionPeriodStatusRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setTeacherCompetitionPeriodStatusRef:
+```typescript
+const name = setTeacherCompetitionPeriodStatusRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetTeacherCompetitionPeriodStatus` mutation requires an argument of type `SetTeacherCompetitionPeriodStatusVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetTeacherCompetitionPeriodStatusVariables {
+  periodId: UUIDString;
+  status: CompetitionPeriodStatus;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `SetTeacherCompetitionPeriodStatus` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetTeacherCompetitionPeriodStatusData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetTeacherCompetitionPeriodStatusData {
+  updatedPeriod?: unknown | null;
+}
+```
+### Using `SetTeacherCompetitionPeriodStatus`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setTeacherCompetitionPeriodStatus, SetTeacherCompetitionPeriodStatusVariables } from '@money-rank/dataconnect';
+
+// The `SetTeacherCompetitionPeriodStatus` mutation requires an argument of type `SetTeacherCompetitionPeriodStatusVariables`:
+const setTeacherCompetitionPeriodStatusVars: SetTeacherCompetitionPeriodStatusVariables = {
+  periodId: ..., 
+  status: ..., 
+  actorUid: ..., 
+};
+
+// Call the `setTeacherCompetitionPeriodStatus()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setTeacherCompetitionPeriodStatus(setTeacherCompetitionPeriodStatusVars);
+// Variables can be defined inline as well.
+const { data } = await setTeacherCompetitionPeriodStatus({ periodId: ..., status: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setTeacherCompetitionPeriodStatus(dataConnect, setTeacherCompetitionPeriodStatusVars);
+
+console.log(data.updatedPeriod);
+
+// Or, you can use the `Promise` API.
+setTeacherCompetitionPeriodStatus(setTeacherCompetitionPeriodStatusVars).then((response) => {
+  const data = response.data;
+  console.log(data.updatedPeriod);
+});
+```
+
+### Using `SetTeacherCompetitionPeriodStatus`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setTeacherCompetitionPeriodStatusRef, SetTeacherCompetitionPeriodStatusVariables } from '@money-rank/dataconnect';
+
+// The `SetTeacherCompetitionPeriodStatus` mutation requires an argument of type `SetTeacherCompetitionPeriodStatusVariables`:
+const setTeacherCompetitionPeriodStatusVars: SetTeacherCompetitionPeriodStatusVariables = {
+  periodId: ..., 
+  status: ..., 
+  actorUid: ..., 
+};
+
+// Call the `setTeacherCompetitionPeriodStatusRef()` function to get a reference to the mutation.
+const ref = setTeacherCompetitionPeriodStatusRef(setTeacherCompetitionPeriodStatusVars);
+// Variables can be defined inline as well.
+const ref = setTeacherCompetitionPeriodStatusRef({ periodId: ..., status: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setTeacherCompetitionPeriodStatusRef(dataConnect, setTeacherCompetitionPeriodStatusVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

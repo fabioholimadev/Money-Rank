@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowBack,
   ArrowForward,
@@ -27,6 +27,7 @@ import {
 } from '../../lib/trailProgress';
 import TrailLockedState from './TrailLockedState';
 import TrailPageShell from './TrailPageShell';
+import { fetchPublishedLearningContent } from '../../services/publishedEditorialService';
 
 const MATERIAL_ICONS = {
   [CONTENT_MATERIAL_TYPES.VIDEO]: PlayCircleOutlined,
@@ -254,8 +255,10 @@ function MaterialPanel({ slot }) {
   }
 }
 
-export default function PhaseContentLayout({ content }) {
+export default function PhaseContentLayout({ content: fallbackContent }) {
   const navigate = useNavigate();
+  const [publishedContent, setPublishedContent] = useState(null);
+  const content = publishedContent ?? fallbackContent;
   const {
     aluno,
     trailProgress,
@@ -273,6 +276,28 @@ export default function PhaseContentLayout({ content }) {
   const [confirmed, setConfirmed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    fetchPublishedLearningContent(fallbackContent.id)
+      .then((result) => {
+        const payload = result?.payload;
+        if (
+          active &&
+          payload?.id === fallbackContent.id &&
+          Number(payload?.phaseNumber) === Number(fallbackContent.phaseNumber)
+        ) {
+          setPublishedContent(payload);
+        }
+      })
+      .catch(() => {
+        // O arquivo estático permanece como recuperação segura durante a migração.
+        if (active) setPublishedContent(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [fallbackContent]);
 
   const currentPhase = normalizeCurrentPhase(aluno?.fase_atual);
   const phaseProgress = getPhaseProgress(

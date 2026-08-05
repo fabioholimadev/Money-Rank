@@ -18,6 +18,531 @@ mutation UpsertMyProfileWithAvatar(
   )
 }
 
+# Operações editoriais exclusivas do backend. As callables verificam o papel
+# TEACHER e estas operações permanecem NO_ACCESS para o SDK do navegador.
+mutation CreateLearningModuleVersionEditorial(
+  $versionId: UUID!
+  $moduleKey: String!
+  $phaseNumber: Int!
+  $version: Int!
+  $status: EditorialStatus!
+  $publicationKey: String
+  $title: String!
+  $changeSummary: String!
+  $payload: Any!
+  $actorUid: String!
+  $publishedByUid: String
+  $publishedAt: Timestamp
+) @auth(level: NO_ACCESS) @transaction {
+  learningModuleVersion_insert(
+    data: {
+      id: $versionId
+      moduleKey: $moduleKey
+      phaseNumber: $phaseNumber
+      version: $version
+      status: $status
+      publicationKey: $publicationKey
+      title: $title
+      changeSummary: $changeSummary
+      payload: $payload
+      createdByUid: $actorUid
+      publishedByUid: $publishedByUid
+      publishedAt: $publishedAt
+      createdAt_expr: "request.time"
+      updatedAt_expr: "request.time"
+    }
+  )
+  editorialAuditLog_insert(
+    data: {
+      entityType: LEARNING_MODULE
+      entityId: $versionId
+      entityKey: $moduleKey
+      version: $version
+      action: "CREATED"
+      actorUid: $actorUid
+      summary: $changeSummary
+      details: { initialStatus: $status }
+      createdAt_expr: "request.time"
+    }
+  )
+}
+
+mutation CreateActivityDefinitionVersionEditorial(
+  $versionId: UUID!
+  $activityKey: String!
+  $phaseNumber: Int!
+  $version: Int!
+  $status: EditorialStatus!
+  $publicationKey: String
+  $title: String!
+  $changeSummary: String!
+  $payload: Any!
+  $actorUid: String!
+  $publishedByUid: String
+  $publishedAt: Timestamp
+) @auth(level: NO_ACCESS) @transaction {
+  activityDefinitionVersion_insert(
+    data: {
+      id: $versionId
+      activityKey: $activityKey
+      phaseNumber: $phaseNumber
+      version: $version
+      status: $status
+      publicationKey: $publicationKey
+      title: $title
+      changeSummary: $changeSummary
+      payload: $payload
+      createdByUid: $actorUid
+      publishedByUid: $publishedByUid
+      publishedAt: $publishedAt
+      createdAt_expr: "request.time"
+      updatedAt_expr: "request.time"
+    }
+  )
+  editorialAuditLog_insert(
+    data: {
+      entityType: ACTIVITY_DEFINITION
+      entityId: $versionId
+      entityKey: $activityKey
+      version: $version
+      action: "CREATED"
+      actorUid: $actorUid
+      summary: $changeSummary
+      details: { initialStatus: $status }
+      createdAt_expr: "request.time"
+    }
+  )
+}
+
+mutation UpdateLearningModuleDraftEditorial(
+  $versionId: UUID!
+  $title: String!
+  $changeSummary: String!
+  $payload: Any!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  updatedCount: _execute(
+    sql: """
+      WITH updated AS (
+        UPDATE learning_module_versions
+        SET
+          title = BTRIM($2),
+          change_summary = BTRIM($3),
+          payload = $4::jsonb,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          id = $1::uuid
+          AND status = 'DRAFT'
+        RETURNING id, module_key, version, status
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, details, created_at
+      )
+      SELECT
+        gen_random_uuid(), 'LEARNING_MODULE', id, module_key, version,
+        'UPDATED', $5, BTRIM($3),
+        jsonb_build_object('status', status::text), CURRENT_TIMESTAMP
+      FROM updated
+    """
+    params: [$versionId, $title, $changeSummary, $payload, $actorUid]
+  )
+}
+
+mutation UpdateActivityDefinitionDraftEditorial(
+  $versionId: UUID!
+  $title: String!
+  $changeSummary: String!
+  $payload: Any!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  updatedCount: _execute(
+    sql: """
+      WITH updated AS (
+        UPDATE activity_definition_versions
+        SET
+          title = BTRIM($2),
+          change_summary = BTRIM($3),
+          payload = $4::jsonb,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          id = $1::uuid
+          AND status = 'DRAFT'
+        RETURNING id, activity_key, version, status
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, details, created_at
+      )
+      SELECT
+        gen_random_uuid(), 'ACTIVITY_DEFINITION', id, activity_key, version,
+        'UPDATED', $5, BTRIM($3),
+        jsonb_build_object('status', status::text), CURRENT_TIMESTAMP
+      FROM updated
+    """
+    params: [$versionId, $title, $changeSummary, $payload, $actorUid]
+  )
+}
+
+mutation SubmitLearningModuleForReviewEditorial(
+  $versionId: UUID!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  submittedCount: _execute(
+    sql: """
+      WITH updated AS (
+        UPDATE learning_module_versions
+        SET status = 'IN_REVIEW', updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1::uuid AND status = 'DRAFT'
+        RETURNING id, module_key, version
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, created_at
+      )
+      SELECT gen_random_uuid(), 'LEARNING_MODULE', id, module_key, version,
+        'SUBMITTED', $2, 'Enviado para revisão', CURRENT_TIMESTAMP
+      FROM updated
+    """
+    params: [$versionId, $actorUid]
+  )
+}
+
+mutation SubmitActivityDefinitionForReviewEditorial(
+  $versionId: UUID!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  submittedCount: _execute(
+    sql: """
+      WITH updated AS (
+        UPDATE activity_definition_versions
+        SET status = 'IN_REVIEW', updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1::uuid AND status = 'DRAFT'
+        RETURNING id, activity_key, version
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, created_at
+      )
+      SELECT gen_random_uuid(), 'ACTIVITY_DEFINITION', id, activity_key,
+        version, 'SUBMITTED', $2, 'Enviado para revisão', CURRENT_TIMESTAMP
+      FROM updated
+    """
+    params: [$versionId, $actorUid]
+  )
+}
+
+mutation PublishLearningModuleVersionEditorial(
+  $versionId: UUID!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  publishedCount: _execute(
+    sql: """
+      WITH teacher AS (
+        SELECT firebase_uid
+        FROM users
+        WHERE firebase_uid = $2 AND role = 'TEACHER' AND profile_completed
+      ),
+      target AS (
+        SELECT candidate.id, candidate.module_key, candidate.version
+        FROM learning_module_versions AS candidate
+        WHERE
+          candidate.id = $1::uuid
+          AND candidate.status = 'IN_REVIEW'
+          AND EXISTS (SELECT 1 FROM teacher)
+        FOR UPDATE
+      ),
+      archived AS (
+        UPDATE learning_module_versions AS existing
+        SET
+          status = 'ARCHIVED', publication_key = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          existing.module_key = (SELECT module_key FROM target)
+          AND existing.status = 'PUBLISHED'
+        RETURNING existing.id
+      ),
+      published AS (
+        UPDATE learning_module_versions AS selected
+        SET
+          status = 'PUBLISHED',
+          publication_key = selected.module_key,
+          published_by_uid = $2,
+          published_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          selected.id = (SELECT id FROM target)
+          AND selected.status = 'IN_REVIEW'
+          AND (SELECT COUNT(*) FROM archived) >= 0
+        RETURNING selected.id, selected.module_key, selected.version,
+          selected.status, selected.published_at
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, details, created_at
+      )
+      SELECT gen_random_uuid(), 'LEARNING_MODULE', id, module_key, version,
+        'PUBLISHED', $2, 'Versão publicada',
+        jsonb_build_object('archivedVersions', (SELECT COUNT(*) FROM archived)),
+        CURRENT_TIMESTAMP
+      FROM published
+    """
+    params: [$versionId, $actorUid]
+  )
+}
+
+mutation PublishActivityDefinitionVersionEditorial(
+  $versionId: UUID!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  publishedCount: _execute(
+    sql: """
+      WITH teacher AS (
+        SELECT firebase_uid
+        FROM users
+        WHERE firebase_uid = $2 AND role = 'TEACHER' AND profile_completed
+      ),
+      target AS (
+        SELECT candidate.id, candidate.activity_key, candidate.version
+        FROM activity_definition_versions AS candidate
+        WHERE
+          candidate.id = $1::uuid
+          AND candidate.status = 'IN_REVIEW'
+          AND EXISTS (SELECT 1 FROM teacher)
+          AND NOT EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(
+              (CASE
+                WHEN jsonb_typeof(candidate.payload->'knowledge') = 'array'
+                  THEN candidate.payload->'knowledge'
+                ELSE '[]'::jsonb
+              END) ||
+              (CASE
+                WHEN jsonb_typeof(candidate.payload->'cards') = 'array'
+                  THEN candidate.payload->'cards'
+                ELSE '[]'::jsonb
+              END)
+            ) AS reviewed(item)
+            WHERE
+              reviewed.item ? 'review'
+              AND (
+                reviewed.item->'review'->>'pedagogical'
+                  IS DISTINCT FROM 'teacher_approved'
+                OR reviewed.item->'review'->>'technical'
+                  NOT IN ('source_verified', 'project_created')
+                OR (
+                  reviewed.item->'review'->>'technical' = 'source_verified'
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM research_reviews AS approval
+                    WHERE
+                      approval.activity_key = candidate.activity_key
+                      AND approval.fact_key = reviewed.item->>'id'
+                      AND approval.status = 'TEACHER_APPROVED'
+                      AND approval.reviewed_by_uid IS NOT NULL
+                      AND approval.reviewed_at IS NOT NULL
+                      AND approval.source_url = COALESCE(
+                        reviewed.item->'source'->>'url',
+                        reviewed.item->'evidence'->>'url'
+                      )
+                      AND (
+                        reviewed.item->>'claim' IS NULL
+                        OR approval.claim = reviewed.item->>'claim'
+                      )
+                  )
+                )
+              )
+          )
+        FOR UPDATE
+      ),
+      archived AS (
+        UPDATE activity_definition_versions AS existing
+        SET
+          status = 'ARCHIVED', publication_key = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          existing.activity_key = (SELECT activity_key FROM target)
+          AND existing.status = 'PUBLISHED'
+        RETURNING existing.id
+      ),
+      published AS (
+        UPDATE activity_definition_versions AS selected
+        SET
+          status = 'PUBLISHED',
+          publication_key = selected.activity_key,
+          published_by_uid = $2,
+          published_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          selected.id = (SELECT id FROM target)
+          AND selected.status = 'IN_REVIEW'
+          AND (SELECT COUNT(*) FROM archived) >= 0
+        RETURNING selected.id, selected.activity_key, selected.version,
+          selected.status, selected.published_at
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, details, created_at
+      )
+      SELECT gen_random_uuid(), 'ACTIVITY_DEFINITION', id, activity_key,
+        version, 'PUBLISHED', $2, 'Versão publicada',
+        jsonb_build_object('archivedVersions', (SELECT COUNT(*) FROM archived)),
+        CURRENT_TIMESTAMP
+      FROM published
+    """
+    params: [$versionId, $actorUid]
+  )
+}
+
+mutation CreateResearchReviewEditorial(
+  $reviewId: UUID!
+  $activityKey: String!
+  $factKey: String!
+  $title: String!
+  $claim: String!
+  $sourceUrl: String!
+  $proposedBy: String!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) @transaction {
+  researchReview_insert(
+    data: {
+      id: $reviewId
+      activityKey: $activityKey
+      factKey: $factKey
+      title: $title
+      claim: $claim
+      sourceUrl: $sourceUrl
+      proposedBy: $proposedBy
+      status: PENDING_TEACHER_REVIEW
+      createdByUid: $actorUid
+      createdAt_expr: "request.time"
+      updatedAt_expr: "request.time"
+    }
+  )
+  editorialAuditLog_insert(
+    data: {
+      entityType: RESEARCH_REVIEW
+      entityId: $reviewId
+      entityKey: $factKey
+      version: 1
+      action: "CREATED"
+      actorUid: $actorUid
+      summary: "Fonte adicionada para revisão"
+      createdAt_expr: "request.time"
+    }
+  )
+}
+
+mutation ReviewResearchEditorial(
+  $reviewId: UUID!
+  $status: ResearchReviewStatus!
+  $reviewNotes: String
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  reviewedCount: _execute(
+    sql: """
+      WITH teacher AS (
+        SELECT firebase_uid FROM users
+        WHERE firebase_uid = $4 AND role = 'TEACHER' AND profile_completed
+      ),
+      reviewed AS (
+        UPDATE research_reviews
+        SET
+          status = $2::research_review_status,
+          review_notes = NULLIF(BTRIM($3), ''),
+          reviewed_by_uid = $4,
+          reviewed_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          id = $1::uuid
+          AND status = 'PENDING_TEACHER_REVIEW'
+          AND $2::research_review_status IN ('TEACHER_APPROVED', 'REJECTED')
+          AND EXISTS (SELECT 1 FROM teacher)
+        RETURNING id, fact_key, status
+      )
+      INSERT INTO editorial_audit_log (
+        id, entity_type, entity_id, entity_key, version, action,
+        actor_uid, summary, created_at
+      )
+      SELECT gen_random_uuid(), 'RESEARCH_REVIEW', id, fact_key, 1,
+        CASE WHEN status = 'TEACHER_APPROVED' THEN 'APPROVED' ELSE 'REJECTED' END,
+        $4, COALESCE(NULLIF(BTRIM($3), ''), 'Revisão pedagógica'),
+        CURRENT_TIMESTAMP
+      FROM reviewed
+    """
+    params: [$reviewId, $status, $reviewNotes, $actorUid]
+  )
+}
+
+# Registra somente metadados de um arquivo que já foi validado e gravado no
+# Firebase Storage pela Function. A checagem de professor e de versão DRAFT é
+# repetida no banco para impedir associação administrativa indevida.
+mutation CreateContentAssetEditorial(
+  $assetId: UUID!
+  $entityType: EditorialEntityType!
+  $entityId: UUID!
+  $assetType: ContentAssetType!
+  $displayName: String!
+  $url: String!
+  $storagePath: String!
+  $mimeType: String!
+  $sizeBytes: Int64!
+  $sha256: String!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  createdAsset: _executeReturningFirst(
+    sql: """
+      INSERT INTO content_assets (
+        id, entity_type, entity_id, asset_type, display_name, url,
+        storage_path, mime_type, size_bytes, sha256, created_by_uid, created_at
+      )
+      SELECT
+        $1::uuid, $2::editorial_entity_type, $3::uuid,
+        $4::content_asset_type, BTRIM($5), $6, $7, $8, $9::bigint,
+        LOWER($10), $11, CURRENT_TIMESTAMP
+      FROM users AS teacher
+      WHERE
+        teacher.firebase_uid = $11
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND (
+          (
+            $2::editorial_entity_type = 'LEARNING_MODULE'
+            AND EXISTS (
+              SELECT 1 FROM learning_module_versions AS version
+              WHERE version.id = $3::uuid AND version.status = 'DRAFT'
+            )
+          )
+          OR (
+            $2::editorial_entity_type = 'ACTIVITY_DEFINITION'
+            AND EXISTS (
+              SELECT 1 FROM activity_definition_versions AS version
+              WHERE version.id = $3::uuid AND version.status = 'DRAFT'
+            )
+          )
+        )
+      RETURNING
+        id, entity_type AS "entityType", entity_id AS "entityId",
+        asset_type AS "assetType", display_name AS "displayName", url,
+        storage_path AS "storagePath", mime_type AS "mimeType",
+        size_bytes AS "sizeBytes", sha256, created_at AS "createdAt"
+    """
+    params: [
+      $assetId
+      $entityType
+      $entityId
+      $assetType
+      $displayName
+      $url
+      $storagePath
+      $mimeType
+      $sizeBytes
+      $sha256
+      $actorUid
+    ]
+  )
+}
+
 # A URL deverá apontar para o armazenamento definitivo; a foto em Base64 usada
 # temporariamente na Task 1.3 não será gravada no PostgreSQL.
 mutation UpsertMyProfileWithPhoto(
@@ -234,6 +759,10 @@ mutation UpdateCompetitionPeriodStatus(
       UPDATE competition_periods AS period
       SET
         status = $2::competition_period_status,
+        active_slot = CASE
+          WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
+          ELSE NULL
+        END,
         paused_at = CASE
           WHEN $2::competition_period_status = 'PAUSED'
             THEN CURRENT_TIMESTAMP
@@ -268,6 +797,16 @@ mutation UpdateCompetitionPeriodStatus(
           $2::competition_period_status NOT IN ('ACTIVE', 'SCHEDULED')
           OR CURRENT_TIMESTAMP < period.ends_at
         )
+        AND (
+          $2::competition_period_status <> 'ACTIVE'
+          OR NOT EXISTS (
+            SELECT 1
+            FROM competition_periods AS active_period
+            WHERE
+              active_period.id <> period.id
+              AND active_period.status = 'ACTIVE'
+          )
+        )
       RETURNING
         id,
         name,
@@ -280,6 +819,207 @@ mutation UpdateCompetitionPeriodStatus(
         updated_at
     """
     params: [$periodId, $status]
+  )
+}
+
+# Operações administrativas chamadas exclusivamente pelas Functions. Além
+# da callable, cada mutação confirma no banco o perfil TEACHER completo.
+mutation CreateTeacherCompetitionPeriod(
+  $periodId: UUID!
+  $name: String!
+  $startsAt: Timestamp!
+  $endsAt: Timestamp!
+  $status: CompetitionPeriodStatus!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  createdPeriod: _executeReturningFirst(
+    sql: """
+      INSERT INTO competition_periods (
+        id, name, status, active_slot, starts_at, ends_at,
+        created_at, updated_at
+      )
+      SELECT
+        $1::uuid,
+        BTRIM($2),
+        $5::competition_period_status,
+        NULL,
+        $3,
+        $4,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      FROM users AS teacher
+      WHERE
+        teacher.firebase_uid = $6
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND LENGTH(BTRIM($2)) BETWEEN 3 AND 80
+        AND $3 < $4
+        AND $5::competition_period_status IN ('DRAFT', 'SCHEDULED')
+        AND NOT EXISTS (
+          SELECT 1
+          FROM competition_periods AS existing
+          WHERE
+            existing.status <> 'CLOSED'
+            AND existing.starts_at < $4
+            AND existing.ends_at > $3
+        )
+      RETURNING
+        id,
+        name,
+        status::text AS "status",
+        starts_at AS "startsAt",
+        ends_at AS "endsAt",
+        paused_at AS "pausedAt",
+        closed_at AS "closedAt",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
+    """
+    params: [$periodId, $name, $startsAt, $endsAt, $status, $actorUid]
+  )
+}
+
+mutation UpdateTeacherCompetitionPeriod(
+  $periodId: UUID!
+  $name: String!
+  $startsAt: Timestamp!
+  $endsAt: Timestamp!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  updatedPeriod: _executeReturningFirst(
+    sql: """
+      UPDATE competition_periods AS period
+      SET
+        name = BTRIM($2),
+        starts_at = $3,
+        ends_at = $4,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        period.id = $1::uuid
+        AND period.status <> 'CLOSED'
+        AND LENGTH(BTRIM($2)) BETWEEN 3 AND 80
+        AND $3 < $4
+        AND EXISTS (
+          SELECT 1
+          FROM users AS teacher
+          WHERE
+            teacher.firebase_uid = $5
+            AND teacher.role = 'TEACHER'
+            AND teacher.profile_completed = TRUE
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM competition_periods AS existing
+          WHERE
+            existing.id <> period.id
+            AND existing.status <> 'CLOSED'
+            AND existing.starts_at < $4
+            AND existing.ends_at > $3
+        )
+        AND (
+          period.status <> 'ACTIVE'
+          OR ($3 <= CURRENT_TIMESTAMP AND CURRENT_TIMESTAMP < $4)
+        )
+        AND (
+          period.status <> 'SCHEDULED'
+          OR CURRENT_TIMESTAMP < $4
+        )
+      RETURNING
+        id,
+        name,
+        status::text AS "status",
+        starts_at AS "startsAt",
+        ends_at AS "endsAt",
+        paused_at AS "pausedAt",
+        closed_at AS "closedAt",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
+    """
+    params: [$periodId, $name, $startsAt, $endsAt, $actorUid]
+  )
+}
+
+mutation SetTeacherCompetitionPeriodStatus(
+  $periodId: UUID!
+  $status: CompetitionPeriodStatus!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  updatedPeriod: _executeReturningFirst(
+    sql: """
+      UPDATE competition_periods AS period
+      SET
+        status = $2::competition_period_status,
+        active_slot = CASE
+          WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
+          ELSE NULL
+        END,
+        paused_at = CASE
+          WHEN $2::competition_period_status = 'PAUSED'
+            THEN CURRENT_TIMESTAMP
+          WHEN $2::competition_period_status = 'ACTIVE'
+            THEN NULL
+          ELSE period.paused_at
+        END,
+        closed_at = CASE
+          WHEN $2::competition_period_status = 'CLOSED'
+            THEN CURRENT_TIMESTAMP
+          ELSE period.closed_at
+        END,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        period.id = $1::uuid
+        AND period.status <> 'CLOSED'
+        AND EXISTS (
+          SELECT 1
+          FROM users AS teacher
+          WHERE
+            teacher.firebase_uid = $3
+            AND teacher.role = 'TEACHER'
+            AND teacher.profile_completed = TRUE
+        )
+        AND (
+          (period.status = 'DRAFT' AND $2::competition_period_status IN (
+            'SCHEDULED', 'ACTIVE', 'CLOSED'
+          ))
+          OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN (
+            'DRAFT', 'ACTIVE', 'PAUSED', 'CLOSED'
+          ))
+          OR (period.status = 'ACTIVE' AND $2::competition_period_status IN (
+            'PAUSED', 'CLOSED'
+          ))
+          OR (period.status = 'PAUSED' AND $2::competition_period_status IN (
+            'ACTIVE', 'CLOSED'
+          ))
+        )
+        AND (
+          $2::competition_period_status <> 'SCHEDULED'
+          OR CURRENT_TIMESTAMP < period.ends_at
+        )
+        AND (
+          $2::competition_period_status <> 'ACTIVE'
+          OR (
+            period.starts_at <= CURRENT_TIMESTAMP
+            AND CURRENT_TIMESTAMP < period.ends_at
+            AND NOT EXISTS (
+              SELECT 1
+              FROM competition_periods AS active_period
+              WHERE
+                active_period.id <> period.id
+                AND active_period.status = 'ACTIVE'
+            )
+          )
+        )
+      RETURNING
+        id,
+        name,
+        status::text AS "status",
+        starts_at AS "startsAt",
+        ends_at AS "endsAt",
+        paused_at AS "pausedAt",
+        closed_at AS "closedAt",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
+    """
+    params: [$periodId, $status, $actorUid]
   )
 }
 

@@ -198,7 +198,11 @@ export function evaluateEngenhariaDesejoChoice(card, selectedClassification) {
   };
 }
 
-export function calculateEngenhariaDesejoResult(session, answers) {
+export function calculateEngenhariaDesejoResult(
+  session,
+  answers,
+  activity = ENGENHARIA_DESEJO_ACTIVITY,
+) {
   if (!session?.cards || session.cards.length !== ENGENHARIA_DESEJO_CARD_COUNT) {
     throw new Error('A rodada deve conter exatamente seis peças.');
   }
@@ -243,7 +247,7 @@ export function calculateEngenhariaDesejoResult(session, answers) {
     correctAnswers,
     wrongAnswers,
     passed:
-      correctAnswers >= ENGENHARIA_DESEJO_ACTIVITY.passingCorrectAnswers,
+      correctAnswers >= activity.passingCorrectAnswers,
     answers: reviewedAnswers,
     profile: getEngenhariaDesejoProfile(correctAnswers),
   };

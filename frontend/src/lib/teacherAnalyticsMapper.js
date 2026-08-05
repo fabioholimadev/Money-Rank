@@ -35,6 +35,20 @@ function toName(value, minimum = 2, maximum = 80) {
   return name.length >= minimum && name.length <= maximum ? name : null;
 }
 
+function toUuid(value) {
+  const uuid = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (/^[0-9a-f]{32}$/.test(uuid)) {
+    return [
+      uuid.slice(0, 8),
+      uuid.slice(8, 12),
+      uuid.slice(12, 16),
+      uuid.slice(16, 20),
+      uuid.slice(20),
+    ].join('-');
+  }
+  return /^[0-9a-f]{8}-[0-9a-f-]{27}$/.test(uuid) ? uuid : null;
+}
+
 function percentage(numerator, denominator) {
   if (denominator <= 0) return 0;
   return Math.round((numerator / denominator) * 100);
@@ -44,7 +58,7 @@ export function normalizeTeacherPeriods(rows) {
   if (!Array.isArray(rows)) return [];
 
   return rows.flatMap((row) => {
-    const id = typeof row?.id === 'string' ? row.id : null;
+    const id = toUuid(row?.id);
     const name = toName(row?.name, 3, 80);
     const status = PERIOD_STATUSES.has(row?.status) ? row.status : null;
     const startsAt = toTimestamp(row?.startsAt);

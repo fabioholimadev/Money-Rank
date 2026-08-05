@@ -115,8 +115,11 @@ function splitQuestionPayload(questions, source, model = null) {
   };
 }
 
-export function buildFallbackPerigoDoceSession(random = Math.random) {
-  const definition = getPerigoDoceDefinition();
+export function buildFallbackPerigoDoceSession(
+  random = Math.random,
+  overrideDefinition = null,
+) {
+  const definition = getPerigoDoceDefinition(overrideDefinition);
   const facts = shuffle(definition.knowledge, random).slice(0, 5);
   const questions = facts.map((fact, questionIndex) => {
     const options = shuffle(
@@ -198,12 +201,12 @@ const responseSchema = {
   },
 };
 
-export async function buildAiPerigoDoceSession({ apiKey, model }) {
+export async function buildAiPerigoDoceSession({ apiKey, model, definition }) {
   if (!apiKey || apiKey === 'local-fallback') {
-    return buildFallbackPerigoDoceSession();
+    return buildFallbackPerigoDoceSession(Math.random, definition);
   }
 
-  const definition = getPerigoDoceDefinition();
+  const activeDefinition = getPerigoDoceDefinition(definition);
   const ai = new GoogleGenAI({ apiKey });
   const prompt = [
     'Você é o Capi Tutor, tutor jovem e responsável de educação financeira para o 3º ano de escolas técnicas brasileiras.',
@@ -211,7 +214,7 @@ export async function buildAiPerigoDoceSession({ apiKey, model }) {
     'Use somente os fatos fornecidos. Não invente estatísticas ou fontes.',
     'Cada questão deve ter A, B, C e D, uma resposta correta e um ou dois sourceFactIds existentes.',
     'Não inclua dados pessoais, pontuação, streak ou recompensa.',
-    JSON.stringify({ knowledgeBase: definition.knowledge }),
+    JSON.stringify({ knowledgeBase: activeDefinition.knowledge }),
   ].join('\n\n');
 
   try {
@@ -225,14 +228,17 @@ export async function buildAiPerigoDoceSession({ apiKey, model }) {
         maxOutputTokens: 4096,
       },
     });
-    const questions = validateQuestions(JSON.parse(response.text), definition);
+    const questions = validateQuestions(
+      JSON.parse(response.text),
+      activeDefinition,
+    );
     return {
       activityId: 'perigo-doce-quiz',
       variantId: 'ai',
-      contentVersion: definition.contentVersion,
+      contentVersion: activeDefinition.contentVersion,
       ...splitQuestionPayload(questions, 'ai', model),
     };
   } catch {
-    return buildFallbackPerigoDoceSession();
+    return buildFallbackPerigoDoceSession(Math.random, activeDefinition);
   }
 }

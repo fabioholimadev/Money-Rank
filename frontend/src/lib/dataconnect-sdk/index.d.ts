@@ -31,6 +31,27 @@ export enum CompetitionPeriodStatus {
   CLOSED = "CLOSED",
 };
 
+export enum ContentAssetType {
+  VIDEO = "VIDEO",
+  SLIDES = "SLIDES",
+  DOCUMENT = "DOCUMENT",
+  SUMMARY = "SUMMARY",
+  EXTERNAL_LINK = "EXTERNAL_LINK",
+};
+
+export enum EditorialEntityType {
+  LEARNING_MODULE = "LEARNING_MODULE",
+  ACTIVITY_DEFINITION = "ACTIVITY_DEFINITION",
+  RESEARCH_REVIEW = "RESEARCH_REVIEW",
+};
+
+export enum EditorialStatus {
+  DRAFT = "DRAFT",
+  IN_REVIEW = "IN_REVIEW",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
+};
+
 export enum ProfessionalAvatar {
   CAPI_CIENTISTA = "CAPI_CIENTISTA",
   CAPI_PROFESSORA = "CAPI_PROFESSORA",
@@ -44,6 +65,12 @@ export enum ProgressStatus {
   NOT_STARTED = "NOT_STARTED",
   IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
+};
+
+export enum ResearchReviewStatus {
+  PENDING_TEACHER_REVIEW = "PENDING_TEACHER_REVIEW",
+  TEACHER_APPROVED = "TEACHER_APPROVED",
+  REJECTED = "REJECTED",
 };
 
 export enum RewardSuppressionReason {
@@ -67,6 +94,11 @@ export enum UserRole {
 export interface ActivityAttempt_Key {
   id: UUIDString;
   __typename?: 'ActivityAttempt_Key';
+}
+
+export interface ActivityDefinitionVersion_Key {
+  id: UUIDString;
+  __typename?: 'ActivityDefinitionVersion_Key';
 }
 
 export interface ActivitySession_Key {
@@ -124,6 +156,31 @@ export interface CompleteMyIntroductionData {
   affectedRows?: number | null;
 }
 
+export interface ContentAsset_Key {
+  id: UUIDString;
+  __typename?: 'ContentAsset_Key';
+}
+
+export interface CreateActivityDefinitionVersionEditorialData {
+  activityDefinitionVersion_insert: ActivityDefinitionVersion_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+
+export interface CreateActivityDefinitionVersionEditorialVariables {
+  versionId: UUIDString;
+  activityKey: string;
+  phaseNumber: number;
+  version: number;
+  status: EditorialStatus;
+  publicationKey?: string | null;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+  publishedByUid?: string | null;
+  publishedAt?: TimestampString | null;
+}
+
 export interface CreateAuthoritativeActivitySessionData {
   activitySession_insert: ActivitySession_Key;
 }
@@ -152,9 +209,103 @@ export interface CreateCompetitionPeriodVariables {
   status: CompetitionPeriodStatus;
 }
 
+export interface CreateContentAssetEditorialData {
+  createdAsset?: unknown | null;
+}
+
+export interface CreateContentAssetEditorialVariables {
+  assetId: UUIDString;
+  entityType: EditorialEntityType;
+  entityId: UUIDString;
+  assetType: ContentAssetType;
+  displayName: string;
+  url: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: Int64String;
+  sha256: string;
+  actorUid: string;
+}
+
+export interface CreateLearningModuleVersionEditorialData {
+  learningModuleVersion_insert: LearningModuleVersion_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+
+export interface CreateLearningModuleVersionEditorialVariables {
+  versionId: UUIDString;
+  moduleKey: string;
+  phaseNumber: number;
+  version: number;
+  status: EditorialStatus;
+  publicationKey?: string | null;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+  publishedByUid?: string | null;
+  publishedAt?: TimestampString | null;
+}
+
+export interface CreateResearchReviewEditorialData {
+  researchReview_insert: ResearchReview_Key;
+  editorialAuditLog_insert: EditorialAuditLog_Key;
+}
+
+export interface CreateResearchReviewEditorialVariables {
+  reviewId: UUIDString;
+  activityKey: string;
+  factKey: string;
+  title: string;
+  claim: string;
+  sourceUrl: string;
+  proposedBy: string;
+  actorUid: string;
+}
+
+export interface CreateTeacherCompetitionPeriodData {
+  createdPeriod?: unknown | null;
+}
+
+export interface CreateTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  status: CompetitionPeriodStatus;
+  actorUid: string;
+}
+
 export interface EconomyConfig_Key {
   configKey: string;
   __typename?: 'EconomyConfig_Key';
+}
+
+export interface EditorialAuditLog_Key {
+  id: UUIDString;
+  __typename?: 'EditorialAuditLog_Key';
+}
+
+export interface GetActivityDefinitionVersionForEditorialData {
+  activityDefinitionVersion?: {
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ActivityDefinitionVersion_Key;
+}
+
+export interface GetActivityDefinitionVersionForEditorialVariables {
+  versionId: UUIDString;
 }
 
 export interface GetAuthoritativeActivityResultData {
@@ -240,6 +391,37 @@ export interface GetEconomyConfigData {
   } & EconomyConfig_Key;
 }
 
+export interface GetEditorialSeedStateData {
+  learningModules: ({
+    moduleKey: string;
+  })[];
+  activities: ({
+    activityKey: string;
+  })[];
+}
+
+export interface GetLearningModuleVersionForEditorialData {
+  learningModuleVersion?: {
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & LearningModuleVersion_Key;
+}
+
+export interface GetLearningModuleVersionForEditorialVariables {
+  versionId: UUIDString;
+}
+
 export interface GetMyActivityAttemptData {
   activityAttempts: ({
     id: UUIDString;
@@ -302,6 +484,38 @@ export interface GetMyProfileData {
   } & User_Key;
 }
 
+export interface GetPublishedActivityDefinitionForSessionData {
+  activityDefinitionVersions: ({
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    title: string;
+    payload: unknown;
+    publishedAt?: TimestampString | null;
+  } & ActivityDefinitionVersion_Key)[];
+}
+
+export interface GetPublishedActivityDefinitionForSessionVariables {
+  activityKey: string;
+}
+
+export interface GetPublishedLearningModuleForStudentData {
+  learningModuleVersions: ({
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    title: string;
+    payload: unknown;
+    publishedAt?: TimestampString | null;
+  } & LearningModuleVersion_Key)[];
+}
+
+export interface GetPublishedLearningModuleForStudentVariables {
+  moduleKey: string;
+}
+
 export interface GetTeacherDashboardData {
   summary?: unknown | null;
   classMetrics?: unknown[] | null;
@@ -316,6 +530,86 @@ export interface GetTeacherDashboardVariables {
 
 export interface InitializeMyTrailData {
   affectedRows?: number | null;
+}
+
+export interface LearningModuleVersion_Key {
+  id: UUIDString;
+  __typename?: 'LearningModuleVersion_Key';
+}
+
+export interface ListEditorialStudioDataData {
+  learningModules: ({
+    id: UUIDString;
+    moduleKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & LearningModuleVersion_Key)[];
+  activities: ({
+    id: UUIDString;
+    activityKey: string;
+    phaseNumber: number;
+    version: number;
+    status: EditorialStatus;
+    title: string;
+    changeSummary: string;
+    payload: unknown;
+    createdByUid: string;
+    publishedByUid?: string | null;
+    publishedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ActivityDefinitionVersion_Key)[];
+  research: ({
+    id: UUIDString;
+    activityKey: string;
+    factKey: string;
+    title: string;
+    claim: string;
+    sourceUrl: string;
+    proposedBy: string;
+    status: ResearchReviewStatus;
+    reviewNotes?: string | null;
+    createdByUid: string;
+    reviewedByUid?: string | null;
+    reviewedAt?: TimestampString | null;
+    createdAt: TimestampString;
+    updatedAt: TimestampString;
+  } & ResearchReview_Key)[];
+  assets: ({
+    id: UUIDString;
+    entityType: EditorialEntityType;
+    entityId: UUIDString;
+    assetType: ContentAssetType;
+    displayName: string;
+    url: string;
+    storagePath?: string | null;
+    mimeType?: string | null;
+    sizeBytes?: Int64String | null;
+    sha256?: string | null;
+    createdByUid: string;
+    createdAt: TimestampString;
+  } & ContentAsset_Key)[];
+  audit: ({
+    id: UUIDString;
+    entityType: EditorialEntityType;
+    entityId: UUIDString;
+    entityKey: string;
+    version: number;
+    action: string;
+    actorUid: string;
+    summary: string;
+    details?: unknown | null;
+    createdAt: TimestampString;
+  } & EditorialAuditLog_Key)[];
 }
 
 export interface ListMyActivityAttemptsData {
@@ -410,6 +704,24 @@ export interface MarkAuthoritativeActivitySessionSubmittedVariables {
   studentUid: string;
 }
 
+export interface PublishActivityDefinitionVersionEditorialData {
+  publishedCount?: number | null;
+}
+
+export interface PublishActivityDefinitionVersionEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+
+export interface PublishLearningModuleVersionEditorialData {
+  publishedCount?: number | null;
+}
+
+export interface PublishLearningModuleVersionEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+
 export interface RegisterMyCurrentPhaseAttemptData {
   affectedRows?: number | null;
 }
@@ -423,6 +735,32 @@ export interface RegisterMyCurrentPhaseAttemptVariables {
   score: number;
   correctAnswers: number;
   wrongAnswers: number;
+}
+
+export interface ResearchReview_Key {
+  id: UUIDString;
+  __typename?: 'ResearchReview_Key';
+}
+
+export interface ReviewResearchEditorialData {
+  reviewedCount?: number | null;
+}
+
+export interface ReviewResearchEditorialVariables {
+  reviewId: UUIDString;
+  status: ResearchReviewStatus;
+  reviewNotes?: string | null;
+  actorUid: string;
+}
+
+export interface SetTeacherCompetitionPeriodStatusData {
+  updatedPeriod?: unknown | null;
+}
+
+export interface SetTeacherCompetitionPeriodStatusVariables {
+  periodId: UUIDString;
+  status: CompetitionPeriodStatus;
+  actorUid: string;
 }
 
 export interface SetUserRoleByEmailData {
@@ -440,6 +778,36 @@ export interface StudentProgress_Key {
   __typename?: 'StudentProgress_Key';
 }
 
+export interface SubmitActivityDefinitionForReviewEditorialData {
+  submittedCount?: number | null;
+}
+
+export interface SubmitActivityDefinitionForReviewEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+
+export interface SubmitLearningModuleForReviewEditorialData {
+  submittedCount?: number | null;
+}
+
+export interface SubmitLearningModuleForReviewEditorialVariables {
+  versionId: UUIDString;
+  actorUid: string;
+}
+
+export interface UpdateActivityDefinitionDraftEditorialData {
+  updatedCount?: number | null;
+}
+
+export interface UpdateActivityDefinitionDraftEditorialVariables {
+  versionId: UUIDString;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+}
+
 export interface UpdateCompetitionPeriodStatusData {
   updatedPeriod?: unknown | null;
 }
@@ -447,6 +815,30 @@ export interface UpdateCompetitionPeriodStatusData {
 export interface UpdateCompetitionPeriodStatusVariables {
   periodId: UUIDString;
   status: CompetitionPeriodStatus;
+}
+
+export interface UpdateLearningModuleDraftEditorialData {
+  updatedCount?: number | null;
+}
+
+export interface UpdateLearningModuleDraftEditorialVariables {
+  versionId: UUIDString;
+  title: string;
+  changeSummary: string;
+  payload: unknown;
+  actorUid: string;
+}
+
+export interface UpdateTeacherCompetitionPeriodData {
+  updatedPeriod?: unknown | null;
+}
+
+export interface UpdateTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  actorUid: string;
 }
 
 export interface UpsertEconomyConfigData {
@@ -525,6 +917,138 @@ export const upsertMyProfileWithAvatarRef: UpsertMyProfileWithAvatarRef;
 
 export function upsertMyProfileWithAvatar(vars: UpsertMyProfileWithAvatarVariables): MutationPromise<UpsertMyProfileWithAvatarData, UpsertMyProfileWithAvatarVariables>;
 export function upsertMyProfileWithAvatar(dc: DataConnect, vars: UpsertMyProfileWithAvatarVariables): MutationPromise<UpsertMyProfileWithAvatarData, UpsertMyProfileWithAvatarVariables>;
+
+interface CreateLearningModuleVersionEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateLearningModuleVersionEditorialVariables): MutationRef<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateLearningModuleVersionEditorialVariables): MutationRef<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+  operationName: string;
+}
+export const createLearningModuleVersionEditorialRef: CreateLearningModuleVersionEditorialRef;
+
+export function createLearningModuleVersionEditorial(vars: CreateLearningModuleVersionEditorialVariables): MutationPromise<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+export function createLearningModuleVersionEditorial(dc: DataConnect, vars: CreateLearningModuleVersionEditorialVariables): MutationPromise<CreateLearningModuleVersionEditorialData, CreateLearningModuleVersionEditorialVariables>;
+
+interface CreateActivityDefinitionVersionEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateActivityDefinitionVersionEditorialVariables): MutationRef<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateActivityDefinitionVersionEditorialVariables): MutationRef<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+  operationName: string;
+}
+export const createActivityDefinitionVersionEditorialRef: CreateActivityDefinitionVersionEditorialRef;
+
+export function createActivityDefinitionVersionEditorial(vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+export function createActivityDefinitionVersionEditorial(dc: DataConnect, vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+
+interface UpdateLearningModuleDraftEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateLearningModuleDraftEditorialVariables): MutationRef<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateLearningModuleDraftEditorialVariables): MutationRef<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+  operationName: string;
+}
+export const updateLearningModuleDraftEditorialRef: UpdateLearningModuleDraftEditorialRef;
+
+export function updateLearningModuleDraftEditorial(vars: UpdateLearningModuleDraftEditorialVariables): MutationPromise<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+export function updateLearningModuleDraftEditorial(dc: DataConnect, vars: UpdateLearningModuleDraftEditorialVariables): MutationPromise<UpdateLearningModuleDraftEditorialData, UpdateLearningModuleDraftEditorialVariables>;
+
+interface UpdateActivityDefinitionDraftEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateActivityDefinitionDraftEditorialVariables): MutationRef<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateActivityDefinitionDraftEditorialVariables): MutationRef<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+  operationName: string;
+}
+export const updateActivityDefinitionDraftEditorialRef: UpdateActivityDefinitionDraftEditorialRef;
+
+export function updateActivityDefinitionDraftEditorial(vars: UpdateActivityDefinitionDraftEditorialVariables): MutationPromise<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+export function updateActivityDefinitionDraftEditorial(dc: DataConnect, vars: UpdateActivityDefinitionDraftEditorialVariables): MutationPromise<UpdateActivityDefinitionDraftEditorialData, UpdateActivityDefinitionDraftEditorialVariables>;
+
+interface SubmitLearningModuleForReviewEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SubmitLearningModuleForReviewEditorialVariables): MutationRef<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SubmitLearningModuleForReviewEditorialVariables): MutationRef<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+  operationName: string;
+}
+export const submitLearningModuleForReviewEditorialRef: SubmitLearningModuleForReviewEditorialRef;
+
+export function submitLearningModuleForReviewEditorial(vars: SubmitLearningModuleForReviewEditorialVariables): MutationPromise<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+export function submitLearningModuleForReviewEditorial(dc: DataConnect, vars: SubmitLearningModuleForReviewEditorialVariables): MutationPromise<SubmitLearningModuleForReviewEditorialData, SubmitLearningModuleForReviewEditorialVariables>;
+
+interface SubmitActivityDefinitionForReviewEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationRef<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationRef<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+  operationName: string;
+}
+export const submitActivityDefinitionForReviewEditorialRef: SubmitActivityDefinitionForReviewEditorialRef;
+
+export function submitActivityDefinitionForReviewEditorial(vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationPromise<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+export function submitActivityDefinitionForReviewEditorial(dc: DataConnect, vars: SubmitActivityDefinitionForReviewEditorialVariables): MutationPromise<SubmitActivityDefinitionForReviewEditorialData, SubmitActivityDefinitionForReviewEditorialVariables>;
+
+interface PublishLearningModuleVersionEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: PublishLearningModuleVersionEditorialVariables): MutationRef<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: PublishLearningModuleVersionEditorialVariables): MutationRef<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+  operationName: string;
+}
+export const publishLearningModuleVersionEditorialRef: PublishLearningModuleVersionEditorialRef;
+
+export function publishLearningModuleVersionEditorial(vars: PublishLearningModuleVersionEditorialVariables): MutationPromise<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+export function publishLearningModuleVersionEditorial(dc: DataConnect, vars: PublishLearningModuleVersionEditorialVariables): MutationPromise<PublishLearningModuleVersionEditorialData, PublishLearningModuleVersionEditorialVariables>;
+
+interface PublishActivityDefinitionVersionEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: PublishActivityDefinitionVersionEditorialVariables): MutationRef<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: PublishActivityDefinitionVersionEditorialVariables): MutationRef<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+  operationName: string;
+}
+export const publishActivityDefinitionVersionEditorialRef: PublishActivityDefinitionVersionEditorialRef;
+
+export function publishActivityDefinitionVersionEditorial(vars: PublishActivityDefinitionVersionEditorialVariables): MutationPromise<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+export function publishActivityDefinitionVersionEditorial(dc: DataConnect, vars: PublishActivityDefinitionVersionEditorialVariables): MutationPromise<PublishActivityDefinitionVersionEditorialData, PublishActivityDefinitionVersionEditorialVariables>;
+
+interface CreateResearchReviewEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateResearchReviewEditorialVariables): MutationRef<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateResearchReviewEditorialVariables): MutationRef<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+  operationName: string;
+}
+export const createResearchReviewEditorialRef: CreateResearchReviewEditorialRef;
+
+export function createResearchReviewEditorial(vars: CreateResearchReviewEditorialVariables): MutationPromise<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+export function createResearchReviewEditorial(dc: DataConnect, vars: CreateResearchReviewEditorialVariables): MutationPromise<CreateResearchReviewEditorialData, CreateResearchReviewEditorialVariables>;
+
+interface ReviewResearchEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ReviewResearchEditorialVariables): MutationRef<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ReviewResearchEditorialVariables): MutationRef<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+  operationName: string;
+}
+export const reviewResearchEditorialRef: ReviewResearchEditorialRef;
+
+export function reviewResearchEditorial(vars: ReviewResearchEditorialVariables): MutationPromise<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+export function reviewResearchEditorial(dc: DataConnect, vars: ReviewResearchEditorialVariables): MutationPromise<ReviewResearchEditorialData, ReviewResearchEditorialVariables>;
+
+interface CreateContentAssetEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateContentAssetEditorialVariables): MutationRef<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateContentAssetEditorialVariables): MutationRef<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+  operationName: string;
+}
+export const createContentAssetEditorialRef: CreateContentAssetEditorialRef;
+
+export function createContentAssetEditorial(vars: CreateContentAssetEditorialVariables): MutationPromise<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
+export function createContentAssetEditorial(dc: DataConnect, vars: CreateContentAssetEditorialVariables): MutationPromise<CreateContentAssetEditorialData, CreateContentAssetEditorialVariables>;
 
 interface UpsertMyProfileWithPhotoRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -622,6 +1146,42 @@ export const updateCompetitionPeriodStatusRef: UpdateCompetitionPeriodStatusRef;
 export function updateCompetitionPeriodStatus(vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
 export function updateCompetitionPeriodStatus(dc: DataConnect, vars: UpdateCompetitionPeriodStatusVariables): MutationPromise<UpdateCompetitionPeriodStatusData, UpdateCompetitionPeriodStatusVariables>;
 
+interface CreateTeacherCompetitionPeriodRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateTeacherCompetitionPeriodVariables): MutationRef<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateTeacherCompetitionPeriodVariables): MutationRef<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+  operationName: string;
+}
+export const createTeacherCompetitionPeriodRef: CreateTeacherCompetitionPeriodRef;
+
+export function createTeacherCompetitionPeriod(vars: CreateTeacherCompetitionPeriodVariables): MutationPromise<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+export function createTeacherCompetitionPeriod(dc: DataConnect, vars: CreateTeacherCompetitionPeriodVariables): MutationPromise<CreateTeacherCompetitionPeriodData, CreateTeacherCompetitionPeriodVariables>;
+
+interface UpdateTeacherCompetitionPeriodRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateTeacherCompetitionPeriodVariables): MutationRef<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateTeacherCompetitionPeriodVariables): MutationRef<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+  operationName: string;
+}
+export const updateTeacherCompetitionPeriodRef: UpdateTeacherCompetitionPeriodRef;
+
+export function updateTeacherCompetitionPeriod(vars: UpdateTeacherCompetitionPeriodVariables): MutationPromise<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+export function updateTeacherCompetitionPeriod(dc: DataConnect, vars: UpdateTeacherCompetitionPeriodVariables): MutationPromise<UpdateTeacherCompetitionPeriodData, UpdateTeacherCompetitionPeriodVariables>;
+
+interface SetTeacherCompetitionPeriodStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetTeacherCompetitionPeriodStatusVariables): MutationRef<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetTeacherCompetitionPeriodStatusVariables): MutationRef<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+  operationName: string;
+}
+export const setTeacherCompetitionPeriodStatusRef: SetTeacherCompetitionPeriodStatusRef;
+
+export function setTeacherCompetitionPeriodStatus(vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+export function setTeacherCompetitionPeriodStatus(dc: DataConnect, vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
+
 interface CreateAuthoritativeActivitySessionRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
@@ -717,6 +1277,78 @@ export const getMyProfileRef: GetMyProfileRef;
 
 export function getMyProfile(options?: ExecuteQueryOptions): QueryPromise<GetMyProfileData, undefined>;
 export function getMyProfile(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyProfileData, undefined>;
+
+interface GetEditorialSeedStateRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetEditorialSeedStateData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetEditorialSeedStateData, undefined>;
+  operationName: string;
+}
+export const getEditorialSeedStateRef: GetEditorialSeedStateRef;
+
+export function getEditorialSeedState(options?: ExecuteQueryOptions): QueryPromise<GetEditorialSeedStateData, undefined>;
+export function getEditorialSeedState(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetEditorialSeedStateData, undefined>;
+
+interface ListEditorialStudioDataRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<ListEditorialStudioDataData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<ListEditorialStudioDataData, undefined>;
+  operationName: string;
+}
+export const listEditorialStudioDataRef: ListEditorialStudioDataRef;
+
+export function listEditorialStudioData(options?: ExecuteQueryOptions): QueryPromise<ListEditorialStudioDataData, undefined>;
+export function listEditorialStudioData(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<ListEditorialStudioDataData, undefined>;
+
+interface GetLearningModuleVersionForEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetLearningModuleVersionForEditorialVariables): QueryRef<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetLearningModuleVersionForEditorialVariables): QueryRef<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+  operationName: string;
+}
+export const getLearningModuleVersionForEditorialRef: GetLearningModuleVersionForEditorialRef;
+
+export function getLearningModuleVersionForEditorial(vars: GetLearningModuleVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+export function getLearningModuleVersionForEditorial(dc: DataConnect, vars: GetLearningModuleVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetLearningModuleVersionForEditorialData, GetLearningModuleVersionForEditorialVariables>;
+
+interface GetActivityDefinitionVersionForEditorialRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetActivityDefinitionVersionForEditorialVariables): QueryRef<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetActivityDefinitionVersionForEditorialVariables): QueryRef<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+  operationName: string;
+}
+export const getActivityDefinitionVersionForEditorialRef: GetActivityDefinitionVersionForEditorialRef;
+
+export function getActivityDefinitionVersionForEditorial(vars: GetActivityDefinitionVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+export function getActivityDefinitionVersionForEditorial(dc: DataConnect, vars: GetActivityDefinitionVersionForEditorialVariables, options?: ExecuteQueryOptions): QueryPromise<GetActivityDefinitionVersionForEditorialData, GetActivityDefinitionVersionForEditorialVariables>;
+
+interface GetPublishedLearningModuleForStudentRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPublishedLearningModuleForStudentVariables): QueryRef<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPublishedLearningModuleForStudentVariables): QueryRef<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+  operationName: string;
+}
+export const getPublishedLearningModuleForStudentRef: GetPublishedLearningModuleForStudentRef;
+
+export function getPublishedLearningModuleForStudent(vars: GetPublishedLearningModuleForStudentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+export function getPublishedLearningModuleForStudent(dc: DataConnect, vars: GetPublishedLearningModuleForStudentVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedLearningModuleForStudentData, GetPublishedLearningModuleForStudentVariables>;
+
+interface GetPublishedActivityDefinitionForSessionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPublishedActivityDefinitionForSessionVariables): QueryRef<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPublishedActivityDefinitionForSessionVariables): QueryRef<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+  operationName: string;
+}
+export const getPublishedActivityDefinitionForSessionRef: GetPublishedActivityDefinitionForSessionRef;
+
+export function getPublishedActivityDefinitionForSession(vars: GetPublishedActivityDefinitionForSessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
+export function getPublishedActivityDefinitionForSession(dc: DataConnect, vars: GetPublishedActivityDefinitionForSessionVariables, options?: ExecuteQueryOptions): QueryPromise<GetPublishedActivityDefinitionForSessionData, GetPublishedActivityDefinitionForSessionVariables>;
 
 interface ListMyProgressRef {
   /* Allow users to create refs without passing in DataConnect */

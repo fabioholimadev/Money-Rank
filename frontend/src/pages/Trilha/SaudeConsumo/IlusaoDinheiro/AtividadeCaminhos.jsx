@@ -28,6 +28,8 @@ import {
   startAuthoritativeActivitySession,
   submitAuthoritativeActivitySession,
 } from '../../../../services/activitySessionService';
+import { ilusaoDinheiroMission } from '../../../../data/ilusaoDinheiroPaths';
+import { usePublishedActivityCatalog } from '../../../../hooks/usePublishedActivityCatalog';
 
 const PHASE_NUMBER = 3;
 
@@ -56,8 +58,12 @@ export default function AtividadeCaminhos() {
     trailLoading,
     refreshTrailState,
   } = useAuth();
+  const missionDefinition = usePublishedActivityCatalog(
+    'ilusao-dinheiro-caminhos-v1',
+    ilusaoDinheiroMission,
+  );
   const [session, setSession] = useState(() =>
-    buildIlusaoDinheiroSession(createAttemptSeed()),
+    buildIlusaoDinheiroSession(createAttemptSeed(), ilusaoDinheiroMission),
   );
   const [activitySessionId, setActivitySessionId] = useState(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -86,7 +92,7 @@ export default function AtividadeCaminhos() {
   );
   const gameResult =
     answers.length === ILUSAO_DINHEIRO_DECISION_COUNT
-      ? calculateIlusaoDinheiroResult(answers)
+      ? calculateIlusaoDinheiroResult(answers, session)
       : null;
 
   const startMission = async () => {
@@ -95,6 +101,12 @@ export default function AtividadeCaminhos() {
     try {
       const secureSession = await startAuthoritativeActivitySession(
         PHASE_NUMBER,
+      );
+      setSession(
+        buildIlusaoDinheiroSession(
+          createAttemptSeed(),
+          secureSession.mission ?? missionDefinition,
+        ),
       );
       setActivitySessionId(secureSession.sessionId);
       setStage('decision');
@@ -166,7 +178,9 @@ export default function AtividadeCaminhos() {
   };
 
   const restartMission = () => {
-    setSession(buildIlusaoDinheiroSession(createAttemptSeed()));
+    setSession(
+      buildIlusaoDinheiroSession(createAttemptSeed(), missionDefinition),
+    );
     setActivitySessionId(null);
     setStage('introduction');
     setDecisionIndex(0);

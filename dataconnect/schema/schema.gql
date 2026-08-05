@@ -54,6 +54,35 @@ enum ActivitySessionStatus {
   EXPIRED
 }
 
+# Ciclo editorial usado pelo Estúdio do Professor. Uma versão publicada nunca
+# volta a rascunho; uma nova versão deve ser criada para preservar auditoria.
+enum EditorialStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EditorialEntityType {
+  LEARNING_MODULE
+  ACTIVITY_DEFINITION
+  RESEARCH_REVIEW
+}
+
+enum ResearchReviewStatus {
+  PENDING_TEACHER_REVIEW
+  TEACHER_APPROVED
+  REJECTED
+}
+
+enum ContentAssetType {
+  VIDEO
+  SLIDES
+  DOCUMENT
+  SUMMARY
+  EXTERNAL_LINK
+}
+
 # O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
 # manter um segundo identificador e permite filtros seguros com auth.uid.
 type User
@@ -196,6 +225,162 @@ type ActivitySession
     @default(expr: "request.time")
 }
 
+# Versão completa de um conteúdo de fase. publicationKey é preenchida apenas
+# na versão publicada e, por ser única, impede duas publicações simultâneas
+# para o mesmo módulo mesmo sob concorrência.
+type LearningModuleVersion
+  @table(
+    name: "learning_module_versions"
+    singular: "learningModuleVersion"
+    plural: "learningModuleVersions"
+  )
+  @unique(fields: ["moduleKey", "version"])
+  @index(fields: ["moduleKey", "status", "version"], order: [ASC, ASC, DESC]) {
+  moduleKey: String!
+    @col(name: "module_key", dataType: "varchar(64)")
+  phaseNumber: Int! @col(name: "phase_number")
+  version: Int!
+  status: EditorialStatus! @default(value: DRAFT)
+  publicationKey: String
+    @col(name: "publication_key", dataType: "varchar(64)")
+    @unique
+  title: String! @col(dataType: "varchar(140)")
+  changeSummary: String!
+    @col(name: "change_summary", dataType: "varchar(240)")
+  payload: Any!
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  publishedByUid: String
+    @col(name: "published_by_uid", dataType: "varchar(128)")
+  publishedAt: Timestamp @col(name: "published_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# A definição editorial contém textos e regras estruturadas. O gabarito
+# utilizado pelo aluno continua sendo derivado somente na Function autoritativa.
+type ActivityDefinitionVersion
+  @table(
+    name: "activity_definition_versions"
+    singular: "activityDefinitionVersion"
+    plural: "activityDefinitionVersions"
+  )
+  @unique(fields: ["activityKey", "version"])
+  @index(fields: ["activityKey", "status", "version"], order: [ASC, ASC, DESC]) {
+  activityKey: String!
+    @col(name: "activity_key", dataType: "varchar(96)")
+  phaseNumber: Int! @col(name: "phase_number")
+  version: Int!
+  status: EditorialStatus! @default(value: DRAFT)
+  publicationKey: String
+    @col(name: "publication_key", dataType: "varchar(96)")
+    @unique
+  title: String! @col(dataType: "varchar(140)")
+  changeSummary: String!
+    @col(name: "change_summary", dataType: "varchar(240)")
+  payload: Any!
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  publishedByUid: String
+    @col(name: "published_by_uid", dataType: "varchar(128)")
+  publishedAt: Timestamp @col(name: "published_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Metadados de materiais externos ou do Firebase Storage. Nenhum binário ou
+# Base64 é salvo no PostgreSQL.
+type ContentAsset
+  @table(
+    name: "content_assets"
+    singular: "contentAsset"
+    plural: "contentAssets"
+  )
+  @index(fields: ["entityType", "entityId"], order: [ASC, ASC]) {
+  entityType: EditorialEntityType! @col(name: "entity_type")
+  entityId: UUID! @col(name: "entity_id")
+  assetType: ContentAssetType! @col(name: "asset_type")
+  displayName: String!
+    @col(name: "display_name", dataType: "varchar(160)")
+  url: String! @col(dataType: "varchar(2048)")
+  storagePath: String
+    @col(name: "storage_path", dataType: "varchar(512)")
+  mimeType: String @col(name: "mime_type", dataType: "varchar(120)")
+  sizeBytes: Int64 @col(name: "size_bytes")
+  sha256: String @col(dataType: "varchar(64)")
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+}
+
+# Fila de fontes sugeridas por professor, Codex ou Gemini. A aprovação é
+# pedagógica e não publica automaticamente uma atividade.
+type ResearchReview
+  @table(
+    name: "research_reviews"
+    singular: "researchReview"
+    plural: "researchReviews"
+  )
+  @index(fields: ["status", "createdAt"], order: [ASC, DESC]) {
+  activityKey: String!
+    @col(name: "activity_key", dataType: "varchar(96)")
+  factKey: String! @col(name: "fact_key", dataType: "varchar(96)")
+  title: String! @col(dataType: "varchar(180)")
+  claim: String! @col(dataType: "text")
+  sourceUrl: String!
+    @col(name: "source_url", dataType: "varchar(2048)")
+  proposedBy: String!
+    @col(name: "proposed_by", dataType: "varchar(32)")
+  status: ResearchReviewStatus!
+    @default(value: PENDING_TEACHER_REVIEW)
+  reviewNotes: String @col(name: "review_notes", dataType: "text")
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  reviewedByUid: String
+    @col(name: "reviewed_by_uid", dataType: "varchar(128)")
+  reviewedAt: Timestamp @col(name: "reviewed_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Log append-only das mudanças editoriais. O cliente não recebe operação
+# de update ou delete para esta tabela.
+type EditorialAuditLog
+  @table(
+    name: "editorial_audit_log"
+    singular: "editorialAuditLog"
+    plural: "editorialAuditLogs"
+  )
+  @index(fields: ["entityType", "entityId", "createdAt"], order: [ASC, ASC, DESC]) {
+  entityType: EditorialEntityType! @col(name: "entity_type")
+  entityId: UUID! @col(name: "entity_id")
+  entityKey: String!
+    @col(name: "entity_key", dataType: "varchar(96)")
+  version: Int!
+  action: String! @col(dataType: "varchar(32)")
+  actorUid: String!
+    @col(name: "actor_uid", dataType: "varchar(128)")
+  summary: String! @col(dataType: "varchar(240)")
+  details: Any
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+}
+
 # Configuração única e administrativa da economia. O limite nulo significa
 # que as repetições remuneradas ainda não possuem teto definido.
 type EconomyConfig
@@ -247,6 +432,9 @@ type CompetitionPeriod
   @index(fields: ["status", "startsAt"], order: [ASC, ASC]) {
   name: String! @col(dataType: "varchar(80)")
   status: CompetitionPeriodStatus! @default(value: DRAFT)
+  # Sentinela anulável: somente ACTIVE usa este valor. A unicidade impede
+  # duas ativações concorrentes sem limitar rascunhos ou períodos históricos.
+  activeSlot: String @col(name: "active_slot", dataType: "varchar(16)") @unique
   startsAt: Timestamp! @col(name: "starts_at")
   endsAt: Timestamp! @col(name: "ends_at")
   pausedAt: Timestamp @col(name: "paused_at")

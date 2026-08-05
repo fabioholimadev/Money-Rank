@@ -19,6 +19,7 @@
     "test:rankings": "node ../scripts/test-ranking-data.mjs",
     "test:role-access": "node ../scripts/test-role-access.mjs",
     "test:teacher-analytics": "node ../scripts/test-teacher-analytics.mjs",
+    "test:teacher-export": "node ../scripts/test-teacher-spreadsheet-export.mjs",
     "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {

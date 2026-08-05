@@ -18,10 +18,20 @@ const periods = normalizeTeacherPeriods([
     pausedAt: null,
     closedAt: null,
   },
+  {
+    id: '22222222222242228222222222222222',
+    name: 'Próximo período',
+    status: 'DRAFT',
+    startsAt: '2026-08-20T12:00:00.000Z',
+    endsAt: '2026-08-27T12:00:00.000Z',
+    pausedAt: null,
+    closedAt: null,
+  },
   { id: 'invalido', name: '', status: 'UNKNOWN' },
 ]);
-assert.equal(periods.length, 1);
+assert.equal(periods.length, 2);
 assert.equal(periods[0].status, 'ACTIVE');
+assert.equal(periods[1].id, '22222222-2222-4222-8222-222222222222');
 
 const summary = normalizeTeacherSummary({
   totalStudents: 100,

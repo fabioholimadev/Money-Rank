@@ -29,8 +29,14 @@ import {
   startAuthoritativeActivitySession,
   submitAuthoritativeActivitySession,
 } from '../../../../services/activitySessionService';
+import { usePublishedActivityCatalog } from '../../../../hooks/usePublishedActivityCatalog';
 
 const PHASE_NUMBER = 2;
+const FALLBACK_ACTIVITY = Object.freeze({
+  id: 'custo-vicio',
+  phaseNumber: PHASE_NUMBER,
+  cases: custoVicioCases,
+});
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-BR', {
@@ -67,6 +73,11 @@ export default function AtividadeCaso() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedResult, setSavedResult] = useState(null);
   const [saveError, setSaveError] = useState('');
+  const activityDefinition = usePublishedActivityCatalog(
+    'custo-vicio',
+    FALLBACK_ACTIVITY,
+  );
+  const availableCases = activityDefinition?.cases ?? custoVicioCases;
 
   const currentPhase = normalizeCurrentPhase(aluno?.fase_atual);
   const phaseProgress = getPhaseProgress(trailProgress, PHASE_NUMBER);
@@ -75,7 +86,7 @@ export default function AtividadeCaso() {
     currentPhase,
     phaseProgress,
   );
-  const selectedCase = custoVicioCases.find(
+  const selectedCase = availableCases.find(
     (caseItem) => caseItem.id === selectedCaseId,
   );
   const currentDecision = caseSession?.decisions[decisionIndex] ?? null;
@@ -83,8 +94,8 @@ export default function AtividadeCaso() {
     (option) => option.id === selectedOptionId,
   );
   const caseResult =
-    selectedCase && answers.length === CUSTO_VICIO_DECISION_COUNT
-      ? calculateCustoVicioResult(selectedCase.id, answers)
+    caseSession && answers.length === CUSTO_VICIO_DECISION_COUNT
+      ? calculateCustoVicioResult(caseSession.id, answers, [caseSession])
       : null;
 
   const startCase = async () => {
@@ -97,9 +108,14 @@ export default function AtividadeCaso() {
         PHASE_NUMBER,
         selectedCase.id,
       );
+      const sessionCase = secureSession.caseData ?? selectedCase;
       setActivitySessionId(secureSession.sessionId);
       setCaseSession(
-        buildCustoVicioCaseSession(selectedCase.id, createAttemptSeed()),
+        buildCustoVicioCaseSession(
+          sessionCase.id,
+          createAttemptSeed(),
+          [sessionCase],
+        ),
       );
       setStage('analysis');
       setDecisionIndex(0);
@@ -244,7 +260,7 @@ export default function AtividadeCaso() {
             </div>
 
             <div className="space-y-3">
-              {custoVicioCases.map((caseItem) => {
+              {availableCases.map((caseItem) => {
                 const expanded = selectedCaseId === caseItem.id;
                 const detailsId = `case-details-${caseItem.id}`;
 

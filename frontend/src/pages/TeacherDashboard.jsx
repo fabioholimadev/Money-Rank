@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AutoGraph,
+  Download,
   GroupsOutlined,
   Logout,
+  EditNote,
   MonetizationOn,
   Refresh,
   SchoolOutlined,
@@ -11,11 +13,18 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
 import TeacherDataChat from '../components/TeacherDataChat';
+import { buildTeacherDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
 import {
   fetchTeacherDashboard,
   fetchTeacherPeriods,
 } from '../services/teacherAnalyticsService';
+import {
+  createTeacherCompetitionPeriod,
+  setTeacherCompetitionPeriodStatus,
+  updateTeacherCompetitionPeriod,
+} from '../services/teacherCompetitionService';
 
 const PERIOD_STATUS = {
   DRAFT: { label: 'Rascunho', style: 'border-slate-700 text-slate-300' },
@@ -243,6 +252,55 @@ export default function TeacherDashboard() {
     navigate('/login', { replace: true });
   };
 
+  const handlePeriodChanged = async (changedPeriod) => {
+    setIsLoadingPeriods(true);
+    setIsLoadingDashboard(true);
+    setErrorMessage('');
+    try {
+      const availablePeriods = await fetchTeacherPeriods();
+      const nextPeriodId = choosePeriodId(
+        availablePeriods,
+        changedPeriod?.id || selectedPeriodId,
+      );
+      setPeriods(availablePeriods);
+      setSelectedPeriodId(nextPeriodId);
+      if (nextPeriodId) await loadDashboard(nextPeriodId);
+      else setDashboard(null);
+    } catch (error) {
+      setErrorMessage(
+        error?.message || 'O período mudou, mas o painel não foi atualizado.',
+      );
+    } finally {
+      setIsLoadingPeriods(false);
+      setIsLoadingDashboard(false);
+    }
+  };
+
+  const handleExport = () => {
+    setErrorMessage('');
+    try {
+      const exported = buildTeacherDashboardCsvExport({
+        period: selectedPeriod,
+        dashboard,
+      });
+      const url = URL.createObjectURL(new Blob(
+        [exported.content],
+        { type: exported.mimeType },
+      ));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = exported.fileName;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (error) {
+      setErrorMessage(
+        error?.message || 'Não foi possível exportar os dados.',
+      );
+    }
+  };
+
   const summary = dashboard?.summary;
   const statusConfig = selectedPeriod
     ? PERIOD_STATUS[selectedPeriod.status] || PERIOD_STATUS.DRAFT
@@ -266,6 +324,23 @@ export default function TeacherDashboard() {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/professor/estudio')}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 transition hover:bg-amber-300"
+            >
+              <EditNote sx={{ fontSize: 18 }} aria-hidden="true" />
+              Estúdio de conteúdos
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={!selectedPeriod || !dashboard || isLoadingDashboard}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-bold text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download sx={{ fontSize: 18 }} aria-hidden="true" />
+              Exportar planilha
+            </button>
             <button
               type="button"
               onClick={handleRefresh}
@@ -321,9 +396,34 @@ export default function TeacherDashboard() {
               <span className="text-xs text-slate-500">
                 Horário de Fortaleza
               </span>
+              <CompetitionPeriodManager
+                periods={periods}
+                selectedPeriod={selectedPeriod}
+                onCreate={createTeacherCompetitionPeriod}
+                onUpdate={updateTeacherCompetitionPeriod}
+                onStatusChange={setTeacherCompetitionPeriodStatus}
+                onChanged={handlePeriodChanged}
+              />
+            </div>
+          )}
+          {!selectedPeriod && !isLoadingPeriods && (
+            <div className="lg:justify-self-end">
+              <CompetitionPeriodManager
+                periods={periods}
+                selectedPeriod={null}
+                onCreate={createTeacherCompetitionPeriod}
+                onUpdate={updateTeacherCompetitionPeriod}
+                onStatusChange={setTeacherCompetitionPeriodStatus}
+                onChanged={handlePeriodChanged}
+              />
             </div>
           )}
         </section>
+
+        <TeacherDataChat
+          key={selectedPeriodId || 'no-period'}
+          periodId={selectedPeriodId}
+        />
 
         {errorMessage && (
           <div
@@ -588,11 +688,6 @@ export default function TeacherDashboard() {
                 </p>
               )}
             </section>
-
-            <TeacherDataChat
-              key={selectedPeriodId}
-              periodId={selectedPeriodId}
-            />
           </>
         )}
       </div>

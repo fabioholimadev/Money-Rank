@@ -138,8 +138,14 @@ export function validateCustoVicioCaseBank() {
  * Cria o baralho usado em uma tentativa. O identificador interno da opção
  * permanece estável para a correção, mas a posição A/B/C muda em cada sessão.
  */
-export function buildCustoVicioCaseSession(caseId, seed = Date.now()) {
-  const caseItem = getCustoVicioCase(caseId);
+export function buildCustoVicioCaseSession(
+  caseId,
+  seed = Date.now(),
+  caseBank = custoVicioCases,
+) {
+  const caseItem = caseBank === custoVicioCases
+    ? getCustoVicioCase(caseId)
+    : caseBank.find((item) => item.id === caseId);
 
   if (!caseItem) {
     throw new Error('O personagem escolhido não existe.');
@@ -223,8 +229,14 @@ function normalizeAnswers(caseItem, answers) {
   });
 }
 
-export function calculateCustoVicioResult(caseId, answers) {
-  const caseItem = getCustoVicioCase(caseId);
+export function calculateCustoVicioResult(
+  caseId,
+  answers,
+  caseBank = custoVicioCases,
+) {
+  const caseItem = caseBank === custoVicioCases
+    ? getCustoVicioCase(caseId)
+    : caseBank.find((item) => item.id === caseId);
 
   if (!caseItem) {
     throw new Error('O personagem escolhido não existe.');

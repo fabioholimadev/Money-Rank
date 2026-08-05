@@ -40,9 +40,9 @@ function shuffle(values, random = Math.random) {
   return result;
 }
 
-export function getActivityDefinition(phaseNumber) {
+export function getActivityDefinition(phaseNumber, overrideDefinition = null) {
   const activityId = ACTIVITY_IDS_BY_PHASE[Number(phaseNumber)];
-  const definition = activityId ? activities[activityId] : null;
+  const definition = overrideDefinition ?? (activityId ? activities[activityId] : null);
 
   if (!definition || definition.phaseNumber !== Number(phaseNumber)) {
     throw new Error('A fase informada não possui atividade autoritativa.');
@@ -53,9 +53,16 @@ export function getActivityDefinition(phaseNumber) {
 
 export function buildStaticSession(
   phaseNumber,
-  { variantId = null, random = Math.random } = {},
+  {
+    variantId = null,
+    random = Math.random,
+    definition: overrideDefinition = null,
+  } = {},
 ) {
-  const { activityId, definition } = getActivityDefinition(phaseNumber);
+  const { activityId, definition } = getActivityDefinition(
+    phaseNumber,
+    overrideDefinition,
+  );
 
   if (phaseNumber === 2) {
     const selectedCase = definition.cases.find(
@@ -67,7 +74,10 @@ export function buildStaticSession(
       activityId: `custo-vicio-case-${selectedCase.id}`,
       variantId: selectedCase.id,
       contentVersion: definition.contentVersion,
-      publicPayload: { variantId: selectedCase.id },
+      publicPayload: {
+        variantId: selectedCase.id,
+        caseData: overrideDefinition ? selectedCase : undefined,
+      },
       answerKey: { decisions: selectedCase.decisions },
     };
   }
@@ -77,7 +87,9 @@ export function buildStaticSession(
       activityId,
       variantId: null,
       contentVersion: definition.contentVersion,
-      publicPayload: {},
+      publicPayload: {
+        mission: overrideDefinition ? definition : undefined,
+      },
       answerKey: { decisions: definition.decisions },
     };
   }
@@ -97,7 +109,10 @@ export function buildStaticSession(
       activityId,
       variantId: null,
       contentVersion: definition.contentVersion,
-      publicPayload: { cardIds: cards.map((card) => card.id) },
+      publicPayload: {
+        cardIds: cards.map((card) => card.id),
+        cards: overrideDefinition ? cards : undefined,
+      },
       answerKey: { cards },
     };
   }
@@ -224,6 +239,6 @@ export function scoreActivitySession(session, answers) {
   }
 }
 
-export function getPerigoDoceDefinition() {
-  return activities['perigo-doce-quiz'];
+export function getPerigoDoceDefinition(overrideDefinition = null) {
+  return overrideDefinition ?? activities['perigo-doce-quiz'];
 }

@@ -18,6 +18,182 @@ query GetMyProfile @auth(level: USER_EMAIL_VERIFIED) {
   }
 }
 
+# Consulta leve usada pelo backend para verificar se o catálogo editorial
+# inicial já foi importado. Evita transferir todos os payloads a cada sessão.
+query GetEditorialSeedState @auth(level: NO_ACCESS) {
+  learningModules: learningModuleVersions(limit: 100) {
+    moduleKey
+  }
+  activities: activityDefinitionVersions(limit: 100) {
+    activityKey
+  }
+}
+
+# Estado editorial completo. Estas operações são exclusivas do backend;
+# a Function valida o papel TEACHER antes de devolver qualquer rascunho.
+query ListEditorialStudioData @auth(level: NO_ACCESS) {
+  learningModules: learningModuleVersions(
+    orderBy: [{ moduleKey: ASC }, { version: DESC }]
+    limit: 100
+  ) {
+    id
+    moduleKey
+    phaseNumber
+    version
+    status
+    title
+    changeSummary
+    payload
+    createdByUid
+    publishedByUid
+    publishedAt
+    createdAt
+    updatedAt
+  }
+  activities: activityDefinitionVersions(
+    orderBy: [{ activityKey: ASC }, { version: DESC }]
+    limit: 100
+  ) {
+    id
+    activityKey
+    phaseNumber
+    version
+    status
+    title
+    changeSummary
+    payload
+    createdByUid
+    publishedByUid
+    publishedAt
+    createdAt
+    updatedAt
+  }
+  research: researchReviews(
+    orderBy: [{ status: ASC }, { createdAt: DESC }]
+    limit: 100
+  ) {
+    id
+    activityKey
+    factKey
+    title
+    claim
+    sourceUrl
+    proposedBy
+    status
+    reviewNotes
+    createdByUid
+    reviewedByUid
+    reviewedAt
+    createdAt
+    updatedAt
+  }
+  assets: contentAssets(orderBy: [{ createdAt: DESC }], limit: 100) {
+    id
+    entityType
+    entityId
+    assetType
+    displayName
+    url
+    storagePath
+    mimeType
+    sizeBytes
+    sha256
+    createdByUid
+    createdAt
+  }
+  audit: editorialAuditLogs(
+    orderBy: [{ createdAt: DESC }]
+    limit: 50
+  ) {
+    id
+    entityType
+    entityId
+    entityKey
+    version
+    action
+    actorUid
+    summary
+    details
+    createdAt
+  }
+}
+
+query GetLearningModuleVersionForEditorial($versionId: UUID!)
+  @auth(level: NO_ACCESS) {
+  learningModuleVersion(id: $versionId) {
+    id
+    moduleKey
+    phaseNumber
+    version
+    status
+    title
+    changeSummary
+    payload
+    createdByUid
+    publishedByUid
+    publishedAt
+    createdAt
+    updatedAt
+  }
+}
+
+query GetActivityDefinitionVersionForEditorial($versionId: UUID!)
+  @auth(level: NO_ACCESS) {
+  activityDefinitionVersion(id: $versionId) {
+    id
+    activityKey
+    phaseNumber
+    version
+    status
+    title
+    changeSummary
+    payload
+    createdByUid
+    publishedByUid
+    publishedAt
+    createdAt
+    updatedAt
+  }
+}
+
+query GetPublishedLearningModuleForStudent($moduleKey: String!)
+  @auth(level: NO_ACCESS) {
+  learningModuleVersions(
+    where: {
+      moduleKey: { eq: $moduleKey }
+      status: { eq: PUBLISHED }
+    }
+    limit: 1
+  ) {
+    id
+    moduleKey
+    phaseNumber
+    version
+    title
+    payload
+    publishedAt
+  }
+}
+
+query GetPublishedActivityDefinitionForSession($activityKey: String!)
+  @auth(level: NO_ACCESS) {
+  activityDefinitionVersions(
+    where: {
+      activityKey: { eq: $activityKey }
+      status: { eq: PUBLISHED }
+    }
+    limit: 1
+  ) {
+    id
+    activityKey
+    phaseNumber
+    version
+    title
+    payload
+    publishedAt
+  }
+}
+
 # O uid não é recebido do cliente: o filtro sempre usa auth.uid.
 query ListMyProgress @auth(level: USER_EMAIL_VERIFIED) {
   studentProgressEntries(

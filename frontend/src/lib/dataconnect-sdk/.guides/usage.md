@@ -14,38 +14,38 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertMyProfileWithAvatar, upsertMyProfileWithPhoto, upsertMyProfileWithoutSyncedPhoto, setUserRoleByEmail, upsertStudentProgress, applyCapiCoinTransaction, upsertEconomyConfig, createCompetitionPeriod, updateCompetitionPeriodStatus, createAuthoritativeActivitySession } from '@money-rank/dataconnect';
+import { upsertMyProfileWithAvatar, createLearningModuleVersionEditorial, createActivityDefinitionVersionEditorial, updateLearningModuleDraftEditorial, updateActivityDefinitionDraftEditorial, submitLearningModuleForReviewEditorial, submitActivityDefinitionForReviewEditorial, publishLearningModuleVersionEditorial, publishActivityDefinitionVersionEditorial, createResearchReviewEditorial } from '@money-rank/dataconnect';
 
 
 // Operation UpsertMyProfileWithAvatar:  For variables, look at type UpsertMyProfileWithAvatarVars in ../index.d.ts
 const { data } = await UpsertMyProfileWithAvatar(dataConnect, upsertMyProfileWithAvatarVars);
 
-// Operation UpsertMyProfileWithPhoto:  For variables, look at type UpsertMyProfileWithPhotoVars in ../index.d.ts
-const { data } = await UpsertMyProfileWithPhoto(dataConnect, upsertMyProfileWithPhotoVars);
+// Operation CreateLearningModuleVersionEditorial:  For variables, look at type CreateLearningModuleVersionEditorialVars in ../index.d.ts
+const { data } = await CreateLearningModuleVersionEditorial(dataConnect, createLearningModuleVersionEditorialVars);
 
-// Operation UpsertMyProfileWithoutSyncedPhoto:  For variables, look at type UpsertMyProfileWithoutSyncedPhotoVars in ../index.d.ts
-const { data } = await UpsertMyProfileWithoutSyncedPhoto(dataConnect, upsertMyProfileWithoutSyncedPhotoVars);
+// Operation CreateActivityDefinitionVersionEditorial:  For variables, look at type CreateActivityDefinitionVersionEditorialVars in ../index.d.ts
+const { data } = await CreateActivityDefinitionVersionEditorial(dataConnect, createActivityDefinitionVersionEditorialVars);
 
-// Operation SetUserRoleByEmail:  For variables, look at type SetUserRoleByEmailVars in ../index.d.ts
-const { data } = await SetUserRoleByEmail(dataConnect, setUserRoleByEmailVars);
+// Operation UpdateLearningModuleDraftEditorial:  For variables, look at type UpdateLearningModuleDraftEditorialVars in ../index.d.ts
+const { data } = await UpdateLearningModuleDraftEditorial(dataConnect, updateLearningModuleDraftEditorialVars);
 
-// Operation UpsertStudentProgress:  For variables, look at type UpsertStudentProgressVars in ../index.d.ts
-const { data } = await UpsertStudentProgress(dataConnect, upsertStudentProgressVars);
+// Operation UpdateActivityDefinitionDraftEditorial:  For variables, look at type UpdateActivityDefinitionDraftEditorialVars in ../index.d.ts
+const { data } = await UpdateActivityDefinitionDraftEditorial(dataConnect, updateActivityDefinitionDraftEditorialVars);
 
-// Operation ApplyCapiCoinTransaction:  For variables, look at type ApplyCapiCoinTransactionVars in ../index.d.ts
-const { data } = await ApplyCapiCoinTransaction(dataConnect, applyCapiCoinTransactionVars);
+// Operation SubmitLearningModuleForReviewEditorial:  For variables, look at type SubmitLearningModuleForReviewEditorialVars in ../index.d.ts
+const { data } = await SubmitLearningModuleForReviewEditorial(dataConnect, submitLearningModuleForReviewEditorialVars);
 
-// Operation UpsertEconomyConfig:  For variables, look at type UpsertEconomyConfigVars in ../index.d.ts
-const { data } = await UpsertEconomyConfig(dataConnect, upsertEconomyConfigVars);
+// Operation SubmitActivityDefinitionForReviewEditorial:  For variables, look at type SubmitActivityDefinitionForReviewEditorialVars in ../index.d.ts
+const { data } = await SubmitActivityDefinitionForReviewEditorial(dataConnect, submitActivityDefinitionForReviewEditorialVars);
 
-// Operation CreateCompetitionPeriod:  For variables, look at type CreateCompetitionPeriodVars in ../index.d.ts
-const { data } = await CreateCompetitionPeriod(dataConnect, createCompetitionPeriodVars);
+// Operation PublishLearningModuleVersionEditorial:  For variables, look at type PublishLearningModuleVersionEditorialVars in ../index.d.ts
+const { data } = await PublishLearningModuleVersionEditorial(dataConnect, publishLearningModuleVersionEditorialVars);
 
-// Operation UpdateCompetitionPeriodStatus:  For variables, look at type UpdateCompetitionPeriodStatusVars in ../index.d.ts
-const { data } = await UpdateCompetitionPeriodStatus(dataConnect, updateCompetitionPeriodStatusVars);
+// Operation PublishActivityDefinitionVersionEditorial:  For variables, look at type PublishActivityDefinitionVersionEditorialVars in ../index.d.ts
+const { data } = await PublishActivityDefinitionVersionEditorial(dataConnect, publishActivityDefinitionVersionEditorialVars);
 
-// Operation CreateAuthoritativeActivitySession:  For variables, look at type CreateAuthoritativeActivitySessionVars in ../index.d.ts
-const { data } = await CreateAuthoritativeActivitySession(dataConnect, createAuthoritativeActivitySessionVars);
+// Operation CreateResearchReviewEditorial:  For variables, look at type CreateResearchReviewEditorialVars in ../index.d.ts
+const { data } = await CreateResearchReviewEditorial(dataConnect, createResearchReviewEditorialVars);
 
 
 ```

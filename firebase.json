@@ -6,6 +6,9 @@
     "source": "functions",
     "runtime": "nodejs22"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "emulators": {
     "dataconnect": {
       "port": 9399,
@@ -13,6 +16,9 @@
     },
     "functions": {
       "port": 5001
+    },
+    "storage": {
+      "port": 9199
     }
   }
 }

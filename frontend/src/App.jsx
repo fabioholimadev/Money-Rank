@@ -20,6 +20,7 @@ import AtividadeFatoFake from './pages/Trilha/SaudeConsumo/EngenhariaDesejo/Ativ
 import Ranking from './pages/Ranking';
 import Perfil from './pages/Perfil';
 import TeacherDashboard from './pages/TeacherDashboard';
+import TeacherStudio from './pages/TeacherStudio';
 
 // Infraestrutura de layout
 import ProtectedRoute from './components/ProtectedRoute';
@@ -93,6 +94,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
               <TeacherDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professor/estudio"
+          element={
+            <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
+              <TeacherStudio />
             </ProtectedRoute>
           }
         />

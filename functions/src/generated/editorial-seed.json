@@ -1,0 +1,1601 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "frontend/src/data",
+  "learningModules": [
+    {
+      "moduleKey": "introducao",
+      "phaseNumber": 0,
+      "title": "Introdução: escolhas que moldam o seu futuro",
+      "payload": {
+        "id": "introducao",
+        "phaseNumber": 0,
+        "stepLabel": "Passo 0",
+        "title": "Introdução: escolhas que moldam o seu futuro",
+        "description": "Antes de começar as fases, observe como técnicas de venda e decisões por impulso podem afetar o bolso.",
+        "materialSlots": {
+          "video": {
+            "status": "available",
+            "title": "Duas vezes Judite — Série Eu e meu dinheiro",
+            "description": "Vídeo introdutório sobre consumo e tomada de decisão.",
+            "embedUrl": "https://www.youtube.com/embed/k6O554uP2Kc",
+            "sourceLabel": "Banco Central do Brasil / Ministério da Justiça",
+            "sourceUrl": "https://www.gov.br/mj/pt-br/assuntos/seus-direitos/consumidor/escola-nacional-endc/videoteca/duas-vezes-judite-serie-eu-e-meu-dinheiro",
+            "format": "YouTube",
+            "estimatedMinutes": 5,
+            "version": "1.0"
+          }
+        },
+        "completionLabel": "Assisti ao vídeo introdutório",
+        "continueLabel": "Começar a Fase 1",
+        "nextPath": "/trilha/saude-consumo/perigo-doce/conteudo",
+        "introduction": true
+      }
+    },
+    {
+      "moduleKey": "perigo-doce",
+      "phaseNumber": 1,
+      "title": "O Perigo do Doce",
+      "payload": {
+        "id": "perigo-doce",
+        "phaseNumber": 1,
+        "stepLabel": "Fase 1",
+        "title": "O Perigo do Doce",
+        "description": "Entenda como o consumo de açúcar pode gerar impactos na saúde, no orçamento familiar e nos serviços públicos.",
+        "materialSlots": {
+          "video": {
+            "status": "available",
+            "title": "Vídeo educativo — O Perigo do Doce",
+            "description": "Apresenta os conceitos centrais usados no quiz da fase.",
+            "embedUrl": "https://www.youtube.com/embed/ZnTJw_e7YDU",
+            "sourceLabel": "Conteúdo educativo selecionado pelo Money Rank",
+            "sourceUrl": "https://www.youtube.com/watch?v=ZnTJw_e7YDU",
+            "format": "YouTube",
+            "estimatedMinutes": 6,
+            "version": "1.0"
+          },
+          "slides": {
+            "status": "available",
+            "title": "Slides da aula — O Perigo do Doce",
+            "description": "Material visual preparado para acompanhar o vídeo.",
+            "embedUrl": "https://docs.google.com/presentation/d/e/2PACX-1vSIyWrjISGHq781i0JeVy4rJMw2chATeHHYWL_RvjNpocCsS4iyVC3gUZxEJw1UURrQa_xuUxJ-jFNZ/pubembed?start=false&loop=false&delayms=3000",
+            "format": "Google Slides",
+            "estimatedMinutes": 5,
+            "version": "1.0"
+          },
+          "summary": {
+            "status": "pending",
+            "title": "Resumo / Documento — O Perigo do Doce",
+            "description": "Espaço reservado para o resumo validado pelo professor."
+          }
+        },
+        "completionLabel": "Assisti ao vídeo e acessei pelo menos um material extra",
+        "continueLabel": "Ir para o Quiz de Fixação",
+        "activityPath": "/trilha/saude-consumo/perigo-doce/atividade"
+      }
+    },
+    {
+      "moduleKey": "custo-vicio",
+      "phaseNumber": 2,
+      "title": "O Custo do Vício",
+      "payload": {
+        "id": "custo-vicio",
+        "phaseNumber": 2,
+        "stepLabel": "Fase 2",
+        "title": "O Custo do Vício",
+        "description": "Analise como gastos recorrentes com tabaco, vapes e álcool se acumulam e reduzem outras possibilidades de escolha.",
+        "materialSlots": {
+          "video": {
+            "status": "available",
+            "title": "Vídeo educativo do INCA sobre o tabagismo",
+            "description": "Introdução aos impactos individuais e coletivos do tabagismo.",
+            "embedUrl": "https://www.youtube.com/embed/PniRKApD7co",
+            "sourceLabel": "Instituto Nacional de Câncer (INCA)",
+            "sourceUrl": "https://www.youtube.com/watch?v=PniRKApD7co",
+            "format": "YouTube",
+            "estimatedMinutes": 7,
+            "version": "1.0"
+          },
+          "slides": {
+            "status": "pending",
+            "title": "Slides da aula — O Custo do Vício",
+            "description": "Espaço reservado para os slides preparados pelo professor."
+          },
+          "summary": {
+            "status": "available",
+            "title": "Resumo — pontos para o estudo de caso",
+            "description": "Checklist de conceitos usados na análise dos personagens.",
+            "format": "Resumo interativo",
+            "estimatedMinutes": 4,
+            "version": "1.0",
+            "sections": [
+              {
+                "title": "Custo recorrente",
+                "description": "Um gasto pequeno e frequente deve ser analisado pelo total semanal, mensal e anual."
+              },
+              {
+                "title": "Custo de oportunidade",
+                "description": "Todo valor gasto deixa de financiar outra meta, como transporte, estudo, lazer ou reserva."
+              },
+              {
+                "title": "Impacto coletivo",
+                "description": "Problemas de saúde também geram custos para famílias, empresas e serviços públicos."
+              },
+              {
+                "title": "Decisão baseada em evidências",
+                "description": "Compare o custo financeiro com os riscos à saúde antes de avaliar qualquer escolha."
+              }
+            ]
+          }
+        },
+        "completionLabel": "Assisti ao vídeo e acessei pelo menos um material extra",
+        "continueLabel": "Ir para o Estudo de Caso",
+        "activityPath": "/trilha/saude-consumo/custo-vicio/atividade"
+      }
+    },
+    {
+      "moduleKey": "ilusao-dinheiro",
+      "phaseNumber": 3,
+      "title": "A Ilusão do Dinheiro",
+      "payload": {
+        "id": "ilusao-dinheiro",
+        "phaseNumber": 3,
+        "stepLabel": "Fase 3",
+        "title": "A Ilusão do Dinheiro",
+        "description": "Reconheça decisões automáticas, pressão social e efeito manada para fazer escolhas financeiras mais conscientes.",
+        "materialSlots": {
+          "video": {
+            "status": "available",
+            "title": "Eu vou levar — Série Eu e meu dinheiro",
+            "description": "Narrativa sobre pressão de compra e decisões por impulso.",
+            "embedUrl": "https://www.youtube-nocookie.com/embed/FdTip4SdWMw?start=2",
+            "sourceLabel": "Banco Central do Brasil / Ministério da Justiça",
+            "sourceUrl": "https://www.gov.br/mj/pt-br/assuntos/seus-direitos/consumidor/escola-nacional-endc/videoteca/eu-vou-levar-serie-eu-e-meu-dinheiro",
+            "format": "YouTube",
+            "estimatedMinutes": 6,
+            "version": "1.0"
+          },
+          "slides": {
+            "status": "pending",
+            "title": "Slides da aula — A Ilusão do Dinheiro",
+            "description": "Espaço reservado para os slides preparados pelo professor."
+          },
+          "summary": {
+            "status": "available",
+            "title": "Resumo — como escapar das decisões automáticas",
+            "description": "Checklist para usar antes de tomar uma decisão financeira.",
+            "format": "Resumo interativo",
+            "estimatedMinutes": 4,
+            "version": "1.0",
+            "sections": [
+              {
+                "title": "Identifique a influência",
+                "description": "Pergunte se a vontade nasceu de uma necessidade real ou da pressão do grupo e da publicidade."
+              },
+              {
+                "title": "Calcule o custo total",
+                "description": "Parcelas pequenas podem esconder um valor final alto e comprometer meses do orçamento."
+              },
+              {
+                "title": "Crie uma pausa",
+                "description": "Adiar uma compra não urgente reduz a força do impulso e melhora a comparação."
+              },
+              {
+                "title": "Volte à sua meta",
+                "description": "Compare a compra com o objetivo financeiro definido para o mesmo dinheiro."
+              }
+            ]
+          }
+        },
+        "completionLabel": "Assisti ao vídeo e acessei pelo menos um material extra",
+        "continueLabel": "Ir para Caminhos de Decisão",
+        "activityPath": "/trilha/saude-consumo/ilusao-dinheiro/atividade"
+      }
+    },
+    {
+      "moduleKey": "engenharia-desejo",
+      "phaseNumber": 4,
+      "title": "A Engenharia do Desejo",
+      "payload": {
+        "id": "engenharia-desejo",
+        "phaseNumber": 4,
+        "stepLabel": "Fase 4",
+        "title": "A Engenharia do Desejo",
+        "description": "Descubra como plataformas de apostas usam velocidade, recompensas e estímulos para manter o jogador ativo.",
+        "materialSlots": {
+          "video": {
+            "status": "available",
+            "title": "Como funcionam as apostas on-line e o que diz a lei",
+            "description": "Contextualiza o funcionamento das bets e sua regulamentação.",
+            "embedUrl": "https://www.youtube.com/embed/liUKTPXW6Ac",
+            "sourceLabel": "TV Senado",
+            "sourceUrl": "https://www12.senado.leg.br/tv/programas/cidadania-1/2024/10/entenda-como-funcionam-as-apostas-online-e-o-que-diz-a-lei-das-bets",
+            "format": "YouTube",
+            "estimatedMinutes": 8,
+            "version": "1.0"
+          },
+          "slides": {
+            "status": "pending",
+            "title": "Slides da aula — A Engenharia do Desejo",
+            "description": "Espaço reservado para os slides preparados pelo professor."
+          },
+          "summary": {
+            "status": "available",
+            "title": "Resumo — sinais de manipulação em apostas",
+            "description": "Pontos para analisar uma publicidade com pensamento crítico.",
+            "format": "Resumo interativo",
+            "estimatedMinutes": 4,
+            "version": "1.0",
+            "sections": [
+              {
+                "title": "Aposta não é investimento",
+                "description": "Investir busca construir patrimônio; apostar depende de um resultado incerto e pode gerar perda rápida."
+              },
+              {
+                "title": "A plataforma tem vantagem",
+                "description": "As regras e probabilidades sustentam o negócio da empresa ao longo do tempo."
+              },
+              {
+                "title": "Recompensa variável",
+                "description": "Resultados imprevisíveis estimulam novas tentativas e podem dificultar a decisão de parar."
+              },
+              {
+                "title": "Proteja o orçamento",
+                "description": "Dinheiro de alimentação, transporte, contas e metas nunca deve ser tratado como saldo de aposta."
+              }
+            ]
+          }
+        },
+        "completionLabel": "Assisti ao vídeo e acessei pelo menos um material extra",
+        "continueLabel": "Ir para Fato ou Fake",
+        "activityPath": "/trilha/saude-consumo/engenharia-desejo/atividade"
+      }
+    }
+  ],
+  "activityDefinitions": [
+    {
+      "activityKey": "perigo-doce-quiz",
+      "phaseNumber": 1,
+      "title": "O Perigo do Doce — Quiz de Fixação",
+      "payload": {
+        "id": "perigo-doce-quiz",
+        "phaseNumber": 1,
+        "title": "O Perigo do Doce",
+        "questionCount": 5,
+        "passingScore": 60,
+        "knowledge": [
+          {
+            "id": "who-free-sugars-limit",
+            "topic": "Consumo de açúcares livres",
+            "difficulty": "facil",
+            "claim": "A OMS recomenda reduzir os açúcares livres para menos de 10% da ingestão energética total e indica benefícios adicionais abaixo de 5%.",
+            "teachingAngle": "Relacionar escolhas de consumo frequentes com prevenção e planejamento financeiro de longo prazo.",
+            "explanation": "A recomendação trabalha com proporção da energia diária, não com a proibição absoluta de qualquer alimento doce.",
+            "misconceptions": [
+              "A OMS recomenda que metade da energia diária venha de açúcares livres.",
+              "A recomendação da OMS vale somente para atletas profissionais.",
+              "A OMS considera desnecessário observar a quantidade de açúcar na alimentação."
+            ],
+            "source": {
+              "publisher": "Organização Mundial da Saúde",
+              "title": "Guideline: Sugars intake for adults and children",
+              "url": "https://www.who.int/publications-detail-redirect/WHO-NMH-NHD-15.3",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "anvisa-front-label-thresholds",
+            "topic": "Rotulagem nutricional frontal",
+            "difficulty": "media",
+            "claim": "A regra brasileira exige a lupa de “alto em açúcar adicionado” a partir de 15 g por 100 g em alimentos sólidos e 7,5 g por 100 ml em líquidos.",
+            "teachingAngle": "Ensinar o aluno a comparar produtos usando uma informação padronizada da embalagem.",
+            "explanation": "Os limites diferem entre sólidos e líquidos; a lupa alerta para alto teor, mas não substitui a leitura do restante da tabela nutricional.",
+            "misconceptions": [
+              "A lupa aparece em qualquer produto que tenha uma quantidade mínima de açúcar natural.",
+              "O mesmo limite de 1 g é aplicado a sólidos e líquidos no Brasil.",
+              "A rotulagem frontal informa somente o preço do produto por porção."
+            ],
+            "source": {
+              "publisher": "Agência Nacional de Vigilância Sanitária",
+              "title": "Rotulagem nutricional",
+              "url": "https://www.gov.br/anvisa/pt-br/assuntos/alimentos/rotulagem/rotulagem-nutricional",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "anvisa-informed-choice",
+            "topic": "Informação e decisão de compra",
+            "difficulty": "facil",
+            "claim": "A rotulagem frontal destaca nutrientes críticos para tornar a informação mais clara e apoiar escolhas de consumo conscientes.",
+            "teachingAngle": "Apresentar a rotulagem como uma ferramenta para reduzir a diferença de informação entre fornecedor e consumidor.",
+            "explanation": "O destaque frontal facilita identificar rapidamente altos teores antes de comparar preço, quantidade e composição.",
+            "misconceptions": [
+              "A rotulagem frontal existe para esconder a composição dos alimentos.",
+              "A lupa frontal define o preço máximo que o mercado pode cobrar.",
+              "O rótulo torna todos os produtos com embalagens parecidas nutricionalmente iguais."
+            ],
+            "source": {
+              "publisher": "Agência Nacional de Vigilância Sanitária",
+              "title": "Rotulagem nutricional",
+              "url": "https://www.gov.br/anvisa/pt-br/assuntos/alimentos/rotulagem/rotulagem-nutricional",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "health-guide-food-priority",
+            "topic": "Escolhas alimentares",
+            "difficulty": "facil",
+            "claim": "O Guia Alimentar brasileiro orienta priorizar alimentos in natura ou minimamente processados e evitar alimentos ultraprocessados.",
+            "teachingAngle": "Comparar conveniência, orçamento e consequências de escolhas recorrentes sem culpabilizar o aluno.",
+            "explanation": "A orientação trata do padrão alimentar: itens in natura ou minimamente processados devem formar a base da alimentação.",
+            "misconceptions": [
+              "O Guia Alimentar recomenda que ultraprocessados sejam a base de todas as refeições.",
+              "O Guia Alimentar considera que apenas o preço define a qualidade de um alimento.",
+              "A recomendação oficial proíbe o consumo de água durante as refeições."
+            ],
+            "source": {
+              "publisher": "Ministério da Saúde",
+              "title": "Guia Alimentar para a População Brasileira — 2ª edição",
+              "url": "https://www.gov.br/saude/pt-br/assuntos/saude-brasil/publicacoes-para-promocao-a-saude/guia_alimentar_populacao_brasileira_2ed.pdf/@@download/file/guia_alimentar_populacao_brasileira_2ed.pdf",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "brazil-selective-tax-sugary-drinks",
+            "topic": "Imposto Seletivo no Brasil",
+            "difficulty": "media",
+            "claim": "A Lei Complementar nº 214/2025 inclui bebidas açucaradas entre os bens sujeitos ao Imposto Seletivo por serem considerados prejudiciais à saúde ou ao meio ambiente.",
+            "teachingAngle": "Conectar tributação, preço e objetivos de saúde pública sem afirmar que o tributo sozinho resolve o problema.",
+            "explanation": "O Imposto Seletivo usa a tributação também para desestimular o consumo de determinados produtos; alíquotas e aplicação dependem da regulamentação vigente.",
+            "misconceptions": [
+              "A Lei Complementar nº 214/2025 criou um subsídio obrigatório para refrigerantes.",
+              "O Imposto Seletivo brasileiro incide apenas sobre livros didáticos.",
+              "A lei determina que bebidas açucaradas sejam distribuídas gratuitamente nas escolas."
+            ],
+            "source": {
+              "publisher": "Câmara dos Deputados",
+              "title": "Lei Complementar nº 214, de 16 de janeiro de 2025",
+              "url": "https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "who-fiscal-policy-demand",
+            "topic": "Preço e comportamento de consumo",
+            "difficulty": "media",
+            "claim": "A OMS aponta que impostos sobre bebidas açucaradas podem elevar preços e contribuir para reduzir a demanda e o consumo.",
+            "teachingAngle": "Trabalhar o preço como um incentivo econômico, sem garantir que todas as pessoas reagirão da mesma forma.",
+            "explanation": "A política altera o incentivo de compra; seus resultados dependem do desenho do imposto, do repasse ao preço e das alternativas disponíveis.",
+            "misconceptions": [
+              "Impostos sobre bebidas açucaradas reduzem obrigatoriamente o preço final desses produtos.",
+              "A OMS afirma que consumidores nunca mudam escolhas quando preços mudam.",
+              "A única finalidade possível de um tributo é aumentar o lucro do fabricante."
+            ],
+            "source": {
+              "publisher": "Organização Mundial da Saúde",
+              "title": "WHO launches new guideline on fiscal policies to promote healthy diets",
+              "url": "https://www.who.int/news/item/14-06-2024-who-launches-new-guideline-on-fiscal-policies-to-promote-healthy-diets",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "paho-tax-triple-win",
+            "topic": "Custos sociais e receita pública",
+            "difficulty": "desafiadora",
+            "claim": "A OPAS descreve a tributação de bebidas açucaradas como uma medida capaz de combinar ganhos de saúde, geração de receita e redução de custos econômicos associados a doenças.",
+            "teachingAngle": "Analisar custos que não aparecem no preço de compra e podem afetar famílias, produtividade e orçamento público.",
+            "explanation": "A expressão “ganho triplo” reúne três efeitos potenciais; ela não significa que a arrecadação substitua políticas de prevenção e educação.",
+            "misconceptions": [
+              "A OPAS afirma que a tributação elimina imediatamente todas as doenças crônicas.",
+              "A medida é descrita como incapaz de gerar qualquer receita pública.",
+              "Os custos econômicos de doenças nunca afetam famílias ou serviços públicos."
+            ],
+            "source": {
+              "publisher": "Organização Pan-Americana da Saúde",
+              "title": "Sugar-sweetened beverage taxation: a triple win for health, revenue and health equity",
+              "url": "https://www.paho.org/en/node/78468",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "world-bank-tax-design",
+            "topic": "Desenho de políticas públicas",
+            "difficulty": "desafiadora",
+            "claim": "A avaliação de impostos sobre bebidas açucaradas deve observar preço, demanda, substituição por outros produtos e efeitos econômicos para orientar o desenho da política.",
+            "teachingAngle": "Mostrar que uma política pública precisa ser medida e ajustada com dados, em vez de depender de uma única suposição.",
+            "explanation": "Analisar vários indicadores ajuda a verificar se o incentivo mudou escolhas e se surgiram efeitos não planejados.",
+            "misconceptions": [
+              "Uma política tributária deve ignorar qualquer mudança de demanda ou substituição.",
+              "Avaliar a política significa observar somente a cor das embalagens.",
+              "O desenho do imposto não pode ser ajustado depois de sua implementação."
+            ],
+            "source": {
+              "publisher": "Banco Mundial",
+              "title": "Health Taxes on Sugar-Sweetened Beverages",
+              "url": "https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099131211272311932",
+              "accessedAt": "2026-08-01"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "activityKey": "custo-vicio",
+      "phaseNumber": 2,
+      "title": "O Custo do Vício — Estudo de Caso",
+      "payload": {
+        "id": "custo-vicio",
+        "phaseNumber": 2,
+        "title": "O Custo do Vício",
+        "passingScore": 60,
+        "cases": [
+          {
+            "id": "rafael-vape",
+            "name": "Rafael",
+            "initials": "RF",
+            "course": "3º DSA · estágio em suporte",
+            "habit": "Uso recorrente de vape nos intervalos",
+            "goal": "Comprar um teclado de R$ 360 para estudar e trabalhar",
+            "story": "Rafael recebe uma pequena bolsa de estágio. As compras ligadas ao vape parecem isoladas, mas começaram a disputar espaço com uma meta profissional.",
+            "simulatedBudget": {
+              "cadenceLabel": "R$ 36 por semana",
+              "monthlyAmount": 144,
+              "goalMonths": 3,
+              "disclaimer": "Valores fictícios para exercício: quatro semanas por mês."
+            },
+            "sourceFactIds": [
+              "inca-vape-young-people",
+              "mj-risk-protection-balance",
+              "health-adolescent-long-term"
+            ],
+            "decisions": [
+              {
+                "id": "rafael-1-small-purchases",
+                "moment": "1 · Compras pequenas",
+                "narrative": "Rafael decide não registrar os R$ 36 semanais porque cada compra parece pequena.",
+                "question": "Qual análise ajuda mais a entender essa escolha?",
+                "sourceFactIds": [
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O gasto cabe nesta semana, então ele pode observar novamente depois.",
+                    "feedback": "Você percebeu o efeito imediato. Falta visualizar como a repetição muda o orçamento.",
+                    "principle": "efeito imediato"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Registrar R$ 144 por mês mostra melhor o peso recorrente da decisão.",
+                    "feedback": "Boa leitura financeira: transformar pequenas compras em total mensal reduz o ponto cego.",
+                    "principle": "custo recorrente"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Somar o mês e comparar o valor com a meta revela custo recorrente e custo de oportunidade.",
+                    "feedback": "Leitura completa: o total mensal ganha significado quando é comparado com aquilo que deixa de ser alcançado.",
+                    "principle": "custo de oportunidade"
+                  }
+                ]
+              },
+              {
+                "id": "rafael-2-delayed-goal",
+                "moment": "2 · Meta adiada",
+                "narrative": "Depois de um mês, Rafael parcela o teclado porque os R$ 144 previstos para a meta foram usados no hábito.",
+                "question": "O que essa decisão mostra sobre o planejamento?",
+                "sourceFactIds": [
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O parcelamento resolve a compra agora, embora crie um compromisso futuro.",
+                    "feedback": "Essa leitura reconhece a conveniência, mas ainda não compara o custo total e a renda futura comprometida.",
+                    "principle": "compromisso futuro"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "A despesa recorrente atrasou a meta e tornou necessário revisar o orçamento.",
+                    "feedback": "Você conectou o hábito ao atraso da meta e à necessidade de reorganização.",
+                    "principle": "planejamento de metas"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Além de atrasar a meta, o parcelamento pode somar custo e reduzir a liberdade dos próximos meses.",
+                    "feedback": "Análise sistêmica: a escolha atual afeta tanto o preço quanto as opções futuras.",
+                    "principle": "efeito intertemporal"
+                  }
+                ]
+              },
+              {
+                "id": "rafael-3-online-claim",
+                "moment": "3 · Informação online",
+                "narrative": "Um influenciador diz que o vape não merece preocupação. Rafael aceita a mensagem sem verificar a fonte.",
+                "question": "Como avaliar a qualidade dessa decisão?",
+                "sourceFactIds": [
+                  "inca-vape-young-people"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "A experiência do influenciador pode ser um ponto de partida para a conversa.",
+                    "feedback": "Experiências ajudam a formular perguntas, mas não substituem evidência verificável.",
+                    "principle": "relato pessoal"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Rafael deveria comparar a mensagem com uma fonte de saúde pública identificada.",
+                    "feedback": "Boa prática: autoria, evidência e interesse de quem publica precisam entrar na análise.",
+                    "principle": "verificação de fonte"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Ele deveria verificar fonte, possível interesse comercial e efeitos financeiros e de saúde acumulados.",
+                    "feedback": "Você reuniu credibilidade, incentivo econômico e consequências da decisão.",
+                    "principle": "assimetria de informação"
+                  }
+                ]
+              },
+              {
+                "id": "rafael-4-peer-pressure",
+                "moment": "4 · Pressão do grupo",
+                "narrative": "Rafael teme perder o convívio do intervalo se recusar o convite dos colegas.",
+                "question": "Qual leitura considera melhor esse contexto?",
+                "sourceFactIds": [
+                  "mj-risk-protection-balance"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Manter o convívio é importante e explica por que a decisão parece difícil.",
+                    "feedback": "Você reconheceu uma necessidade real de pertencimento, sem reduzir o caso a falta de vontade.",
+                    "principle": "pertencimento"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Ele pode propor outro momento de convivência e preservar o vínculo sem repetir o gasto.",
+                    "feedback": "A alternativa cria autonomia sem exigir isolamento do grupo.",
+                    "principle": "autonomia"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Além de negociar outra atividade, ele pode buscar apoio e preparar uma resposta para futuros convites.",
+                    "feedback": "A combinação de vínculo, planejamento e rede de apoio fortalece fatores de proteção.",
+                    "principle": "rede de proteção"
+                  }
+                ]
+              },
+              {
+                "id": "rafael-5-new-plan",
+                "moment": "5 · Novo plano",
+                "narrative": "Rafael considera registrar as despesas, conversar com uma pessoa de confiança e transferir semanalmente parte da bolsa para a meta.",
+                "question": "Qual é o principal valor dessa estratégia?",
+                "sourceFactIds": [
+                  "mj-risk-protection-balance",
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O registro permite perceber se a despesa mudou.",
+                    "feedback": "Monitorar é um primeiro passo concreto e mensurável.",
+                    "principle": "monitoramento"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "A transferência automática protege a meta antes que o dinheiro seja gasto.",
+                    "feedback": "A estratégia transforma intenção em uma regra simples de orçamento.",
+                    "principle": "pague-se primeiro"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Registro, automação e apoio atuam juntos sobre dinheiro, rotina e contexto social.",
+                    "feedback": "Essa leitura integra diferentes causas e evita tratar uma mudança de hábito como problema apenas individual.",
+                    "principle": "estratégia integrada"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "beatriz-alcool",
+            "name": "Beatriz",
+            "initials": "BZ",
+            "course": "3º DSB · curso técnico em Enfermagem",
+            "habit": "Gastos de fim de semana ligados ao consumo de álcool",
+            "goal": "Pagar uma certificação de R$ 480",
+            "story": "Beatriz separa dinheiro para uma certificação, mas encontros de fim de semana passaram a gerar gastos com bebida, alimentação e transporte.",
+            "simulatedBudget": {
+              "cadenceLabel": "R$ 48 por fim de semana",
+              "monthlyAmount": 192,
+              "goalMonths": 3,
+              "disclaimer": "Valores fictícios para exercício: quatro fins de semana por mês."
+            },
+            "sourceFactIds": [
+              "mj-alcohol-multiple-impacts",
+              "mj-risk-protection-balance",
+              "health-adolescent-long-term"
+            ],
+            "decisions": [
+              {
+                "id": "beatriz-1-visible-cost",
+                "moment": "1 · Preço visível",
+                "narrative": "Beatriz conta apenas o preço da bebida e deixa alimentação e transporte fora do cálculo.",
+                "question": "Como melhorar essa leitura?",
+                "sourceFactIds": [
+                  "mj-alcohol-multiple-impacts"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Anotar a bebida já melhora parte do controle.",
+                    "feedback": "Registrar uma categoria é melhor que não registrar, mas o custo do evento ainda fica incompleto.",
+                    "principle": "custo direto"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Somar bebida, comida e transporte revela o custo financeiro do encontro.",
+                    "feedback": "Você construiu um custo total mais fiel para o orçamento.",
+                    "principle": "custo total"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Somar tudo e observar impactos no dia seguinte amplia a análise para custos diretos e indiretos.",
+                    "feedback": "A leitura sistêmica considera dinheiro, tempo e capacidade de cumprir compromissos.",
+                    "principle": "custos indiretos"
+                  }
+                ]
+              },
+              {
+                "id": "beatriz-2-social-budget",
+                "moment": "2 · Orçamento social",
+                "narrative": "Ela aceita todos os convites para não se sentir de fora, mesmo quando o valor reservado ao lazer termina.",
+                "question": "Qual análise respeita melhor a situação?",
+                "sourceFactIds": [
+                  "mj-risk-protection-balance"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O convívio tem valor e ajuda a explicar a escolha de Beatriz.",
+                    "feedback": "Reconhecer o contexto social evita uma análise moralista da personagem.",
+                    "principle": "valor social"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Definir um limite de lazer permite escolher quais convites cabem no mês.",
+                    "feedback": "Um limite transforma uma intenção abstrata em critério de decisão.",
+                    "principle": "limite de categoria"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Ela pode combinar limite, alternativas de convívio e apoio dos amigos para não depender de uma única rotina.",
+                    "feedback": "A proposta protege o orçamento sem ignorar pertencimento e rede social.",
+                    "principle": "proteção social e financeira"
+                  }
+                ]
+              },
+              {
+                "id": "beatriz-3-next-day",
+                "moment": "3 · Dia seguinte",
+                "narrative": "Depois de um encontro, Beatriz perde parte de uma aula prática importante e pensa apenas no dinheiro gasto.",
+                "question": "Que custo ainda precisa entrar na análise?",
+                "sourceFactIds": [
+                  "mj-alcohol-multiple-impacts",
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O gasto financeiro continua sendo um indicador útil.",
+                    "feedback": "O dinheiro é uma parte real do caso, mas não explica todo o impacto.",
+                    "principle": "indicador financeiro"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "O tempo de estudo perdido também possui custo de oportunidade.",
+                    "feedback": "Você identificou um recurso escasso que não aparece no extrato bancário.",
+                    "principle": "custo do tempo"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Tempo, aprendizagem, bem-estar e dinheiro devem ser avaliados juntos antes do próximo encontro.",
+                    "feedback": "Essa leitura evita reduzir uma escolha complexa a apenas uma despesa.",
+                    "principle": "impacto multidimensional"
+                  }
+                ]
+              },
+              {
+                "id": "beatriz-4-certification",
+                "moment": "4 · Certificação",
+                "narrative": "Com R$ 192 mensais comprometidos, a certificação de R$ 480 fica mais distante.",
+                "question": "Qual comparação é mais informativa?",
+                "sourceFactIds": [
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Comparar apenas um fim de semana com o preço total do curso.",
+                    "feedback": "A comparação inicia a reflexão, mas mistura períodos diferentes.",
+                    "principle": "comparação inicial"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Comparar R$ 192 mensais com uma parcela planejada para a certificação.",
+                    "feedback": "Usar o mesmo período torna a comparação mais justa e acionável.",
+                    "principle": "mesma base temporal"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Calcular quantos meses cada cenário exige e incluir possíveis benefícios profissionais da certificação.",
+                    "feedback": "A análise combina prazo, custo de oportunidade e retorno potencial sem prometer resultado garantido.",
+                    "principle": "cenários de longo prazo"
+                  }
+                ]
+              },
+              {
+                "id": "beatriz-5-support-plan",
+                "moment": "5 · Escolha planejada",
+                "narrative": "Beatriz decide testar encontros com custo definido, outras formas de lazer e uma transferência mensal para a certificação.",
+                "question": "Por que esse plano pode ser mais sustentável?",
+                "sourceFactIds": [
+                  "mj-risk-protection-balance"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Ele cria uma referência de gasto para os próximos encontros.",
+                    "feedback": "Ter uma referência ajuda a acompanhar o plano ao longo do tempo.",
+                    "principle": "referência de gasto"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Ele protege parte da renda para a meta e diversifica o lazer.",
+                    "feedback": "A solução cuida simultaneamente do orçamento e do convívio.",
+                    "principle": "diversificação"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Ele combina meta, limite, alternativas e rede de apoio, permitindo ajustes com base nos resultados.",
+                    "feedback": "Um plano adaptável e apoiado por mais de uma estratégia tende a ser mais robusto.",
+                    "principle": "planejamento adaptativo"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "diego-tabaco",
+            "name": "Diego",
+            "initials": "DG",
+            "course": "3º DSA · curso técnico em Eletrotécnica",
+            "habit": "Gasto frequente com produtos de tabaco",
+            "goal": "Montar uma caixa de ferramentas de R$ 540",
+            "story": "Diego trabalha em pequenos serviços e quer comprar ferramentas. Ele percebe o preço diário do tabaco, mas ainda não avaliou o efeito mensal e coletivo.",
+            "simulatedBudget": {
+              "cadenceLabel": "R$ 9 em 20 dias do mês",
+              "monthlyAmount": 180,
+              "goalMonths": 3,
+              "disclaimer": "Valores e frequência fictícios para o exercício."
+            },
+            "sourceFactIds": [
+              "inca-tobacco-social-cost",
+              "mj-risk-protection-balance",
+              "health-adolescent-long-term"
+            ],
+            "decisions": [
+              {
+                "id": "diego-1-daily-cost",
+                "moment": "1 · Conta diária",
+                "narrative": "Diego compara R$ 9 apenas com o dinheiro que recebeu naquele dia.",
+                "question": "O que falta para entender o impacto no orçamento?",
+                "sourceFactIds": [
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Ver se os R$ 9 cabem no saldo daquele dia.",
+                    "feedback": "A conferência evita saldo negativo imediato, mas não mostra a repetição.",
+                    "principle": "liquidez diária"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Projetar os 20 dias revela um gasto simulado de R$ 180 por mês.",
+                    "feedback": "Projetar frequência e período torna o custo recorrente visível.",
+                    "principle": "projeção mensal"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Projetar o mês e comparar R$ 180 com a caixa de ferramentas mostra o custo de oportunidade.",
+                    "feedback": "A meta transforma o número em uma escolha concreta entre usos do mesmo recurso.",
+                    "principle": "custo de oportunidade"
+                  }
+                ]
+              },
+              {
+                "id": "diego-2-social-cost",
+                "moment": "2 · Além do bolso",
+                "narrative": "Diego afirma que o único impacto econômico possível é o valor pago por ele.",
+                "question": "Como ampliar essa análise?",
+                "sourceFactIds": [
+                  "inca-tobacco-social-cost"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "O preço de compra realmente é um custo individual direto.",
+                    "feedback": "A afirmação reconhece um custo real, mas ainda não responde à palavra “único”.",
+                    "principle": "custo privado"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Também podem existir custos de saúde e perda de produtividade.",
+                    "feedback": "Você identificou efeitos que não aparecem no comprovante da compra.",
+                    "principle": "externalidades"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Custos individuais, familiares, produtivos e públicos podem coexistir e ser distribuídos entre pessoas diferentes.",
+                    "feedback": "Essa é a leitura mais completa sobre quem paga e onde o impacto aparece.",
+                    "principle": "distribuição de custos"
+                  }
+                ]
+              },
+              {
+                "id": "diego-3-future-work",
+                "moment": "3 · Trabalho futuro",
+                "narrative": "Ele considera apenas a renda desta semana e não relaciona o hábito à sua rotina profissional futura.",
+                "question": "Qual horizonte de análise é mais útil?",
+                "sourceFactIds": [
+                  "inca-tobacco-social-cost",
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "A semana ajuda a conferir se as contas imediatas fecham.",
+                    "feedback": "O curto prazo é necessário, mas sozinho pode esconder efeitos acumulados.",
+                    "principle": "curto prazo"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "O mês permite observar repetição e impacto sobre a compra das ferramentas.",
+                    "feedback": "O horizonte mensal liga rotina e objetivo profissional.",
+                    "principle": "médio prazo"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Curto, médio e longo prazo devem ser usados juntos para comparar caixa, metas e capacidade futura.",
+                    "feedback": "Múltiplos horizontes reduzem o risco de otimizar apenas o presente.",
+                    "principle": "planejamento por horizontes"
+                  }
+                ]
+              },
+              {
+                "id": "diego-4-blame",
+                "moment": "4 · Culpa ou apoio",
+                "narrative": "Ao tentar mudar a rotina, Diego conclui que pedir ajuda seria sinal de fraqueza.",
+                "question": "Qual leitura é mais construtiva?",
+                "sourceFactIds": [
+                  "mj-risk-protection-balance"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "Reconhecer que a mudança é difícil já reduz uma expectativa irreal.",
+                    "feedback": "A leitura evita simplificar a situação, embora ainda não crie suporte.",
+                    "principle": "autocompreensão"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "Pedir apoio pode acrescentar informação e acompanhamento ao plano.",
+                    "feedback": "Apoio é um recurso de proteção, não uma falha moral.",
+                    "principle": "busca de apoio"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Combinar apoio confiável, acompanhamento profissional quando necessário e ajustes financeiros torna o plano mais completo.",
+                    "feedback": "A resposta integra cuidado, contexto e planejamento sem prometer uma solução única.",
+                    "principle": "cuidado integrado"
+                  }
+                ]
+              },
+              {
+                "id": "diego-5-tool-fund",
+                "moment": "5 · Fundo das ferramentas",
+                "narrative": "Diego pensa em transferir R$ 45 por semana para uma conta separada e acompanhar tanto a meta quanto a despesa recorrente.",
+                "question": "O que torna essa decisão verificável?",
+                "sourceFactIds": [
+                  "health-adolescent-long-term"
+                ],
+                "options": [
+                  {
+                    "id": "A",
+                    "points": 1,
+                    "insightLabel": "Leitura inicial",
+                    "label": "A conta separada deixa o dinheiro da meta mais visível.",
+                    "feedback": "Visibilidade ajuda a reduzir o uso acidental do valor reservado.",
+                    "principle": "separação de recursos"
+                  },
+                  {
+                    "id": "B",
+                    "points": 2,
+                    "insightLabel": "Leitura financeira",
+                    "label": "O valor semanal cria uma regra que pode ser comparada com o saldo acumulado.",
+                    "feedback": "Uma regra com valor e frequência permite medir aderência.",
+                    "principle": "meta mensurável"
+                  },
+                  {
+                    "id": "C",
+                    "points": 3,
+                    "insightLabel": "Leitura sistêmica",
+                    "label": "Valor, frequência, prazo e revisão formam um ciclo de planejamento que pode ser corrigido com dados.",
+                    "feedback": "A estratégia inclui execução e aprendizado, não apenas uma promessa.",
+                    "principle": "ciclo de controle"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "activityKey": "ilusao-dinheiro-caminhos-v1",
+      "phaseNumber": 3,
+      "title": "A Ilusão do Dinheiro — Caminhos de Decisão",
+      "payload": {
+        "id": "ilusao-dinheiro-caminhos-v1",
+        "phaseNumber": 3,
+        "title": "A Ilusão do Dinheiro",
+        "characterName": "Alex",
+        "initialBalance": 600,
+        "goalCost": 420,
+        "goalLabel": "inscrição e materiais para uma feira técnica",
+        "introduction": "Alex recebeu 600 créditos simulados para organizar o mês. A meta principal custa 420, mas promoções, pressão social e imprevistos aparecerão pelo caminho.",
+        "disclaimer": "O saldo desta história é apenas uma simulação. Sua carteira real de CapiCoins só muda quando o Capi Bank registra o resultado final.",
+        "sourceFactIds": [
+          "bcb-two-strategies",
+          "bcb-budget-controls",
+          "bcb-impulse-and-credit",
+          "susep-total-cost",
+          "susep-social-influence",
+          "caixa-purchase-pause"
+        ],
+        "decisions": [
+          {
+            "id": "flash-sale",
+            "stepLabel": "Decisão 1 · A oferta relâmpago",
+            "title": "Só hoje, segundo o anúncio",
+            "narrative": "Ao abrir uma rede social, Alex encontra um headset de R$ 160 com contador regressivo. A compra não estava no plano do mês.",
+            "question": "Qual caminho Alex deve seguir?",
+            "sourceFactIds": [
+              "bcb-impulse-and-credit",
+              "caixa-purchase-pause"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -160,
+                "label": "Comprar imediatamente para não perder o contador.",
+                "consequence": "A urgência venceu a comparação. O headset entrou no carrinho e consumiu R$ 160 do caixa.",
+                "principle": "urgência artificial"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": -95,
+                "label": "Pesquisar por alguns minutos e escolher uma alternativa de R$ 95.",
+                "consequence": "A comparação reduziu o gasto, mas a compra ainda disputou recursos com uma meta já definida.",
+                "principle": "pesquisa de preços"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": 0,
+                "label": "Salvar na lista de desejos e esperar 24 horas antes de decidir.",
+                "consequence": "A pausa desativou a pressão do contador. Alex manteve o saldo e ganhou tempo para revisar a necessidade.",
+                "principle": "pausa consciente"
+              }
+            ]
+          },
+          {
+            "id": "group-pressure",
+            "stepLabel": "Decisão 2 · O convite do grupo",
+            "title": "Todo mundo vai",
+            "narrative": "Os colegas combinam um passeio de R$ 100. Alex quer participar, mas o valor reservado para lazer no plano era menor.",
+            "question": "Como equilibrar convivência e orçamento?",
+            "sourceFactIds": [
+              "susep-social-influence",
+              "bcb-budget-controls"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -100,
+                "label": "Aceitar o pacote completo para não parecer diferente.",
+                "consequence": "Alex participou, mas permitiu que a pressão do grupo definisse sozinho o valor do gasto.",
+                "principle": "efeito manada"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": -45,
+                "label": "Participar apenas da parte que cabe no limite de R$ 45.",
+                "consequence": "Alex preservou o convívio e comunicou um limite financeiro claro.",
+                "principle": "limite de categoria"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": -15,
+                "label": "Propor uma atividade gratuita e separar R$ 15 para o transporte.",
+                "consequence": "O grupo ganhou uma alternativa acessível e Alex protegeu a meta sem se isolar.",
+                "principle": "alternativa de baixo custo"
+              }
+            ]
+          },
+          {
+            "id": "small-installment",
+            "stepLabel": "Decisão 3 · A parcela pequena",
+            "title": "Quatro vezes de apenas R$ 45",
+            "narrative": "Uma loja oferece um acessório em quatro parcelas de R$ 45. O anúncio destaca a parcela, mas o compromisso total é de R$ 180.",
+            "question": "Qual decisão considera melhor o futuro?",
+            "sourceFactIds": [
+              "susep-total-cost",
+              "bcb-impulse-and-credit"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -180,
+                "label": "Aceitar porque R$ 45 parece pequeno e ignorar as outras parcelas.",
+                "consequence": "O caixa passou a representar o compromisso completo: R$ 180 deixarão de financiar outras escolhas.",
+                "principle": "ilusão da parcela"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": -80,
+                "label": "Calcular os R$ 180 e escolher uma alternativa à vista de R$ 80.",
+                "consequence": "Alex comparou o custo total e reduziu o compromisso, embora ainda tenha feito uma compra não planejada.",
+                "principle": "custo total"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": 0,
+                "label": "Adiar a compra e continuar usando o equipamento atual.",
+                "consequence": "Sem urgência técnica, Alex evitou comprometer os próximos meses.",
+                "principle": "compromisso futuro"
+              }
+            ]
+          },
+          {
+            "id": "free-trial",
+            "stepLabel": "Decisão 4 · O teste gratuito",
+            "title": "Grátis por sete dias",
+            "narrative": "Um aplicativo oferece teste gratuito, mas pede cartão e renova automaticamente por R$ 40 se o cancelamento for esquecido.",
+            "question": "Como Alex deve lidar com esse custo escondido no tempo?",
+            "sourceFactIds": [
+              "bcb-budget-controls",
+              "bcb-impulse-and-credit"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -40,
+                "label": "Ativar sem ler a renovação e confiar que vai lembrar depois.",
+                "consequence": "A cobrança automática aconteceu e retirou R$ 40 do caixa simulado.",
+                "principle": "custo automático"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": 0,
+                "label": "Ler as condições e criar um lembrete antes da renovação.",
+                "consequence": "Alex tornou a data visível e manteve controle sobre a continuidade do serviço.",
+                "principle": "controle de assinatura"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": 0,
+                "label": "Comparar com os recursos gratuitos da escola antes de cadastrar o cartão.",
+                "consequence": "Uma alternativa disponível atendeu à necessidade sem criar cobrança futura.",
+                "principle": "comparar alternativas"
+              }
+            ]
+          },
+          {
+            "id": "unexpected-transport",
+            "stepLabel": "Decisão 5 · O imprevisto",
+            "title": "Transporte fora do planejado",
+            "narrative": "Uma atividade técnica obrigatória exige R$ 80 extras de transporte. É uma despesa essencial e não pode ser simplesmente ignorada.",
+            "question": "Qual caminho protege melhor o restante do mês?",
+            "sourceFactIds": [
+              "bcb-budget-controls",
+              "susep-total-cost"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -105,
+                "label": "Usar crédito sem verificar encargos e deixar a conta para depois.",
+                "consequence": "O transporte foi pago, mas o compromisso simulado subiu para R$ 105 por causa do custo do crédito.",
+                "principle": "crédito sem comparação"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": -80,
+                "label": "Pagar os R$ 80 e reduzir o restante do lazer neste mês.",
+                "consequence": "Alex priorizou a despesa essencial e ajustou uma categoria flexível.",
+                "principle": "revisão do orçamento"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": -80,
+                "label": "Usar a parte flexível planejada para imprevistos e registrar o gasto.",
+                "consequence": "A reserva cumpriu sua função e o registro manteve o planejamento atualizado.",
+                "principle": "reserva para imprevistos"
+              }
+            ]
+          },
+          {
+            "id": "goal-upgrade",
+            "stepLabel": "Decisão 6 · A hora da meta",
+            "title": "Um upgrade antes da inscrição",
+            "narrative": "No dia de verificar a meta, surge uma oferta de upgrade de R$ 120. Ele não é necessário para participar da feira técnica.",
+            "question": "Qual encerramento Alex escolhe para o mês?",
+            "sourceFactIds": [
+              "bcb-two-strategies",
+              "caixa-purchase-pause"
+            ],
+            "choices": [
+              {
+                "id": "A",
+                "analysisPoints": 0,
+                "balanceDelta": -120,
+                "label": "Comprar o upgrade porque a oferta aparece junto da meta.",
+                "consequence": "O item extra consumiu R$ 120 e passou a competir diretamente com o objetivo principal.",
+                "principle": "venda adicional"
+              },
+              {
+                "id": "B",
+                "analysisPoints": 1,
+                "balanceDelta": -40,
+                "label": "Escolher somente um material complementar de R$ 40 após comparar.",
+                "consequence": "Alex limitou o adicional, mas ainda reduziu o saldo disponível para a meta.",
+                "principle": "priorização parcial"
+              },
+              {
+                "id": "C",
+                "analysisPoints": 2,
+                "balanceDelta": 0,
+                "label": "Ignorar o upgrade e comparar o saldo final com a meta original.",
+                "consequence": "Alex encerrou o caminho usando o objetivo inicial como critério de decisão.",
+                "principle": "fidelidade à meta"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "activityKey": "engenharia-desejo-fato-fake-v1",
+      "phaseNumber": 4,
+      "title": "A Engenharia do Desejo — Fato ou Fake",
+      "payload": {
+        "id": "engenharia-desejo-fato-fake-v1",
+        "phaseNumber": 4,
+        "stepLabel": "Fase 4",
+        "mechanicLabel": "Fato ou Fake",
+        "title": "Engenharia do Desejo",
+        "introduction": "Investigue seis peças publicitárias. Três foram documentadas por um órgão regulador e três foram criadas para o Money Rank. As fontes só aparecem depois do seu palpite.",
+        "passingCorrectAnswers": 4,
+        "cards": [
+          {
+            "id": "real-paddy-power-family",
+            "classification": "REAL",
+            "title": "A roda que interrompeu o almoço",
+            "advertiser": "Paddy Power",
+            "scenario": "Um anúncio mostrou um jovem ignorando a conversa da família para apostar pelo celular. A narração reforçava que haveria uma nova chance todos os dias.",
+            "channel": "Televisão e vídeo sob demanda",
+            "location": "Reino Unido — TV, My5 e All4",
+            "observedAt": "Março de 2022",
+            "explanation": "A peça existiu e foi considerada problemática porque colocava a aposta acima da interação familiar e normalizava a repetição diária.",
+            "tactic": {
+              "label": "Repetição e urgência cotidiana",
+              "explanation": "Uma recompensa diária pode transformar o retorno frequente em hábito e reduzir a percepção de risco."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on PPB Counterparty Services Ltd",
+              "url": "https://www.asa.org.uk/rulings/ppb-counterparty-services-ltd-g22-1149460-ppb-counterparty-services-ltd.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "real-playojo-hot-cold",
+            "classification": "REAL",
+            "title": "O painel que parecia prever a sorte",
+            "advertiser": "PlayOJO",
+            "scenario": "Uma campanha exibia listas de jogos “quentes” e “frios”, atualizadas a cada poucos minutos, como se dados recentes ajudassem o jogador a escolher resultados futuros.",
+            "channel": "Site, blog e televisão",
+            "location": "Reino Unido",
+            "observedAt": "Setembro de 2021",
+            "explanation": "A campanha existiu. O regulador entendeu que o conjunto da mensagem sugeria controle ou previsão sobre jogos de azar, mesmo com uma ressalva em letras menores.",
+            "tactic": {
+              "label": "Ilusão de controle",
+              "explanation": "Dados passados e interfaces analíticas podem parecer científicos sem alterar a aleatoriedade do próximo resultado."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on Skill On Net Ltd",
+              "url": "https://www.asa.org.uk/rulings/skill-on-net-ltd-g22-1151443-skill-on-net-ltd.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação parcialmente acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "real-betvictor-footballers",
+            "classification": "REAL",
+            "title": "A pergunta de futebol que também era anúncio",
+            "advertiser": "BetVictor",
+            "scenario": "Uma publicação paga no Facebook mostrou dois jogadores do Barcelona e perguntou qual atleta era mais subestimado pelo público, acompanhada pela identidade visual de uma casa de apostas.",
+            "channel": "Facebook — publicação patrocinada",
+            "location": "Reino Unido",
+            "observedAt": "Janeiro de 2023",
+            "explanation": "A publicação existiu. Mesmo sem pedir uma aposta diretamente, ela foi tratada como publicidade e considerada de forte apelo para menores.",
+            "tactic": {
+              "label": "Publicidade disfarçada de conversa",
+              "explanation": "Uma pergunta sobre esporte pode estimular comentários e compartilhamentos enquanto mantém a marca de apostas em evidência."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on BV Gaming Ltd",
+              "url": "https://www.asa.org.uk/rulings/bv-gaming-ltd-a23-1183713-bv-gaming-ltd.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "real-kwiff-hamilton",
+            "classification": "REAL",
+            "title": "O fim de semana de um campeão",
+            "advertiser": "Kwiff",
+            "scenario": "Uma conta de apostas publicou no X uma imagem de Lewis Hamilton e um texto sobre o grande fim de semana do piloto antes do Grande Prêmio da Inglaterra.",
+            "channel": "X — conta da marca",
+            "location": "Reino Unido",
+            "observedAt": "Julho de 2024",
+            "explanation": "A publicação existiu e foi considerada publicidade de apostas com forte apelo a menores por usar um esportista de enorme popularidade entre jovens.",
+            "tactic": {
+              "label": "Transferência de prestígio",
+              "explanation": "A admiração por um ídolo esportivo pode ser transferida para a marca e diminuir a leitura crítica da mensagem."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on Eaton Gate Gaming Ltd",
+              "url": "https://www.asa.org.uk/rulings/eaton-gate-gaming-ltd-a24-1252292-eaton-gate-gaming-ltd.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "real-freebets-mason-mount",
+            "classification": "REAL",
+            "title": "A transferência comentada por uma página de apostas",
+            "advertiser": "Freebetsdotcom",
+            "scenario": "Uma publicação no Instagram usou a imagem do jogador Mason Mount durante rumores sobre sua transferência de clube, promovendo uma página ligada a apostas.",
+            "channel": "Instagram",
+            "location": "Reino Unido",
+            "observedAt": "Julho de 2023",
+            "explanation": "A publicação existiu. O regulador concluiu que o atleta tinha forte apelo para menores e que a página facilitava o acesso a serviços de apostas.",
+            "tactic": {
+              "label": "Aproveitamento de assunto em alta",
+              "explanation": "Marcas podem entrar em conversas esportivas populares para alcançar o público antes que ele perceba a intenção comercial."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on XLMedia plc",
+              "url": "https://www.asa.org.uk/rulings/xlmedia-plc-g23-1205202-xlmedia-plc.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "real-sean-graham-voucher",
+            "classification": "REAL",
+            "title": "O vale promocional com uma condição escondida",
+            "advertiser": "Sean Graham",
+            "scenario": "Um folheto ofereceu um vale de aposta correspondente a cinco libras e indicou uso em qualquer loja da rede, mas a data de validade relevante não aparecia com clareza.",
+            "channel": "Folheto e vale impresso",
+            "location": "Reino Unido",
+            "observedAt": "Março de 2025",
+            "explanation": "A promoção existiu e foi considerada enganosa porque uma condição importante de validade não estava suficientemente clara para o consumidor.",
+            "tactic": {
+              "label": "Condição essencial pouco visível",
+              "explanation": "Uma vantagem em destaque pode dominar a atenção enquanto prazo e restrições ficam fáceis de ignorar."
+            },
+            "evidence": {
+              "institution": "Advertising Standards Authority (ASA)",
+              "title": "ASA Ruling on SP Graham Retail Ltd",
+              "url": "https://www.asa.org.uk/rulings/sp-graham-retail-ltd.html",
+              "accessedAt": "2026-08-03",
+              "outcome": "Reclamação acolhida"
+            },
+            "review": {
+              "technical": "source_verified",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-luck-recovery",
+            "classification": "INVENTED",
+            "title": "O modo automático de recuperação da sorte",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Um anúncio afirma que, depois de três derrotas seguidas, o aplicativo reconhece o azar e dobra automaticamente a chance de vitória na próxima rodada.",
+            "channel": "Vídeo curto simulado para rede social",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "Esta peça foi inventada pelo Money Rank. Uma sequência de perdas não obriga um resultado aleatório futuro a compensar o jogador.",
+            "tactic": {
+              "label": "Falácia do jogador",
+              "explanation": "A crença de que uma perda aumenta a chance imediata de vitória pode incentivar novas apostas para “recuperar” dinheiro."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-school-ranking",
+            "classification": "INVENTED",
+            "title": "O ranking de escolas patrocinado por uma bet",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Uma plataforma promete probabilidades especiais para estudantes que cadastrarem a escola e convida turmas a competir pelo maior número de apostas da semana.",
+            "channel": "Campanha simulada para aplicativo",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "Esta peça foi inventada para provocar análise crítica. Direcionar apostas a estudantes e transformar escolas em ranking seria um grave sinal de exploração de menores.",
+            "tactic": {
+              "label": "Pressão de grupo e competição",
+              "explanation": "Rankings e recompensas coletivas podem fazer uma decisão de risco parecer obrigação social."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-loss-insurance",
+            "classification": "INVENTED",
+            "title": "A assinatura que devolveria todas as perdas",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Uma campanha vende um “seguro de derrota” mensal e afirma devolver integralmente tudo o que o usuário perder, sem limite, prazo ou condição de uso.",
+            "channel": "Banner simulado para site",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "Esta oferta foi inventada. Promessas absolutas e sem condições devem acionar o radar de verificação antes de qualquer decisão financeira.",
+            "tactic": {
+              "label": "Risco aparentemente eliminado",
+              "explanation": "A palavra “seguro” pode criar sensação de proteção total e esconder custos, limites ou riscos reais."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-lucky-minute",
+            "classification": "INVENTED",
+            "title": "O relógio que encontraria o minuto da sorte",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Um aplicativo diz combinar bateria do celular, clima e horário para avisar o minuto exato em que as chances de ganhar ficam maiores.",
+            "channel": "Anúncio simulado em loja de aplicativos",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "A peça é uma criação do Money Rank. Indicadores sem relação causal não mudam as probabilidades de um jogo aleatório.",
+            "tactic": {
+              "label": "Tecnologia como autoridade",
+              "explanation": "Palavras como algoritmo e inteligência podem dar aparência científica a uma promessa sem fundamento."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-financial-certificate",
+            "classification": "INVENTED",
+            "title": "O desafio que prometia disciplina financeira",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Um influenciador convida seguidores para apostar durante trinta dias e promete um certificado de disciplina financeira a quem não abandonar o desafio.",
+            "channel": "Série simulada de vídeos de influenciador",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "Esta campanha foi inventada. Frequência de apostas não comprova educação financeira e um certificado não transforma risco em investimento.",
+            "tactic": {
+              "label": "Autoridade e compromisso público",
+              "explanation": "Um influenciador e uma meta de dias podem pressionar a continuidade mesmo quando parar seria a melhor decisão."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          },
+          {
+            "id": "invented-meal-cashback",
+            "classification": "INVENTED",
+            "title": "O cashback que viraria merenda",
+            "advertiser": "Marca fictícia criada para o Money Rank",
+            "scenario": "Uma plataforma anuncia que cada aposta perdida gera créditos para refeições e apresenta a promoção como uma forma de nunca sair totalmente no prejuízo.",
+            "channel": "Outdoor simulado próximo a escolas",
+            "location": "Peça fictícia — não foi veiculada",
+            "observedAt": "Não se aplica",
+            "explanation": "A peça foi criada pelo Money Rank. Vincular uma necessidade básica a perdas pode mascarar o prejuízo e normalizar apostas entre jovens.",
+            "tactic": {
+              "label": "Reenquadramento da perda",
+              "explanation": "Uma recompensa pequena pode desviar a atenção do valor maior perdido para obtê-la."
+            },
+            "evidence": null,
+            "review": {
+              "technical": "project_created",
+              "pedagogical": "pending_teacher_review"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -38,8 +38,13 @@ import {
   startAuthoritativeActivitySession,
   submitAuthoritativeActivitySession,
 } from '../../../../services/activitySessionService';
+import { usePublishedActivityCatalog } from '../../../../hooks/usePublishedActivityCatalog';
 
 const PHASE_NUMBER = 4;
+const FALLBACK_ACTIVITY = Object.freeze({
+  ...ENGENHARIA_DESEJO_ACTIVITY,
+  cards: engenhariaDesejoAdBank,
+});
 
 function createAttemptSeed() {
   if (typeof globalThis.crypto?.getRandomValues === 'function') {
@@ -127,6 +132,11 @@ export default function AtividadeFatoFake() {
     trailLoading,
     refreshTrailState,
   } = useAuth();
+  const activityDefinition = usePublishedActivityCatalog(
+    ENGENHARIA_DESEJO_ACTIVITY.id,
+    FALLBACK_ACTIVITY,
+  );
+  const availableCards = activityDefinition?.cards ?? engenhariaDesejoAdBank;
   const [session, setSession] = useState(() =>
     buildEngenhariaDesejoSession(createAttemptSeed()),
   );
@@ -150,7 +160,11 @@ export default function AtividadeFatoFake() {
   const currentCard = session.cards[cardIndex] ?? null;
   const gameResult =
     answers.length === ENGENHARIA_DESEJO_CARD_COUNT
-      ? calculateEngenhariaDesejoResult(session, answers)
+      ? calculateEngenhariaDesejoResult(
+          session,
+          answers,
+          activityDefinition,
+        )
       : null;
 
   const chooseClassification = (classification) => {
@@ -183,9 +197,11 @@ export default function AtividadeFatoFake() {
       const secureSession = await startAuthoritativeActivitySession(
         PHASE_NUMBER,
       );
-      const selectedCards = secureSession.cardIds
+      const selectedCards = secureSession.cards?.length
+        ? secureSession.cards
+        : secureSession.cardIds
         .map((cardId) =>
-          engenhariaDesejoAdBank.find((card) => card.id === cardId),
+          availableCards.find((card) => card.id === cardId),
         )
         .filter(Boolean);
       if (selectedCards.length !== ENGENHARIA_DESEJO_CARD_COUNT) {
@@ -242,7 +258,9 @@ export default function AtividadeFatoFake() {
   };
 
   const restartActivity = () => {
-    setSession(buildEngenhariaDesejoSession(createAttemptSeed()));
+    setSession(
+      buildEngenhariaDesejoSession(createAttemptSeed(), availableCards),
+    );
     setActivitySessionId(null);
     setStage('introduction');
     setCardIndex(0);
@@ -291,14 +309,14 @@ export default function AtividadeFatoFake() {
           <>
             <header className="mb-7">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-fuchsia-400">
-                {ENGENHARIA_DESEJO_ACTIVITY.stepLabel} ·{' '}
-                {ENGENHARIA_DESEJO_ACTIVITY.mechanicLabel}
+                {activityDefinition.stepLabel} ·{' '}
+                {activityDefinition.mechanicLabel}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                {ENGENHARIA_DESEJO_ACTIVITY.title}
+                {activityDefinition.title}
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-400">
-                {ENGENHARIA_DESEJO_ACTIVITY.introduction}
+                {activityDefinition.introduction}
               </p>
             </header>
 

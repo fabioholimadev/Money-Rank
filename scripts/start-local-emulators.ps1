@@ -18,17 +18,25 @@ function Test-LocalPort {
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $dataConnectRunning = Test-LocalPort -Port 9399
 $functionsRunning = Test-LocalPort -Port 5001
+$storageRunning = Test-LocalPort -Port 9199
 
-if ($dataConnectRunning -and $functionsRunning) {
-    Write-Host "Capi Bank e serviço de atividades já estão ativos."
+if ($dataConnectRunning -and $functionsRunning -and $storageRunning) {
+    Write-Host "Capi Bank, Functions e Storage já estão ativos."
     exit 0
 }
 
-if ($dataConnectRunning -or $functionsRunning) {
+if ($dataConnectRunning -or $functionsRunning -or $storageRunning) {
     throw @"
 O ambiente local está parcialmente ativo.
 Encerre o terminal que mantém o emulador aberto e execute novamente este script.
-O Money Rank precisa iniciar Capi Bank e Functions juntos para evitar falhas nas atividades.
+O Money Rank precisa iniciar Capi Bank, Functions e Storage juntos para evitar falhas nas atividades.
+"@
+}
+
+if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+    throw @"
+O emulador do Firebase Storage exige Java, mas o comando 'java' não foi encontrado.
+Instale um JDK compatível com a Firebase CLI, abra um novo terminal e execute este script novamente.
 "@
 }
 
@@ -52,7 +60,7 @@ if (-not (Test-Path $localSecretsPath)) {
 }
 
 Set-Location $repositoryRoot
-Write-Host "Iniciando Capi Bank e serviço seguro de atividades..."
+Write-Host "Iniciando Capi Bank, serviço seguro de atividades e Storage..."
 npx -y firebase-tools@latest emulators:start `
-    --only dataconnect,functions `
+    --only dataconnect,functions,storage `
     --project $ProjectId

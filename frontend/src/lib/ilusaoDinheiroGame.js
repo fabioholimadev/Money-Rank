@@ -132,19 +132,22 @@ export function validateIlusaoDinheiroMission() {
   return true;
 }
 
-export function buildIlusaoDinheiroSession(seed = Date.now()) {
+export function buildIlusaoDinheiroSession(
+  seed = Date.now(),
+  mission = ilusaoDinheiroMission,
+) {
   const random = createSeededRandom(seed);
 
   return {
-    ...ilusaoDinheiroMission,
-    decisions: ilusaoDinheiroMission.decisions.map((decision) => ({
+    ...mission,
+    decisions: mission.decisions.map((decision) => ({
       ...decision,
       choices: shuffleWithRandom(decision.choices, random),
     })),
   };
 }
 
-function normalizeAnswers(answers) {
+function normalizeAnswers(answers, mission) {
   if (!Array.isArray(answers)) {
     throw new Error('As escolhas da missão são inválidas.');
   }
@@ -161,9 +164,9 @@ function normalizeAnswers(answers) {
     answerMap.set(decisionId, choiceId);
   }
 
-  let runningBalance = ilusaoDinheiroMission.initialBalance;
+  let runningBalance = mission.initialBalance;
 
-  return ilusaoDinheiroMission.decisions.map((decision) => {
+  return mission.decisions.map((decision) => {
     const choiceId = answerMap.get(decision.id);
     const selectedChoice = decision.choices.find(
       (choice) => choice.id === choiceId,
@@ -190,10 +193,10 @@ function normalizeAnswers(answers) {
   });
 }
 
-function getEnding(finalBalance, score) {
+function getEnding(finalBalance, score, mission) {
   if (
     score >= ILUSAO_DINHEIRO_PASSING_SCORE &&
-    finalBalance >= ilusaoDinheiroMission.goalCost
+    finalBalance >= mission.goalCost
   ) {
     return {
       id: 'goal-achieved',
@@ -229,8 +232,11 @@ function getEnding(finalBalance, score) {
   };
 }
 
-export function calculateIlusaoDinheiroResult(answers) {
-  const normalizedAnswers = normalizeAnswers(answers);
+export function calculateIlusaoDinheiroResult(
+  answers,
+  mission = ilusaoDinheiroMission,
+) {
+  const normalizedAnswers = normalizeAnswers(answers, mission);
   const analysisPoints = normalizedAnswers.reduce(
     (sum, answer) => sum + answer.analysisPoints,
     0,
@@ -246,15 +252,15 @@ export function calculateIlusaoDinheiroResult(answers) {
     passed,
     analysisPoints,
     maximumAnalysisPoints: ILUSAO_DINHEIRO_MAX_ANALYSIS_POINTS,
-    initialBalance: ilusaoDinheiroMission.initialBalance,
+    initialBalance: mission.initialBalance,
     finalBalance,
-    goalCost: ilusaoDinheiroMission.goalCost,
-    goalGap: Math.max(ilusaoDinheiroMission.goalCost - finalBalance, 0),
+    goalCost: mission.goalCost,
+    goalGap: Math.max(mission.goalCost - finalBalance, 0),
     remainingAfterGoal: Math.max(
-      finalBalance - ilusaoDinheiroMission.goalCost,
+      finalBalance - mission.goalCost,
       0,
     ),
-    ending: getEnding(finalBalance, score),
+    ending: getEnding(finalBalance, score, mission),
     answers: normalizedAnswers,
   };
 }
