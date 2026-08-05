@@ -9,12 +9,7 @@ export default defineConfig({
     react()
   ],
   optimizeDeps: {
-    include: [
-      'prop-types',
-      'react-is',
-      '@mui/material',
-      '@mui/icons-material',
-    ],
+    include: ['prop-types', 'react-is'],
   },
   resolve: {
     alias: {
