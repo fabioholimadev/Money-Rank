@@ -107,7 +107,7 @@ deploy público não deve ser considerado concluído.
 
 ## Hosting e ordem de implantação
 
-- [ ] Adicionar Firebase Hosting ao `firebase.json` para `frontend/dist`, com
+- [x] Adicionar Firebase Hosting ao `firebase.json` para `frontend/dist`, com
   rewrite SPA para `/index.html`, sem sobrescrever Data Connect/Functions.
 - [ ] Executar `npm run build` e confirmar que nenhum `.env.local`, segredo ou
   token debug entrou em `dist`.
@@ -115,3 +115,6 @@ deploy público não deve ser considerado concluído.
 - [ ] Não reutilizar a aplicação antiga da Render, pois ela depende da
   arquitetura Express/Supabase.
 - [ ] Executar primeiro em homologação e somente depois repetir em produção.
+
+Consulte tambem a
+[`arquitetura e ordem de deploy no Firebase`](arquitetura-firebase.md).
