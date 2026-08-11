@@ -1,0 +1,15 @@
+{
+  "name": "money-rank-render-api",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "start": "node server.mjs", "test": "node --test test/*.test.mjs" },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.1.0",
+    "exceljs": "^4.4.0",
+    "firebase-admin": "^14.2.0",
+    "helmet": "^8.1.0"
+  }
+}

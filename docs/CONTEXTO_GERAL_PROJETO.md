@@ -335,3 +335,9 @@ a7b4fbe docs: encerra epico 3 e inventaria atividades
 - `firebase-security-rules-auditor`: somente se Storage/Firestore forem usados;
 - criar futuramente uma skill `money-rank-release` com checklist de build,
   deploy, carga, backup e smoke test, sem credenciais embutidas.
+
+## 14. Execução de 2026-08-10
+
+O remoto canônico foi confirmado como `https://github.com/fabioholimadev/Money-Rank.git` e a branch ativa é `chore/firebase-deploy-prep` (base `434e45b`). Foi adicionada uma API Express em `backend/render-api/` para o Render, com Firebase Auth/App Check, CORS restrito, `/healthz`, sessões HTTP, ranking e exportação XLSX. O frontend usa HTTP autenticado para sessões.
+
+O deploy externo, provisionamento SQL Connect e carga real aguardam autenticação e secrets no Firebase/Render. O relatório objetivo está em `docs/RELATORIO_EXECUCAO_EPICOS_2026-08-10.md`.

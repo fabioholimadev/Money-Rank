@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import http from 'node:http';
+process.env.NODE_ENV = 'test';
+process.env.TEACHER_EMAILS = 'teacher@example.com';
+const { app } = await import('../server.mjs');
+let server; let base;
+test.before(async () => { server = http.createServer(app); await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve)); base = `http://127.0.0.1:${server.address().port}`; });
+test.after(() => server.close());
+test('healthz is public', async () => { const response = await fetch(`${base}/healthz`); assert.equal(response.status, 200); });
+test('protected endpoint requires both test auth and app check', async () => { const response = await fetch(`${base}/api/period`, { headers: { 'x-test-uid': 'u1' } }); assert.equal(response.status, 401); });
