@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Add,
   CalendarMonth,
@@ -71,6 +71,9 @@ function replaceTime(value, time) {
 }
 
 function actionPresentation(status) {
+  if (status === 'DRAFT') {
+    return { label: 'Voltar a rascunho', Icon: EditCalendar };
+  }
   if (status === 'ACTIVE') {
     return { label: 'Ativar ou retomar', Icon: PlayCircleOutlined };
   }
@@ -102,10 +105,9 @@ export default function CompetitionPeriodManager({
 
   const currentPeriod = mode === 'edit' ? selectedPeriod : null;
   const isReadOnly = currentPeriod?.status === 'CLOSED';
-  const availableActions = useMemo(
-    () => ACTIONS_BY_STATUS[currentPeriod?.status] || [],
-    [currentPeriod?.status],
-  );
+  const availableActions = currentPeriod?.allowedActions?.length
+    ? currentPeriod.allowedActions
+    : ACTIONS_BY_STATUS[currentPeriod?.status] || [];
 
   const openManager = () => {
     setMode(selectedPeriod ? 'edit' : 'create');

@@ -13,6 +13,9 @@ export async function askStudentMentor(question) {
     searchSuggestionsHtml: typeof result?.searchSuggestionsHtml === 'string'
       ? result.searchSuggestionsHtml
       : '',
-    generatedBy: String(result?.generatedBy || 'safe-fallback'),
+    generatedBy: String(result?.generatedBy || 'policy'),
+    requestId: String(result?.requestId || ''),
+    searchUsed: result?.searchUsed === true,
+    citations: Array.isArray(result?.citations) ? result.citations : [],
   };
 }

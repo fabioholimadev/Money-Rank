@@ -21,6 +21,7 @@ import Ranking from './pages/Ranking';
 import Perfil from './pages/Perfil';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherStudio from './pages/TeacherStudio';
+import TeacherTestActivity from './pages/TeacherTestActivity';
 
 // Infraestrutura de layout
 import ProtectedRoute from './components/ProtectedRoute';
@@ -102,6 +103,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
               <TeacherStudio />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professor/teste/:phase"
+          element={
+            <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
+              <TeacherTestActivity />
             </ProtectedRoute>
           }
         />

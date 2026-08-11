@@ -60,13 +60,16 @@ test('edição preserva encerrados e impede sobreposição', async () => {
   assert.doesNotMatch(mutation, /DELETE FROM competition_periods/);
 });
 
-test('encerramento compensa o saldo sem apagar o ledger', async () => {
+test('encerramento compensa somente pontos do período e preserva o ledger', async () => {
   const source = await readFile(mutationsPath, 'utf8');
   const mutation = operation(source, 'SetTeacherCompetitionPeriodStatus');
   assert.match(mutation, /INSERT INTO capi_coin_transactions/);
-  assert.match(mutation, /-student\.capi_coins/);
+  assert.match(mutation, /transaction\.competition_period_id = \$1::uuid/);
+  assert.match(mutation, /transaction\.is_test = FALSE/);
+  assert.match(mutation, /-LEAST\(student\.capi_coins, points\.earned_points\)/);
   assert.match(mutation, /'PERIOD_CLOSE_ADJUSTMENT'/);
-  assert.match(mutation, /capi_coins = 0/);
+  assert.match(mutation, /capi_coins = GREATEST\(student\.capi_coins \+ adjustment\.amount, 0\)/);
+  assert.doesNotMatch(mutation, /SET capi_coins = 0/);
   assert.doesNotMatch(mutation, /DELETE FROM capi_coin_transactions/);
 });
 

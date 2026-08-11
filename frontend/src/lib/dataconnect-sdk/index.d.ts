@@ -112,6 +112,16 @@ export enum UserRole {
 
 
 
+export interface ActivateTeacherTestRunData {
+  affectedRows?: number | null;
+}
+
+export interface ActivateTeacherTestRunVariables {
+  testRunId: UUIDString;
+  durationMinutes: number;
+  actorUid: string;
+}
+
 export interface ActivityAttempt_Key {
   id: UUIDString;
   __typename?: 'ActivityAttempt_Key';
@@ -152,6 +162,15 @@ export interface BindPilotClassVariables {
 export interface CapiCoinTransaction_Key {
   id: UUIDString;
   __typename?: 'CapiCoinTransaction_Key';
+}
+
+export interface CleanTeacherTestRunData {
+  affectedRows?: number | null;
+}
+
+export interface CleanTeacherTestRunVariables {
+  testRunId: UUIDString;
+  actorUid: string;
 }
 
 export interface CleanupMarkedLoadTestStudentsData {
@@ -314,6 +333,23 @@ export interface CreateTeacherCompetitionPeriodVariables {
   actorUid: string;
 }
 
+export interface CreateTestActivitySessionData {
+  affectedRows?: number | null;
+}
+
+export interface CreateTestActivitySessionVariables {
+  sessionId: UUIDString;
+  testRunId: UUIDString;
+  actorUid: string;
+  activityId: string;
+  phaseNumber: number;
+  variantId?: string | null;
+  contentVersion: string;
+  publicPayload: unknown;
+  answerKey: unknown;
+  expiresAt: TimestampString;
+}
+
 export interface EconomyConfig_Key {
   configKey: string;
   __typename?: 'EconomyConfig_Key';
@@ -324,6 +360,19 @@ export interface EditorialAuditLog_Key {
   __typename?: 'EditorialAuditLog_Key';
 }
 
+export interface EndTeacherTestRunData {
+  affectedRows?: number | null;
+}
+
+export interface EndTeacherTestRunVariables {
+  testRunId: UUIDString;
+  actorUid: string;
+}
+
+export interface ExpireTestRunsData {
+  affectedRows?: number | null;
+}
+
 export interface FinalizeLoadTestCleanupData {
   affectedRows?: number | null;
 }
@@ -331,6 +380,14 @@ export interface FinalizeLoadTestCleanupData {
 export interface FinalizeLoadTestCleanupVariables {
   runId: string;
   deletedAuthUsers: number;
+}
+
+export interface GetActiveTestRunForUserData {
+  testRun?: unknown | null;
+}
+
+export interface GetActiveTestRunForUserVariables {
+  userUid: string;
 }
 
 export interface GetActivityDefinitionVersionForEditorialData {
@@ -371,6 +428,8 @@ export interface GetAuthoritativeActivityResultData {
     rewardAmount: number;
     rewardLimitReached: boolean;
     rewardSuppressionReason: RewardSuppressionReason;
+    isTest: boolean;
+    testRunId?: UUIDString | null;
     createdAt: TimestampString;
     user: {
       capiCoins: number;
@@ -394,6 +453,8 @@ export interface GetAuthoritativeActivitySessionData {
     publicPayload: unknown;
     answerKey: unknown;
     status: ActivitySessionStatus;
+    isTest: boolean;
+    testRunId?: UUIDString | null;
     expiresAt: TimestampString;
     submittedAt?: TimestampString | null;
     createdAt: TimestampString;
@@ -563,6 +624,9 @@ export interface GetPilotClassBindingData {
     role: UserRole;
     classGroup?: StudentClass | null;
     profileCompleted: boolean;
+    capiCoins: number;
+    currentPhase: number;
+    currentStreak: number;
   } & User_Key;
 }
 
@@ -622,6 +686,14 @@ export interface GetTeacherDashboardData {
 export interface GetTeacherDashboardVariables {
   periodId: UUIDString;
   studentLimit?: number | null;
+}
+
+export interface GetTeacherTestRunData {
+  testRun?: unknown | null;
+}
+
+export interface GetTeacherTestRunVariables {
+  actorUid: string;
 }
 
 export interface ImportPedagogicalBankData {
@@ -897,6 +969,23 @@ export interface RecordLoadTestMetricsVariables {
   metrics: unknown;
 }
 
+export interface RecordTestActivityAttemptData {
+  affectedRows?: number | null;
+}
+
+export interface RecordTestActivityAttemptVariables {
+  attemptId: UUIDString;
+  sessionId: UUIDString;
+  testRunId: UUIDString;
+  actorUid: string;
+  activityId: string;
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  passed: boolean;
+}
+
 export interface RegisterMyCurrentPhaseAttemptData {
   affectedRows?: number | null;
 }
@@ -998,6 +1087,16 @@ export interface SubmitLearningModuleForReviewEditorialData {
 export interface SubmitLearningModuleForReviewEditorialVariables {
   versionId: UUIDString;
   actorUid: string;
+}
+
+export interface TestRunAudit_Key {
+  id: UUIDString;
+  __typename?: 'TestRunAudit_Key';
+}
+
+export interface TestRun_Key {
+  id: UUIDString;
+  __typename?: 'TestRun_Key';
 }
 
 export interface UpdateActivityDefinitionDraftEditorialData {
@@ -1548,6 +1647,78 @@ export const completeMyCurrentPhaseRef: CompleteMyCurrentPhaseRef;
 export function completeMyCurrentPhase(vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
 export function completeMyCurrentPhase(dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
 
+interface ExpireTestRunsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<ExpireTestRunsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): MutationRef<ExpireTestRunsData, undefined>;
+  operationName: string;
+}
+export const expireTestRunsRef: ExpireTestRunsRef;
+
+export function expireTestRuns(): MutationPromise<ExpireTestRunsData, undefined>;
+export function expireTestRuns(dc: DataConnect): MutationPromise<ExpireTestRunsData, undefined>;
+
+interface ActivateTeacherTestRunRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ActivateTeacherTestRunVariables): MutationRef<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ActivateTeacherTestRunVariables): MutationRef<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+  operationName: string;
+}
+export const activateTeacherTestRunRef: ActivateTeacherTestRunRef;
+
+export function activateTeacherTestRun(vars: ActivateTeacherTestRunVariables): MutationPromise<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+export function activateTeacherTestRun(dc: DataConnect, vars: ActivateTeacherTestRunVariables): MutationPromise<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+
+interface EndTeacherTestRunRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: EndTeacherTestRunVariables): MutationRef<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: EndTeacherTestRunVariables): MutationRef<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+  operationName: string;
+}
+export const endTeacherTestRunRef: EndTeacherTestRunRef;
+
+export function endTeacherTestRun(vars: EndTeacherTestRunVariables): MutationPromise<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+export function endTeacherTestRun(dc: DataConnect, vars: EndTeacherTestRunVariables): MutationPromise<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+
+interface CleanTeacherTestRunRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CleanTeacherTestRunVariables): MutationRef<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CleanTeacherTestRunVariables): MutationRef<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+  operationName: string;
+}
+export const cleanTeacherTestRunRef: CleanTeacherTestRunRef;
+
+export function cleanTeacherTestRun(vars: CleanTeacherTestRunVariables): MutationPromise<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+export function cleanTeacherTestRun(dc: DataConnect, vars: CleanTeacherTestRunVariables): MutationPromise<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+
+interface CreateTestActivitySessionRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateTestActivitySessionVariables): MutationRef<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateTestActivitySessionVariables): MutationRef<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+  operationName: string;
+}
+export const createTestActivitySessionRef: CreateTestActivitySessionRef;
+
+export function createTestActivitySession(vars: CreateTestActivitySessionVariables): MutationPromise<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+export function createTestActivitySession(dc: DataConnect, vars: CreateTestActivitySessionVariables): MutationPromise<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+
+interface RecordTestActivityAttemptRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RecordTestActivityAttemptVariables): MutationRef<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RecordTestActivityAttemptVariables): MutationRef<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+  operationName: string;
+}
+export const recordTestActivityAttemptRef: RecordTestActivityAttemptRef;
+
+export function recordTestActivityAttempt(vars: RecordTestActivityAttemptVariables): MutationPromise<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+export function recordTestActivityAttempt(dc: DataConnect, vars: RecordTestActivityAttemptVariables): MutationPromise<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+
 interface UpdateAuthoritativeActivitySessionStateRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpdateAuthoritativeActivitySessionStateVariables): MutationRef<UpdateAuthoritativeActivitySessionStateData, UpdateAuthoritativeActivitySessionStateVariables>;
@@ -1943,6 +2114,30 @@ export const resolveCompetitionPeriodByKeyRef: ResolveCompetitionPeriodByKeyRef;
 
 export function resolveCompetitionPeriodByKey(vars: ResolveCompetitionPeriodByKeyVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
 export function resolveCompetitionPeriodByKey(dc: DataConnect, vars: ResolveCompetitionPeriodByKeyVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
+
+interface GetActiveTestRunForUserRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetActiveTestRunForUserVariables): QueryRef<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetActiveTestRunForUserVariables): QueryRef<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+  operationName: string;
+}
+export const getActiveTestRunForUserRef: GetActiveTestRunForUserRef;
+
+export function getActiveTestRunForUser(vars: GetActiveTestRunForUserVariables, options?: ExecuteQueryOptions): QueryPromise<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+export function getActiveTestRunForUser(dc: DataConnect, vars: GetActiveTestRunForUserVariables, options?: ExecuteQueryOptions): QueryPromise<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+
+interface GetTeacherTestRunRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherTestRunVariables): QueryRef<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetTeacherTestRunVariables): QueryRef<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+  operationName: string;
+}
+export const getTeacherTestRunRef: GetTeacherTestRunRef;
+
+export function getTeacherTestRun(vars: GetTeacherTestRunVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+export function getTeacherTestRun(dc: DataConnect, vars: GetTeacherTestRunVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherTestRunData, GetTeacherTestRunVariables>;
 
 interface GetPilotExportRowsRef {
   /* Allow users to create refs without passing in DataConnect */

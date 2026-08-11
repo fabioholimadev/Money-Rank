@@ -107,7 +107,9 @@ test('mantém resposta factual disponível sem chave do Gemini', async () => {
     apiKey: 'local-fallback',
     model: 'unused',
   });
-  assert.equal(response.generatedBy, 'safe-fallback');
+  assert.equal(response.generatedBy, 'aggregate-only');
+  assert.equal(response.aiStatus, 'unavailable');
+  assert.equal(response.calculatedData, response.answer);
   assert.match(response.answer, /O Custo do Vício/);
   assert.match(response.answer, /40%/);
   assert.ok(response.suggestion.length >= 20);

@@ -41,7 +41,7 @@ export async function fetchApiJson(endpoint, options = {}) {
   const response = await fetchApi(endpoint, options);
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload?.error || `HTTP ${response.status}`);
+    const error = new Error(payload?.message || payload?.error || `HTTP ${response.status}`);
     error.status = response.status;
     error.payload = payload;
     throw error;

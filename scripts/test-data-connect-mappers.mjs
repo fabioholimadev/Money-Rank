@@ -49,6 +49,7 @@ assert.deepEqual(mappedProfile, {
   fase_atual: 4,
   streak_atual: 3,
   ultimo_streak_em: '2026-07-27',
+  role: 'STUDENT',
   is_admin: false,
   created_at: '2026-07-27T12:00:00.000Z',
   updated_at: '2026-07-27T13:00:00.000Z',

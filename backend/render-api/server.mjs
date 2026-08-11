@@ -8,6 +8,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getAppCheck } from 'firebase-admin/app-check';
 import { getDataConnect } from 'firebase-admin/data-connect';
 import ExcelJS from 'exceljs';
+import { canAccessActivity } from '../../functions/src/activityAccess.js';
 
 const config = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -36,7 +37,12 @@ const app = express();
 const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
 const teacherEmails = new Set(String(process.env.TEACHER_EMAILS || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean));
 const isTest = process.env.NODE_ENV === 'test';
-const PERIOD_ID = process.env.PERIOD_ID || 'piloto-money-rank-2026-08-11';
+const TIME_ZONE = 'America/Fortaleza';
+const runtimeDiagnostics = {
+  sql: { lastSuccessAt: null, lastFailure: null },
+  mentor: null,
+  analyst: null,
+};
 
 function geminiApiKey() {
   return String(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
@@ -90,11 +96,38 @@ const uidRateLimiter = rateLimit({
 });
 
 function protectedRoute(...handlers) { return [authenticate, verifyAppCheck, uidRateLimiter, ...handlers]; }
-function sqlOperation(name, variables, options) { return dataConnect.executeQuery(name, variables, options); }
-function sqlMutation(name, variables, options) { return dataConnect.executeMutation(name, variables, options); }
+function sanitizedError(error) {
+  return {
+    name: String(error?.name || 'Error').slice(0, 80),
+    message: String(error?.message || 'unknown_error').replace(/[\r\n]+/g, ' ').slice(0, 320),
+    at: new Date().toISOString(),
+  };
+}
+async function sqlOperation(name, variables, options) {
+  try {
+    const response = await dataConnect.executeQuery(name, variables, options);
+    if (response?.errors?.length) throw new Error(response.errors[0]?.message || 'sql_connect_error');
+    runtimeDiagnostics.sql.lastSuccessAt = new Date().toISOString();
+    return response;
+  } catch (error) {
+    runtimeDiagnostics.sql.lastFailure = { operation: name, ...sanitizedError(error) };
+    throw error;
+  }
+}
+async function sqlMutation(name, variables, options) {
+  try {
+    const response = await dataConnect.executeMutation(name, variables, options);
+    if (response?.errors?.length) throw new Error(response.errors[0]?.message || 'sql_connect_error');
+    runtimeDiagnostics.sql.lastSuccessAt = new Date().toISOString();
+    return response;
+  } catch (error) {
+    runtimeDiagnostics.sql.lastFailure = { operation: name, ...sanitizedError(error) };
+    throw error;
+  }
+}
 function unwrap(response) { if (response?.errors?.length) throw new Error(response.errors[0]?.message || 'sql_connect_error'); return response?.data || {}; }
 
-function localClock(now, timeZone = 'America/Fortaleza') {
+function localClock(now, timeZone = TIME_ZONE) {
   return new Intl.DateTimeFormat('en-GB', {
     timeZone,
     hour: '2-digit',
@@ -109,16 +142,6 @@ function validPeriodWindow(period) {
   return Number.isFinite(startsAt) && Number.isFinite(endsAt) && startsAt < endsAt
     ? { startsAt, endsAt }
     : null;
-}
-
-function normalizedSchedule(period) {
-  return (Array.isArray(period?.schedule) ? period.schedule : []).flatMap((window) => {
-    const start = Date.parse(window?.start);
-    const end = Date.parse(window?.end);
-    const state = String(window?.state || '').toUpperCase();
-    if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end || !['ACTIVE', 'GRACE', 'PAUSED'].includes(state)) return [];
-    return [{ state, classId: window.classId || null, start, end }];
-  }).sort((left, right) => left.start - right.start);
 }
 
 export function periodStateFromPeriods(periods, now = new Date()) {
@@ -136,37 +159,50 @@ export function periodStateFromPeriods(periods, now = new Date()) {
   if (!period) {
     return {
       state: nextPeriod ? 'BEFORE' : 'CLOSED',
+      reason: nextPeriod ? 'next_period_not_started' : 'no_open_period',
+      serverTime: now.toISOString(),
+      timezone: TIME_ZONE,
       classId: null,
       hm: localClock(now),
+      selectedPeriodId: nextPeriod?.id || null,
+      selectedPeriodName: nextPeriod?.name || null,
       periodId: nextPeriod?.id || null,
       periodKey: nextPeriod?.periodKey || null,
       startsAt: nextPeriod?.startsAt ? new Date(nextPeriod.startsAt).toISOString() : null,
       endsAt: nextPeriod?.endsAt ? new Date(nextPeriod.endsAt).toISOString() : null,
+      nextPeriod: nextPeriod ? {
+        id: nextPeriod.id,
+        name: nextPeriod.name,
+        startsAt: new Date(nextPeriod.startsAt).toISOString(),
+        endsAt: new Date(nextPeriod.endsAt).toISOString(),
+        status: nextPeriod.status,
+      } : null,
     };
   }
   const base = {
+    serverTime: now.toISOString(),
+    timezone: TIME_ZONE,
+    selectedPeriodId: period.id,
+    selectedPeriodName: period.name,
     periodId: period.id,
     periodKey: period.periodKey || null,
     name: period.name,
-    timeZone: period.timeZone || 'America/Fortaleza',
+    timeZone: period.timeZone || TIME_ZONE,
     startsAt: new Date(period.startsAt).toISOString(),
     endsAt: new Date(period.endsAt).toISOString(),
     hm: localClock(now, period.timeZone || 'America/Fortaleza'),
   };
-  if (period.status === 'PAUSED') return { ...base, state: 'PAUSED', classId: null };
-  const schedule = normalizedSchedule(period);
-  if (schedule.length === 0) return { ...base, state: 'ACTIVE', classId: null };
-  const window = schedule.find((item) => item.start <= nowMs && nowMs < item.end);
-  if (!window) return { ...base, state: 'PAUSED', classId: null };
-  const previousActive = window.state === 'GRACE'
-    ? [...schedule].reverse().find((item) =>
-      item.state === 'ACTIVE' && item.classId === window.classId && item.end <= window.start)
-    : null;
+  if (period.status === 'PAUSED') {
+    return { ...base, state: 'PAUSED', reason: 'period_paused_by_teacher', classId: null, nextPeriod: null };
+  }
   return {
     ...base,
-    state: window.state,
-    classId: window.classId,
-    activeWindowEnd: previousActive ? new Date(previousActive.end).toISOString() : null,
+    state: 'ACTIVE',
+    reason: period.status === 'SCHEDULED'
+      ? 'scheduled_window_open'
+      : 'manually_active_window_open',
+    classId: null,
+    nextPeriod: null,
   };
 }
 
@@ -178,6 +214,35 @@ async function resolveRuntimePeriod(uid, now = new Date()) {
   ));
   const periods = data.competitionPeriods || [];
   return { periods, current: periodStateFromPeriods(periods, now) };
+}
+
+async function resolveActiveTestRun(uid) {
+  await sqlMutation('ExpireTestRuns', {});
+  return unwrap(await sqlOperation('GetActiveTestRunForUser', { userUid: uid })).testRun || null;
+}
+
+async function getTeacherTestRun(uid) {
+  await sqlMutation('ExpireTestRuns', {});
+  return unwrap(await sqlOperation('GetTeacherTestRun', { actorUid: uid })).testRun || null;
+}
+
+function allowedPeriodActions(period, periods, now = new Date()) {
+  const status = String(period?.status || '');
+  if (status === 'CLOSED') return [];
+  const nowMs = now.getTime();
+  const startsAt = Date.parse(period?.startsAt);
+  const endsAt = Date.parse(period?.endsAt);
+  const insideWindow = Number.isFinite(startsAt) && Number.isFinite(endsAt)
+    && startsAt <= nowMs && nowMs < endsAt;
+  const anotherActive = periods.some((item) => item.id !== period.id && item.status === 'ACTIVE');
+  const actions = [];
+  if (status === 'DRAFT' || status === 'SCHEDULED') {
+    if (nowMs < endsAt) actions.push(status === 'DRAFT' ? 'SCHEDULED' : 'DRAFT');
+  }
+  if (['DRAFT', 'SCHEDULED', 'PAUSED'].includes(status) && insideWindow && !anotherActive) actions.push('ACTIVE');
+  if (status === 'ACTIVE' || (status === 'SCHEDULED' && insideWindow)) actions.push('PAUSED');
+  actions.push('CLOSED');
+  return [...new Set(actions)];
 }
 
 function secureRandom() {
@@ -252,18 +317,20 @@ async function ensurePilotClass(uid, current) {
   return { ...binding, classId: publicClass(binding.classGroup) };
 }
 
-async function resolvePeriodUuid() {
-  const period = unwrap(await sqlOperation('ResolveCompetitionPeriodByKey', { periodKey: PERIOD_ID })).competitionPeriod;
-  if (!period?.id) throw new Error('pilot_period_not_provisioned');
-  return period.id;
+function validUuid(value) {
+  return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(String(value || ''));
 }
 
-function graceAcceptsSession(current, session, binding) {
-  if (current.state !== 'GRACE' || binding.classId !== current.classId) return false;
-  const sessionStartedAt = Date.parse(session.createdAt);
-  return Number.isFinite(sessionStartedAt)
-    && Number.isFinite(Date.parse(current.activeWindowEnd))
-    && sessionStartedAt < Date.parse(current.activeWindowEnd);
+async function resolveOfficialPeriodId(uid, requestedPeriodId = '') {
+  if (requestedPeriodId) {
+    if (!validUuid(requestedPeriodId)) throw new Error('invalid_period_id');
+    return requestedPeriodId;
+  }
+  const { current } = await resolveRuntimePeriod(uid);
+  if (current.state !== 'ACTIVE' || !current.selectedPeriodId) {
+    throw new Error('no_official_period_for_ranking');
+  }
+  return current.selectedPeriodId;
 }
 
 app.get('/healthz', (req, res) => res.json({ ok: true, service: 'money-rank-api', requestId: req.requestId }));
@@ -282,6 +349,7 @@ app.get('/readyz', async (req, res, next) => {
       geminiConfigured: Boolean(geminiApiKey()),
       activeItems,
       counts,
+      build: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'unknown',
       requestId: req.requestId,
     });
   } catch (error) { return next(error); }
@@ -390,13 +458,37 @@ app.post('/api/me/trail/content/complete', ...protectedRoute(), async (req, res,
 });
 app.get('/api/period', ...protectedRoute(), async (req, res, next) => {
   try {
-    const { current, periods } = await resolveRuntimePeriod(req.auth.uid);
-    if (current.state === 'PAUSED') return res.status(409).json({ error: 'period_paused', current });
+    const [{ current, periods }, testGrant] = await Promise.all([
+      resolveRuntimePeriod(req.auth.uid),
+      resolveActiveTestRun(req.auth.uid),
+    ]);
     const binding = await ensurePilotClass(req.auth.uid, current);
+    const access = canAccessActivity({
+      user: { uid: req.auth.uid, classId: binding.classId },
+      currentPeriod: current,
+      testGrant,
+      operation: 'START',
+    });
     return res.json({
+      serverTime: current.serverTime,
+      timezone: TIME_ZONE,
+      state: current.state,
+      reason: access.reason,
+      selectedPeriodId: current.selectedPeriodId,
+      selectedPeriodName: current.selectedPeriodName,
+      startsAt: current.startsAt,
+      endsAt: current.endsAt,
+      canStartActivity: access.allowed,
+      canSubmitActivity: access.allowed,
+      nextPeriod: current.nextPeriod,
+      testMode: testGrant ? {
+        active: true,
+        testRunId: testGrant.id,
+        endsAt: testGrant.endsAt,
+        accessPolicy: 'TEACHER_OWNER_ONLY',
+      } : { active: false },
       periodId: current.periodId,
       periodKey: current.periodKey,
-      timezone: 'America/Fortaleza',
       current,
       classId: binding.classId,
       periods,
@@ -406,9 +498,13 @@ app.get('/api/period', ...protectedRoute(), async (req, res, next) => {
 
 app.post('/api/activity/sessions/start', ...protectedRoute(), async (req, res, next) => {
   try {
-    const { current } = await resolveRuntimePeriod(req.auth.uid); if (current.state !== 'ACTIVE') return res.status(409).json({ error: 'period_not_active', current });
+    const [{ current }, testGrant] = await Promise.all([
+      resolveRuntimePeriod(req.auth.uid),
+      resolveActiveTestRun(req.auth.uid),
+    ]);
     const binding = await ensurePilotClass(req.auth.uid, current);
-    if (current.classId && binding.classId !== current.classId) return res.status(409).json({ error: 'student_bound_to_other_class', classId: binding.classId, current });
+    const access = canAccessActivity({ user: { uid: req.auth.uid, classId: binding.classId }, currentPeriod: current, testGrant, operation: 'START' });
+    if (!access.allowed) return res.status(409).json({ error: 'activity_access_blocked', reason: access.reason, current, testMode: Boolean(testGrant), requestId: req.requestId });
     const phaseNumber = Number(req.body?.phaseNumber); if (!Number.isInteger(phaseNumber) || phaseNumber < 1 || phaseNumber > 4) return res.status(400).json({ error: 'invalid_phase' });
     const module = await import('../../functions/src/activityEngine.js');
     const activityId = module.ACTIVITY_IDS_BY_PHASE[phaseNumber];
@@ -423,21 +519,25 @@ app.post('/api/activity/sessions/start', ...protectedRoute(), async (req, res, n
       definition: { items: bankData.pedagogicalItems || [] },
     });
     const sessionId = crypto.randomUUID(); const expiresAt = new Date(Date.now() + 45 * 60_000).toISOString();
-    await sqlMutation('CreateAuthoritativeActivitySession', { sessionId, studentUid: req.auth.uid, activityId: prepared.activityId, phaseNumber, variantId: prepared.variantId, contentVersion: prepared.contentVersion, publicPayload: prepared.publicPayload, answerKey: { ...prepared.answerKey, runtime: { competitionPeriodId: current.periodId } }, expiresAt });
-    res.status(201).json({ sessionId, phaseNumber, activityId: prepared.activityId, contentVersion: prepared.contentVersion, expiresAt, ...prepared.publicPayload });
+    const answerKey = { ...prepared.answerKey, runtime: { competitionPeriodId: access.periodId, testRunId: access.testRunId, accessSource: access.source } };
+    if (access.source === 'TEST_RUN') {
+      await sqlMutation('CreateTestActivitySession', { sessionId, testRunId: access.testRunId, actorUid: req.auth.uid, activityId: prepared.activityId, phaseNumber, variantId: prepared.variantId, contentVersion: prepared.contentVersion, publicPayload: prepared.publicPayload, answerKey, expiresAt });
+    } else {
+      await sqlMutation('CreateAuthoritativeActivitySession', { sessionId, studentUid: req.auth.uid, activityId: prepared.activityId, phaseNumber, variantId: prepared.variantId, contentVersion: prepared.contentVersion, publicPayload: prepared.publicPayload, answerKey, expiresAt });
+    }
+    res.status(201).json({ sessionId, phaseNumber, activityId: prepared.activityId, contentVersion: prepared.contentVersion, expiresAt, testMode: access.source === 'TEST_RUN', testRunId: access.testRunId, ...prepared.publicPayload });
   } catch (error) { next(error); }
 });
 
 app.post('/api/activity/sessions/:sessionId/step', ...protectedRoute(), async (req, res, next) => {
   try {
-    const { current } = await resolveRuntimePeriod(req.auth.uid);
-    if (current.state !== 'ACTIVE') return res.status(409).json({ error: 'period_not_active', current });
-    const binding = await ensurePilotClass(req.auth.uid, current);
-    if (current.classId && binding.classId !== current.classId) return res.status(409).json({ error: 'student_bound_to_other_class', classId: binding.classId, current });
     const data = unwrap(await sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }, dataConnectAuth(req.auth.uid)));
     const session = data.activitySession;
     if (!session || session.userUid !== req.auth.uid || Number(session.phaseNumber) !== 3) return res.status(404).json({ error: 'session_not_found' });
-    if (session.answerKey?.runtime?.competitionPeriodId !== current.periodId) return res.status(409).json({ error: 'session_period_mismatch', current });
+    const [{ current }, testGrant] = await Promise.all([resolveRuntimePeriod(req.auth.uid), resolveActiveTestRun(req.auth.uid)]);
+    const binding = await ensurePilotClass(req.auth.uid, current);
+    const access = canAccessActivity({ user: { uid: req.auth.uid, classId: binding.classId }, currentPeriod: current, testGrant, session: { classId: binding.classId, isTest: session.isTest, testRunId: session.testRunId, competitionPeriodId: session.answerKey?.runtime?.competitionPeriodId }, operation: 'SUBMIT' });
+    if (!access.allowed) return res.status(409).json({ error: 'activity_access_blocked', reason: access.reason, current, requestId: req.requestId });
     const engine = await import('../../functions/src/activityEngine.js');
     const advanced = engine.advanceIlusaoDinheiroSession(session.answerKey, req.body, secureRandom);
     const publicPayload = {
@@ -473,22 +573,37 @@ app.post('/api/activity/sessions/:sessionId/submit', ...protectedRoute(), async 
     const session = sessionData.activitySession; if (!session || session.userUid !== req.auth.uid) return res.status(404).json({ error: 'session_not_found' });
     const priorResult = priorResultData.activityAttempts?.[0];
     if (priorResult) return res.json({ ...priorResult, idempotentReplay: true });
-    const { current } = await resolveRuntimePeriod(req.auth.uid);
+    const [{ current }, testGrant] = await Promise.all([
+      resolveRuntimePeriod(req.auth.uid),
+      resolveActiveTestRun(req.auth.uid),
+    ]);
     const binding = await ensurePilotClass(req.auth.uid, current);
-    const canSubmit = current.state === 'ACTIVE'
-      ? (!current.classId || binding.classId === current.classId)
-      : graceAcceptsSession(current, session, binding);
-    const samePeriod = session.answerKey?.runtime?.competitionPeriodId === current.periodId;
-    if (!canSubmit || !samePeriod) return res.status(409).json({ error: 'period_not_accepting_submissions', current, classId: binding.classId });
+    const access = canAccessActivity({
+      user: { uid: req.auth.uid, classId: binding.classId },
+      currentPeriod: current,
+      testGrant,
+      session: {
+        classId: binding.classId,
+        isTest: session.isTest,
+        testRunId: session.testRunId,
+        competitionPeriodId: session.answerKey?.runtime?.competitionPeriodId,
+      },
+      operation: 'SUBMIT',
+    });
+    if (!access.allowed) return res.status(409).json({ error: 'activity_access_blocked', reason: access.reason, current, classId: binding.classId, requestId: req.requestId });
     const engine = await import('../../functions/src/activityEngine.js');
     const submittedAnswers = Number(session.phaseNumber) === 3 && !Array.isArray(req.body?.answers)
       ? session.answerKey?.progress?.answers
       : req.body?.answers;
     const result = engine.scoreActivitySession({ phaseNumber: session.phaseNumber, answerKey: session.answerKey }, submittedAnswers);
-    await sqlMutation(result.passed ? 'CompleteMyCurrentPhase' : 'RegisterMyCurrentPhaseAttempt', { attemptId: session.id, sessionId: session.id, studentUid: req.auth.uid, activityId: session.activityId, phaseNumber: session.phaseNumber, score: result.score, correctAnswers: result.correctAnswers, wrongAnswers: result.wrongAnswers });
-    await sqlMutation('MarkAuthoritativeActivitySessionSubmitted', { sessionId: session.id, studentUid: req.auth.uid });
+    if (access.source === 'TEST_RUN') {
+      await sqlMutation('RecordTestActivityAttempt', { attemptId: session.id, sessionId: session.id, testRunId: access.testRunId, actorUid: req.auth.uid, activityId: session.activityId, phaseNumber: session.phaseNumber, score: result.score, correctAnswers: result.correctAnswers, wrongAnswers: result.wrongAnswers, passed: result.passed });
+    } else {
+      await sqlMutation(result.passed ? 'CompleteMyCurrentPhase' : 'RegisterMyCurrentPhaseAttempt', { attemptId: session.id, sessionId: session.id, studentUid: req.auth.uid, activityId: session.activityId, phaseNumber: session.phaseNumber, score: result.score, correctAnswers: result.correctAnswers, wrongAnswers: result.wrongAnswers });
+      await sqlMutation('MarkAuthoritativeActivitySessionSubmitted', { sessionId: session.id, studentUid: req.auth.uid });
+    }
     const savedData = unwrap(await sqlOperation('GetAuthoritativeActivityResult', { sessionId: session.id }, dataConnectAuth(req.auth.uid)));
-    return res.json({ ...savedData.activityAttempts?.[0], ...result, idempotentReplay: false });
+    return res.json({ ...savedData.activityAttempts?.[0], ...result, testMode: access.source === 'TEST_RUN', testRunId: access.testRunId, officialRewardGranted: access.source !== 'TEST_RUN' && Number(savedData.activityAttempts?.[0]?.rewardAmount || 0) > 0, idempotentReplay: false });
   } catch (error) { next(error); }
 });
 
@@ -543,7 +658,14 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
       const question = mentor.normalizeMentorQuestion(payload.question);
       if (question.length < 4) return res.status(400).json({ error: 'mentor_question_too_short' });
       const context = await getStudentMentorContext(uid);
-      const answer = await mentor.answerStudentMentor({ question, rawContext: context, apiKey: geminiApiKey(), model: process.env.GEMINI_MODEL || 'gemini-3.6-flash' });
+      const answer = await mentor.answerStudentMentor({
+        question,
+        rawContext: context,
+        apiKey: geminiApiKey(),
+        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        requestId: req.requestId,
+        onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
+      });
       if (!answer) return res.status(403).json({ error: 'student_profile_required' });
       return res.json({ ...answer, limitations: 'O tutor pode errar e não substitui o professor nem fontes oficiais.' });
     }
@@ -557,7 +679,14 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
       const question = chat.normalizeTeacherQuestion(payload.question);
       if (question.length < 5) return res.status(400).json({ error: 'teacher_question_too_short' });
       const context = await getTeacherDashboardForChat(uid, periodId);
-      const answer = await chat.buildTeacherChatResponse({ question, rawContext: context, apiKey: geminiApiKey(), model: process.env.GEMINI_MODEL || 'gemini-3.6-flash' });
+      const answer = await chat.buildTeacherChatResponse({
+        question,
+        rawContext: context,
+        apiKey: geminiApiKey(),
+        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        requestId: req.requestId,
+        onDiagnostic: (diagnostic) => { runtimeDiagnostics.analyst = { ...diagnostic, at: new Date().toISOString() }; },
+      });
       return res.json({ ...answer, periodId, scope: 'Dados agregados do período selecionado', limitations: 'A análise não consulta e-mail, UID, respostas individuais ou dados fora do período.' });
     }
 
@@ -625,25 +754,138 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
 
 app.get('/api/ranking', ...protectedRoute(), async (req, res, next) => {
   try {
-    const periodId = await resolvePeriodUuid();
+    const periodId = await resolveOfficialPeriodId(req.auth.uid, String(req.query.periodId || ''));
     const data = unwrap(await sqlOperation('GetCompetitionRankings', { periodId, studentLimit: 100 }, dataConnectAuth(req.auth.uid)));
     const classId = String(req.query.classId || 'TODAS').toUpperCase();
     const individualRanking = (data.individualRanking || []).filter((row) =>
       classId === 'TODAS' || publicClass(row.classGroup) === classId);
-    return res.json({ classId, individualRanking, classRanking: data.classRanking || [] });
+    return res.json({ periodId, classId, individualRanking, classRanking: data.classRanking || [] });
   } catch (error) { return next(error); }
 });
 
 app.get('/api/teacher/periods', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);
+    const now = new Date();
     const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 20, 1), 50);
     const data = unwrap(await sqlOperation(
       'ListTeacherCompetitionPeriods',
       { limit },
       dataConnectAuth(req.auth.uid),
     ));
-    return res.json({ periods: data.periods || [] });
+    const periods = data.periods || [];
+    const recognized = periodStateFromPeriods(periods, now);
+    return res.json({
+      serverTime: now.toISOString(),
+      timezone: TIME_ZONE,
+      recognizedPeriod: recognized,
+      periods: periods.map((period) => ({
+        ...period,
+        allowedActions: allowedPeriodActions(period, periods, now),
+        recognizedByApi: period.id === recognized.selectedPeriodId,
+      })),
+    });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/test-mode', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    return res.json({
+      accessPolicy: 'TEACHER_OWNER_ONLY',
+      testRun: await getTeacherTestRun(req.auth.uid),
+      serverTime: new Date().toISOString(),
+      timezone: TIME_ZONE,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/test-mode/start', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const test = await import('../../functions/src/testRun.js');
+    const durationMinutes = test.normalizeTestDuration(req.body?.durationMinutes);
+    const testRunId = crypto.randomUUID();
+    const data = unwrap(await sqlMutation('ActivateTeacherTestRun', { testRunId, durationMinutes, actorUid: req.auth.uid }));
+    if (Number(data.affectedRows || 0) !== 1) return res.status(409).json({ error: 'test_mode_already_active', requestId: req.requestId });
+    return res.status(201).json({ testRun: await getTeacherTestRun(req.auth.uid), accessPolicy: test.TEST_ACCESS_POLICY });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/test-mode/end', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const current = await getTeacherTestRun(req.auth.uid);
+    if (!current?.id || current.status !== 'ACTIVE') return res.status(409).json({ error: 'test_mode_not_active', requestId: req.requestId });
+    const data = unwrap(await sqlMutation('EndTeacherTestRun', { testRunId: current.id, actorUid: req.auth.uid }));
+    if (Number(data.affectedRows || 0) !== 1) return res.status(409).json({ error: 'test_mode_end_refused', requestId: req.requestId });
+    return res.json({ testRun: await getTeacherTestRun(req.auth.uid) });
+  } catch (error) { return next(error); }
+});
+
+app.delete('/api/teacher/test-mode/data', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const current = await getTeacherTestRun(req.auth.uid);
+    if (!current?.id || !['ENDED', 'EXPIRED'].includes(current.status)) return res.status(409).json({ error: 'end_test_mode_before_cleanup', requestId: req.requestId });
+    const data = unwrap(await sqlMutation('CleanTeacherTestRun', { testRunId: current.id, actorUid: req.auth.uid }));
+    if (Number(data.affectedRows || 0) !== 1) return res.status(409).json({ error: 'test_mode_cleanup_refused', requestId: req.requestId });
+    return res.json({ testRun: await getTeacherTestRun(req.auth.uid), cleaned: true });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const now = new Date();
+    const [bank, periodState] = await Promise.all([
+      sqlOperation('GetPedagogicalBankStatus', {}).then(unwrap),
+      resolveRuntimePeriod(req.auth.uid),
+    ]);
+    const counts = Object.fromEntries((bank.counts || []).map((row) => [row.activityId, Number(row.activeItems || 0)]));
+    return res.json({
+      serverTime: now.toISOString(),
+      timezone: TIME_ZONE,
+      database: {
+        accessible: true,
+        activeItems: Object.values(counts).reduce((total, value) => total + value, 0),
+        counts,
+        recognizedPeriod: periodState.current,
+        lastSuccessAt: runtimeDiagnostics.sql.lastSuccessAt,
+        lastFailure: runtimeDiagnostics.sql.lastFailure,
+      },
+      gemini: {
+        keyRecognized: Boolean(geminiApiKey()),
+        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        mentor: runtimeDiagnostics.mentor,
+        analyst: runtimeDiagnostics.analyst,
+      },
+      render: {
+        apiCommit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'unknown',
+        serviceId: process.env.RENDER_SERVICE_ID || 'unknown',
+        frontendOrigin,
+        apiUrl: process.env.RENDER_EXTERNAL_URL || 'https://money-rank-wb1h.onrender.com',
+        nodeVersion: process.version,
+        buildVersion: process.env.npm_package_version || '1.0.0',
+      },
+      requestId: req.requestId,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/diagnostics/gemini-probe', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const mentor = await import('../../functions/src/studentMentor.js');
+    const answer = await mentor.answerStudentMentor({
+      question: 'O que é IPI?',
+      rawContext: { profile: { role: 'STUDENT', profileCompleted: true, currentPhase: 0 }, progress: [] },
+      apiKey: geminiApiKey(),
+      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+      requestId: req.requestId,
+      onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
+    });
+    return res.json(answer);
   } catch (error) { return next(error); }
 });
 
@@ -651,7 +893,7 @@ app.get('/api/teacher/dashboard', ...protectedRoute(requireTeacher), async (req,
   try {
     await ensureTeacherRole(req.auth);
     const periodId = String(req.query.periodId || '').trim();
-    if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(periodId)) {
+    if (!validUuid(periodId)) {
       return res.status(400).json({ error: 'invalid_period_id', requestId: req.requestId });
     }
     const data = unwrap(await sqlOperation(
@@ -666,7 +908,7 @@ app.get('/api/teacher/dashboard', ...protectedRoute(requireTeacher), async (req,
 app.get('/api/export.xlsx', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);
-    const periodId = await resolvePeriodUuid();
+    const periodId = await resolveOfficialPeriodId(req.auth.uid, String(req.query.periodId || ''));
     const [dashboard, exportRows] = await Promise.all([
       sqlOperation('GetTeacherDashboard', { periodId, studentLimit: 100 }, dataConnectAuth(req.auth.uid)).then(unwrap),
       sqlOperation('GetPilotExportRows', { periodId }).then(unwrap),
@@ -688,7 +930,7 @@ app.get('/api/export.xlsx', ...protectedRoute(requireTeacher), async (req, res, 
     const filterRows = (rows) => (rows || []).map(normalizeRow).filter((row) =>
       classId === 'TODAS' || !row.classId || row.classId === classId);
     const sheets = [
-      ['Resumo', [{ periodKey: PERIOD_ID, classFilter: classId, ...(dashboard.summary || {}) }]],
+      ['Resumo', [{ periodId, classFilter: classId, ...(dashboard.summary || {}) }]],
       ['Alunos', filterRows(dashboard.studentMetrics)],
       ['Tentativas', filterRows(exportRows.attempts)],
       ['Atividades', filterRows(dashboard.phaseMetrics)],
@@ -716,7 +958,20 @@ app.get('/api/export.xlsx', ...protectedRoute(requireTeacher), async (req, res, 
   } catch (error) { return next(error); }
 });
 
-app.use((error, req, res, next) => res.status(error.message === 'cors_origin_denied' ? 403 : 500).json({ error: error.message || 'internal_error', requestId: req.requestId }));
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  const rawMessage = String(error?.message || 'internal_error');
+  let status = Number(error?.status) || 500;
+  let code = error?.code || 'internal_error';
+  let message = 'O servidor não conseguiu concluir a operação.';
+  if (rawMessage === 'cors_origin_denied') { status = 403; code = rawMessage; message = 'Origem não autorizada.'; }
+  else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
+  else if (rawMessage === 'no_official_period_for_ranking') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para o ranking.'; }
+  else if (error?.name === 'MentorUnavailableError') { status = 503; code = 'mentor_unavailable'; message = error.message; }
+  else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
+  console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));
+  return res.status(status).json({ error: code, message, diagnosticCode: req.requestId, requestId: req.requestId });
+});
 
 const port = Number(process.env.PORT || 8080);
 if (process.env.NODE_ENV !== 'test') app.listen(port, '0.0.0.0', () => console.log(JSON.stringify({ event: 'listening', port })));

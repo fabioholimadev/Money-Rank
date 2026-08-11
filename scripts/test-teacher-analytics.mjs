@@ -122,9 +122,11 @@ const teacherSection = querySource.slice(
 );
 assert.equal(
   (teacherSection.match(/teacher\.role = 'TEACHER'/g) || []).length,
-  5,
-  'A lista de períodos e as quatro agregações devem validar TEACHER.',
+  7,
+  'Períodos, agregações e consultas do modo de teste devem validar TEACHER.',
 );
+assert.match(teacherSection, /query GetActiveTestRunForUser[\s\S]*run\.created_by_uid = \$1[\s\S]*teacher\.role = 'TEACHER'/);
+assert.match(teacherSection, /query GetTeacherTestRun[\s\S]*run\.created_by_uid = \$1[\s\S]*teacher\.role = 'TEACHER'/);
 assert.equal(
   teacherSection.includes('student.email'),
   false,

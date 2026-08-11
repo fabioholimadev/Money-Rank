@@ -31,7 +31,7 @@ function answerFor(phaseNumber, item, optionId) {
   return { cardId: item.id, optionId };
 }
 
-export default function AuthoritativeActivityRunner({ phaseNumber, title, accent = 'amber' }) {
+export default function AuthoritativeActivityRunner({ phaseNumber, title, accent = 'amber', testMode = false }) {
   const navigate = useNavigate();
   const { aluno, trailProgress, trailLoading, refreshTrailState } = useAuth();
   const [characterId, setCharacterId] = useState(null);
@@ -47,7 +47,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
 
   const currentPhase = normalizeCurrentPhase(aluno?.fase_atual);
   const phaseProgress = getPhaseProgress(trailProgress, phaseNumber);
-  const unlocked = isActivityUnlocked(phaseNumber, currentPhase, phaseProgress);
+  const unlocked = testMode || isActivityUnlocked(phaseNumber, currentPhase, phaseProgress);
   const currentItem = items[itemIndex] ?? null;
   const accentClasses = accent === 'cyan'
     ? 'bg-cyan-400 text-slate-950 hover:bg-cyan-300'
@@ -82,7 +82,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
       session.sessionId,
       phaseNumber === 3 ? undefined : finalAnswers,
     );
-    await refreshTrailState();
+    if (!testMode) await refreshTrailState();
     setResult(completion);
   }
 
@@ -141,11 +141,11 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
   return (
     <TrailPageShell>
       <div className="w-full py-3 text-white">
-        <button type="button" onClick={() => navigate('/trilha')} className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white">
-          <ArrowBack sx={{ fontSize: 19 }} /> Voltar ao mapa
+        <button type="button" onClick={() => navigate(testMode ? '/professor' : '/trilha')} className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white">
+          <ArrowBack sx={{ fontSize: 19 }} /> {testMode ? 'Voltar ao painel do professor' : 'Voltar ao mapa'}
         </button>
         <header className="mb-7">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Fase {phaseNumber} · atividade autoritativa</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Fase {phaseNumber} · {testMode ? 'teste isolado' : 'atividade autoritativa'}</p>
           <h1 className="mt-2 text-3xl font-black">{title}</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-400">As respostas, pesos e explicações permanecem no servidor até a submissão final.</p>
         </header>
@@ -192,6 +192,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
           <section className="rounded-3xl border border-emerald-500/30 bg-slate-900 p-6 sm:p-8">
             <CheckCircle className="text-emerald-400" sx={{ fontSize: 42 }} />
             <h2 className="mt-3 text-2xl font-black">{result.passed ? 'Atividade aprovada' : 'Atividade registrada'}</h2>
+            {testMode && <p className="mt-2 text-sm font-black text-violet-300">Resultado de teste: nenhuma recompensa ou progressão oficial foi concedida.</p>}
             <p className="mt-2 text-4xl font-black text-emerald-300">{result.score}/100</p>
             {result.totalPoints !== undefined && <p className="mt-2 text-sm text-slate-300">{result.totalPoints}/18 pontos de decisão</p>}
             {result.finalCredit !== undefined && <p className="mt-2 text-sm text-slate-300">Crédito final: {result.finalCredit} · Final: {result.ending}</p>}

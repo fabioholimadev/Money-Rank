@@ -33,6 +33,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListStudentSeenPedagogicalItemIds*](#liststudentseenpedagogicalitemids)
   - [*GetPilotClassBinding*](#getpilotclassbinding)
   - [*ResolveCompetitionPeriodByKey*](#resolvecompetitionperiodbykey)
+  - [*GetActiveTestRunForUser*](#getactivetestrunforuser)
+  - [*GetTeacherTestRun*](#getteachertestrun)
   - [*GetPilotExportRows*](#getpilotexportrows)
   - [*GetLoadTestCleanupStatus*](#getloadtestcleanupstatus)
 - [**Mutations**](#mutations)
@@ -68,6 +70,12 @@ This README will guide you through the process of using the generated JavaScript
   - [*CompleteMyCurrentPhaseContent*](#completemycurrentphasecontent)
   - [*RegisterMyCurrentPhaseAttempt*](#registermycurrentphaseattempt)
   - [*CompleteMyCurrentPhase*](#completemycurrentphase)
+  - [*ExpireTestRuns*](#expiretestruns)
+  - [*ActivateTeacherTestRun*](#activateteachertestrun)
+  - [*EndTeacherTestRun*](#endteachertestrun)
+  - [*CleanTeacherTestRun*](#cleanteachertestrun)
+  - [*CreateTestActivitySession*](#createtestactivitysession)
+  - [*RecordTestActivityAttempt*](#recordtestactivityattempt)
   - [*UpdateAuthoritativeActivitySessionState*](#updateauthoritativeactivitysessionstate)
   - [*ImportPedagogicalBank*](#importpedagogicalbank)
   - [*BindPilotClass*](#bindpilotclass)
@@ -1513,6 +1521,8 @@ export interface GetAuthoritativeActivitySessionData {
     publicPayload: unknown;
     answerKey: unknown;
     status: ActivitySessionStatus;
+    isTest: boolean;
+    testRunId?: UUIDString | null;
     expiresAt: TimestampString;
     submittedAt?: TimestampString | null;
     createdAt: TimestampString;
@@ -1640,6 +1650,8 @@ export interface GetAuthoritativeActivityResultData {
     rewardAmount: number;
     rewardLimitReached: boolean;
     rewardSuppressionReason: RewardSuppressionReason;
+    isTest: boolean;
+    testRunId?: UUIDString | null;
     createdAt: TimestampString;
     user: {
       capiCoins: number;
@@ -2903,6 +2915,9 @@ export interface GetPilotClassBindingData {
     role: UserRole;
     classGroup?: StudentClass | null;
     profileCompleted: boolean;
+    capiCoins: number;
+    currentPhase: number;
+    currentStreak: number;
   } & User_Key;
 }
 ```
@@ -3084,6 +3099,224 @@ console.log(data.competitionPeriod);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.competitionPeriod);
+});
+```
+
+## GetActiveTestRunForUser
+You can execute the `GetActiveTestRunForUser` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getActiveTestRunForUser(vars: GetActiveTestRunForUserVariables, options?: ExecuteQueryOptions): QueryPromise<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+
+interface GetActiveTestRunForUserRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetActiveTestRunForUserVariables): QueryRef<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+}
+export const getActiveTestRunForUserRef: GetActiveTestRunForUserRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getActiveTestRunForUser(dc: DataConnect, vars: GetActiveTestRunForUserVariables, options?: ExecuteQueryOptions): QueryPromise<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+
+interface GetActiveTestRunForUserRef {
+  ...
+  (dc: DataConnect, vars: GetActiveTestRunForUserVariables): QueryRef<GetActiveTestRunForUserData, GetActiveTestRunForUserVariables>;
+}
+export const getActiveTestRunForUserRef: GetActiveTestRunForUserRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getActiveTestRunForUserRef:
+```typescript
+const name = getActiveTestRunForUserRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetActiveTestRunForUser` query requires an argument of type `GetActiveTestRunForUserVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetActiveTestRunForUserVariables {
+  userUid: string;
+}
+```
+### Return Type
+Recall that executing the `GetActiveTestRunForUser` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetActiveTestRunForUserData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetActiveTestRunForUserData {
+  testRun?: unknown | null;
+}
+```
+### Using `GetActiveTestRunForUser`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getActiveTestRunForUser, GetActiveTestRunForUserVariables } from '@money-rank/dataconnect';
+
+// The `GetActiveTestRunForUser` query requires an argument of type `GetActiveTestRunForUserVariables`:
+const getActiveTestRunForUserVars: GetActiveTestRunForUserVariables = {
+  userUid: ..., 
+};
+
+// Call the `getActiveTestRunForUser()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getActiveTestRunForUser(getActiveTestRunForUserVars);
+// Variables can be defined inline as well.
+const { data } = await getActiveTestRunForUser({ userUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getActiveTestRunForUser(dataConnect, getActiveTestRunForUserVars);
+
+console.log(data.testRun);
+
+// Or, you can use the `Promise` API.
+getActiveTestRunForUser(getActiveTestRunForUserVars).then((response) => {
+  const data = response.data;
+  console.log(data.testRun);
+});
+```
+
+### Using `GetActiveTestRunForUser`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getActiveTestRunForUserRef, GetActiveTestRunForUserVariables } from '@money-rank/dataconnect';
+
+// The `GetActiveTestRunForUser` query requires an argument of type `GetActiveTestRunForUserVariables`:
+const getActiveTestRunForUserVars: GetActiveTestRunForUserVariables = {
+  userUid: ..., 
+};
+
+// Call the `getActiveTestRunForUserRef()` function to get a reference to the query.
+const ref = getActiveTestRunForUserRef(getActiveTestRunForUserVars);
+// Variables can be defined inline as well.
+const ref = getActiveTestRunForUserRef({ userUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getActiveTestRunForUserRef(dataConnect, getActiveTestRunForUserVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.testRun);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.testRun);
+});
+```
+
+## GetTeacherTestRun
+You can execute the `GetTeacherTestRun` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getTeacherTestRun(vars: GetTeacherTestRunVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+
+interface GetTeacherTestRunRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetTeacherTestRunVariables): QueryRef<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+}
+export const getTeacherTestRunRef: GetTeacherTestRunRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getTeacherTestRun(dc: DataConnect, vars: GetTeacherTestRunVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+
+interface GetTeacherTestRunRef {
+  ...
+  (dc: DataConnect, vars: GetTeacherTestRunVariables): QueryRef<GetTeacherTestRunData, GetTeacherTestRunVariables>;
+}
+export const getTeacherTestRunRef: GetTeacherTestRunRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getTeacherTestRunRef:
+```typescript
+const name = getTeacherTestRunRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetTeacherTestRun` query requires an argument of type `GetTeacherTestRunVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetTeacherTestRunVariables {
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `GetTeacherTestRun` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetTeacherTestRunData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetTeacherTestRunData {
+  testRun?: unknown | null;
+}
+```
+### Using `GetTeacherTestRun`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getTeacherTestRun, GetTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `GetTeacherTestRun` query requires an argument of type `GetTeacherTestRunVariables`:
+const getTeacherTestRunVars: GetTeacherTestRunVariables = {
+  actorUid: ..., 
+};
+
+// Call the `getTeacherTestRun()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getTeacherTestRun(getTeacherTestRunVars);
+// Variables can be defined inline as well.
+const { data } = await getTeacherTestRun({ actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getTeacherTestRun(dataConnect, getTeacherTestRunVars);
+
+console.log(data.testRun);
+
+// Or, you can use the `Promise` API.
+getTeacherTestRun(getTeacherTestRunVars).then((response) => {
+  const data = response.data;
+  console.log(data.testRun);
+});
+```
+
+### Using `GetTeacherTestRun`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getTeacherTestRunRef, GetTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `GetTeacherTestRun` query requires an argument of type `GetTeacherTestRunVariables`:
+const getTeacherTestRunVars: GetTeacherTestRunVariables = {
+  actorUid: ..., 
+};
+
+// Call the `getTeacherTestRunRef()` function to get a reference to the query.
+const ref = getTeacherTestRunRef(getTeacherTestRunVars);
+// Variables can be defined inline as well.
+const ref = getTeacherTestRunRef({ actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getTeacherTestRunRef(dataConnect, getTeacherTestRunVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.testRun);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.testRun);
 });
 ```
 
@@ -7214,6 +7447,708 @@ const ref = completeMyCurrentPhaseRef({ attemptId: ..., sessionId: ..., studentU
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = completeMyCurrentPhaseRef(dataConnect, completeMyCurrentPhaseVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## ExpireTestRuns
+You can execute the `ExpireTestRuns` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+expireTestRuns(): MutationPromise<ExpireTestRunsData, undefined>;
+
+interface ExpireTestRunsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (): MutationRef<ExpireTestRunsData, undefined>;
+}
+export const expireTestRunsRef: ExpireTestRunsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+expireTestRuns(dc: DataConnect): MutationPromise<ExpireTestRunsData, undefined>;
+
+interface ExpireTestRunsRef {
+  ...
+  (dc: DataConnect): MutationRef<ExpireTestRunsData, undefined>;
+}
+export const expireTestRunsRef: ExpireTestRunsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the expireTestRunsRef:
+```typescript
+const name = expireTestRunsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ExpireTestRuns` mutation has no variables.
+### Return Type
+Recall that executing the `ExpireTestRuns` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ExpireTestRunsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ExpireTestRunsData {
+  affectedRows?: number | null;
+}
+```
+### Using `ExpireTestRuns`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, expireTestRuns } from '@money-rank/dataconnect';
+
+
+// Call the `expireTestRuns()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await expireTestRuns();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await expireTestRuns(dataConnect);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+expireTestRuns().then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `ExpireTestRuns`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, expireTestRunsRef } from '@money-rank/dataconnect';
+
+
+// Call the `expireTestRunsRef()` function to get a reference to the mutation.
+const ref = expireTestRunsRef();
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = expireTestRunsRef(dataConnect);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## ActivateTeacherTestRun
+You can execute the `ActivateTeacherTestRun` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+activateTeacherTestRun(vars: ActivateTeacherTestRunVariables): MutationPromise<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+
+interface ActivateTeacherTestRunRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ActivateTeacherTestRunVariables): MutationRef<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+}
+export const activateTeacherTestRunRef: ActivateTeacherTestRunRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+activateTeacherTestRun(dc: DataConnect, vars: ActivateTeacherTestRunVariables): MutationPromise<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+
+interface ActivateTeacherTestRunRef {
+  ...
+  (dc: DataConnect, vars: ActivateTeacherTestRunVariables): MutationRef<ActivateTeacherTestRunData, ActivateTeacherTestRunVariables>;
+}
+export const activateTeacherTestRunRef: ActivateTeacherTestRunRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the activateTeacherTestRunRef:
+```typescript
+const name = activateTeacherTestRunRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ActivateTeacherTestRun` mutation requires an argument of type `ActivateTeacherTestRunVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ActivateTeacherTestRunVariables {
+  testRunId: UUIDString;
+  durationMinutes: number;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `ActivateTeacherTestRun` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ActivateTeacherTestRunData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ActivateTeacherTestRunData {
+  affectedRows?: number | null;
+}
+```
+### Using `ActivateTeacherTestRun`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, activateTeacherTestRun, ActivateTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `ActivateTeacherTestRun` mutation requires an argument of type `ActivateTeacherTestRunVariables`:
+const activateTeacherTestRunVars: ActivateTeacherTestRunVariables = {
+  testRunId: ..., 
+  durationMinutes: ..., 
+  actorUid: ..., 
+};
+
+// Call the `activateTeacherTestRun()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await activateTeacherTestRun(activateTeacherTestRunVars);
+// Variables can be defined inline as well.
+const { data } = await activateTeacherTestRun({ testRunId: ..., durationMinutes: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await activateTeacherTestRun(dataConnect, activateTeacherTestRunVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+activateTeacherTestRun(activateTeacherTestRunVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `ActivateTeacherTestRun`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, activateTeacherTestRunRef, ActivateTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `ActivateTeacherTestRun` mutation requires an argument of type `ActivateTeacherTestRunVariables`:
+const activateTeacherTestRunVars: ActivateTeacherTestRunVariables = {
+  testRunId: ..., 
+  durationMinutes: ..., 
+  actorUid: ..., 
+};
+
+// Call the `activateTeacherTestRunRef()` function to get a reference to the mutation.
+const ref = activateTeacherTestRunRef(activateTeacherTestRunVars);
+// Variables can be defined inline as well.
+const ref = activateTeacherTestRunRef({ testRunId: ..., durationMinutes: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = activateTeacherTestRunRef(dataConnect, activateTeacherTestRunVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## EndTeacherTestRun
+You can execute the `EndTeacherTestRun` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+endTeacherTestRun(vars: EndTeacherTestRunVariables): MutationPromise<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+
+interface EndTeacherTestRunRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: EndTeacherTestRunVariables): MutationRef<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+}
+export const endTeacherTestRunRef: EndTeacherTestRunRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+endTeacherTestRun(dc: DataConnect, vars: EndTeacherTestRunVariables): MutationPromise<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+
+interface EndTeacherTestRunRef {
+  ...
+  (dc: DataConnect, vars: EndTeacherTestRunVariables): MutationRef<EndTeacherTestRunData, EndTeacherTestRunVariables>;
+}
+export const endTeacherTestRunRef: EndTeacherTestRunRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the endTeacherTestRunRef:
+```typescript
+const name = endTeacherTestRunRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `EndTeacherTestRun` mutation requires an argument of type `EndTeacherTestRunVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface EndTeacherTestRunVariables {
+  testRunId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `EndTeacherTestRun` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `EndTeacherTestRunData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface EndTeacherTestRunData {
+  affectedRows?: number | null;
+}
+```
+### Using `EndTeacherTestRun`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, endTeacherTestRun, EndTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `EndTeacherTestRun` mutation requires an argument of type `EndTeacherTestRunVariables`:
+const endTeacherTestRunVars: EndTeacherTestRunVariables = {
+  testRunId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `endTeacherTestRun()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await endTeacherTestRun(endTeacherTestRunVars);
+// Variables can be defined inline as well.
+const { data } = await endTeacherTestRun({ testRunId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await endTeacherTestRun(dataConnect, endTeacherTestRunVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+endTeacherTestRun(endTeacherTestRunVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `EndTeacherTestRun`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, endTeacherTestRunRef, EndTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `EndTeacherTestRun` mutation requires an argument of type `EndTeacherTestRunVariables`:
+const endTeacherTestRunVars: EndTeacherTestRunVariables = {
+  testRunId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `endTeacherTestRunRef()` function to get a reference to the mutation.
+const ref = endTeacherTestRunRef(endTeacherTestRunVars);
+// Variables can be defined inline as well.
+const ref = endTeacherTestRunRef({ testRunId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = endTeacherTestRunRef(dataConnect, endTeacherTestRunVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CleanTeacherTestRun
+You can execute the `CleanTeacherTestRun` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+cleanTeacherTestRun(vars: CleanTeacherTestRunVariables): MutationPromise<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+
+interface CleanTeacherTestRunRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CleanTeacherTestRunVariables): MutationRef<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+}
+export const cleanTeacherTestRunRef: CleanTeacherTestRunRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+cleanTeacherTestRun(dc: DataConnect, vars: CleanTeacherTestRunVariables): MutationPromise<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+
+interface CleanTeacherTestRunRef {
+  ...
+  (dc: DataConnect, vars: CleanTeacherTestRunVariables): MutationRef<CleanTeacherTestRunData, CleanTeacherTestRunVariables>;
+}
+export const cleanTeacherTestRunRef: CleanTeacherTestRunRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the cleanTeacherTestRunRef:
+```typescript
+const name = cleanTeacherTestRunRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CleanTeacherTestRun` mutation requires an argument of type `CleanTeacherTestRunVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CleanTeacherTestRunVariables {
+  testRunId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `CleanTeacherTestRun` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CleanTeacherTestRunData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CleanTeacherTestRunData {
+  affectedRows?: number | null;
+}
+```
+### Using `CleanTeacherTestRun`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, cleanTeacherTestRun, CleanTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `CleanTeacherTestRun` mutation requires an argument of type `CleanTeacherTestRunVariables`:
+const cleanTeacherTestRunVars: CleanTeacherTestRunVariables = {
+  testRunId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `cleanTeacherTestRun()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await cleanTeacherTestRun(cleanTeacherTestRunVars);
+// Variables can be defined inline as well.
+const { data } = await cleanTeacherTestRun({ testRunId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await cleanTeacherTestRun(dataConnect, cleanTeacherTestRunVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+cleanTeacherTestRun(cleanTeacherTestRunVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CleanTeacherTestRun`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, cleanTeacherTestRunRef, CleanTeacherTestRunVariables } from '@money-rank/dataconnect';
+
+// The `CleanTeacherTestRun` mutation requires an argument of type `CleanTeacherTestRunVariables`:
+const cleanTeacherTestRunVars: CleanTeacherTestRunVariables = {
+  testRunId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `cleanTeacherTestRunRef()` function to get a reference to the mutation.
+const ref = cleanTeacherTestRunRef(cleanTeacherTestRunVars);
+// Variables can be defined inline as well.
+const ref = cleanTeacherTestRunRef({ testRunId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = cleanTeacherTestRunRef(dataConnect, cleanTeacherTestRunVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CreateTestActivitySession
+You can execute the `CreateTestActivitySession` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createTestActivitySession(vars: CreateTestActivitySessionVariables): MutationPromise<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+
+interface CreateTestActivitySessionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateTestActivitySessionVariables): MutationRef<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+}
+export const createTestActivitySessionRef: CreateTestActivitySessionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createTestActivitySession(dc: DataConnect, vars: CreateTestActivitySessionVariables): MutationPromise<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+
+interface CreateTestActivitySessionRef {
+  ...
+  (dc: DataConnect, vars: CreateTestActivitySessionVariables): MutationRef<CreateTestActivitySessionData, CreateTestActivitySessionVariables>;
+}
+export const createTestActivitySessionRef: CreateTestActivitySessionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createTestActivitySessionRef:
+```typescript
+const name = createTestActivitySessionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateTestActivitySession` mutation requires an argument of type `CreateTestActivitySessionVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateTestActivitySessionVariables {
+  sessionId: UUIDString;
+  testRunId: UUIDString;
+  actorUid: string;
+  activityId: string;
+  phaseNumber: number;
+  variantId?: string | null;
+  contentVersion: string;
+  publicPayload: unknown;
+  answerKey: unknown;
+  expiresAt: TimestampString;
+}
+```
+### Return Type
+Recall that executing the `CreateTestActivitySession` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateTestActivitySessionData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateTestActivitySessionData {
+  affectedRows?: number | null;
+}
+```
+### Using `CreateTestActivitySession`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createTestActivitySession, CreateTestActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `CreateTestActivitySession` mutation requires an argument of type `CreateTestActivitySessionVariables`:
+const createTestActivitySessionVars: CreateTestActivitySessionVariables = {
+  sessionId: ..., 
+  testRunId: ..., 
+  actorUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  variantId: ..., // optional
+  contentVersion: ..., 
+  publicPayload: ..., 
+  answerKey: ..., 
+  expiresAt: ..., 
+};
+
+// Call the `createTestActivitySession()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createTestActivitySession(createTestActivitySessionVars);
+// Variables can be defined inline as well.
+const { data } = await createTestActivitySession({ sessionId: ..., testRunId: ..., actorUid: ..., activityId: ..., phaseNumber: ..., variantId: ..., contentVersion: ..., publicPayload: ..., answerKey: ..., expiresAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createTestActivitySession(dataConnect, createTestActivitySessionVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+createTestActivitySession(createTestActivitySessionVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CreateTestActivitySession`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createTestActivitySessionRef, CreateTestActivitySessionVariables } from '@money-rank/dataconnect';
+
+// The `CreateTestActivitySession` mutation requires an argument of type `CreateTestActivitySessionVariables`:
+const createTestActivitySessionVars: CreateTestActivitySessionVariables = {
+  sessionId: ..., 
+  testRunId: ..., 
+  actorUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  variantId: ..., // optional
+  contentVersion: ..., 
+  publicPayload: ..., 
+  answerKey: ..., 
+  expiresAt: ..., 
+};
+
+// Call the `createTestActivitySessionRef()` function to get a reference to the mutation.
+const ref = createTestActivitySessionRef(createTestActivitySessionVars);
+// Variables can be defined inline as well.
+const ref = createTestActivitySessionRef({ sessionId: ..., testRunId: ..., actorUid: ..., activityId: ..., phaseNumber: ..., variantId: ..., contentVersion: ..., publicPayload: ..., answerKey: ..., expiresAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createTestActivitySessionRef(dataConnect, createTestActivitySessionVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## RecordTestActivityAttempt
+You can execute the `RecordTestActivityAttempt` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+recordTestActivityAttempt(vars: RecordTestActivityAttemptVariables): MutationPromise<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+
+interface RecordTestActivityAttemptRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RecordTestActivityAttemptVariables): MutationRef<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+}
+export const recordTestActivityAttemptRef: RecordTestActivityAttemptRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+recordTestActivityAttempt(dc: DataConnect, vars: RecordTestActivityAttemptVariables): MutationPromise<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+
+interface RecordTestActivityAttemptRef {
+  ...
+  (dc: DataConnect, vars: RecordTestActivityAttemptVariables): MutationRef<RecordTestActivityAttemptData, RecordTestActivityAttemptVariables>;
+}
+export const recordTestActivityAttemptRef: RecordTestActivityAttemptRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the recordTestActivityAttemptRef:
+```typescript
+const name = recordTestActivityAttemptRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RecordTestActivityAttempt` mutation requires an argument of type `RecordTestActivityAttemptVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RecordTestActivityAttemptVariables {
+  attemptId: UUIDString;
+  sessionId: UUIDString;
+  testRunId: UUIDString;
+  actorUid: string;
+  activityId: string;
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  passed: boolean;
+}
+```
+### Return Type
+Recall that executing the `RecordTestActivityAttempt` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RecordTestActivityAttemptData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RecordTestActivityAttemptData {
+  affectedRows?: number | null;
+}
+```
+### Using `RecordTestActivityAttempt`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, recordTestActivityAttempt, RecordTestActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RecordTestActivityAttempt` mutation requires an argument of type `RecordTestActivityAttemptVariables`:
+const recordTestActivityAttemptVars: RecordTestActivityAttemptVariables = {
+  attemptId: ..., 
+  sessionId: ..., 
+  testRunId: ..., 
+  actorUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+  passed: ..., 
+};
+
+// Call the `recordTestActivityAttempt()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await recordTestActivityAttempt(recordTestActivityAttemptVars);
+// Variables can be defined inline as well.
+const { data } = await recordTestActivityAttempt({ attemptId: ..., sessionId: ..., testRunId: ..., actorUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., passed: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await recordTestActivityAttempt(dataConnect, recordTestActivityAttemptVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+recordTestActivityAttempt(recordTestActivityAttemptVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `RecordTestActivityAttempt`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, recordTestActivityAttemptRef, RecordTestActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RecordTestActivityAttempt` mutation requires an argument of type `RecordTestActivityAttemptVariables`:
+const recordTestActivityAttemptVars: RecordTestActivityAttemptVariables = {
+  attemptId: ..., 
+  sessionId: ..., 
+  testRunId: ..., 
+  actorUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+  passed: ..., 
+};
+
+// Call the `recordTestActivityAttemptRef()` function to get a reference to the mutation.
+const ref = recordTestActivityAttemptRef(recordTestActivityAttemptVars);
+// Variables can be defined inline as well.
+const ref = recordTestActivityAttemptRef({ attemptId: ..., sessionId: ..., testRunId: ..., actorUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., passed: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = recordTestActivityAttemptRef(dataConnect, recordTestActivityAttemptVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

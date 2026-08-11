@@ -32,15 +32,11 @@ services:
         value: money-rank-service
       - key: SQL_CONNECT_CONNECTOR
         value: money-rank-connector
-      - key: PERIOD_ID
-        value: piloto-money-rank-2026-08-11
-      - key: PERIOD_DATE
-        value: "2026-08-11"
   - type: web
     runtime: static
     name: money-rank-web
     rootDir: frontend
-    buildCommand: npm ci && npm run lint && npm run build
+    buildCommand: npm ci && npm run lint && VITE_BUILD_COMMIT=$RENDER_GIT_COMMIT npm run build
     staticPublishPath: ./dist
     # Nao publica automaticamente enquanto API/Firestore nao estiverem prontos.
     autoDeployTrigger: off

@@ -55,6 +55,21 @@ enum ActivitySessionStatus {
   EXPIRED
 }
 
+enum TestRunStatus {
+  ACTIVE
+  ENDED
+  EXPIRED
+  CLEANED
+}
+
+enum TestRunAuditAction {
+  ACTIVATED
+  SESSION_STARTED
+  SUBMITTED
+  ENDED
+  CLEANED
+}
+
 # Ciclo editorial usado pelo Estúdio do Professor. Uma versão publicada nunca
 # volta a rascunho; uma nova versão deve ser criada para preservar auditoria.
 enum EditorialStatus {
@@ -215,6 +230,8 @@ type ActivityAttempt
   rewardSuppressionReason: RewardSuppressionReason!
     @col(name: "reward_suppression_reason")
     @default(value: NONE)
+  isTest: Boolean! @col(name: "is_test") @default(value: false) @index
+  testRunId: UUID @col(name: "test_run_id") @index
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")
@@ -241,6 +258,8 @@ type ActivitySession
   publicPayload: Any! @col(name: "public_payload")
   answerKey: Any! @col(name: "answer_key")
   status: ActivitySessionStatus! @default(value: OPEN) @index
+  isTest: Boolean! @col(name: "is_test") @default(value: false) @index
+  testRunId: UUID @col(name: "test_run_id") @index
   expiresAt: Timestamp! @col(name: "expires_at") @index
   submittedAt: Timestamp @col(name: "submitted_at")
   createdAt: Timestamp!
@@ -513,6 +532,8 @@ type CapiCoinTransaction
   phaseNumber: Int @col(name: "phase_number")
   classGroup: StudentClass @col(name: "class_group")
   competitionWeek: Date @col(name: "competition_week") @index
+  isTest: Boolean! @col(name: "is_test") @default(value: false) @index
+  testRunId: UUID @col(name: "test_run_id") @index
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")
@@ -589,6 +610,51 @@ type PedagogicalItem
     @default(expr: "request.time")
   updatedAt: Timestamp!
     @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Execução isolada criada pelo professor para validar as atividades fora de um
+# período oficial. O activeSlot impede duas execuções simultâneas e o prazo
+# obrigatório garante expiração no servidor.
+type TestRun
+  @table(
+    name: "test_runs"
+    singular: "testRun"
+    plural: "testRuns"
+  )
+  @index(fields: ["createdByUid", "createdAt"], order: [ASC, DESC]) {
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  status: TestRunStatus! @default(value: ACTIVE) @index
+  activeSlot: String
+    @col(name: "active_slot", dataType: "varchar(16)")
+    @unique
+  durationMinutes: Int! @col(name: "duration_minutes")
+  startsAt: Timestamp! @col(name: "starts_at")
+  endsAt: Timestamp! @col(name: "ends_at") @index
+  endedAt: Timestamp @col(name: "ended_at")
+  cleanedAt: Timestamp @col(name: "cleaned_at")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+type TestRunAudit
+  @table(
+    name: "test_run_audit"
+    singular: "testRunAudit"
+    plural: "testRunAudits"
+  )
+  @index(fields: ["testRunId", "createdAt"], order: [ASC, ASC]) {
+  testRunId: UUID! @col(name: "test_run_id")
+  actorUid: String! @col(name: "actor_uid", dataType: "varchar(128)")
+  action: TestRunAuditAction!
+  details: Any
+  createdAt: Timestamp!
+    @col(name: "created_at")
     @default(expr: "request.time")
 }
 

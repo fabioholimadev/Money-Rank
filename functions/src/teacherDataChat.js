@@ -234,6 +234,9 @@ export async function buildTeacherChatResponse({
   rawContext,
   apiKey,
   model,
+  requestId,
+  timeoutMs = 15_000,
+  onDiagnostic,
 }) {
   const intent = classifyTeacherQuestion(question);
   if (intent === TEACHER_CHAT_INTENTS.UNSUPPORTED) {
@@ -241,7 +244,9 @@ export async function buildTeacherChatResponse({
       intent,
       answer: 'Consigo responder apenas sobre o resumo do período, participação, comparação entre as turmas, pontos e dificuldades por fase. Não consulto dados pessoais nem executo comandos de banco.',
       suggestion: '',
-      generatedBy: 'safe-fallback',
+      generatedBy: 'policy',
+      aiStatus: 'not_applicable',
+      requestId,
     };
   }
 
@@ -249,10 +254,19 @@ export async function buildTeacherChatResponse({
   if (!answer) return null;
 
   let suggestion = fallbackSuggestion(intent);
-  let generatedBy = 'safe-fallback';
+  let generatedBy = 'aggregate-only';
+  let aiStatus = 'unavailable';
+  let diagnosticCode = null;
   if (apiKey && apiKey !== 'local-fallback') {
+    const startedAt = Date.now();
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          timeout: timeoutMs,
+          retryOptions: { strategy: 'attempt-count-backoff', maxRetries: 1 },
+        },
+      });
       const response = await ai.models.generateContent({
         model,
         contents: [
@@ -275,12 +289,40 @@ export async function buildTeacherChatResponse({
       );
       if (candidate) {
         suggestion = candidate;
-        generatedBy = 'gemini';
+        generatedBy = 'aggregate+gemini';
+        aiStatus = 'ok';
+        const diagnostic = { requestId, model, ok: true, latencyMs: Date.now() - startedAt };
+        onDiagnostic?.(diagnostic);
+        console.log(JSON.stringify({ event: 'teacher_analyst_success', ...diagnostic }));
+      } else {
+        throw new Error('invalid_analyst_suggestion');
       }
-    } catch {
-      // O texto factual continua disponível mesmo sem cota ou chave da IA.
+    } catch (error) {
+      diagnosticCode = requestId;
+      const diagnostic = {
+        requestId,
+        model,
+        ok: false,
+        latencyMs: Date.now() - startedAt,
+        reason: String(error?.message || 'analyst_request_failed').slice(0, 240),
+      };
+      onDiagnostic?.(diagnostic);
+      console.warn(JSON.stringify({ event: 'teacher_analyst_unavailable', ...diagnostic }));
     }
+  } else {
+    diagnosticCode = requestId;
+    onDiagnostic?.({ requestId, model, ok: false, latencyMs: 0, reason: 'missing_api_key' });
   }
 
-  return { intent, answer, suggestion, generatedBy };
+  return {
+    intent,
+    answer,
+    calculatedData: answer,
+    interpretation: suggestion,
+    suggestion,
+    generatedBy,
+    aiStatus,
+    diagnosticCode,
+    requestId,
+  };
 }

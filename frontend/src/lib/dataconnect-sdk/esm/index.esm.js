@@ -491,6 +491,78 @@ export function completeMyCurrentPhase(dcOrVars, vars) {
   return executeMutation(completeMyCurrentPhaseRef(dcInstance, inputVars));
 }
 
+export const expireTestRunsRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ExpireTestRuns');
+}
+expireTestRunsRef.operationName = 'ExpireTestRuns';
+
+export function expireTestRuns(dc) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dc, undefined);
+  return executeMutation(expireTestRunsRef(dcInstance, inputVars));
+}
+
+export const activateTeacherTestRunRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ActivateTeacherTestRun', inputVars);
+}
+activateTeacherTestRunRef.operationName = 'ActivateTeacherTestRun';
+
+export function activateTeacherTestRun(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(activateTeacherTestRunRef(dcInstance, inputVars));
+}
+
+export const endTeacherTestRunRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'EndTeacherTestRun', inputVars);
+}
+endTeacherTestRunRef.operationName = 'EndTeacherTestRun';
+
+export function endTeacherTestRun(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(endTeacherTestRunRef(dcInstance, inputVars));
+}
+
+export const cleanTeacherTestRunRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CleanTeacherTestRun', inputVars);
+}
+cleanTeacherTestRunRef.operationName = 'CleanTeacherTestRun';
+
+export function cleanTeacherTestRun(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(cleanTeacherTestRunRef(dcInstance, inputVars));
+}
+
+export const createTestActivitySessionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateTestActivitySession', inputVars);
+}
+createTestActivitySessionRef.operationName = 'CreateTestActivitySession';
+
+export function createTestActivitySession(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createTestActivitySessionRef(dcInstance, inputVars));
+}
+
+export const recordTestActivityAttemptRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RecordTestActivityAttempt', inputVars);
+}
+recordTestActivityAttemptRef.operationName = 'RecordTestActivityAttempt';
+
+export function recordTestActivityAttempt(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(recordTestActivityAttemptRef(dcInstance, inputVars));
+}
+
 export const updateAuthoritativeActivitySessionStateRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -910,6 +982,32 @@ export function resolveCompetitionPeriodByKey(dcOrVars, varsOrOptions, options) 
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(resolveCompetitionPeriodByKeyRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getActiveTestRunForUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetActiveTestRunForUser', inputVars);
+}
+getActiveTestRunForUserRef.operationName = 'GetActiveTestRunForUser';
+
+export function getActiveTestRunForUser(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getActiveTestRunForUserRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getTeacherTestRunRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetTeacherTestRun', inputVars);
+}
+getTeacherTestRunRef.operationName = 'GetTeacherTestRun';
+
+export function getTeacherTestRun(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getTeacherTestRunRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getPilotExportRowsRef = (dcOrVars, vars) => {

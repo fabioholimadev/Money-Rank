@@ -88,7 +88,8 @@ export default function CapiMentor() {
       ]);
     } catch (e) {
       console.error('[CapiMentor] erro:', e);
-      setErro(e.message || 'Falha na conexão com o mentor.');
+      const code = e?.payload?.diagnosticCode;
+      setErro(`${e.message || 'Falha na conexão com o mentor.'}${code ? ` Código de diagnóstico: ${code}.` : ''}`);
     } finally {
       setCarregando(false);
     }
@@ -202,13 +203,13 @@ export default function CapiMentor() {
                     {m.content}
                     {m.generatedBy && (
                       <p className={`mt-2 text-[10px] font-bold ${
-                        m.generatedBy === 'safe-fallback' ? 'text-rose-300' : 'text-emerald-300'
+                        m.generatedBy === 'policy' ? 'text-amber-300' : 'text-emerald-300'
                       }`}>
                         {m.generatedBy === 'gemini-grounded'
                           ? 'Gemini + Pesquisa Google'
                           : m.generatedBy === 'gemini'
                             ? 'Gemini'
-                            : 'Resposta de contingência'}
+                            : 'Orientação de segurança'}
                       </p>
                     )}
                     {m.sources?.length > 0 && (

@@ -70,10 +70,19 @@ export function normalizeTeacherPeriods(rows) {
       id,
       name,
       status,
+      periodKey: typeof row?.periodKey === 'string' ? row.periodKey : null,
+      timeZone: typeof row?.timeZone === 'string'
+        ? row.timeZone
+        : 'America/Fortaleza',
+      schedule: Array.isArray(row?.schedule) ? row.schedule : [],
       startsAt,
       endsAt,
       pausedAt: toTimestamp(row?.pausedAt, true),
       closedAt: toTimestamp(row?.closedAt, true),
+      allowedActions: Array.isArray(row?.allowedActions)
+        ? row.allowedActions.filter((action) => PERIOD_STATUSES.has(action))
+        : [],
+      recognizedByApi: row?.recognizedByApi === true,
     }];
   });
 }

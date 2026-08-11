@@ -2,8 +2,9 @@ import fetchApi from '../lib/api';
 
 function normalizeError(response, payload, fallback) {
   if (response.ok) return null;
-  const error = new Error(payload?.error || fallback);
+  const error = new Error(payload?.message || payload?.error || fallback);
   error.status = response.status;
+  error.payload = payload;
   return error;
 }
 

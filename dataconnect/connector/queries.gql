@@ -307,6 +307,8 @@ query GetAuthoritativeActivitySession($sessionId: UUID!)
     publicPayload
     answerKey
     status
+    isTest
+    testRunId
     expiresAt
     submittedAt
     createdAt
@@ -333,6 +335,8 @@ query GetAuthoritativeActivityResult($sessionId: UUID!)
     rewardAmount
     rewardLimitReached
     rewardSuppressionReason
+    isTest
+    testRunId
     createdAt
     user {
       capiCoins
@@ -456,6 +460,7 @@ query GetCompetitionRankings(
         LEFT JOIN capi_coin_transactions AS transactions
           ON transactions.user_uid = student.firebase_uid
           AND transactions.competition_period_id = period.id
+          AND transactions.is_test = FALSE
         WHERE
           student.role = 'STUDENT'
           AND student.profile_completed = TRUE
@@ -522,6 +527,7 @@ query GetCompetitionRankings(
         LEFT JOIN capi_coin_transactions AS transactions
           ON transactions.user_uid = student.firebase_uid
           AND transactions.competition_period_id = period.id
+          AND transactions.is_test = FALSE
         WHERE
           student.role = 'STUDENT'
           AND student.profile_completed = TRUE
@@ -579,6 +585,8 @@ query GetCompetitionAbuseSignals(
         ON transactions.attempt_id = attempts.id
       WHERE
         transactions.competition_period_id = $1
+        AND transactions.is_test = FALSE
+        AND attempts.is_test = FALSE
         AND attempts.passed = TRUE
       GROUP BY
         attempts.user_uid,
@@ -608,6 +616,9 @@ query ListTeacherCompetitionPeriods($limit: Int = 20)
       SELECT
         period.id,
         period.name,
+        period.period_key AS "periodKey",
+        period.time_zone AS "timeZone",
+        period.schedule,
         period.status::text AS "status",
         period.starts_at AS "startsAt",
         period.ends_at AS "endsAt",
@@ -662,6 +673,7 @@ query GetTeacherDashboard(
         WHERE
           attempt.created_at >= period.starts_at
           AND attempt.created_at < period.ends_at
+          AND attempt.is_test = FALSE
       ),
       period_transactions AS (
         SELECT transaction.user_uid, transaction.amount
@@ -671,6 +683,7 @@ query GetTeacherDashboard(
         WHERE
           transaction.competition_period_id = period.id
           AND transaction.amount > 0
+          AND transaction.is_test = FALSE
       ),
       participants AS (
         SELECT user_uid FROM period_attempts
@@ -738,6 +751,7 @@ query GetTeacherDashboard(
         WHERE
           attempt.created_at >= period.starts_at
           AND attempt.created_at < period.ends_at
+          AND attempt.is_test = FALSE
       ),
       period_transactions AS (
         SELECT transaction.user_uid, transaction.amount
@@ -747,6 +761,7 @@ query GetTeacherDashboard(
         WHERE
           transaction.competition_period_id = period.id
           AND transaction.amount > 0
+          AND transaction.is_test = FALSE
       ),
       participants AS (
         SELECT user_uid FROM period_attempts
@@ -844,6 +859,7 @@ query GetTeacherDashboard(
         WHERE
           attempt.created_at >= period.starts_at
           AND attempt.created_at < period.ends_at
+          AND attempt.is_test = FALSE
       ),
       attempt_totals AS (
         SELECT
@@ -940,6 +956,7 @@ query GetTeacherDashboard(
         WHERE
           attempt.created_at >= period.starts_at
           AND attempt.created_at < period.ends_at
+          AND attempt.is_test = FALSE
         GROUP BY attempt.user_uid
       ),
       point_totals AS (
@@ -952,6 +969,7 @@ query GetTeacherDashboard(
         WHERE
           transaction.competition_period_id = period.id
           AND transaction.amount > 0
+          AND transaction.is_test = FALSE
         GROUP BY transaction.user_uid
       ),
       progress_totals AS (
@@ -1093,6 +1111,9 @@ query GetPilotClassBinding($studentUid: String!) @auth(level: NO_ACCESS) {
     role
     classGroup
     profileCompleted
+    capiCoins
+    currentPhase
+    currentStreak
   }
 }
 
@@ -1108,6 +1129,93 @@ query ResolveCompetitionPeriodByKey($periodKey: String!)
     startsAt
     endsAt
   }
+}
+
+# Concessão de teste autoritativa. A conta precisa continuar registrada como
+# TEACHER no banco e a execução precisa estar dentro do prazo do servidor.
+query GetActiveTestRunForUser($userUid: String!) @auth(level: NO_ACCESS) {
+  testRun: _selectFirst(
+    sql: """
+      SELECT
+        run.id,
+        run.created_by_uid AS "createdByUid",
+        run.status::text AS "status",
+        run.duration_minutes AS "durationMinutes",
+        run.starts_at AS "startsAt",
+        run.ends_at AS "endsAt",
+        run.ended_at AS "endedAt",
+        run.cleaned_at AS "cleanedAt",
+        run.created_at AS "createdAt",
+        run.updated_at AS "updatedAt"
+      FROM test_runs AS run
+      INNER JOIN users AS teacher
+        ON teacher.firebase_uid = run.created_by_uid
+      WHERE
+        run.created_by_uid = $1
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND run.status = 'ACTIVE'
+        AND run.starts_at <= CURRENT_TIMESTAMP
+        AND run.ends_at > CURRENT_TIMESTAMP
+      ORDER BY run.created_at DESC
+      LIMIT 1
+    """
+    params: [$userUid]
+  )
+}
+
+query GetTeacherTestRun($actorUid: String!) @auth(level: NO_ACCESS) {
+  testRun: _selectFirst(
+    sql: """
+      SELECT
+        run.id,
+        run.created_by_uid AS "createdByUid",
+        CASE
+          WHEN run.status = 'ACTIVE' AND run.ends_at <= CURRENT_TIMESTAMP
+            THEN 'EXPIRED'
+          ELSE run.status::text
+        END AS "status",
+        run.duration_minutes AS "durationMinutes",
+        run.starts_at AS "startsAt",
+        run.ends_at AS "endsAt",
+        run.ended_at AS "endedAt",
+        run.cleaned_at AS "cleanedAt",
+        run.created_at AS "createdAt",
+        run.updated_at AS "updatedAt",
+        (
+          SELECT COUNT(*)::integer
+          FROM activity_sessions AS session
+          WHERE session.test_run_id = run.id AND session.is_test = TRUE
+        ) AS "sessionCount",
+        (
+          SELECT COUNT(*)::integer
+          FROM activity_attempts AS attempt
+          WHERE attempt.test_run_id = run.id AND attempt.is_test = TRUE
+        ) AS "attemptCount",
+        (
+          SELECT COUNT(*)::integer
+          FROM test_run_audit AS audit
+          WHERE audit.test_run_id = run.id
+        ) AS "auditCount",
+        (
+          SELECT audit.action::text
+          FROM test_run_audit AS audit
+          WHERE audit.test_run_id = run.id
+          ORDER BY audit.created_at DESC
+          LIMIT 1
+        ) AS "latestAuditAction"
+      FROM test_runs AS run
+      INNER JOIN users AS teacher
+        ON teacher.firebase_uid = run.created_by_uid
+      WHERE
+        run.created_by_uid = $1
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+      ORDER BY run.created_at DESC
+      LIMIT 1
+    """
+    params: [$actorUid]
+  )
 }
 
 query GetPilotExportRows($periodId: UUID!) @auth(level: NO_ACCESS) {
@@ -1133,6 +1241,7 @@ query GetPilotExportRows($periodId: UUID!) @auth(level: NO_ACCESS) {
       INNER JOIN competition_periods AS period ON period.id = $1::uuid
       WHERE attempt.created_at >= period.starts_at
         AND attempt.created_at < period.ends_at
+        AND attempt.is_test = FALSE
       ORDER BY attempt.created_at ASC
     """
     params: [$periodId]
@@ -1156,6 +1265,7 @@ query GetPilotExportRows($periodId: UUID!) @auth(level: NO_ACCESS) {
         transaction.created_at AS "createdAt"
       FROM capi_coin_transactions AS transaction
       WHERE transaction.competition_period_id = $1::uuid
+        AND transaction.is_test = FALSE
       ORDER BY transaction.created_at ASC
     """
     params: [$periodId]

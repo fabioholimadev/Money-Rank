@@ -977,6 +977,7 @@ mutation UpdateTeacherCompetitionPeriod(
         name = BTRIM($2),
         starts_at = $3,
         ends_at = $4,
+        schedule = NULL,
         updated_at = CURRENT_TIMESTAMP
       WHERE
         period.id = $1::uuid
@@ -1092,70 +1093,81 @@ mutation SetTeacherCompetitionPeriodStatus(
   )
   compensatedUsers: _execute(
     sql: """
-      INSERT INTO capi_coin_transactions (
-        user_uid, amount, base_amount, streak_multiplier_percent, streak_bonus,
-        transaction_type, reason, source_id, class_group,
-        competition_period_id, competition_week, created_at
+      WITH period_points AS (
+        SELECT
+          transaction.user_uid,
+          SUM(transaction.amount)::integer AS earned_points
+        FROM capi_coin_transactions AS transaction
+        WHERE
+          transaction.competition_period_id = $1::uuid
+          AND transaction.is_test = FALSE
+          AND transaction.amount > 0
+        GROUP BY transaction.user_uid
+      ), adjustments AS (
+        INSERT INTO capi_coin_transactions (
+          user_uid, amount, base_amount, streak_multiplier_percent,
+          streak_bonus, transaction_type, reason, source_id, class_group,
+          competition_period_id, competition_week, is_test, created_at
+        )
+        SELECT
+          student.firebase_uid,
+          -LEAST(student.capi_coins, points.earned_points),
+          -LEAST(student.capi_coins, points.earned_points),
+          100,
+          0,
+          'PERIOD_CLOSE_ADJUSTMENT'::capi_coin_transaction_type,
+          'Compensação de encerramento do período',
+          CONCAT('period-close:', period.id::text),
+          student.class_group,
+          period.id,
+          (
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+            - (EXTRACT(ISODOW FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::integer - 1)
+          )::date,
+          FALSE,
+          CURRENT_TIMESTAMP
+        FROM period_points AS points
+        INNER JOIN users AS student
+          ON student.firebase_uid = points.user_uid
+        INNER JOIN competition_periods AS period
+          ON period.id = $1::uuid
+        WHERE
+          $2::competition_period_status = 'CLOSED'
+          AND period.status = 'CLOSED'
+          AND student.capi_coins > 0
+          AND EXISTS (
+            SELECT 1 FROM users AS teacher
+            WHERE teacher.firebase_uid = $3
+              AND teacher.role = 'TEACHER'
+              AND teacher.profile_completed = TRUE
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM capi_coin_transactions AS existing
+            WHERE
+              existing.user_uid = student.firebase_uid
+              AND existing.competition_period_id = period.id
+              AND existing.transaction_type = 'PERIOD_CLOSE_ADJUSTMENT'
+          )
+        RETURNING user_uid, amount
       )
-      SELECT
-        student.firebase_uid,
-        -student.capi_coins,
-        -student.capi_coins,
-        100,
-        0,
-        'PERIOD_CLOSE_ADJUSTMENT'::capi_coin_transaction_type,
-        'Compensação de encerramento do período',
-        CONCAT('period-close:', period.id::text),
-        student.class_group,
-        period.id,
-        (
-          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
-          - (EXTRACT(ISODOW FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::integer - 1)
-        )::date,
-        CURRENT_TIMESTAMP
-      FROM users AS student
-      INNER JOIN competition_periods AS period ON period.id = $1::uuid
-      WHERE
-        $2::competition_period_status = 'CLOSED'
-        AND period.status = 'CLOSED'
-        AND student.capi_coins <> 0
-        AND EXISTS (
-          SELECT 1 FROM users AS teacher
-          WHERE teacher.firebase_uid = $3
-            AND teacher.role = 'TEACHER'
-            AND teacher.profile_completed = TRUE
-        )
-        AND NOT EXISTS (
-          SELECT 1
-          FROM capi_coin_transactions AS existing
-          WHERE
-            existing.user_uid = student.firebase_uid
-            AND existing.competition_period_id = period.id
-            AND existing.transaction_type = 'PERIOD_CLOSE_ADJUSTMENT'
-        )
+      UPDATE users AS student
+      SET
+        capi_coins = GREATEST(student.capi_coins + adjustment.amount, 0),
+        updated_at = CURRENT_TIMESTAMP
+      FROM adjustments AS adjustment
+      WHERE student.firebase_uid = adjustment.user_uid
     """
     params: [$periodId, $status, $actorUid]
   )
+  # Campo mantido por compatibilidade com clientes antigos. A compensação
+  # idempotente e limitada ao período agora acontece em compensatedUsers.
   zeroedUsers: _execute(
     sql: """
-      UPDATE users AS student
-      SET capi_coins = 0, updated_at = CURRENT_TIMESTAMP
-      WHERE
-        $2::competition_period_status = 'CLOSED'
-        AND student.capi_coins <> 0
-        AND EXISTS (
-          SELECT 1 FROM users AS teacher
-          WHERE teacher.firebase_uid = $3
-            AND teacher.role = 'TEACHER'
-            AND teacher.profile_completed = TRUE
-        )
-        AND EXISTS (
-          SELECT 1
-          FROM competition_periods AS period
-          WHERE period.id = $1::uuid AND period.status = 'CLOSED'
-        )
+      UPDATE users
+      SET updated_at = updated_at
+      WHERE FALSE
     """
-    params: [$periodId, $status, $actorUid]
   )
 }
 
@@ -2043,6 +2055,367 @@ mutation CompleteMyCurrentPhase(
       $correctAnswers
       $wrongAnswers
       $studentUid
+    ]
+  )
+}
+
+mutation ExpireTestRuns @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE test_runs
+      SET
+        status = 'EXPIRED',
+        active_slot = NULL,
+        ended_at = COALESCE(ended_at, ends_at),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE status = 'ACTIVE' AND ends_at <= CURRENT_TIMESTAMP
+    """
+  )
+}
+
+mutation ActivateTeacherTestRun(
+  $testRunId: UUID!
+  $durationMinutes: Int!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH expired AS (
+        UPDATE test_runs
+        SET
+          status = 'EXPIRED',
+          active_slot = NULL,
+          ended_at = COALESCE(ended_at, ends_at),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE status = 'ACTIVE' AND ends_at <= CURRENT_TIMESTAMP
+      ),
+      authorized_teacher AS (
+        SELECT teacher.firebase_uid
+        FROM users AS teacher
+        WHERE
+          teacher.firebase_uid = $3
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        LIMIT 1
+      ),
+      created AS (
+        INSERT INTO test_runs (
+          id, created_by_uid, status, active_slot, duration_minutes,
+          starts_at, ends_at, created_at, updated_at
+        )
+        SELECT
+          $1::uuid,
+          teacher.firebase_uid,
+          'ACTIVE',
+          'ACTIVE',
+          $2,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP + ($2 * INTERVAL '1 minute'),
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM authorized_teacher AS teacher
+        WHERE $2 BETWEEN 5 AND 120
+        ON CONFLICT (active_slot) DO NOTHING
+        RETURNING id, created_by_uid, duration_minutes, ends_at
+      )
+      INSERT INTO test_run_audit (
+        test_run_id, actor_uid, action, details, created_at
+      )
+      SELECT
+        created.id,
+        created.created_by_uid,
+        'ACTIVATED',
+        jsonb_build_object(
+          'durationMinutes', created.duration_minutes,
+          'endsAt', created.ends_at,
+          'accessPolicy', 'TEACHER_OWNER_ONLY'
+        ),
+        CURRENT_TIMESTAMP
+      FROM created
+    """
+    params: [$testRunId, $durationMinutes, $actorUid]
+  )
+}
+
+mutation EndTeacherTestRun($testRunId: UUID!, $actorUid: String!)
+  @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH ended AS (
+        UPDATE test_runs AS run
+        SET
+          status = 'ENDED',
+          active_slot = NULL,
+          ended_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          run.id = $1::uuid
+          AND run.created_by_uid = $2
+          AND run.status = 'ACTIVE'
+          AND EXISTS (
+            SELECT 1 FROM users AS teacher
+            WHERE teacher.firebase_uid = $2
+              AND teacher.role = 'TEACHER'
+              AND teacher.profile_completed = TRUE
+          )
+        RETURNING id, created_by_uid
+      )
+      INSERT INTO test_run_audit (
+        test_run_id, actor_uid, action, details, created_at
+      )
+      SELECT id, created_by_uid, 'ENDED', NULL, CURRENT_TIMESTAMP
+      FROM ended
+    """
+    params: [$testRunId, $actorUid]
+  )
+}
+
+mutation CleanTeacherTestRun($testRunId: UUID!, $actorUid: String!)
+  @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH authorized_run AS (
+        SELECT run.id, run.created_by_uid
+        FROM test_runs AS run
+        INNER JOIN users AS teacher
+          ON teacher.firebase_uid = run.created_by_uid
+        WHERE
+          run.id = $1::uuid
+          AND run.created_by_uid = $2
+          AND run.status IN ('ENDED', 'EXPIRED')
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+      ),
+      deleted_attempts AS (
+        DELETE FROM activity_attempts AS attempt
+        USING authorized_run
+        WHERE
+          attempt.test_run_id = authorized_run.id
+          AND attempt.is_test = TRUE
+        RETURNING attempt.id
+      ),
+      deleted_sessions AS (
+        DELETE FROM activity_sessions AS session
+        USING authorized_run
+        WHERE
+          session.test_run_id = authorized_run.id
+          AND session.is_test = TRUE
+        RETURNING session.id
+      ),
+      cleaned AS (
+        UPDATE test_runs AS run
+        SET
+          status = 'CLEANED',
+          cleaned_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        FROM authorized_run
+        WHERE run.id = authorized_run.id
+        RETURNING run.id, run.created_by_uid
+      )
+      INSERT INTO test_run_audit (
+        test_run_id, actor_uid, action, details, created_at
+      )
+      SELECT
+        cleaned.id,
+        cleaned.created_by_uid,
+        'CLEANED',
+        jsonb_build_object(
+          'attemptsDeleted', (SELECT COUNT(*) FROM deleted_attempts),
+          'sessionsDeleted', (SELECT COUNT(*) FROM deleted_sessions)
+        ),
+        CURRENT_TIMESTAMP
+      FROM cleaned
+    """
+    params: [$testRunId, $actorUid]
+  )
+}
+
+mutation CreateTestActivitySession(
+  $sessionId: UUID!
+  $testRunId: UUID!
+  $actorUid: String!
+  $activityId: String!
+  $phaseNumber: Int!
+  $variantId: String
+  $contentVersion: String!
+  $publicPayload: Any!
+  $answerKey: Any!
+  $expiresAt: Timestamp!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH authorized_run AS (
+        SELECT run.id, run.created_by_uid, run.ends_at
+        FROM test_runs AS run
+        INNER JOIN users AS teacher
+          ON teacher.firebase_uid = run.created_by_uid
+        WHERE
+          run.id = $2::uuid
+          AND run.created_by_uid = $3
+          AND run.status = 'ACTIVE'
+          AND run.starts_at <= CURRENT_TIMESTAMP
+          AND run.ends_at > CURRENT_TIMESTAMP
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+      ),
+      created AS (
+        INSERT INTO activity_sessions (
+          id, user_uid, activity_id, phase_number, variant_id,
+          content_version, public_payload, answer_key, status,
+          is_test, test_run_id, expires_at, created_at, updated_at
+        )
+        SELECT
+          $1::uuid,
+          authorized_run.created_by_uid,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8::jsonb,
+          $9::jsonb,
+          'OPEN',
+          TRUE,
+          authorized_run.id,
+          LEAST($10, authorized_run.ends_at),
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM authorized_run
+        WHERE $5 BETWEEN 1 AND 4
+        ON CONFLICT (id) DO NOTHING
+        RETURNING id, user_uid, test_run_id, activity_id, phase_number
+      )
+      INSERT INTO test_run_audit (
+        test_run_id, actor_uid, action, details, created_at
+      )
+      SELECT
+        created.test_run_id,
+        created.user_uid,
+        'SESSION_STARTED',
+        jsonb_build_object(
+          'sessionId', created.id,
+          'activityId', created.activity_id,
+          'phaseNumber', created.phase_number
+        ),
+        CURRENT_TIMESTAMP
+      FROM created
+    """
+    params: [
+      $sessionId
+      $testRunId
+      $actorUid
+      $activityId
+      $phaseNumber
+      $variantId
+      $contentVersion
+      $publicPayload
+      $answerKey
+      $expiresAt
+    ]
+  )
+}
+
+mutation RecordTestActivityAttempt(
+  $attemptId: UUID!
+  $sessionId: UUID!
+  $testRunId: UUID!
+  $actorUid: String!
+  $activityId: String!
+  $phaseNumber: Int!
+  $score: Int!
+  $correctAnswers: Int!
+  $wrongAnswers: Int!
+  $passed: Boolean!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH authorized_session AS (
+        SELECT session.id, session.user_uid, session.test_run_id
+        FROM activity_sessions AS session
+        INNER JOIN test_runs AS run ON run.id = session.test_run_id
+        INNER JOIN users AS teacher ON teacher.firebase_uid = run.created_by_uid
+        WHERE
+          session.id = $2::uuid
+          AND session.test_run_id = $3::uuid
+          AND session.user_uid = $4
+          AND session.activity_id = $5
+          AND session.phase_number = $6
+          AND session.status = 'OPEN'
+          AND session.is_test = TRUE
+          AND session.expires_at > CURRENT_TIMESTAMP
+          AND run.status = 'ACTIVE'
+          AND run.ends_at > CURRENT_TIMESTAMP
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+      ),
+      created AS (
+        INSERT INTO activity_attempts (
+          id, user_uid, activity_id, activity_session_id, phase_number,
+          score, correct_answers, wrong_answers, passed, first_completion,
+          reward_base, streak_multiplier_percent, streak_bonus, reward_amount,
+          reward_limit_reached, reward_suppression_reason, is_test, test_run_id,
+          created_at
+        )
+        SELECT
+          $1::uuid,
+          authorized_session.user_uid,
+          $5,
+          authorized_session.id,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          FALSE,
+          0,
+          100,
+          0,
+          0,
+          FALSE,
+          'NONE',
+          TRUE,
+          authorized_session.test_run_id,
+          CURRENT_TIMESTAMP
+        FROM authorized_session
+        ON CONFLICT (id) DO NOTHING
+        RETURNING id, user_uid, test_run_id, score, passed
+      ),
+      submitted AS (
+        UPDATE activity_sessions AS session
+        SET
+          status = 'SUBMITTED',
+          submitted_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        FROM created
+        WHERE session.id = created.id
+        RETURNING created.id, created.user_uid, created.test_run_id,
+          created.score, created.passed
+      )
+      INSERT INTO test_run_audit (
+        test_run_id, actor_uid, action, details, created_at
+      )
+      SELECT
+        submitted.test_run_id,
+        submitted.user_uid,
+        'SUBMITTED',
+        jsonb_build_object(
+          'sessionId', submitted.id,
+          'score', submitted.score,
+          'passed', submitted.passed
+        ),
+        CURRENT_TIMESTAMP
+      FROM submitted
+    """
+    params: [
+      $attemptId
+      $sessionId
+      $testRunId
+      $actorUid
+      $activityId
+      $phaseNumber
+      $score
+      $correctAnswers
+      $wrongAnswers
+      $passed
     ]
   )
 }

@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
 import TeacherDataChat from '../components/TeacherDataChat';
+import TestModePanel from '../components/TestModePanel';
+import SystemDiagnosticsPanel from '../components/SystemDiagnosticsPanel';
 import { buildTeacherDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
 import {
   fetchTeacherDashboard,
@@ -40,6 +42,8 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
 });
 const DATE_TIME_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Fortaleza',
@@ -381,6 +385,7 @@ export default function TeacherDashboard() {
                 <option key={period.id} value={period.id}>
                   {period.name} · {formatDate(period.startsAt)} a{' '}
                   {formatDate(period.endsAt)}
+                  {period.recognizedByApi ? ' · reconhecido pela API' : ''}
                 </option>
               ))}
             </select>
@@ -419,6 +424,10 @@ export default function TeacherDashboard() {
             </div>
           )}
         </section>
+
+        <TestModePanel />
+
+        <SystemDiagnosticsPanel />
 
         <TeacherDataChat
           key={selectedPeriodId || 'no-period'}
