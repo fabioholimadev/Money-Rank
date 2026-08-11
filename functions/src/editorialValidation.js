@@ -202,12 +202,6 @@ export function validateLearningModulePayload(
   if (Number(expectedPhase) > 0) {
     validateMaterial(slots.slides, 'slides');
     validateMaterial(slots.summary, 'resumo');
-    if (
-      slots.slides.status !== 'available' &&
-      slots.summary.status !== 'available'
-    ) {
-      throw new Error('A fase precisa de slides ou resumo publicado.');
-    }
   }
   return payload;
 }

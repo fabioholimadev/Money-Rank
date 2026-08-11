@@ -36,6 +36,23 @@ test('módulo rejeita material publicado com URL insegura', () => {
   );
 });
 
+test('módulo aceita slots pendentes até receber links externos', () => {
+  const item = clone(seed.learningModules.find(({ phaseNumber }) => phaseNumber === 2));
+  item.payload.materialSlots.slides = {
+    status: 'pending',
+    title: 'Slides pendentes',
+    description: 'Aguardando Google Slides.',
+  };
+  item.payload.materialSlots.summary = {
+    status: 'pending',
+    title: 'Resumo pendente',
+    description: 'Aguardando Google Documentos.',
+  };
+  assert.doesNotThrow(
+    () => validateLearningModulePayload(item.payload, item.moduleKey, 2),
+  );
+});
+
 test('normaliza links comuns do YouTube para uma URL incorporável', () => {
   assert.equal(
     normalizeVideoEmbedUrl('https://www.youtube.com/watch?v=k6O554uP2Kc'),
