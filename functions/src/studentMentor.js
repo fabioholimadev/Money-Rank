@@ -131,10 +131,40 @@ function extractGrounding(response) {
   };
 }
 
+function extractInteractionGrounding(interaction) {
+  const sources = [];
+  let searchSuggestionsHtml = '';
+  const visited = new WeakSet();
+  const visit = (value) => {
+    if (!value || typeof value !== 'object' || visited.has(value)) return;
+    visited.add(value);
+    if (value.type === 'url_citation') {
+      const title = cleanText(value.title, 120);
+      const url = cleanText(value.url, 2048);
+      if (title && url.startsWith('https://') && !sources.some((item) => item.url === url)) {
+        sources.push({ title, url });
+      }
+    }
+    if (!searchSuggestionsHtml && typeof value.search_suggestions === 'string') {
+      searchSuggestionsHtml = value.search_suggestions.slice(0, 20_000);
+    }
+    for (const nested of Array.isArray(value) ? value : Object.values(value)) {
+      visit(nested);
+    }
+  };
+  visit(interaction);
+  return { sources: sources.slice(0, 5), searchSuggestionsHtml };
+}
+
 export function selectMentorResponse(response, fallback) {
-  const answer = validateAiAnswer(response?.text);
+  const isInteraction = typeof response?.output_text === 'string';
+  const answer = validateAiAnswer(
+    isInteraction ? response.output_text : response?.text,
+  );
   if (!answer) return null;
-  const grounding = extractGrounding(response);
+  const grounding = isInteraction
+    ? extractInteractionGrounding(response)
+    : extractGrounding(response);
   return grounding.sources.length > 0
     ? { answer, ...grounding, generatedBy: 'gemini-grounded' }
     : {
@@ -185,26 +215,27 @@ export async function answerStudentMentor({ question, rawContext, apiKey, model 
 
   try {
     const ai = new GoogleGenAI({ apiKey: normalizedApiKey });
-    const response = await ai.models.generateContent({
+    const prompt = [
+      'Você é o CapiMentor, tutor jovem, encorajador e didático do Money Rank para alunos do terceiro ano de escola técnica.',
+      'Seu domínio inclui educação financeira, educação fiscal, cidadania, saúde pública, consumo responsável, direitos, orçamento público e políticas públicas relacionadas.',
+      'Antes de responder, use a Pesquisa Google para localizar ao menos uma fonte pertinente. Priorize fontes oficiais: órgãos públicos, legislação, universidades, OMS/OPAS e instituições reconhecidas. Diferencie fato, interpretação e exemplo.',
+      'Responda em português brasileiro com quatro a seis parágrafos claros, aproximadamente 250 a 450 palavras.',
+      'Explique relações individuais e coletivas, evite culpabilizar pessoas e termine perguntando se o aluno quer aprofundar algum ponto.',
+      'Não invente leis, números, fontes ou fatos. Se houver incerteza, diga isso explicitamente.',
+      'Não entregue gabaritos, não escolha alternativas e não mencione contexto invisível.',
+      'Não forneça diagnóstico ou aconselhamento médico, jurídico ou financeiro individual.',
+      `Tema atual da trilha: ${context.currentTopic}.`,
+      `Saldo aproximado no jogo: ${context.capiCoins} CapiCoins.`,
+      `Tópicos que podem precisar de reforço: ${context.difficultTopics.join('; ') || 'nenhum identificado'}.`,
+      `Pergunta do aluno: ${normalizedQuestion}`,
+    ].join('\n');
+    const response = await ai.interactions.create({
       model,
-      contents: [
-        'Você é o CapiMentor, tutor jovem, encorajador e didático do Money Rank para alunos do terceiro ano de escola técnica.',
-        'Seu domínio inclui educação financeira, educação fiscal, cidadania, saúde pública, consumo responsável, direitos, orçamento público e políticas públicas relacionadas.',
-        'Antes de responder, use a Pesquisa Google para localizar ao menos uma fonte pertinente. Priorize fontes oficiais: órgãos públicos, legislação, universidades, OMS/OPAS e instituições reconhecidas. Diferencie fato, interpretação e exemplo.',
-        'Responda em português brasileiro com quatro a seis parágrafos claros, aproximadamente 250 a 450 palavras.',
-        'Explique relações individuais e coletivas, evite culpabilizar pessoas e termine perguntando se o aluno quer aprofundar algum ponto.',
-        'Não invente leis, números, fontes ou fatos. Se houver incerteza, diga isso explicitamente.',
-        'Não entregue gabaritos, não escolha alternativas e não mencione contexto invisível.',
-        'Não forneça diagnóstico ou aconselhamento médico, jurídico ou financeiro individual.',
-        `Tema atual da trilha: ${context.currentTopic}.`,
-        `Saldo aproximado no jogo: ${context.capiCoins} CapiCoins.`,
-        `Tópicos que podem precisar de reforço: ${context.difficultTopics.join('; ') || 'nenhum identificado'}.`,
-        `Pergunta do aluno: ${normalizedQuestion}`,
-      ].join('\n'),
-      config: {
-        tools: [{ googleSearch: {} }],
+      input: prompt,
+      tools: [{ type: 'google_search' }],
+      generation_config: {
         temperature: 0.35,
-        maxOutputTokens: 1400,
+        max_output_tokens: 1400,
       },
     });
     const selected = selectMentorResponse(response, fallback);

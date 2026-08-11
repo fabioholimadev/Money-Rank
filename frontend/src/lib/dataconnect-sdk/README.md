@@ -6353,6 +6353,8 @@ The `data` property is an object of type `SetTeacherCompetitionPeriodStatusData`
 ```typescript
 export interface SetTeacherCompetitionPeriodStatusData {
   updatedPeriod?: unknown | null;
+  compensatedUsers?: number | null;
+  zeroedUsers?: number | null;
 }
 ```
 ### Using `SetTeacherCompetitionPeriodStatus`'s action shortcut function
@@ -6379,11 +6381,15 @@ const dataConnect = getDataConnect(connectorConfig);
 const { data } = await setTeacherCompetitionPeriodStatus(dataConnect, setTeacherCompetitionPeriodStatusVars);
 
 console.log(data.updatedPeriod);
+console.log(data.compensatedUsers);
+console.log(data.zeroedUsers);
 
 // Or, you can use the `Promise` API.
 setTeacherCompetitionPeriodStatus(setTeacherCompetitionPeriodStatusVars).then((response) => {
   const data = response.data;
   console.log(data.updatedPeriod);
+  console.log(data.compensatedUsers);
+  console.log(data.zeroedUsers);
 });
 ```
 
@@ -6414,11 +6420,15 @@ const ref = setTeacherCompetitionPeriodStatusRef(dataConnect, setTeacherCompetit
 const { data } = await executeMutation(ref);
 
 console.log(data.updatedPeriod);
+console.log(data.compensatedUsers);
+console.log(data.zeroedUsers);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.updatedPeriod);
+  console.log(data.compensatedUsers);
+  console.log(data.zeroedUsers);
 });
 ```
 

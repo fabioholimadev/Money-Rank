@@ -1030,136 +1030,130 @@ mutation SetTeacherCompetitionPeriodStatus(
 ) @auth(level: NO_ACCESS) {
   updatedPeriod: _executeReturningFirst(
     sql: """
-      WITH updated_period AS (
-        UPDATE competition_periods AS period
-        SET
-          status = $2::competition_period_status,
-          active_slot = CASE
-            WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
-            ELSE NULL
-          END,
-          paused_at = CASE
-            WHEN $2::competition_period_status = 'PAUSED'
-              THEN CURRENT_TIMESTAMP
-            WHEN $2::competition_period_status = 'ACTIVE'
-              THEN NULL
-            ELSE period.paused_at
-          END,
-          closed_at = CASE
-            WHEN $2::competition_period_status = 'CLOSED'
-              THEN CURRENT_TIMESTAMP
-            ELSE period.closed_at
-          END,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE
-          period.id = $1::uuid
-          AND period.status <> 'CLOSED'
-          AND EXISTS (
-            SELECT 1
-            FROM users AS teacher
-            WHERE
-              teacher.firebase_uid = $3
-              AND teacher.role = 'TEACHER'
-              AND teacher.profile_completed = TRUE
-          )
-          AND (
-            (period.status = 'DRAFT' AND $2::competition_period_status IN (
-              'SCHEDULED', 'ACTIVE', 'CLOSED'
-            ))
-            OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN (
-              'DRAFT', 'ACTIVE', 'PAUSED', 'CLOSED'
-            ))
-            OR (period.status = 'ACTIVE' AND $2::competition_period_status IN (
-              'PAUSED', 'CLOSED'
-            ))
-            OR (period.status = 'PAUSED' AND $2::competition_period_status IN (
-              'ACTIVE', 'CLOSED'
-            ))
-          )
-          AND (
-            $2::competition_period_status <> 'SCHEDULED'
-            OR CURRENT_TIMESTAMP < period.ends_at
-          )
-          AND (
-            $2::competition_period_status <> 'ACTIVE'
-            OR (
-              period.starts_at <= CURRENT_TIMESTAMP
-              AND CURRENT_TIMESTAMP < period.ends_at
-              AND NOT EXISTS (
-                SELECT 1
-                FROM competition_periods AS active_period
-                WHERE
-                  active_period.id <> period.id
-                  AND active_period.status = 'ACTIVE'
-              )
-            )
-          )
-        RETURNING period.*
-      ),
-      compensations AS (
-        INSERT INTO capi_coin_transactions (
-          user_uid,
-          amount,
-          base_amount,
-          streak_multiplier_percent,
-          streak_bonus,
-          transaction_type,
-          reason,
-          source_id,
-          class_group,
-          competition_period_id,
-          competition_week,
-          created_at
+      UPDATE competition_periods AS period
+      SET
+        status = $2::competition_period_status,
+        active_slot = CASE
+          WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
+          ELSE NULL
+        END,
+        paused_at = CASE
+          WHEN $2::competition_period_status = 'PAUSED' THEN CURRENT_TIMESTAMP
+          WHEN $2::competition_period_status = 'ACTIVE' THEN NULL
+          ELSE period.paused_at
+        END,
+        closed_at = CASE
+          WHEN $2::competition_period_status = 'CLOSED' THEN CURRENT_TIMESTAMP
+          ELSE period.closed_at
+        END,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE
+        period.id = $1::uuid
+        AND period.status <> 'CLOSED'
+        AND EXISTS (
+          SELECT 1
+          FROM users AS teacher
+          WHERE
+            teacher.firebase_uid = $3
+            AND teacher.role = 'TEACHER'
+            AND teacher.profile_completed = TRUE
         )
-        SELECT
-          student.firebase_uid,
-          -student.capi_coins,
-          -student.capi_coins,
-          100,
-          0,
-          'PERIOD_CLOSE_ADJUSTMENT'::capi_coin_transaction_type,
-          'Compensação de encerramento do período',
-          CONCAT('period-close:', period.id::text),
-          student.class_group,
-          period.id,
-          (
-            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
-            - (
-              EXTRACT(ISODOW FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::integer - 1
+        AND (
+          (period.status = 'DRAFT' AND $2::competition_period_status IN ('SCHEDULED', 'ACTIVE', 'CLOSED'))
+          OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN ('DRAFT', 'ACTIVE', 'PAUSED', 'CLOSED'))
+          OR (period.status = 'ACTIVE' AND $2::competition_period_status IN ('PAUSED', 'CLOSED'))
+          OR (period.status = 'PAUSED' AND $2::competition_period_status IN ('ACTIVE', 'CLOSED'))
+        )
+        AND ($2::competition_period_status <> 'SCHEDULED' OR CURRENT_TIMESTAMP < period.ends_at)
+        AND (
+          $2::competition_period_status <> 'ACTIVE'
+          OR (
+            period.starts_at <= CURRENT_TIMESTAMP
+            AND CURRENT_TIMESTAMP < period.ends_at
+            AND NOT EXISTS (
+              SELECT 1
+              FROM competition_periods AS active_period
+              WHERE active_period.id <> period.id AND active_period.status = 'ACTIVE'
             )
-          )::date,
-          CURRENT_TIMESTAMP
-        FROM users AS student
-        CROSS JOIN updated_period AS period
-        WHERE
-          $2::competition_period_status = 'CLOSED'
-          AND student.capi_coins <> 0
-        RETURNING user_uid
-      ),
-      zeroed_users AS (
-        UPDATE users AS student
-        SET
-          capi_coins = 0,
-          updated_at = CURRENT_TIMESTAMP
-        FROM updated_period AS period
-        WHERE
-          $2::competition_period_status = 'CLOSED'
-          AND student.capi_coins <> 0
-        RETURNING student.firebase_uid
+          )
+        )
+      RETURNING
+        id,
+        name,
+        status::text AS "status",
+        starts_at AS "startsAt",
+        ends_at AS "endsAt",
+        paused_at AS "pausedAt",
+        closed_at AS "closedAt",
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
+    """
+    params: [$periodId, $status, $actorUid]
+  )
+  compensatedUsers: _execute(
+    sql: """
+      INSERT INTO capi_coin_transactions (
+        user_uid, amount, base_amount, streak_multiplier_percent, streak_bonus,
+        transaction_type, reason, source_id, class_group,
+        competition_period_id, competition_week, created_at
       )
       SELECT
+        student.firebase_uid,
+        -student.capi_coins,
+        -student.capi_coins,
+        100,
+        0,
+        'PERIOD_CLOSE_ADJUSTMENT'::capi_coin_transaction_type,
+        'Compensação de encerramento do período',
+        CONCAT('period-close:', period.id::text),
+        student.class_group,
         period.id,
-        period.name,
-        period.status::text AS "status",
-        period.starts_at AS "startsAt",
-        period.ends_at AS "endsAt",
-        period.paused_at AS "pausedAt",
-        period.closed_at AS "closedAt",
-        period.created_at AS "createdAt",
-        period.updated_at AS "updatedAt",
-        (SELECT COUNT(*)::integer FROM compensations) AS "compensatedUsers",
-        (SELECT COUNT(*)::integer FROM zeroed_users) AS "zeroedUsers"
-      FROM updated_period AS period
+        (
+          (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+          - (EXTRACT(ISODOW FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::integer - 1)
+        )::date,
+        CURRENT_TIMESTAMP
+      FROM users AS student
+      INNER JOIN competition_periods AS period ON period.id = $1::uuid
+      WHERE
+        $2::competition_period_status = 'CLOSED'
+        AND period.status = 'CLOSED'
+        AND student.capi_coins <> 0
+        AND EXISTS (
+          SELECT 1 FROM users AS teacher
+          WHERE teacher.firebase_uid = $3
+            AND teacher.role = 'TEACHER'
+            AND teacher.profile_completed = TRUE
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM capi_coin_transactions AS existing
+          WHERE
+            existing.user_uid = student.firebase_uid
+            AND existing.competition_period_id = period.id
+            AND existing.transaction_type = 'PERIOD_CLOSE_ADJUSTMENT'
+        )
+    """
+    params: [$periodId, $status, $actorUid]
+  )
+  zeroedUsers: _execute(
+    sql: """
+      UPDATE users AS student
+      SET capi_coins = 0, updated_at = CURRENT_TIMESTAMP
+      WHERE
+        $2::competition_period_status = 'CLOSED'
+        AND student.capi_coins <> 0
+        AND EXISTS (
+          SELECT 1 FROM users AS teacher
+          WHERE teacher.firebase_uid = $3
+            AND teacher.role = 'TEACHER'
+            AND teacher.profile_completed = TRUE
+        )
+        AND EXISTS (
+          SELECT 1
+          FROM competition_periods AS period
+          WHERE period.id = $1::uuid AND period.status = 'CLOSED'
+        )
     """
     params: [$periodId, $status, $actorUid]
   )

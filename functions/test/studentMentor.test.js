@@ -69,6 +69,31 @@ test('preserva resposta válida do Gemini quando não há metadados de pesquisa'
   assert.equal(response.sources.length, 1);
 });
 
+test('extrai texto e fontes da Interactions API com Pesquisa Google', () => {
+  const response = selectMentorResponse({
+    output_text: 'O IPI é um imposto federal relacionado a produtos industrializados e pode aparecer incorporado ao preço. Para compreender um caso concreto, é importante conferir a classificação do produto, a operação e a legislação vigente em fontes oficiais, sem aplicar uma porcentagem genérica. A educação fiscal ajuda a relacionar arrecadação, políticas públicas e controle social. Quer que eu mostre como localizar essa informação em uma nota fiscal?',
+    outputs: [{
+      type: 'model_output',
+      content: [{
+        type: 'text',
+        text: 'resposta',
+        annotations: [{
+          type: 'url_citation',
+          title: 'Receita Federal',
+          url: 'https://www.gov.br/receitafederal/',
+        }],
+      }],
+    }],
+    steps: [{
+      type: 'google_search_result',
+      result: [{ search_suggestions: '<div>Pesquisa Google</div>' }],
+    }],
+  }, { sources: [] });
+  assert.equal(response.generatedBy, 'gemini-grounded');
+  assert.equal(response.sources[0].title, 'Receita Federal');
+  assert.match(response.searchSuggestionsHtml, /Pesquisa Google/);
+});
+
 test('inclui cidadania, saúde e educação fiscal no domínio', async () => {
   const citizenship = await answerStudentMentor({
     question: 'Como cidadania e políticas públicas se relacionam?',

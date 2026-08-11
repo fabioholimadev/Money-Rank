@@ -957,6 +957,8 @@ export interface SeedLoadTestStudentsVariables {
 
 export interface SetTeacherCompetitionPeriodStatusData {
   updatedPeriod?: unknown | null;
+  compensatedUsers?: number | null;
+  zeroedUsers?: number | null;
 }
 
 export interface SetTeacherCompetitionPeriodStatusVariables {
