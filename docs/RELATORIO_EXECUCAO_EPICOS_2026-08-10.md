@@ -42,6 +42,13 @@ O período oficial permanece em `America/Fortaleza`: DSB 08:20–10:00, grace 10
 - O banco SQL Connect não foi provisionado nesta execução; a API usa os repositórios oficiais, mas a validação de produção depende do projeto `money-rank` autenticado.
 - O Docker local foi validado; a URL `.onrender.com` só existirá após criação dos serviços.
 
+## Pendências técnicas identificadas
+
+- A planilha foi validada e versionada como fonte de verdade, mas a importação transacional/idempotente dos 140 itens no SQL Connect ainda precisa ser criada e executada.
+- O catálogo/runtime existente ainda contém o conjunto editorial histórico; as quantidades e regras do piloto da planilha precisam substituir esse fallback antes do smoke real.
+- As sessões de atividade já usam HTTP autenticado; serviços legados de estúdio, mentor e conteúdo publicado ainda usam Firebase callable e precisam de rotas HTTP equivalentes antes de retirar completamente essa dependência.
+- A exportação XLSX possui as seis abas e filtros, mas a reconciliação completa de tentativas, transações e auditoria depende de uma operação SQL Connect consolidada no ambiente provisionado.
+
 ## Próximos comandos após autenticação
 
 ```powershell
