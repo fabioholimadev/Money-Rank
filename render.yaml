@@ -39,7 +39,6 @@ services:
   - type: web
     runtime: static
     name: money-rank-web
-    plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run lint && npm run build
     staticPublishPath: ./dist
