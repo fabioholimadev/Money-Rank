@@ -21,6 +21,7 @@ export enum CapiCoinTransactionType {
   PURCHASE = "PURCHASE",
   ADMIN_ADJUSTMENT = "ADMIN_ADJUSTMENT",
   ACTIVITY_REPEAT_REWARD = "ACTIVITY_REPEAT_REWARD",
+  PERIOD_CLOSE_ADJUSTMENT = "PERIOD_CLOSE_ADJUSTMENT",
 };
 
 export enum CompetitionPeriodStatus {
@@ -50,6 +51,26 @@ export enum EditorialStatus {
   IN_REVIEW = "IN_REVIEW",
   PUBLISHED = "PUBLISHED",
   ARCHIVED = "ARCHIVED",
+};
+
+export enum PedagogicalDifficulty {
+  EASY = "EASY",
+  MEDIUM = "MEDIUM",
+  HARD = "HARD",
+};
+
+export enum PedagogicalItemType {
+  QUESTION = "QUESTION",
+  DECISION = "DECISION",
+  PATH = "PATH",
+  CARD = "CARD",
+};
+
+export enum PedagogicalReviewStatus {
+  PILOT_UNREVIEWED = "PILOT_UNREVIEWED",
+  TECHNICALLY_APPROVED = "TECHNICALLY_APPROVED",
+  PEDAGOGICALLY_APPROVED = "PEDAGOGICALLY_APPROVED",
+  FULLY_APPROVED = "FULLY_APPROVED",
 };
 
 export enum ProfessionalAvatar {
@@ -119,9 +140,26 @@ export interface ApplyCapiCoinTransactionVariables {
   sourceId?: string | null;
 }
 
+export interface BindPilotClassData {
+  affectedRows?: number | null;
+}
+
+export interface BindPilotClassVariables {
+  studentUid: string;
+  classGroup: StudentClass;
+}
+
 export interface CapiCoinTransaction_Key {
   id: UUIDString;
   __typename?: 'CapiCoinTransaction_Key';
+}
+
+export interface CleanupMarkedLoadTestStudentsData {
+  affectedRows?: number | null;
+}
+
+export interface CleanupMarkedLoadTestStudentsVariables {
+  runId: string;
 }
 
 export interface CompetitionPeriod_Key {
@@ -286,6 +324,15 @@ export interface EditorialAuditLog_Key {
   __typename?: 'EditorialAuditLog_Key';
 }
 
+export interface FinalizeLoadTestCleanupData {
+  affectedRows?: number | null;
+}
+
+export interface FinalizeLoadTestCleanupVariables {
+  runId: string;
+  deletedAuthUsers: number;
+}
+
 export interface GetActivityDefinitionVersionForEditorialData {
   activityDefinitionVersion?: {
     id: UUIDString;
@@ -422,6 +469,26 @@ export interface GetLearningModuleVersionForEditorialVariables {
   versionId: UUIDString;
 }
 
+export interface GetLoadTestCleanupStatusData {
+  run?: {
+    runId: string;
+    status: string;
+    requestedUsers: number;
+    createdUsers: number;
+    deletedDatabaseUsers: number;
+    deletedAuthUsers: number;
+    metrics?: unknown | null;
+    startedAt: TimestampString;
+    completedAt?: TimestampString | null;
+    cleanedAt?: TimestampString | null;
+  } & LoadTestRun_Key;
+  remainingMarkedUsers?: unknown | null;
+}
+
+export interface GetLoadTestCleanupStatusVariables {
+  runId: string;
+}
+
 export interface GetMyActivityAttemptData {
   activityAttempts: ({
     id: UUIDString;
@@ -484,6 +551,35 @@ export interface GetMyProfileData {
   } & User_Key;
 }
 
+export interface GetPedagogicalBankStatusData {
+  latestLoad?: unknown | null;
+  counts?: unknown[] | null;
+  items?: unknown[] | null;
+}
+
+export interface GetPilotClassBindingData {
+  user?: {
+    uid: string;
+    role: UserRole;
+    classGroup?: StudentClass | null;
+    profileCompleted: boolean;
+  } & User_Key;
+}
+
+export interface GetPilotClassBindingVariables {
+  studentUid: string;
+}
+
+export interface GetPilotExportRowsData {
+  attempts?: unknown[] | null;
+  transactions?: unknown[] | null;
+  audit?: unknown[] | null;
+}
+
+export interface GetPilotExportRowsVariables {
+  periodId: UUIDString;
+}
+
 export interface GetPublishedActivityDefinitionForSessionData {
   activityDefinitionVersions: ({
     id: UUIDString;
@@ -528,6 +624,18 @@ export interface GetTeacherDashboardVariables {
   studentLimit?: number | null;
 }
 
+export interface ImportPedagogicalBankData {
+  importedRows?: number | null;
+}
+
+export interface ImportPedagogicalBankVariables {
+  loadHash: string;
+  loadVersion: string;
+  sourceFile: string;
+  itemCount: number;
+  items: unknown;
+}
+
 export interface InitializeMyTrailData {
   affectedRows?: number | null;
 }
@@ -535,6 +643,34 @@ export interface InitializeMyTrailData {
 export interface LearningModuleVersion_Key {
   id: UUIDString;
   __typename?: 'LearningModuleVersion_Key';
+}
+
+export interface ListActivePedagogicalItemsForActivityData {
+  pedagogicalItems: ({
+    activityId: string;
+    version: string;
+    itemId: string;
+    phaseNumber: number;
+    itemType: PedagogicalItemType;
+    characterId?: string | null;
+    difficulty: PedagogicalDifficulty;
+    stage?: number | null;
+    pathCondition?: string | null;
+    publicPayload: unknown;
+    secretPayload: unknown;
+    sourceId: string;
+    sourceUrl: string;
+    tags: string[];
+    active: boolean;
+    reviewStatus: PedagogicalReviewStatus;
+    origin: string;
+    contentHash: string;
+    loadHash: string;
+  } & PedagogicalItem_Key)[];
+}
+
+export interface ListActivePedagogicalItemsForActivityVariables {
+  activityId: string;
 }
 
 export interface ListEditorialStudioDataData {
@@ -674,6 +810,15 @@ export interface ListMyProgressData {
   })[];
 }
 
+export interface ListStudentSeenPedagogicalItemIdsData {
+  seenItems?: unknown[] | null;
+}
+
+export interface ListStudentSeenPedagogicalItemIdsVariables {
+  studentUid: string;
+  activityId: string;
+}
+
 export interface ListTeacherCompetitionPeriodsData {
   periods?: unknown[] | null;
 }
@@ -695,6 +840,11 @@ export interface ListVisibleCompetitionPeriodsData {
   } & CompetitionPeriod_Key)[];
 }
 
+export interface LoadTestRun_Key {
+  runId: string;
+  __typename?: 'LoadTestRun_Key';
+}
+
 export interface MarkAuthoritativeActivitySessionSubmittedData {
   affectedRows?: number | null;
 }
@@ -702,6 +852,18 @@ export interface MarkAuthoritativeActivitySessionSubmittedData {
 export interface MarkAuthoritativeActivitySessionSubmittedVariables {
   sessionId: UUIDString;
   studentUid: string;
+}
+
+export interface PedagogicalBankLoad_Key {
+  loadHash: string;
+  __typename?: 'PedagogicalBankLoad_Key';
+}
+
+export interface PedagogicalItem_Key {
+  activityId: string;
+  version: string;
+  itemId: string;
+  __typename?: 'PedagogicalItem_Key';
 }
 
 export interface PublishActivityDefinitionVersionEditorialData {
@@ -720,6 +882,16 @@ export interface PublishLearningModuleVersionEditorialData {
 export interface PublishLearningModuleVersionEditorialVariables {
   versionId: UUIDString;
   actorUid: string;
+}
+
+export interface RecordLoadTestMetricsData {
+  affectedRows?: number | null;
+}
+
+export interface RecordLoadTestMetricsVariables {
+  runId: string;
+  status: string;
+  metrics: unknown;
 }
 
 export interface RegisterMyCurrentPhaseAttemptData {
@@ -742,6 +914,23 @@ export interface ResearchReview_Key {
   __typename?: 'ResearchReview_Key';
 }
 
+export interface ResolveCompetitionPeriodByKeyData {
+  competitionPeriod?: {
+    id: UUIDString;
+    periodKey?: string | null;
+    name: string;
+    timeZone: string;
+    schedule?: unknown | null;
+    status: CompetitionPeriodStatus;
+    startsAt: TimestampString;
+    endsAt: TimestampString;
+  } & CompetitionPeriod_Key;
+}
+
+export interface ResolveCompetitionPeriodByKeyVariables {
+  periodKey: string;
+}
+
 export interface ReviewResearchEditorialData {
   reviewedCount?: number | null;
 }
@@ -751,6 +940,16 @@ export interface ReviewResearchEditorialVariables {
   status: ResearchReviewStatus;
   reviewNotes?: string | null;
   actorUid: string;
+}
+
+export interface SeedLoadTestStudentsData {
+  affectedRows?: number | null;
+}
+
+export interface SeedLoadTestStudentsVariables {
+  runId: string;
+  requestedUsers: number;
+  users: unknown;
 }
 
 export interface SetTeacherCompetitionPeriodStatusData {
@@ -806,6 +1005,17 @@ export interface UpdateActivityDefinitionDraftEditorialVariables {
   changeSummary: string;
   payload: unknown;
   actorUid: string;
+}
+
+export interface UpdateAuthoritativeActivitySessionStateData {
+  affectedRows?: number | null;
+}
+
+export interface UpdateAuthoritativeActivitySessionStateVariables {
+  sessionId: UUIDString;
+  studentUid: string;
+  answerKey: unknown;
+  publicPayload: unknown;
 }
 
 export interface UpdateCompetitionPeriodStatusData {
@@ -883,6 +1093,19 @@ export interface UpsertMyProfileWithoutSyncedPhotoData {
 export interface UpsertMyProfileWithoutSyncedPhotoVariables {
   preferredName: string;
   classGroup: StudentClass;
+}
+
+export interface UpsertPilotCompetitionPeriodData {
+  affectedRows?: number | null;
+}
+
+export interface UpsertPilotCompetitionPeriodVariables {
+  periodId: UUIDString;
+  periodKey: string;
+  name: string;
+  startsAt: TimestampString;
+  endsAt: TimestampString;
+  schedule: unknown;
 }
 
 export interface UpsertStudentProgressData {
@@ -1266,6 +1489,102 @@ export const completeMyCurrentPhaseRef: CompleteMyCurrentPhaseRef;
 export function completeMyCurrentPhase(vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
 export function completeMyCurrentPhase(dc: DataConnect, vars: CompleteMyCurrentPhaseVariables): MutationPromise<CompleteMyCurrentPhaseData, CompleteMyCurrentPhaseVariables>;
 
+interface UpdateAuthoritativeActivitySessionStateRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdateAuthoritativeActivitySessionStateVariables): MutationRef<UpdateAuthoritativeActivitySessionStateData, UpdateAuthoritativeActivitySessionStateVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdateAuthoritativeActivitySessionStateVariables): MutationRef<UpdateAuthoritativeActivitySessionStateData, UpdateAuthoritativeActivitySessionStateVariables>;
+  operationName: string;
+}
+export const updateAuthoritativeActivitySessionStateRef: UpdateAuthoritativeActivitySessionStateRef;
+
+export function updateAuthoritativeActivitySessionState(vars: UpdateAuthoritativeActivitySessionStateVariables): MutationPromise<UpdateAuthoritativeActivitySessionStateData, UpdateAuthoritativeActivitySessionStateVariables>;
+export function updateAuthoritativeActivitySessionState(dc: DataConnect, vars: UpdateAuthoritativeActivitySessionStateVariables): MutationPromise<UpdateAuthoritativeActivitySessionStateData, UpdateAuthoritativeActivitySessionStateVariables>;
+
+interface ImportPedagogicalBankRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ImportPedagogicalBankVariables): MutationRef<ImportPedagogicalBankData, ImportPedagogicalBankVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ImportPedagogicalBankVariables): MutationRef<ImportPedagogicalBankData, ImportPedagogicalBankVariables>;
+  operationName: string;
+}
+export const importPedagogicalBankRef: ImportPedagogicalBankRef;
+
+export function importPedagogicalBank(vars: ImportPedagogicalBankVariables): MutationPromise<ImportPedagogicalBankData, ImportPedagogicalBankVariables>;
+export function importPedagogicalBank(dc: DataConnect, vars: ImportPedagogicalBankVariables): MutationPromise<ImportPedagogicalBankData, ImportPedagogicalBankVariables>;
+
+interface BindPilotClassRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: BindPilotClassVariables): MutationRef<BindPilotClassData, BindPilotClassVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: BindPilotClassVariables): MutationRef<BindPilotClassData, BindPilotClassVariables>;
+  operationName: string;
+}
+export const bindPilotClassRef: BindPilotClassRef;
+
+export function bindPilotClass(vars: BindPilotClassVariables): MutationPromise<BindPilotClassData, BindPilotClassVariables>;
+export function bindPilotClass(dc: DataConnect, vars: BindPilotClassVariables): MutationPromise<BindPilotClassData, BindPilotClassVariables>;
+
+interface UpsertPilotCompetitionPeriodRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertPilotCompetitionPeriodVariables): MutationRef<UpsertPilotCompetitionPeriodData, UpsertPilotCompetitionPeriodVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertPilotCompetitionPeriodVariables): MutationRef<UpsertPilotCompetitionPeriodData, UpsertPilotCompetitionPeriodVariables>;
+  operationName: string;
+}
+export const upsertPilotCompetitionPeriodRef: UpsertPilotCompetitionPeriodRef;
+
+export function upsertPilotCompetitionPeriod(vars: UpsertPilotCompetitionPeriodVariables): MutationPromise<UpsertPilotCompetitionPeriodData, UpsertPilotCompetitionPeriodVariables>;
+export function upsertPilotCompetitionPeriod(dc: DataConnect, vars: UpsertPilotCompetitionPeriodVariables): MutationPromise<UpsertPilotCompetitionPeriodData, UpsertPilotCompetitionPeriodVariables>;
+
+interface SeedLoadTestStudentsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SeedLoadTestStudentsVariables): MutationRef<SeedLoadTestStudentsData, SeedLoadTestStudentsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SeedLoadTestStudentsVariables): MutationRef<SeedLoadTestStudentsData, SeedLoadTestStudentsVariables>;
+  operationName: string;
+}
+export const seedLoadTestStudentsRef: SeedLoadTestStudentsRef;
+
+export function seedLoadTestStudents(vars: SeedLoadTestStudentsVariables): MutationPromise<SeedLoadTestStudentsData, SeedLoadTestStudentsVariables>;
+export function seedLoadTestStudents(dc: DataConnect, vars: SeedLoadTestStudentsVariables): MutationPromise<SeedLoadTestStudentsData, SeedLoadTestStudentsVariables>;
+
+interface RecordLoadTestMetricsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RecordLoadTestMetricsVariables): MutationRef<RecordLoadTestMetricsData, RecordLoadTestMetricsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RecordLoadTestMetricsVariables): MutationRef<RecordLoadTestMetricsData, RecordLoadTestMetricsVariables>;
+  operationName: string;
+}
+export const recordLoadTestMetricsRef: RecordLoadTestMetricsRef;
+
+export function recordLoadTestMetrics(vars: RecordLoadTestMetricsVariables): MutationPromise<RecordLoadTestMetricsData, RecordLoadTestMetricsVariables>;
+export function recordLoadTestMetrics(dc: DataConnect, vars: RecordLoadTestMetricsVariables): MutationPromise<RecordLoadTestMetricsData, RecordLoadTestMetricsVariables>;
+
+interface CleanupMarkedLoadTestStudentsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CleanupMarkedLoadTestStudentsVariables): MutationRef<CleanupMarkedLoadTestStudentsData, CleanupMarkedLoadTestStudentsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CleanupMarkedLoadTestStudentsVariables): MutationRef<CleanupMarkedLoadTestStudentsData, CleanupMarkedLoadTestStudentsVariables>;
+  operationName: string;
+}
+export const cleanupMarkedLoadTestStudentsRef: CleanupMarkedLoadTestStudentsRef;
+
+export function cleanupMarkedLoadTestStudents(vars: CleanupMarkedLoadTestStudentsVariables): MutationPromise<CleanupMarkedLoadTestStudentsData, CleanupMarkedLoadTestStudentsVariables>;
+export function cleanupMarkedLoadTestStudents(dc: DataConnect, vars: CleanupMarkedLoadTestStudentsVariables): MutationPromise<CleanupMarkedLoadTestStudentsData, CleanupMarkedLoadTestStudentsVariables>;
+
+interface FinalizeLoadTestCleanupRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FinalizeLoadTestCleanupVariables): MutationRef<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FinalizeLoadTestCleanupVariables): MutationRef<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
+  operationName: string;
+}
+export const finalizeLoadTestCleanupRef: FinalizeLoadTestCleanupRef;
+
+export function finalizeLoadTestCleanup(vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
+export function finalizeLoadTestCleanup(dc: DataConnect, vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
+
 interface GetMyProfileRef {
   /* Allow users to create refs without passing in DataConnect */
   (): QueryRef<GetMyProfileData, undefined>;
@@ -1505,4 +1824,88 @@ export const getTeacherDashboardRef: GetTeacherDashboardRef;
 
 export function getTeacherDashboard(vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
 export function getTeacherDashboard(dc: DataConnect, vars: GetTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetTeacherDashboardData, GetTeacherDashboardVariables>;
+
+interface GetPedagogicalBankStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetPedagogicalBankStatusData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetPedagogicalBankStatusData, undefined>;
+  operationName: string;
+}
+export const getPedagogicalBankStatusRef: GetPedagogicalBankStatusRef;
+
+export function getPedagogicalBankStatus(options?: ExecuteQueryOptions): QueryPromise<GetPedagogicalBankStatusData, undefined>;
+export function getPedagogicalBankStatus(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetPedagogicalBankStatusData, undefined>;
+
+interface ListActivePedagogicalItemsForActivityRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListActivePedagogicalItemsForActivityVariables): QueryRef<ListActivePedagogicalItemsForActivityData, ListActivePedagogicalItemsForActivityVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListActivePedagogicalItemsForActivityVariables): QueryRef<ListActivePedagogicalItemsForActivityData, ListActivePedagogicalItemsForActivityVariables>;
+  operationName: string;
+}
+export const listActivePedagogicalItemsForActivityRef: ListActivePedagogicalItemsForActivityRef;
+
+export function listActivePedagogicalItemsForActivity(vars: ListActivePedagogicalItemsForActivityVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivePedagogicalItemsForActivityData, ListActivePedagogicalItemsForActivityVariables>;
+export function listActivePedagogicalItemsForActivity(dc: DataConnect, vars: ListActivePedagogicalItemsForActivityVariables, options?: ExecuteQueryOptions): QueryPromise<ListActivePedagogicalItemsForActivityData, ListActivePedagogicalItemsForActivityVariables>;
+
+interface ListStudentSeenPedagogicalItemIdsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListStudentSeenPedagogicalItemIdsVariables): QueryRef<ListStudentSeenPedagogicalItemIdsData, ListStudentSeenPedagogicalItemIdsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListStudentSeenPedagogicalItemIdsVariables): QueryRef<ListStudentSeenPedagogicalItemIdsData, ListStudentSeenPedagogicalItemIdsVariables>;
+  operationName: string;
+}
+export const listStudentSeenPedagogicalItemIdsRef: ListStudentSeenPedagogicalItemIdsRef;
+
+export function listStudentSeenPedagogicalItemIds(vars: ListStudentSeenPedagogicalItemIdsVariables, options?: ExecuteQueryOptions): QueryPromise<ListStudentSeenPedagogicalItemIdsData, ListStudentSeenPedagogicalItemIdsVariables>;
+export function listStudentSeenPedagogicalItemIds(dc: DataConnect, vars: ListStudentSeenPedagogicalItemIdsVariables, options?: ExecuteQueryOptions): QueryPromise<ListStudentSeenPedagogicalItemIdsData, ListStudentSeenPedagogicalItemIdsVariables>;
+
+interface GetPilotClassBindingRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPilotClassBindingVariables): QueryRef<GetPilotClassBindingData, GetPilotClassBindingVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPilotClassBindingVariables): QueryRef<GetPilotClassBindingData, GetPilotClassBindingVariables>;
+  operationName: string;
+}
+export const getPilotClassBindingRef: GetPilotClassBindingRef;
+
+export function getPilotClassBinding(vars: GetPilotClassBindingVariables, options?: ExecuteQueryOptions): QueryPromise<GetPilotClassBindingData, GetPilotClassBindingVariables>;
+export function getPilotClassBinding(dc: DataConnect, vars: GetPilotClassBindingVariables, options?: ExecuteQueryOptions): QueryPromise<GetPilotClassBindingData, GetPilotClassBindingVariables>;
+
+interface ResolveCompetitionPeriodByKeyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ResolveCompetitionPeriodByKeyVariables): QueryRef<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ResolveCompetitionPeriodByKeyVariables): QueryRef<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
+  operationName: string;
+}
+export const resolveCompetitionPeriodByKeyRef: ResolveCompetitionPeriodByKeyRef;
+
+export function resolveCompetitionPeriodByKey(vars: ResolveCompetitionPeriodByKeyVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
+export function resolveCompetitionPeriodByKey(dc: DataConnect, vars: ResolveCompetitionPeriodByKeyVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveCompetitionPeriodByKeyData, ResolveCompetitionPeriodByKeyVariables>;
+
+interface GetPilotExportRowsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetPilotExportRowsVariables): QueryRef<GetPilotExportRowsData, GetPilotExportRowsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetPilotExportRowsVariables): QueryRef<GetPilotExportRowsData, GetPilotExportRowsVariables>;
+  operationName: string;
+}
+export const getPilotExportRowsRef: GetPilotExportRowsRef;
+
+export function getPilotExportRows(vars: GetPilotExportRowsVariables, options?: ExecuteQueryOptions): QueryPromise<GetPilotExportRowsData, GetPilotExportRowsVariables>;
+export function getPilotExportRows(dc: DataConnect, vars: GetPilotExportRowsVariables, options?: ExecuteQueryOptions): QueryPromise<GetPilotExportRowsData, GetPilotExportRowsVariables>;
+
+interface GetLoadTestCleanupStatusRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetLoadTestCleanupStatusVariables): QueryRef<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetLoadTestCleanupStatusVariables): QueryRef<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
+  operationName: string;
+}
+export const getLoadTestCleanupStatusRef: GetLoadTestCleanupStatusRef;
+
+export function getLoadTestCleanupStatus(vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
+export function getLoadTestCleanupStatus(dc: DataConnect, vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
 

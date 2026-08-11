@@ -989,3 +989,229 @@ query GetTeacherDashboard(
     params: [$periodId, { _expr: "auth.uid" }, $studentLimit]
   )
 }
+
+query GetPedagogicalBankStatus @auth(level: NO_ACCESS) {
+  latestLoad: _selectFirst(
+    sql: """
+      SELECT
+        load_hash AS "loadHash",
+        load_version AS "loadVersion",
+        source_file AS "sourceFile",
+        item_count AS "itemCount",
+        inserted_count AS "insertedCount",
+        updated_count AS "updatedCount",
+        ignored_count AS "ignoredCount",
+        rejected_count AS "rejectedCount",
+        imported_at AS "importedAt"
+      FROM pedagogical_bank_loads
+      ORDER BY imported_at DESC
+      LIMIT 1
+    """
+  )
+  counts: _select(
+    sql: """
+      SELECT
+        activity_id AS "activityId",
+        COUNT(*)::integer AS "totalItems",
+        COUNT(*) FILTER (WHERE active = TRUE)::integer AS "activeItems"
+      FROM pedagogical_items
+      GROUP BY activity_id
+      ORDER BY activity_id
+    """
+  )
+  items: _select(
+    sql: """
+      SELECT
+        activity_id AS "activityId",
+        version,
+        item_id AS "itemId",
+        content_hash AS "contentHash"
+      FROM pedagogical_items
+      ORDER BY activity_id, version, item_id
+    """
+  )
+}
+
+query ListActivePedagogicalItemsForActivity($activityId: String!)
+  @auth(level: NO_ACCESS) {
+  pedagogicalItems(
+    where: {
+      activityId: { eq: $activityId }
+      active: { eq: true }
+    }
+    orderBy: [{ difficulty: ASC }, { itemId: ASC }]
+  ) {
+    activityId
+    version
+    itemId
+    phaseNumber
+    itemType
+    characterId
+    difficulty
+    stage
+    pathCondition
+    publicPayload
+    secretPayload
+    sourceId
+    sourceUrl
+    tags
+    active
+    reviewStatus
+    origin
+    contentHash
+    loadHash
+  }
+}
+
+query ListStudentSeenPedagogicalItemIds(
+  $studentUid: String!
+  $activityId: String!
+) @auth(level: NO_ACCESS) {
+  seenItems: _select(
+    sql: """
+      SELECT DISTINCT item->>'itemId' AS "itemId"
+      FROM activity_sessions AS session
+      CROSS JOIN LATERAL jsonb_array_elements(
+        COALESCE(session.answer_key->'items', '[]'::jsonb)
+      ) AS item
+      WHERE session.user_uid = $1
+        AND session.activity_id = $2
+        AND session.status = 'SUBMITTED'
+        AND item ? 'itemId'
+      ORDER BY "itemId"
+    """
+    params: [$studentUid, $activityId]
+  )
+}
+
+query GetPilotClassBinding($studentUid: String!) @auth(level: NO_ACCESS) {
+  user(first: { where: { uid: { eq: $studentUid } } }) {
+    uid
+    role
+    classGroup
+    profileCompleted
+  }
+}
+
+query ResolveCompetitionPeriodByKey($periodKey: String!)
+  @auth(level: NO_ACCESS) {
+  competitionPeriod(first: { where: { periodKey: { eq: $periodKey } } }) {
+    id
+    periodKey
+    name
+    timeZone
+    schedule
+    status
+    startsAt
+    endsAt
+  }
+}
+
+query GetPilotExportRows($periodId: UUID!) @auth(level: NO_ACCESS) {
+  attempts: _select(
+    sql: """
+      SELECT
+        attempt.id::text AS "attemptId",
+        attempt.user_uid AS "studentUid",
+        CASE users.class_group::text
+          WHEN 'THIRD_DSA' THEN '3DSA'
+          WHEN 'THIRD_DSB' THEN '3DSB'
+          ELSE NULL
+        END AS "classId",
+        attempt.activity_id AS "activityId",
+        attempt.phase_number AS "phaseNumber",
+        attempt.score,
+        attempt.passed,
+        attempt.first_completion AS "firstCompletion",
+        attempt.reward_amount AS "rewardAmount",
+        attempt.created_at AS "createdAt"
+      FROM activity_attempts AS attempt
+      INNER JOIN users ON users.firebase_uid = attempt.user_uid
+      INNER JOIN competition_periods AS period ON period.id = $1::uuid
+      WHERE attempt.created_at >= period.starts_at
+        AND attempt.created_at < period.ends_at
+      ORDER BY attempt.created_at ASC
+    """
+    params: [$periodId]
+  )
+  transactions: _select(
+    sql: """
+      SELECT
+        transaction.id::text AS "transactionId",
+        transaction.user_uid AS "studentUid",
+        CASE transaction.class_group::text
+          WHEN 'THIRD_DSA' THEN '3DSA'
+          WHEN 'THIRD_DSB' THEN '3DSB'
+          ELSE NULL
+        END AS "classId",
+        transaction.transaction_type::text AS "transactionType",
+        transaction.amount,
+        transaction.base_amount AS "baseAmount",
+        transaction.reason,
+        transaction.source_id AS "sourceId",
+        transaction.phase_number AS "phaseNumber",
+        transaction.created_at AS "createdAt"
+      FROM capi_coin_transactions AS transaction
+      WHERE transaction.competition_period_id = $1::uuid
+      ORDER BY transaction.created_at ASC
+    """
+    params: [$periodId]
+  )
+  audit: _select(
+    sql: """
+      SELECT
+        'PEDAGOGICAL_BANK_LOAD' AS "eventType",
+        load_hash AS "eventId",
+        imported_at AS "occurredAt",
+        jsonb_build_object(
+          'sourceFile', source_file,
+          'itemCount', item_count,
+          'inserted', inserted_count,
+          'updated', updated_count,
+          'ignored', ignored_count,
+          'rejected', rejected_count
+        ) AS details
+      FROM pedagogical_bank_loads
+      UNION ALL
+      SELECT
+        'COMPETITION_PERIOD' AS "eventType",
+        period.id::text AS "eventId",
+        period.updated_at AS "occurredAt",
+        jsonb_build_object(
+          'periodKey', period.period_key,
+          'status', period.status::text,
+          'startsAt', period.starts_at,
+          'endsAt', period.ends_at,
+          'timeZone', period.time_zone
+        ) AS details
+      FROM competition_periods AS period
+      WHERE period.id = $1::uuid
+      ORDER BY "occurredAt" ASC
+    """
+    params: [$periodId]
+  )
+}
+
+query GetLoadTestCleanupStatus($runId: String!) @auth(level: NO_ACCESS) {
+  run: loadTestRun(first: { where: { runId: { eq: $runId } } }) {
+    runId
+    status
+    requestedUsers
+    createdUsers
+    deletedDatabaseUsers
+    deletedAuthUsers
+    metrics
+    startedAt
+    completedAt
+    cleanedAt
+  }
+  remainingMarkedUsers: _selectFirst(
+    sql: """
+      SELECT COUNT(*)::integer AS count
+      FROM users
+      WHERE is_test = TRUE
+        AND origin = 'LOAD_TEST'
+        AND firebase_uid LIKE 'loadtest-%'
+    """
+  )
+}

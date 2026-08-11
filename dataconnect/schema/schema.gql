@@ -32,6 +32,7 @@ enum CapiCoinTransactionType {
   PURCHASE
   ADMIN_ADJUSTMENT
   ACTIVITY_REPEAT_REWARD
+  PERIOD_CLOSE_ADJUSTMENT
 }
 
 enum RewardSuppressionReason {
@@ -83,6 +84,26 @@ enum ContentAssetType {
   EXTERNAL_LINK
 }
 
+enum PedagogicalItemType {
+  QUESTION
+  DECISION
+  PATH
+  CARD
+}
+
+enum PedagogicalDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum PedagogicalReviewStatus {
+  PILOT_UNREVIEWED
+  TECHNICALLY_APPROVED
+  PEDAGOGICALLY_APPROVED
+  FULLY_APPROVED
+}
+
 # O uid do Firebase Auth é a chave primária. Isso elimina a necessidade de
 # manter um segundo identificador e permite filtros seguros com auth.uid.
 type User
@@ -105,6 +126,11 @@ type User
   profileCompleted: Boolean!
     @col(name: "profile_completed")
     @default(value: false)
+  isTest: Boolean! @col(name: "is_test") @default(value: false)
+  testRunId: String
+    @col(name: "test_run_id", dataType: "varchar(96)")
+    @index
+  origin: String @col(dataType: "varchar(32)")
   capiCoins: Int! @col(name: "capi_coins") @default(value: 0)
   currentPhase: Int! @col(name: "current_phase") @default(value: 0)
   currentStreak: Int! @col(name: "current_streak") @default(value: 0)
@@ -431,6 +457,13 @@ type CompetitionPeriod
   )
   @index(fields: ["status", "startsAt"], order: [ASC, ASC]) {
   name: String! @col(dataType: "varchar(80)")
+  periodKey: String
+    @col(name: "period_key", dataType: "varchar(96)")
+    @unique
+  timeZone: String!
+    @col(name: "time_zone", dataType: "varchar(64)")
+    @default(value: "America/Fortaleza")
+  schedule: Any
   status: CompetitionPeriodStatus! @default(value: DRAFT)
   # Sentinela anulável: somente ACTIVE usa este valor. A unicidade impede
   # duas ativações concorrentes sem limitar rascunhos ou períodos históricos.
@@ -483,4 +516,103 @@ type CapiCoinTransaction
   createdAt: Timestamp!
     @col(name: "created_at")
     @default(expr: "request.time")
+}
+
+# Registro imutável da origem de cada carga pedagógica. O hash SHA-256 é a
+# chave de idempotência e permite reconciliar o banco com a planilha original.
+type PedagogicalBankLoad
+  @table(
+    name: "pedagogical_bank_loads"
+    key: "loadHash"
+    singular: "pedagogicalBankLoad"
+    plural: "pedagogicalBankLoads"
+  ) {
+  loadHash: String!
+    @col(name: "load_hash", dataType: "varchar(64)")
+  loadVersion: String!
+    @col(name: "load_version", dataType: "varchar(32)")
+  sourceFile: String!
+    @col(name: "source_file", dataType: "varchar(240)")
+  itemCount: Int! @col(name: "item_count")
+  insertedCount: Int! @col(name: "inserted_count") @default(value: 0)
+  updatedCount: Int! @col(name: "updated_count") @default(value: 0)
+  ignoredCount: Int! @col(name: "ignored_count") @default(value: 0)
+  rejectedCount: Int! @col(name: "rejected_count") @default(value: 0)
+  importedAt: Timestamp!
+    @col(name: "imported_at")
+    @default(expr: "request.time")
+}
+
+# Item normalizado da planilha. O payload público não contém respostas,
+# pontuações, deltas de crédito ou feedback pós-submissão.
+type PedagogicalItem
+  @table(
+    name: "pedagogical_items"
+    key: ["activityId", "version", "itemId"]
+    singular: "pedagogicalItem"
+    plural: "pedagogicalItems"
+  )
+  @index(fields: ["activityId", "active", "difficulty"], order: [ASC, ASC, ASC])
+  @index(fields: ["activityId", "characterId", "difficulty"], order: [ASC, ASC, ASC]) {
+  activityId: String!
+    @col(name: "activity_id", dataType: "varchar(128)")
+  version: String! @col(dataType: "varchar(32)")
+  itemId: String! @col(name: "item_id", dataType: "varchar(64)")
+  phaseNumber: Int! @col(name: "phase_number")
+  itemType: PedagogicalItemType! @col(name: "item_type")
+  characterId: String
+    @col(name: "character_id", dataType: "varchar(96)")
+  difficulty: PedagogicalDifficulty!
+  stage: Int
+  pathCondition: String
+    @col(name: "path_condition", dataType: "varchar(64)")
+  publicPayload: Any! @col(name: "public_payload")
+  secretPayload: Any! @col(name: "secret_payload")
+  sourceId: String!
+    @col(name: "source_id", dataType: "varchar(96)")
+  sourceUrl: String!
+    @col(name: "source_url", dataType: "varchar(2048)")
+  tags: [String!]!
+  active: Boolean! @default(value: true)
+  reviewStatus: PedagogicalReviewStatus!
+    @col(name: "review_status")
+    @default(value: PILOT_UNREVIEWED)
+  origin: String! @col(dataType: "varchar(64)")
+  contentHash: String!
+    @col(name: "content_hash", dataType: "varchar(64)")
+  load: PedagogicalBankLoad!
+    @ref(fields: "loadHash", references: "loadHash")
+  loadHash: String!
+    @col(name: "load_hash", dataType: "varchar(64)")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+type LoadTestRun
+  @table(
+    name: "load_test_runs"
+    key: "runId"
+    singular: "loadTestRun"
+    plural: "loadTestRuns"
+  ) {
+  runId: String! @col(name: "run_id", dataType: "varchar(96)")
+  status: String! @col(dataType: "varchar(32)")
+  requestedUsers: Int! @col(name: "requested_users")
+  createdUsers: Int! @col(name: "created_users") @default(value: 0)
+  deletedDatabaseUsers: Int!
+    @col(name: "deleted_database_users")
+    @default(value: 0)
+  deletedAuthUsers: Int!
+    @col(name: "deleted_auth_users")
+    @default(value: 0)
+  metrics: Any
+  startedAt: Timestamp!
+    @col(name: "started_at")
+    @default(expr: "request.time")
+  completedAt: Timestamp @col(name: "completed_at")
+  cleanedAt: Timestamp @col(name: "cleaned_at")
 }

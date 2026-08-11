@@ -19,6 +19,7 @@ functions/.secret.local
 npm-debug.log*
 .DS_Store
 dist/
+outputs/
 
 # Configurações locais de agentes e editores
 .claude/

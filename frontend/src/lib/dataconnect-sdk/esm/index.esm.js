@@ -13,6 +13,7 @@ export const CapiCoinTransactionType = {
   PURCHASE: "PURCHASE",
   ADMIN_ADJUSTMENT: "ADMIN_ADJUSTMENT",
   ACTIVITY_REPEAT_REWARD: "ACTIVITY_REPEAT_REWARD",
+  PERIOD_CLOSE_ADJUSTMENT: "PERIOD_CLOSE_ADJUSTMENT",
 }
 
 export const CompetitionPeriodStatus = {
@@ -42,6 +43,26 @@ export const EditorialStatus = {
   IN_REVIEW: "IN_REVIEW",
   PUBLISHED: "PUBLISHED",
   ARCHIVED: "ARCHIVED",
+}
+
+export const PedagogicalDifficulty = {
+  EASY: "EASY",
+  MEDIUM: "MEDIUM",
+  HARD: "HARD",
+}
+
+export const PedagogicalItemType = {
+  QUESTION: "QUESTION",
+  DECISION: "DECISION",
+  PATH: "PATH",
+  CARD: "CARD",
+}
+
+export const PedagogicalReviewStatus = {
+  PILOT_UNREVIEWED: "PILOT_UNREVIEWED",
+  TECHNICALLY_APPROVED: "TECHNICALLY_APPROVED",
+  PEDAGOGICALLY_APPROVED: "PEDAGOGICALLY_APPROVED",
+  FULLY_APPROVED: "FULLY_APPROVED",
 }
 
 export const ProfessionalAvatar = {
@@ -446,6 +467,102 @@ export function completeMyCurrentPhase(dcOrVars, vars) {
   return executeMutation(completeMyCurrentPhaseRef(dcInstance, inputVars));
 }
 
+export const updateAuthoritativeActivitySessionStateRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdateAuthoritativeActivitySessionState', inputVars);
+}
+updateAuthoritativeActivitySessionStateRef.operationName = 'UpdateAuthoritativeActivitySessionState';
+
+export function updateAuthoritativeActivitySessionState(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updateAuthoritativeActivitySessionStateRef(dcInstance, inputVars));
+}
+
+export const importPedagogicalBankRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ImportPedagogicalBank', inputVars);
+}
+importPedagogicalBankRef.operationName = 'ImportPedagogicalBank';
+
+export function importPedagogicalBank(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(importPedagogicalBankRef(dcInstance, inputVars));
+}
+
+export const bindPilotClassRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'BindPilotClass', inputVars);
+}
+bindPilotClassRef.operationName = 'BindPilotClass';
+
+export function bindPilotClass(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(bindPilotClassRef(dcInstance, inputVars));
+}
+
+export const upsertPilotCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertPilotCompetitionPeriod', inputVars);
+}
+upsertPilotCompetitionPeriodRef.operationName = 'UpsertPilotCompetitionPeriod';
+
+export function upsertPilotCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertPilotCompetitionPeriodRef(dcInstance, inputVars));
+}
+
+export const seedLoadTestStudentsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SeedLoadTestStudents', inputVars);
+}
+seedLoadTestStudentsRef.operationName = 'SeedLoadTestStudents';
+
+export function seedLoadTestStudents(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(seedLoadTestStudentsRef(dcInstance, inputVars));
+}
+
+export const recordLoadTestMetricsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RecordLoadTestMetrics', inputVars);
+}
+recordLoadTestMetricsRef.operationName = 'RecordLoadTestMetrics';
+
+export function recordLoadTestMetrics(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(recordLoadTestMetricsRef(dcInstance, inputVars));
+}
+
+export const cleanupMarkedLoadTestStudentsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CleanupMarkedLoadTestStudents', inputVars);
+}
+cleanupMarkedLoadTestStudentsRef.operationName = 'CleanupMarkedLoadTestStudents';
+
+export function cleanupMarkedLoadTestStudents(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(cleanupMarkedLoadTestStudentsRef(dcInstance, inputVars));
+}
+
+export const finalizeLoadTestCleanupRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'FinalizeLoadTestCleanup', inputVars);
+}
+finalizeLoadTestCleanupRef.operationName = 'FinalizeLoadTestCleanup';
+
+export function finalizeLoadTestCleanup(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(finalizeLoadTestCleanupRef(dcInstance, inputVars));
+}
+
 export const getMyProfileRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -704,5 +821,96 @@ export function getTeacherDashboard(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getTeacherDashboardRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPedagogicalBankStatusRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetPedagogicalBankStatus');
+}
+getPedagogicalBankStatusRef.operationName = 'GetPedagogicalBankStatus';
+
+export function getPedagogicalBankStatus(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getPedagogicalBankStatusRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listActivePedagogicalItemsForActivityRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListActivePedagogicalItemsForActivity', inputVars);
+}
+listActivePedagogicalItemsForActivityRef.operationName = 'ListActivePedagogicalItemsForActivity';
+
+export function listActivePedagogicalItemsForActivity(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listActivePedagogicalItemsForActivityRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listStudentSeenPedagogicalItemIdsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListStudentSeenPedagogicalItemIds', inputVars);
+}
+listStudentSeenPedagogicalItemIdsRef.operationName = 'ListStudentSeenPedagogicalItemIds';
+
+export function listStudentSeenPedagogicalItemIds(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listStudentSeenPedagogicalItemIdsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPilotClassBindingRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetPilotClassBinding', inputVars);
+}
+getPilotClassBindingRef.operationName = 'GetPilotClassBinding';
+
+export function getPilotClassBinding(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPilotClassBindingRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const resolveCompetitionPeriodByKeyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ResolveCompetitionPeriodByKey', inputVars);
+}
+resolveCompetitionPeriodByKeyRef.operationName = 'ResolveCompetitionPeriodByKey';
+
+export function resolveCompetitionPeriodByKey(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(resolveCompetitionPeriodByKeyRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getPilotExportRowsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetPilotExportRows', inputVars);
+}
+getPilotExportRowsRef.operationName = 'GetPilotExportRows';
+
+export function getPilotExportRows(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getPilotExportRowsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getLoadTestCleanupStatusRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetLoadTestCleanupStatus', inputVars);
+}
+getLoadTestCleanupStatusRef.operationName = 'GetLoadTestCleanupStatus';
+
+export function getLoadTestCleanupStatus(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getLoadTestCleanupStatusRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

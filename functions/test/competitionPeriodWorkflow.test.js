@@ -60,6 +60,16 @@ test('edição preserva encerrados e impede sobreposição', async () => {
   assert.doesNotMatch(mutation, /DELETE FROM competition_periods/);
 });
 
+test('encerramento compensa o saldo sem apagar o ledger', async () => {
+  const source = await readFile(mutationsPath, 'utf8');
+  const mutation = operation(source, 'SetTeacherCompetitionPeriodStatus');
+  assert.match(mutation, /INSERT INTO capi_coin_transactions/);
+  assert.match(mutation, /-student\.capi_coins/);
+  assert.match(mutation, /'PERIOD_CLOSE_ADJUSTMENT'/);
+  assert.match(mutation, /capi_coins = 0/);
+  assert.doesNotMatch(mutation, /DELETE FROM capi_coin_transactions/);
+});
+
 test('callables exigem requireTeacher antes de chamar o repositório', async () => {
   const source = await readFile(indexPath, 'utf8');
   for (const name of [

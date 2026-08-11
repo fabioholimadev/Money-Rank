@@ -1,4 +1,5 @@
-import manifest from './generated/activity-manifest.json' with { type: 'json' };
+import legacyManifest from './generated/activity-manifest.json' with { type: 'json' };
+import pedagogicalBank from './generated/pedagogical-bank.json' with { type: 'json' };
 
 export const ACTIVITY_IDS_BY_PHASE = Object.freeze({
   1: 'perigo-doce-quiz',
@@ -7,7 +8,13 @@ export const ACTIVITY_IDS_BY_PHASE = Object.freeze({
   4: 'engenharia-desejo-fato-fake-v1',
 });
 
-const activities = manifest.activities;
+const CHARACTER_NAMES = Object.freeze({
+  'lara-consumo-social': 'Lara',
+  'miguel-apostas': 'Miguel',
+  'rafael-vape': 'Rafael',
+});
+
+const activeItems = pedagogicalBank.items.filter((item) => item.active);
 
 function requireArray(value, message) {
   if (!Array.isArray(value)) throw new Error(message);
@@ -16,18 +23,14 @@ function requireArray(value, message) {
 
 function answerMap(answers, itemField, choiceField) {
   const normalized = new Map();
-
   for (const answer of requireArray(answers, 'Respostas inválidas.')) {
     const itemId = String(answer?.[itemField] ?? '').trim();
-    const choiceId = String(answer?.[choiceField] ?? '').trim();
-
+    const choiceId = String(answer?.[choiceField] ?? '').trim().toUpperCase();
     if (!itemId || !choiceId || normalized.has(itemId)) {
       throw new Error('A atividade contém respostas ausentes ou duplicadas.');
     }
-
     normalized.set(itemId, choiceId);
   }
-
   return normalized;
 }
 
@@ -40,15 +43,111 @@ function shuffle(values, random = Math.random) {
   return result;
 }
 
-export function getActivityDefinition(phaseNumber, overrideDefinition = null) {
-  const activityId = ACTIVITY_IDS_BY_PHASE[Number(phaseNumber)];
-  const definition = overrideDefinition ?? (activityId ? activities[activityId] : null);
+function publicItem(item) {
+  return {
+    id: item.itemId,
+    itemId: item.itemId,
+    prompt: item.publicPayload.prompt,
+    difficulty: item.difficulty,
+    tags: item.tags,
+    options: item.publicPayload.options.map((option) => ({
+      id: option.id,
+      label: option.label,
+      text: option.label,
+    })),
+    ...(item.characterId ? { characterId: item.characterId } : {}),
+    ...(item.stage ? { stage: item.stage } : {}),
+    ...(item.publicPayload.stageName
+      ? { stageName: item.publicPayload.stageName }
+      : {}),
+  };
+}
 
-  if (!definition || definition.phaseNumber !== Number(phaseNumber)) {
-    throw new Error('A fase informada não possui atividade autoritativa.');
+function privateItem(item) {
+  return {
+    itemId: item.itemId,
+    difficulty: item.difficulty,
+    characterId: item.characterId,
+    stage: item.stage,
+    pathCondition: item.pathCondition,
+    tags: item.tags,
+    ...item.secretPayload,
+  };
+}
+
+function resetCycleIfExhausted(candidates, seenIds) {
+  const seen = new Set(seenIds ?? []);
+  return candidates.every((item) => seen.has(item.itemId)) ? new Set() : seen;
+}
+
+function chooseQuota(candidates, quota, seenIds, random) {
+  const seen = resetCycleIfExhausted(candidates, seenIds);
+  const chosen = [];
+  for (const [difficulty, count] of Object.entries(quota)) {
+    const pool = candidates.filter((item) => item.difficulty === difficulty);
+    let available = shuffle(pool.filter((item) => !seen.has(item.itemId)), random);
+    if (available.length < count) available = shuffle(pool, random);
+    if (available.length < count) {
+      throw new Error(`Banco insuficiente para a dificuldade ${difficulty}.`);
+    }
+    chosen.push(...available.slice(0, count));
+  }
+  return shuffle(chosen, random);
+}
+
+function chooseEngineeringCards(candidates, seenIds, random) {
+  const seen = resetCycleIfExhausted(candidates, seenIds);
+  const themes = shuffle([...new Set(candidates.map((item) => item.tags[1]))], random);
+  const targets = [
+    ['EASY', 'A'], ['EASY', 'A'],
+    ['MEDIUM', 'A'], ['MEDIUM', 'A'],
+    ['MEDIUM', 'B'], ['MEDIUM', 'B'],
+    ['HARD', 'B'], ['HARD', 'B'],
+  ];
+
+  function attempt(allowSeen) {
+    const assignments = shuffle(targets, random);
+    const chosen = [];
+    for (let index = 0; index < themes.length; index += 1) {
+      const [difficulty, correctOptionId] = assignments[index];
+      const matches = shuffle(candidates.filter((item) =>
+        item.tags[1] === themes[index]
+        && item.difficulty === difficulty
+        && item.secretPayload.correctOptionId === correctOptionId
+        && (allowSeen || !seen.has(item.itemId))), random);
+      if (!matches.length) return null;
+      chosen.push(matches[0]);
+    }
+    return shuffle(chosen, random);
   }
 
-  return { activityId, definition };
+  const selected = attempt(false) ?? attempt(true);
+  if (!selected || selected.length !== 8) {
+    throw new Error('O banco não permite uma rodada 2/4/2, 4 V/4 F e um card por tema.');
+  }
+  return selected;
+}
+
+function itemsForPhase(phaseNumber, definition = null) {
+  if (Array.isArray(definition?.items)) return definition.items;
+  const activityId = ACTIVITY_IDS_BY_PHASE[Number(phaseNumber)];
+  return activeItems.filter((item) => item.activityId === activityId);
+}
+
+export function getActivityDefinition(phaseNumber, overrideDefinition = null) {
+  const activityId = ACTIVITY_IDS_BY_PHASE[Number(phaseNumber)];
+  const items = itemsForPhase(phaseNumber, overrideDefinition);
+  if (!activityId || !items.length) {
+    throw new Error('A fase informada não possui atividade autoritativa.');
+  }
+  return {
+    activityId,
+    definition: {
+      phaseNumber: Number(phaseNumber),
+      contentVersion: pedagogicalBank.loadVersion,
+      items,
+    },
+  };
 }
 
 export function buildStaticSession(
@@ -57,175 +156,294 @@ export function buildStaticSession(
     variantId = null,
     random = Math.random,
     definition: overrideDefinition = null,
+    seenItemIds = [],
   } = {},
 ) {
   const { activityId, definition } = getActivityDefinition(
     phaseNumber,
     overrideDefinition,
   );
+  const items = definition.items;
+  let selected;
+  let publicPayload;
 
-  if (phaseNumber === 2) {
-    const selectedCase = definition.cases.find(
-      (caseItem) => caseItem.id === variantId,
-    );
-    if (!selectedCase) throw new Error('O personagem escolhido não existe.');
-
-    return {
-      activityId: `custo-vicio-case-${selectedCase.id}`,
-      variantId: selectedCase.id,
-      contentVersion: definition.contentVersion,
-      publicPayload: {
-        variantId: selectedCase.id,
-        caseData: overrideDefinition ? selectedCase : undefined,
-      },
-      answerKey: { decisions: selectedCase.decisions },
+  if (Number(phaseNumber) === 1) {
+    selected = chooseQuota(items, { EASY: 2, MEDIUM: 2, HARD: 1 }, seenItemIds, random);
+    publicPayload = {
+      source: 'pedagogical-bank',
+      questions: selected.map(publicItem),
     };
-  }
-
-  if (phaseNumber === 3) {
-    return {
-      activityId,
-      variantId: null,
-      contentVersion: definition.contentVersion,
-      publicPayload: {
-        mission: overrideDefinition ? definition : undefined,
-      },
-      answerKey: { decisions: definition.decisions },
-    };
-  }
-
-  if (phaseNumber === 4) {
-    const realCards = shuffle(
-      definition.cards.filter((card) => card.classification === 'REAL'),
+  } else if (Number(phaseNumber) === 2) {
+    const characterIds = [...new Set(items.map((item) => item.characterId))];
+    const characterId = variantId || shuffle(characterIds, random)[0];
+    const characterItems = items.filter((item) => item.characterId === characterId);
+    if (!characterItems.length) throw new Error('O personagem escolhido não existe.');
+    selected = chooseQuota(
+      characterItems,
+      { EASY: 2, MEDIUM: 2, HARD: 2 },
+      seenItemIds,
       random,
-    ).slice(0, 3);
-    const inventedCards = shuffle(
-      definition.cards.filter((card) => card.classification === 'INVENTED'),
-      random,
-    ).slice(0, 3);
-    const cards = shuffle([...realCards, ...inventedCards], random);
-
-    return {
-      activityId,
-      variantId: null,
-      contentVersion: definition.contentVersion,
-      publicPayload: {
-        cardIds: cards.map((card) => card.id),
-        cards: overrideDefinition ? cards : undefined,
+    );
+    publicPayload = {
+      variantId: characterId,
+      caseData: {
+        id: characterId,
+        name: CHARACTER_NAMES[characterId] ?? characterId,
+        decisions: selected.map((item) => ({
+          ...publicItem(item),
+          narrative: item.publicPayload.prompt,
+          question: item.publicPayload.prompt,
+        })),
       },
-      answerKey: { cards },
     };
+  } else if (Number(phaseNumber) === 3) {
+    const stageOne = items.filter((item) => item.stage === 1);
+    selected = [shuffle(stageOne.filter((item) => !new Set(seenItemIds).has(item.itemId)), random)[0]
+      ?? shuffle(stageOne, random)[0]];
+    publicPayload = {
+      mission: {
+        id: activityId,
+        initialCredit: 100,
+        minCredit: 0,
+        maxCredit: 120,
+        currentStage: 1,
+        currentItem: publicItem(selected[0]),
+      },
+    };
+  } else if (Number(phaseNumber) === 4) {
+    selected = chooseEngineeringCards(items, seenItemIds, random);
+    publicPayload = {
+      cardIds: selected.map((item) => item.itemId),
+      cards: selected.map(publicItem),
+    };
+  } else {
+    throw new Error('Fase autoritativa inválida.');
   }
 
-  throw new Error('A Fase 1 exige uma sessão de quiz preparada no servidor.');
-}
-
-function scorePerigoDoce(answerKey, answers) {
-  const expected = requireArray(
-    answerKey?.questions,
-    'Gabarito do quiz inválido.',
-  );
-  const submitted = answerMap(answers, 'questionId', 'optionId');
-  if (expected.length !== 5 || submitted.size !== expected.length) {
-    throw new Error('Responda as cinco questões antes de enviar.');
-  }
-
-  const correctAnswers = expected.filter(
-    (question) => submitted.get(question.id) === question.correctOptionId,
-  ).length;
-
-  return resultFromCorrectAnswers(correctAnswers, expected.length, 60);
-}
-
-function scoreCustoVicio(answerKey, answers) {
-  const decisions = requireArray(
-    answerKey?.decisions,
-    'Gabarito do estudo de caso inválido.',
-  );
-  const submitted = answerMap(answers, 'decisionId', 'optionId');
-  if (decisions.length !== 5 || submitted.size !== decisions.length) {
-    throw new Error('Analise as cinco decisões antes de enviar.');
-  }
-
-  const points = decisions.reduce((total, decision) => {
-    const option = decision.options.find(
-      (item) => item.id === submitted.get(decision.id),
-    );
-    if (!option) throw new Error(`Resposta inválida em ${decision.id}.`);
-    return total + option.points;
-  }, 0);
-  const score = Math.round(60 + ((points - 5) / 10) * 40);
-
-  return { score, correctAnswers: 5, wrongAnswers: 0, passed: true };
-}
-
-function scoreIlusaoDinheiro(answerKey, answers) {
-  const decisions = requireArray(
-    answerKey?.decisions,
-    'Gabarito dos caminhos inválido.',
-  );
-  const submitted = answerMap(answers, 'decisionId', 'choiceId');
-  if (decisions.length !== 6 || submitted.size !== decisions.length) {
-    throw new Error('Tome as seis decisões antes de enviar.');
-  }
-
-  let analysisPoints = 0;
-  let strategicChoices = 0;
-  for (const decision of decisions) {
-    const choice = decision.choices.find(
-      (item) => item.id === submitted.get(decision.id),
-    );
-    if (!choice) throw new Error(`Resposta inválida em ${decision.id}.`);
-    analysisPoints += choice.analysisPoints;
-    if (choice.analysisPoints > 0) strategicChoices += 1;
-  }
-
-  const score = Math.round((analysisPoints / 12) * 100);
   return {
-    score,
-    correctAnswers: strategicChoices,
-    wrongAnswers: decisions.length - strategicChoices,
-    passed: score >= 60,
+    activityId,
+    variantId: Number(phaseNumber) === 2 ? publicPayload.variantId : null,
+    contentVersion: definition.contentVersion,
+    publicPayload,
+    answerKey: {
+      items: (Number(phaseNumber) === 3 ? items : selected).map(privateItem),
+      selectedItemIds: selected.map((item) => item.itemId),
+      ...(Number(phaseNumber) === 3 ? {
+        previouslySeenItemIds: [...seenItemIds],
+        progress: { stage: 1, credit: 100, answers: [] },
+      } : {}),
+      sourceHash: pedagogicalBank.sourceHash,
+    },
   };
 }
 
-function scoreEngenhariaDesejo(answerKey, answers) {
-  const cards = requireArray(
-    answerKey?.cards,
-    'Gabarito da investigação inválido.',
-  );
-  const submitted = answerMap(
-    answers,
-    'cardId',
-    'selectedClassification',
-  );
-  if (cards.length !== 6 || submitted.size !== cards.length) {
-    throw new Error('Classifique as seis peças antes de enviar.');
+export function advanceIlusaoDinheiroSession(answerKey, answer, random = Math.random) {
+  const items = requireArray(answerKey?.items, 'Gabarito dos caminhos inválido.');
+  const progress = answerKey?.progress ?? { stage: 1, credit: 100, answers: [] };
+  if (progress.stage < 1 || progress.stage > 6) throw new Error('A missão já foi finalizada.');
+  const itemId = String(answer?.itemId ?? answer?.decisionId ?? '').trim();
+  const choiceId = String(answer?.choiceId ?? '').trim().toUpperCase();
+  const selectedItem = items.find((item) => item.itemId === itemId);
+  if (!selectedItem || selectedItem.stage !== progress.stage || !answerKey.selectedItemIds.includes(itemId)) {
+    throw new Error('A resposta não pertence à etapa atual da missão.');
   }
-
-  const correctAnswers = cards.filter((card) => {
-    const classification = submitted.get(card.id);
-    if (!['REAL', 'INVENTED'].includes(classification)) {
-      throw new Error(`Classificação inválida em ${card.id}.`);
-    }
-    return classification === card.classification;
-  }).length;
-
-  return resultFromCorrectAnswers(correctAnswers, cards.length, 60);
+  const previousAnswer = progress.answers.find((entry) => entry.decisionId === itemId);
+  if (previousAnswer) {
+    if (previousAnswer.choiceId !== choiceId) throw new Error('A etapa já foi respondida com outra escolha.');
+    return { answerKey, completed: progress.stage > 6, currentCredit: progress.credit, nextItem: null, idempotentReplay: true };
+  }
+  const points = selectedItem.scores[choiceId];
+  const delta = selectedItem.creditDeltas[choiceId];
+  if (!Number.isInteger(points) || !Number.isInteger(delta)) throw new Error('Escolha inválida para esta etapa.');
+  const credit = Math.max(0, Math.min(120, progress.credit + delta));
+  const answers = [...progress.answers, { decisionId: itemId, choiceId }];
+  const nextStage = progress.stage + 1;
+  let nextItem = null;
+  const selectedItemIds = [...answerKey.selectedItemIds];
+  if (nextStage <= 6) {
+    const band = creditBand(credit);
+    const candidates = items.filter((item) => item.stage === nextStage && item.pathCondition === band);
+    const seen = new Set([...(answerKey.previouslySeenItemIds ?? []), ...selectedItemIds]);
+    nextItem = shuffle(candidates.filter((item) => !seen.has(item.itemId)), random)[0]
+      ?? shuffle(candidates, random)[0];
+    if (!nextItem) throw new Error(`Nenhum caminho disponível para a etapa ${nextStage}.`);
+    selectedItemIds.push(nextItem.itemId);
+  }
+  return {
+    answerKey: {
+      ...answerKey,
+      selectedItemIds,
+      progress: { stage: nextStage, credit, answers },
+    },
+    completed: nextStage > 6,
+    currentCredit: credit,
+    nextItem: nextItem ? publicItem(nextItem) : null,
+    idempotentReplay: false,
+  };
 }
 
-function resultFromCorrectAnswers(correctAnswers, total, passingScore) {
+function selectedPrivateItems(answerKey) {
+  const items = requireArray(answerKey?.items, 'Gabarito da atividade inválido.');
+  const selectedIds = new Set(answerKey?.selectedItemIds ?? items.map((item) => item.itemId));
+  return items.filter((item) => selectedIds.has(item.itemId));
+}
+
+function resultFromCorrectAnswers(correctAnswers, total, passingCorrectAnswers) {
   const score = Math.round((correctAnswers / total) * 100);
   return {
     score,
     correctAnswers,
     wrongAnswers: total - correctAnswers,
-    passed: score >= passingScore,
+    passed: correctAnswers >= passingCorrectAnswers,
+  };
+}
+
+function scorePerigoDoce(answerKey, answers) {
+  const expected = selectedPrivateItems(answerKey);
+  const submitted = answerMap(answers, 'questionId', 'optionId');
+  if (expected.length !== 5 || submitted.size !== 5) {
+    throw new Error('Responda as cinco questões antes de enviar.');
+  }
+  const correctAnswers = expected.filter(
+    (item) => submitted.get(item.itemId) === item.correctOptionId,
+  ).length;
+  return {
+    ...resultFromCorrectAnswers(correctAnswers, 5, 3),
+    feedback: expected.map((item) => ({
+      itemId: item.itemId,
+      selectedOptionId: submitted.get(item.itemId),
+      correctOptionId: item.correctOptionId,
+      explanation: item.explanation,
+      source: item.source,
+    })),
+  };
+}
+
+function scoreCustoVicio(answerKey, answers) {
+  const expected = selectedPrivateItems(answerKey);
+  const submitted = answerMap(answers, 'decisionId', 'optionId');
+  if (expected.length !== 6 || submitted.size !== 6) {
+    throw new Error('Analise as seis decisões antes de enviar.');
+  }
+  const reviewed = expected.map((item) => {
+    const optionId = submitted.get(item.itemId);
+    const points = item.scores[optionId];
+    if (!Number.isInteger(points)) throw new Error(`Resposta inválida em ${item.itemId}.`);
+    return {
+      itemId: item.itemId,
+      optionId,
+      points,
+      feedback: item.feedback?.[optionId],
+      explanation: item.explanation,
+    };
+  });
+  const totalPoints = reviewed.reduce((sum, item) => sum + item.points, 0);
+  const score = Math.round((totalPoints / 18) * 100);
+  return {
+    score,
+    totalPoints,
+    maximumPoints: 18,
+    correctAnswers: reviewed.filter((item) => item.points === 3).length,
+    wrongAnswers: reviewed.filter((item) => item.points < 3).length,
+    passed: totalPoints >= 11,
+    feedback: reviewed,
+  };
+}
+
+function creditBand(credit) {
+  if (credit < 40) return 'CRITICAL';
+  if (credit < 70) return 'ALERT';
+  if (credit < 100) return 'STABLE';
+  return 'RESERVE';
+}
+
+function ilusaoEnding(credit, quality) {
+  if (credit < 30 || quality < 40) return 'ENDIVIDAMENTO';
+  if (credit >= 80 && quality >= 70) return 'EQUILIBRIO';
+  if (credit >= 50 && quality >= 60) return 'RECUPERACAO';
+  return 'FRAGILIDADE';
+}
+
+function scoreIlusaoDinheiro(answerKey, answers) {
+  const allItems = requireArray(answerKey?.items, 'Gabarito dos caminhos inválido.');
+  const submitted = answerMap(answers, 'decisionId', 'choiceId');
+  if (submitted.size !== 6) throw new Error('Tome as seis decisões antes de enviar.');
+  let credit = 100;
+  let qualityPoints = 0;
+  const reviewed = [];
+  const selectedIds = [];
+
+  for (let stage = 1; stage <= 6; stage += 1) {
+    const expectedCondition = stage === 1 ? null : creditBand(credit);
+    const candidates = allItems.filter((item) =>
+      item.stage === stage
+      && (stage === 1 || item.pathCondition === expectedCondition));
+    const selected = candidates.find((item) => submitted.has(item.itemId));
+    if (!selected) throw new Error(`A resposta da etapa ${stage} não corresponde ao caminho de crédito.`);
+    const choiceId = submitted.get(selected.itemId);
+    const points = selected.scores[choiceId];
+    const delta = selected.creditDeltas[choiceId];
+    if (!Number.isInteger(points) || !Number.isInteger(delta)) {
+      throw new Error(`Resposta inválida em ${selected.itemId}.`);
+    }
+    const creditBefore = credit;
+    credit = Math.max(0, Math.min(120, credit + delta));
+    qualityPoints += points;
+    selectedIds.push(selected.itemId);
+    reviewed.push({
+      itemId: selected.itemId,
+      choiceId,
+      points,
+      creditBefore,
+      creditAfter: credit,
+      explanation: selected.explanation,
+    });
+  }
+  const quality = Math.round((qualityPoints / 18) * 100);
+  const creditScore = Math.round((Math.min(credit, 100) / 100) * 100);
+  const score = Math.round(quality * 0.7 + creditScore * 0.3);
+  return {
+    score,
+    quality,
+    creditScore,
+    finalCredit: credit,
+    ending: ilusaoEnding(credit, quality),
+    correctAnswers: reviewed.filter((item) => item.points >= 2).length,
+    wrongAnswers: reviewed.filter((item) => item.points < 2).length,
+    passed: score >= 60,
+    selectedItemIds: selectedIds,
+    feedback: reviewed,
+  };
+}
+
+function scoreEngenhariaDesejo(answerKey, answers) {
+  const expected = selectedPrivateItems(answerKey);
+  const normalizedAnswers = requireArray(answers, 'Respostas inválidas.').map((answer) => ({
+    cardId: answer.cardId,
+    optionId: answer.optionId
+      ?? (answer.selectedClassification === 'REAL' ? 'A' : answer.selectedClassification === 'INVENTED' ? 'B' : ''),
+  }));
+  const submitted = answerMap(normalizedAnswers, 'cardId', 'optionId');
+  if (expected.length !== 8 || submitted.size !== 8) {
+    throw new Error('Classifique os oito cards antes de enviar.');
+  }
+  const correctAnswers = expected.filter(
+    (item) => submitted.get(item.itemId) === item.correctOptionId,
+  ).length;
+  return {
+    ...resultFromCorrectAnswers(correctAnswers, 8, 5),
+    feedback: expected.map((item) => ({
+      itemId: item.itemId,
+      selectedOptionId: submitted.get(item.itemId),
+      correctOptionId: item.correctOptionId,
+      explanation: item.explanation,
+      source: item.source,
+    })),
   };
 }
 
 export function scoreActivitySession(session, answers) {
-  switch (session?.phaseNumber) {
+  switch (Number(session?.phaseNumber)) {
     case 1:
       return scorePerigoDoce(session.answerKey, answers);
     case 2:
@@ -239,6 +457,7 @@ export function scoreActivitySession(session, answers) {
   }
 }
 
+// Keep the historical knowledge base available only to the legacy AI helper.
 export function getPerigoDoceDefinition(overrideDefinition = null) {
-  return overrideDefinition ?? activities['perigo-doce-quiz'];
+  return overrideDefinition ?? legacyManifest.activities['perigo-doce-quiz'];
 }

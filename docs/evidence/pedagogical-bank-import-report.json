@@ -1,0 +1,27 @@
+{
+  "status": "VALIDATED",
+  "sourceFile": "docs/sources/banco-pedagogico-money-rank-preenchido.xlsx",
+  "loadHash": "AD50006032FEC0AA6CE469AE12222EA9E440CDEDC7F2BD8EC84ACB86F9B7E8C4",
+  "loadVersion": "1.0",
+  "totalItems": 140,
+  "countsByActivity": {
+    "perigo-doce-quiz": 30,
+    "custo-vicio": 54,
+    "ilusao-dinheiro-caminhos-v1": 24,
+    "engenharia-desejo-fato-fake-v1": 32
+  },
+  "countsByDifficulty": {
+    "MEDIUM": 58,
+    "EASY": 44,
+    "HARD": 38
+  },
+  "countsByCharacter": {
+    "lara-consumo-social": 18,
+    "miguel-apostas": 18,
+    "rafael-vape": 18
+  },
+  "reviewStatuses": {
+    "PILOT_UNREVIEWED": 140
+  },
+  "rejected": 0
+}

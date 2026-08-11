@@ -945,79 +945,136 @@ mutation SetTeacherCompetitionPeriodStatus(
 ) @auth(level: NO_ACCESS) {
   updatedPeriod: _executeReturningFirst(
     sql: """
-      UPDATE competition_periods AS period
-      SET
-        status = $2::competition_period_status,
-        active_slot = CASE
-          WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
-          ELSE NULL
-        END,
-        paused_at = CASE
-          WHEN $2::competition_period_status = 'PAUSED'
-            THEN CURRENT_TIMESTAMP
-          WHEN $2::competition_period_status = 'ACTIVE'
-            THEN NULL
-          ELSE period.paused_at
-        END,
-        closed_at = CASE
-          WHEN $2::competition_period_status = 'CLOSED'
-            THEN CURRENT_TIMESTAMP
-          ELSE period.closed_at
-        END,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE
-        period.id = $1::uuid
-        AND period.status <> 'CLOSED'
-        AND EXISTS (
-          SELECT 1
-          FROM users AS teacher
-          WHERE
-            teacher.firebase_uid = $3
-            AND teacher.role = 'TEACHER'
-            AND teacher.profile_completed = TRUE
-        )
-        AND (
-          (period.status = 'DRAFT' AND $2::competition_period_status IN (
-            'SCHEDULED', 'ACTIVE', 'CLOSED'
-          ))
-          OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN (
-            'DRAFT', 'ACTIVE', 'PAUSED', 'CLOSED'
-          ))
-          OR (period.status = 'ACTIVE' AND $2::competition_period_status IN (
-            'PAUSED', 'CLOSED'
-          ))
-          OR (period.status = 'PAUSED' AND $2::competition_period_status IN (
-            'ACTIVE', 'CLOSED'
-          ))
-        )
-        AND (
-          $2::competition_period_status <> 'SCHEDULED'
-          OR CURRENT_TIMESTAMP < period.ends_at
-        )
-        AND (
-          $2::competition_period_status <> 'ACTIVE'
-          OR (
-            period.starts_at <= CURRENT_TIMESTAMP
-            AND CURRENT_TIMESTAMP < period.ends_at
-            AND NOT EXISTS (
-              SELECT 1
-              FROM competition_periods AS active_period
-              WHERE
-                active_period.id <> period.id
-                AND active_period.status = 'ACTIVE'
+      WITH updated_period AS (
+        UPDATE competition_periods AS period
+        SET
+          status = $2::competition_period_status,
+          active_slot = CASE
+            WHEN $2::competition_period_status = 'ACTIVE' THEN 'ACTIVE'
+            ELSE NULL
+          END,
+          paused_at = CASE
+            WHEN $2::competition_period_status = 'PAUSED'
+              THEN CURRENT_TIMESTAMP
+            WHEN $2::competition_period_status = 'ACTIVE'
+              THEN NULL
+            ELSE period.paused_at
+          END,
+          closed_at = CASE
+            WHEN $2::competition_period_status = 'CLOSED'
+              THEN CURRENT_TIMESTAMP
+            ELSE period.closed_at
+          END,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          period.id = $1::uuid
+          AND period.status <> 'CLOSED'
+          AND EXISTS (
+            SELECT 1
+            FROM users AS teacher
+            WHERE
+              teacher.firebase_uid = $3
+              AND teacher.role = 'TEACHER'
+              AND teacher.profile_completed = TRUE
+          )
+          AND (
+            (period.status = 'DRAFT' AND $2::competition_period_status IN (
+              'SCHEDULED', 'ACTIVE', 'CLOSED'
+            ))
+            OR (period.status = 'SCHEDULED' AND $2::competition_period_status IN (
+              'DRAFT', 'ACTIVE', 'PAUSED', 'CLOSED'
+            ))
+            OR (period.status = 'ACTIVE' AND $2::competition_period_status IN (
+              'PAUSED', 'CLOSED'
+            ))
+            OR (period.status = 'PAUSED' AND $2::competition_period_status IN (
+              'ACTIVE', 'CLOSED'
+            ))
+          )
+          AND (
+            $2::competition_period_status <> 'SCHEDULED'
+            OR CURRENT_TIMESTAMP < period.ends_at
+          )
+          AND (
+            $2::competition_period_status <> 'ACTIVE'
+            OR (
+              period.starts_at <= CURRENT_TIMESTAMP
+              AND CURRENT_TIMESTAMP < period.ends_at
+              AND NOT EXISTS (
+                SELECT 1
+                FROM competition_periods AS active_period
+                WHERE
+                  active_period.id <> period.id
+                  AND active_period.status = 'ACTIVE'
+              )
             )
           )
+        RETURNING period.*
+      ),
+      compensations AS (
+        INSERT INTO capi_coin_transactions (
+          user_uid,
+          amount,
+          base_amount,
+          streak_multiplier_percent,
+          streak_bonus,
+          transaction_type,
+          reason,
+          source_id,
+          class_group,
+          competition_period_id,
+          competition_week,
+          created_at
         )
-      RETURNING
-        id,
-        name,
-        status::text AS "status",
-        starts_at AS "startsAt",
-        ends_at AS "endsAt",
-        paused_at AS "pausedAt",
-        closed_at AS "closedAt",
-        created_at AS "createdAt",
-        updated_at AS "updatedAt"
+        SELECT
+          student.firebase_uid,
+          -student.capi_coins,
+          -student.capi_coins,
+          100,
+          0,
+          'PERIOD_CLOSE_ADJUSTMENT'::capi_coin_transaction_type,
+          'Compensação de encerramento do período',
+          CONCAT('period-close:', period.id::text),
+          student.class_group,
+          period.id,
+          (
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::date
+            - (
+              EXTRACT(ISODOW FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Fortaleza')::integer - 1
+            )
+          )::date,
+          CURRENT_TIMESTAMP
+        FROM users AS student
+        CROSS JOIN updated_period AS period
+        WHERE
+          $2::competition_period_status = 'CLOSED'
+          AND student.capi_coins <> 0
+        RETURNING user_uid
+      ),
+      zeroed_users AS (
+        UPDATE users AS student
+        SET
+          capi_coins = 0,
+          updated_at = CURRENT_TIMESTAMP
+        FROM updated_period AS period
+        WHERE
+          $2::competition_period_status = 'CLOSED'
+          AND student.capi_coins <> 0
+        RETURNING student.firebase_uid
+      )
+      SELECT
+        period.id,
+        period.name,
+        period.status::text AS "status",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt",
+        period.paused_at AS "pausedAt",
+        period.closed_at AS "closedAt",
+        period.created_at AS "createdAt",
+        period.updated_at AS "updatedAt",
+        (SELECT COUNT(*)::integer FROM compensations) AS "compensatedUsers",
+        (SELECT COUNT(*)::integer FROM zeroed_users) AS "zeroedUsers"
+      FROM updated_period AS period
     """
     params: [$periodId, $status, $actorUid]
   )
@@ -1196,18 +1253,13 @@ mutation CompleteMyIntroduction @auth(level: USER_EMAIL_VERIFIED) {
       reward_context AS (
         SELECT
           reward_seed.*,
-          CASE
-            WHEN next_streak >= 7 THEN tier_7
-            WHEN next_streak >= 5 THEN tier_5
-            WHEN next_streak >= 3 THEN tier_3
-            ELSE 100
-          END AS multiplier_percent
+          100 AS multiplier_percent
         FROM reward_seed
       ),
       reward_values AS (
         SELECT
           reward_context.*,
-          ROUND(
+          FLOOR(
             base_reward * multiplier_percent / 100.0
           )::integer AS reward_amount
         FROM reward_context
@@ -1377,18 +1429,13 @@ mutation CompleteMyCurrentPhaseContent($phaseNumber: Int!)
       reward_context AS (
         SELECT
           reward_seed.*,
-          CASE
-            WHEN next_streak >= 7 THEN tier_7
-            WHEN next_streak >= 5 THEN tier_5
-            WHEN next_streak >= 3 THEN tier_3
-            ELSE 100
-          END AS multiplier_percent
+          100 AS multiplier_percent
         FROM reward_seed
       ),
       reward_values AS (
         SELECT
           reward_context.*,
-          ROUND(
+          FLOOR(
             base_reward * multiplier_percent / 100.0
           )::integer AS reward_amount
         FROM reward_context
@@ -1760,19 +1807,13 @@ mutation CompleteMyCurrentPhase(
       reward_context AS (
         SELECT
           streak_seed.*,
-          CASE
-            WHEN reward_base <= 0 THEN 100
-            WHEN next_streak >= 7 THEN tier_7
-            WHEN next_streak >= 5 THEN tier_5
-            WHEN next_streak >= 3 THEN tier_3
-            ELSE 100
-          END AS multiplier_percent
+          100 AS multiplier_percent
         FROM streak_seed
       ),
       reward_values AS (
         SELECT
           reward_context.*,
-          ROUND(
+          FLOOR(
             reward_base * multiplier_percent / 100.0
           )::integer AS reward_amount
         FROM reward_context
@@ -1924,5 +1965,427 @@ mutation CompleteMyCurrentPhase(
       $wrongAnswers
       $studentUid
     ]
+  )
+}
+
+mutation UpdateAuthoritativeActivitySessionState(
+  $sessionId: UUID!
+  $studentUid: String!
+  $answerKey: Any!
+  $publicPayload: Any!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE activity_sessions
+      SET
+        answer_key = $3::jsonb,
+        public_payload = $4::jsonb,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1::uuid
+        AND user_uid = $2
+        AND status = 'OPEN'
+        AND expires_at > CURRENT_TIMESTAMP
+    """
+    params: [$sessionId, $studentUid, $answerKey, $publicPayload]
+  )
+}
+
+# Uma única instrução PostgreSQL valida a atomicidade da carga: ou o lote
+# inteiro e seu hash são gravados, ou nenhuma linha é alterada.
+mutation ImportPedagogicalBank(
+  $loadHash: String!
+  $loadVersion: String!
+  $sourceFile: String!
+  $itemCount: Int!
+  $items: Any!
+) @auth(level: NO_ACCESS) {
+  importedRows: _execute(
+    sql: """
+      WITH input_items AS (
+        SELECT parsed.*
+        FROM jsonb_to_recordset($5::jsonb) AS parsed(
+          activity_id text,
+          version text,
+          item_id text,
+          phase_number integer,
+          item_type text,
+          character_id text,
+          difficulty text,
+          stage integer,
+          path_condition text,
+          public_payload jsonb,
+          secret_payload jsonb,
+          source_id text,
+          source_url text,
+          tags text[],
+          active boolean,
+          review_status text,
+          origin text,
+          content_hash text
+        )
+      ), import_stats AS (
+        SELECT
+          COUNT(*) FILTER (WHERE existing.item_id IS NULL)::integer
+            AS inserted_count,
+          COUNT(*) FILTER (
+            WHERE existing.item_id IS NOT NULL
+              AND existing.content_hash IS DISTINCT FROM input.content_hash
+          )::integer AS updated_count,
+          COUNT(*) FILTER (
+            WHERE existing.item_id IS NOT NULL
+              AND existing.content_hash = input.content_hash
+          )::integer AS ignored_count
+        FROM input_items AS input
+        LEFT JOIN pedagogical_items AS existing
+          ON existing.activity_id = input.activity_id
+          AND existing.version = input.version
+          AND existing.item_id = input.item_id
+      ), load_record AS (
+        INSERT INTO pedagogical_bank_loads (
+          load_hash,
+          load_version,
+          source_file,
+          item_count,
+          inserted_count,
+          updated_count,
+          ignored_count,
+          rejected_count,
+          imported_at
+        )
+        SELECT
+          $1,
+          $2,
+          $3,
+          $4,
+          import_stats.inserted_count,
+          import_stats.updated_count,
+          import_stats.ignored_count,
+          0,
+          NOW()
+        FROM import_stats
+        ON CONFLICT (load_hash) DO UPDATE SET
+          load_version = EXCLUDED.load_version,
+          source_file = EXCLUDED.source_file,
+          item_count = EXCLUDED.item_count,
+          inserted_count = EXCLUDED.inserted_count,
+          updated_count = EXCLUDED.updated_count,
+          ignored_count = EXCLUDED.ignored_count,
+          rejected_count = 0,
+          imported_at = NOW()
+        RETURNING load_hash
+      )
+      INSERT INTO pedagogical_items (
+        activity_id,
+        version,
+        item_id,
+        phase_number,
+        item_type,
+        character_id,
+        difficulty,
+        stage,
+        path_condition,
+        public_payload,
+        secret_payload,
+        source_id,
+        source_url,
+        tags,
+        active,
+        review_status,
+        origin,
+        content_hash,
+        load_hash,
+        created_at,
+        updated_at
+      )
+      SELECT
+        input.activity_id,
+        input.version,
+        input.item_id,
+        input.phase_number,
+        input.item_type::pedagogical_item_type,
+        NULLIF(input.character_id, ''),
+        input.difficulty::pedagogical_difficulty,
+        input.stage,
+        NULLIF(input.path_condition, ''),
+        input.public_payload,
+        input.secret_payload,
+        input.source_id,
+        input.source_url,
+        input.tags,
+        input.active,
+        input.review_status::pedagogical_review_status,
+        input.origin,
+        input.content_hash,
+        load_record.load_hash,
+        NOW(),
+        NOW()
+      FROM input_items AS input
+      CROSS JOIN load_record
+      ON CONFLICT (activity_id, version, item_id) DO UPDATE SET
+        phase_number = EXCLUDED.phase_number,
+        item_type = EXCLUDED.item_type,
+        character_id = EXCLUDED.character_id,
+        difficulty = EXCLUDED.difficulty,
+        stage = EXCLUDED.stage,
+        path_condition = EXCLUDED.path_condition,
+        public_payload = EXCLUDED.public_payload,
+        secret_payload = EXCLUDED.secret_payload,
+        source_id = EXCLUDED.source_id,
+        source_url = EXCLUDED.source_url,
+        tags = EXCLUDED.tags,
+        active = EXCLUDED.active,
+        review_status = EXCLUDED.review_status,
+        origin = EXCLUDED.origin,
+        content_hash = EXCLUDED.content_hash,
+        load_hash = EXCLUDED.load_hash,
+        updated_at = NOW()
+      WHERE pedagogical_items.content_hash IS DISTINCT FROM EXCLUDED.content_hash
+    """
+    params: [
+      $loadHash
+      $loadVersion
+      $sourceFile
+      $itemCount
+      $items
+    ]
+  )
+}
+
+mutation BindPilotClass(
+  $studentUid: String!
+  $classGroup: StudentClass!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE users
+      SET
+        class_group = COALESCE(class_group, $2::student_class),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE firebase_uid = $1
+        AND role = 'STUDENT'
+        AND (class_group IS NULL OR class_group = $2::student_class)
+    """
+    params: [$studentUid, $classGroup]
+  )
+}
+
+mutation UpsertPilotCompetitionPeriod(
+  $periodId: UUID!
+  $periodKey: String!
+  $name: String!
+  $startsAt: Timestamp!
+  $endsAt: Timestamp!
+  $schedule: Any!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      INSERT INTO competition_periods (
+        id,
+        period_key,
+        name,
+        time_zone,
+        schedule,
+        status,
+        active_slot,
+        starts_at,
+        ends_at,
+        created_at,
+        updated_at
+      ) VALUES (
+        $1::uuid,
+        $2,
+        $3,
+        'America/Fortaleza',
+        $6::jsonb,
+        'SCHEDULED',
+        NULL,
+        $4,
+        $5,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (period_key) DO UPDATE SET
+        name = EXCLUDED.name,
+        time_zone = EXCLUDED.time_zone,
+        schedule = EXCLUDED.schedule,
+        starts_at = EXCLUDED.starts_at,
+        ends_at = EXCLUDED.ends_at,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE competition_periods.status <> 'CLOSED'
+    """
+    params: [$periodId, $periodKey, $name, $startsAt, $endsAt, $schedule]
+  )
+}
+
+mutation SeedLoadTestStudents(
+  $runId: String!
+  $requestedUsers: Int!
+  $users: Any!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH input_users AS (
+        SELECT parsed.*
+        FROM jsonb_to_recordset($3::jsonb) AS parsed(
+          firebase_uid text,
+          email text,
+          preferred_name text
+        )
+      ), run_record AS (
+        INSERT INTO load_test_runs (
+          run_id,
+          status,
+          requested_users,
+          created_users,
+          started_at
+        ) VALUES ($1, 'SEEDED', $2, 0, CURRENT_TIMESTAMP)
+        ON CONFLICT (run_id) DO UPDATE SET
+          status = 'SEEDED',
+          requested_users = EXCLUDED.requested_users,
+          started_at = CURRENT_TIMESTAMP
+        RETURNING run_id
+      ), seeded_users AS (
+        INSERT INTO users (
+          firebase_uid,
+          email,
+          preferred_name,
+          class_group,
+          role,
+          profile_completed,
+          is_test,
+          test_run_id,
+          origin,
+          capi_coins,
+          current_phase,
+          current_streak,
+          created_at,
+          updated_at
+        )
+        SELECT
+          input.firebase_uid,
+          input.email,
+          input.preferred_name,
+          NULL,
+          'STUDENT',
+          TRUE,
+          TRUE,
+          $1,
+          'LOAD_TEST',
+          0,
+          1,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM input_users AS input
+        CROSS JOIN run_record
+        ON CONFLICT (firebase_uid) DO UPDATE SET
+          email = EXCLUDED.email,
+          preferred_name = EXCLUDED.preferred_name,
+          class_group = NULL,
+          profile_completed = TRUE,
+          is_test = TRUE,
+          test_run_id = EXCLUDED.test_run_id,
+          origin = 'LOAD_TEST',
+          capi_coins = 0,
+          current_phase = 1,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE users.is_test = TRUE AND users.origin = 'LOAD_TEST'
+        RETURNING firebase_uid
+      ), seeded_progress AS (
+        INSERT INTO student_progress (
+          user_uid,
+          phase_number,
+          status,
+          score,
+          attempts,
+          correct_answers,
+          wrong_answers,
+          started_at,
+          updated_at
+        )
+        SELECT
+          seeded.firebase_uid,
+          1,
+          'IN_PROGRESS',
+          0,
+          0,
+          0,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM seeded_users AS seeded
+        ON CONFLICT (user_uid, phase_number) DO UPDATE SET
+          status = 'IN_PROGRESS',
+          score = 0,
+          attempts = 0,
+          correct_answers = 0,
+          wrong_answers = 0,
+          started_at = CURRENT_TIMESTAMP,
+          completed_at = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        RETURNING user_uid
+      )
+      UPDATE load_test_runs
+      SET created_users = (SELECT COUNT(*)::integer FROM seeded_users)
+      WHERE run_id = $1
+    """
+    params: [$runId, $requestedUsers, $users]
+  )
+}
+
+mutation RecordLoadTestMetrics(
+  $runId: String!
+  $status: String!
+  $metrics: Any!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE load_test_runs
+      SET
+        status = $2,
+        metrics = $3::jsonb,
+        completed_at = CURRENT_TIMESTAMP
+      WHERE run_id = $1
+    """
+    params: [$runId, $status, $metrics]
+  )
+}
+
+mutation CleanupMarkedLoadTestStudents($runId: String!)
+  @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH deleted_users AS (
+        DELETE FROM users
+        WHERE is_test = TRUE
+          AND origin = 'LOAD_TEST'
+          AND firebase_uid LIKE 'loadtest-%'
+        RETURNING firebase_uid
+      )
+      UPDATE load_test_runs
+      SET
+        status = 'DATABASE_CLEANED',
+        deleted_database_users = (SELECT COUNT(*)::integer FROM deleted_users),
+        cleaned_at = CURRENT_TIMESTAMP
+      WHERE run_id = $1
+    """
+    params: [$runId]
+  )
+}
+
+mutation FinalizeLoadTestCleanup(
+  $runId: String!
+  $deletedAuthUsers: Int!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      UPDATE load_test_runs
+      SET
+        status = 'CLEANED',
+        deleted_auth_users = $2,
+        cleaned_at = CURRENT_TIMESTAMP
+      WHERE run_id = $1
+    """
+    params: [$runId, $deletedAuthUsers]
   )
 }
