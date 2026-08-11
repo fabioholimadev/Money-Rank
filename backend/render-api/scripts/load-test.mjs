@@ -1,9 +1,9 @@
-import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { spawnNpx } from './spawn-npx.mjs';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '../../..');
@@ -30,9 +30,8 @@ function requireEnvironment(names) {
 }
 
 async function runFirebaseCli(parameters) {
-  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
   return new Promise((resolve, reject) => {
-    const child = spawn(command, ['-y', 'firebase-tools@latest', ...parameters], {
+    const child = spawnNpx(['-y', 'firebase-tools@latest', ...parameters], {
       cwd: repositoryRoot,
       env: process.env,
       stdio: 'inherit',

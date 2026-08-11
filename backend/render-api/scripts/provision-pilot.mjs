@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnNpx } from './spawn-npx.mjs';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '../../..');
@@ -23,9 +24,8 @@ function deterministicUuid(value) {
 }
 
 async function run(parameters) {
-  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
   return new Promise((resolve, reject) => {
-    const child = spawn(command, parameters, { cwd: repositoryRoot, env: process.env, stdio: 'inherit' });
+    const child = spawnNpx(parameters, { cwd: repositoryRoot, env: process.env, stdio: 'inherit' });
     child.on('error', reject);
     child.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`Comando terminou com código ${code}.`)));
   });

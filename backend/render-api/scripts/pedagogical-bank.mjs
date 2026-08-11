@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { XMLParser } from 'fast-xml-parser';
 import JSZip from 'jszip';
+import { spawnNpx } from './spawn-npx.mjs';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '../../..');
@@ -364,9 +364,8 @@ function cliItems(items, loadHash) {
 }
 
 async function runFirebaseCli(parameters) {
-  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
   return new Promise((resolve, reject) => {
-    const child = spawn(command, ['-y', 'firebase-tools@latest', ...parameters], {
+    const child = spawnNpx(['-y', 'firebase-tools@latest', ...parameters], {
       cwd: repositoryRoot,
       env: process.env,
       stdio: 'inherit',
