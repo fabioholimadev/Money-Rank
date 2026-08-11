@@ -30,3 +30,14 @@ export async function submitAuthoritativeActivitySession(sessionId, answers) {
   if (!payload.attemptId && payload.score === undefined) throw new Error('O Capi Bank não confirmou o resultado.');
   return payload;
 }
+
+export async function advanceAuthoritativeActivitySession(sessionId, itemId, choiceId) {
+  const response = await fetchApi(`/api/activity/sessions/${encodeURIComponent(sessionId)}/step`, {
+    method: 'POST',
+    body: { itemId, choiceId },
+  });
+  const payload = await response.json().catch(() => ({}));
+  const error = normalizeError(response, payload, 'Não foi possível avançar para a próxima etapa.');
+  if (error) throw error;
+  return payload;
+}

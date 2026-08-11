@@ -37,4 +37,16 @@ export async function fetchApi(endpoint, options = {}) {
   return res;
 }
 
+export async function fetchApiJson(endpoint, options = {}) {
+  const response = await fetchApi(endpoint, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload?.error || `HTTP ${response.status}`);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload;
+}
+
 export default fetchApi;

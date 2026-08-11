@@ -1,63 +1,5 @@
-import {
-  connectFunctionsEmulator,
-  getFunctions,
-  httpsCallable,
-} from 'firebase/functions';
-import { ensureFirebaseAppCheck } from '../lib/firebaseAppCheck';
-import { firebaseApp } from '../lib/firebaseConfig';
+import { fetchApiJson } from '../lib/api';
 import { normalizeTeacherPeriods } from '../lib/teacherAnalyticsMapper';
-
-const functions = getFunctions(firebaseApp, 'southamerica-east1');
-const useFunctionsEmulator =
-  import.meta.env.DEV &&
-  (import.meta.env.VITE_USE_FUNCTIONS_EMULATOR === 'true' ||
-    import.meta.env.VITE_USE_DATA_CONNECT_EMULATOR === 'true');
-
-if (useFunctionsEmulator) {
-  const connectionKey = Symbol.for('money-rank:functions-emulator-connected');
-  if (!globalThis[connectionKey]) {
-    connectFunctionsEmulator(
-      functions,
-      import.meta.env.VITE_FUNCTIONS_EMULATOR_HOST || '127.0.0.1',
-      Number(import.meta.env.VITE_FUNCTIONS_EMULATOR_PORT) || 5001,
-    );
-    globalThis[connectionKey] = true;
-  }
-}
-
-const options = { timeout: 65_000, limitedUseAppCheckTokens: true };
-const callables = {
-  create: httpsCallable(
-    functions,
-    'createTeacherCompetitionPeriod',
-    options,
-  ),
-  update: httpsCallable(
-    functions,
-    'updateTeacherCompetitionPeriod',
-    options,
-  ),
-  setStatus: httpsCallable(
-    functions,
-    'setTeacherCompetitionPeriodStatus',
-    options,
-  ),
-};
-
-async function prepareRequest() {
-  try {
-    await ensureFirebaseAppCheck();
-  } catch {
-    if (!useFunctionsEmulator) {
-      throw new Error('A verificação segura do período falhou.');
-    }
-  }
-}
-
-function normalizeError(error, fallback) {
-  const message = String(error?.message || '').replace(/^Firebase:\s*/i, '');
-  return new Error(message || fallback, { cause: error });
-}
 
 function normalizeResponse(value) {
   const period = normalizeTeacherPeriods([value])[0];
@@ -65,36 +7,25 @@ function normalizeResponse(value) {
   return period;
 }
 
-async function invoke(callable, input, fallback) {
-  await prepareRequest();
+async function invoke(action, input, fallback) {
   try {
-    const result = await callable(input);
-    return normalizeResponse(result.data);
+    return normalizeResponse(await fetchApiJson(`/api/actions/${action}`, {
+      method: 'POST',
+      body: input,
+    }));
   } catch (error) {
-    throw normalizeError(error, fallback);
+    throw new Error(error?.message || fallback, { cause: error });
   }
 }
 
 export function createTeacherCompetitionPeriod(input) {
-  return invoke(
-    callables.create,
-    input,
-    'Não foi possível criar o período.',
-  );
+  return invoke('teacher-period-create', input, 'Não foi possível criar o período.');
 }
 
 export function updateTeacherCompetitionPeriod(input) {
-  return invoke(
-    callables.update,
-    input,
-    'Não foi possível alterar o período.',
-  );
+  return invoke('teacher-period-update', input, 'Não foi possível alterar o período.');
 }
 
 export function setTeacherCompetitionPeriodStatus(input) {
-  return invoke(
-    callables.setStatus,
-    input,
-    'Não foi possível mudar o funcionamento do período.',
-  );
+  return invoke('teacher-period-status', input, 'Não foi possível mudar o funcionamento do período.');
 }

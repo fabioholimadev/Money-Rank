@@ -20,6 +20,12 @@ services:
         sync: false
       - key: FIREBASE_PRIVATE_KEY
         sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        value: money-rank.firebasestorage.app
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
       - key: SQL_CONNECT_LOCATION
         value: southamerica-east1
       - key: SQL_CONNECT_SERVICE
@@ -28,6 +34,8 @@ services:
         value: money-rank-connector
       - key: PERIOD_ID
         value: piloto-money-rank-2026-08-11
+      - key: PERIOD_DATE
+        value: "2026-08-11"
   - type: web
     runtime: static
     name: money-rank-web
