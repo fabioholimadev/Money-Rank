@@ -1,5 +1,10 @@
 # Arquitetura gratuita: Render + Firebase Spark
 
+> **Decisão vigente do piloto (2026-08-10):** o prompt operacional mais recente
+> exige Firebase SQL Connect/PostgreSQL para o piloto. As seções históricas que
+> recomendam migrar para Firestore permanecem como análise de custo, mas não
+> substituem essa decisão sem nova autorização explícita.
+
 ## Decisao de custo
 
 O Money Rank nao pode publicar a arquitetura atual inteira no Firebase sem
