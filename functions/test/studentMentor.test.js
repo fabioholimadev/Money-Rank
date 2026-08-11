@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   answerStudentMentor,
   classifyMentorQuestion,
+  selectMentorResponse,
 } from '../src/studentMentor.js';
 
 const CONTEXT = {
@@ -55,6 +56,17 @@ test('fallback responde sem depender do Gemini', async () => {
   assert.ok(response.answer.length > 400);
   assert.ok(response.sources[0].url.startsWith('https://'));
   assert.match(response.answer, /Quer que eu/);
+});
+
+test('preserva resposta válida do Gemini quando não há metadados de pesquisa', () => {
+  const response = selectMentorResponse({
+    text: 'Um orçamento permite visualizar receitas, necessidades e escolhas ao longo do tempo. Ao comparar gastos recorrentes com uma meta, o estudante consegue avaliar prioridades e reduzir decisões por impulso sem transformar planejamento em punição. Fontes oficiais ajudam a confirmar conceitos e dados antes de tomar uma decisão. Quer que eu mostre um exemplo com valores fictícios?',
+  }, {
+    sources: [{ title: 'Banco Central', url: 'https://www.bcb.gov.br/cidadaniafinanceira' }],
+  });
+  assert.equal(response.generatedBy, 'gemini');
+  assert.match(response.answer, /Um orçamento permite/);
+  assert.equal(response.sources.length, 1);
 });
 
 test('inclui cidadania, saúde e educação fiscal no domínio', async () => {

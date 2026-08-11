@@ -404,6 +404,9 @@ query ListVisibleCompetitionPeriods
   ) {
     id
     name
+    periodKey
+    timeZone
+    schedule
     status
     startsAt
     endsAt

@@ -83,6 +83,7 @@ export default function CapiMentor() {
           content: resposta.answer,
           sources: resposta.sources,
           searchSuggestionsHtml: resposta.searchSuggestionsHtml,
+          generatedBy: resposta.generatedBy,
         },
       ]);
     } catch (e) {
@@ -199,6 +200,17 @@ export default function CapiMentor() {
                     }`}
                   >
                     {m.content}
+                    {m.generatedBy && (
+                      <p className={`mt-2 text-[10px] font-bold ${
+                        m.generatedBy === 'safe-fallback' ? 'text-rose-300' : 'text-emerald-300'
+                      }`}>
+                        {m.generatedBy === 'gemini-grounded'
+                          ? 'Gemini + Pesquisa Google'
+                          : m.generatedBy === 'gemini'
+                            ? 'Gemini'
+                            : 'Resposta de contingência'}
+                      </p>
+                    )}
                     {m.sources?.length > 0 && (
                       <div className="mt-3 border-t border-slate-700/70 pt-2">
                         <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">

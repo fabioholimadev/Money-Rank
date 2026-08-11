@@ -831,6 +831,9 @@ export interface ListVisibleCompetitionPeriodsData {
   competitionPeriods: ({
     id: UUIDString;
     name: string;
+    periodKey?: string | null;
+    timeZone: string;
+    schedule?: unknown | null;
     status: CompetitionPeriodStatus;
     startsAt: TimestampString;
     endsAt: TimestampString;

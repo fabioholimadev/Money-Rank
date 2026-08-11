@@ -131,6 +131,30 @@ function extractGrounding(response) {
   };
 }
 
+export function selectMentorResponse(response, fallback) {
+  const answer = validateAiAnswer(response?.text);
+  if (!answer) return null;
+  const grounding = extractGrounding(response);
+  return grounding.sources.length > 0
+    ? { answer, ...grounding, generatedBy: 'gemini-grounded' }
+    : {
+      answer,
+      sources: fallback.sources,
+      searchSuggestionsHtml: '',
+      generatedBy: 'gemini',
+    };
+}
+
+function logMentorFallback(reason, error, model) {
+  const details = { event: 'student_mentor_fallback', reason, model };
+  if (error) {
+    details.errorName = cleanText(error?.name || 'Error', 80);
+    details.errorMessage = cleanText(error?.message || String(error), 500);
+    details.errorStatus = Number(error?.status) || undefined;
+  }
+  console.warn(JSON.stringify(details));
+}
+
 export async function answerStudentMentor({ question, rawContext, apiKey, model }) {
   const normalizedQuestion = normalizeMentorQuestion(question);
   const classification = classifyMentorQuestion(normalizedQuestion);
@@ -153,18 +177,20 @@ export async function answerStudentMentor({ question, rawContext, apiKey, model 
   }
 
   const fallback = fallbackAnswer(normalizedQuestion);
-  if (!apiKey || apiKey === 'local-fallback') {
+  const normalizedApiKey = typeof apiKey === 'string' ? apiKey.trim() : '';
+  if (!normalizedApiKey || normalizedApiKey === 'local-fallback') {
+    logMentorFallback('missing_api_key', null, model);
     return { ...fallback, generatedBy: 'safe-fallback' };
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: normalizedApiKey });
     const response = await ai.models.generateContent({
       model,
       contents: [
         'Você é o CapiMentor, tutor jovem, encorajador e didático do Money Rank para alunos do terceiro ano de escola técnica.',
         'Seu domínio inclui educação financeira, educação fiscal, cidadania, saúde pública, consumo responsável, direitos, orçamento público e políticas públicas relacionadas.',
-        'Pesquise quando necessário e priorize fontes oficiais: órgãos públicos, legislação, universidades, OMS/OPAS e instituições reconhecidas. Diferencie fato, interpretação e exemplo.',
+        'Antes de responder, use a Pesquisa Google para localizar ao menos uma fonte pertinente. Priorize fontes oficiais: órgãos públicos, legislação, universidades, OMS/OPAS e instituições reconhecidas. Diferencie fato, interpretação e exemplo.',
         'Responda em português brasileiro com quatro a seis parágrafos claros, aproximadamente 250 a 450 palavras.',
         'Explique relações individuais e coletivas, evite culpabilizar pessoas e termine perguntando se o aluno quer aprofundar algum ponto.',
         'Não invente leis, números, fontes ou fatos. Se houver incerteza, diga isso explicitamente.',
@@ -181,12 +207,20 @@ export async function answerStudentMentor({ question, rawContext, apiKey, model 
         maxOutputTokens: 1400,
       },
     });
-    const answer = validateAiAnswer(response.text);
-    const grounding = extractGrounding(response);
-    return answer && grounding.sources.length > 0
-      ? { answer, ...grounding, generatedBy: 'gemini-grounded' }
-      : { ...fallback, generatedBy: 'safe-fallback' };
-  } catch {
+    const selected = selectMentorResponse(response, fallback);
+    if (selected) {
+      if (selected.generatedBy === 'gemini') {
+        console.warn(JSON.stringify({
+          event: 'student_mentor_without_grounding_metadata',
+          model,
+        }));
+      }
+      return selected;
+    }
+    logMentorFallback('invalid_or_empty_model_response', null, model);
+    return { ...fallback, generatedBy: 'safe-fallback' };
+  } catch (error) {
+    logMentorFallback('gemini_request_failed', error, model);
     return { ...fallback, generatedBy: 'safe-fallback' };
   }
 }

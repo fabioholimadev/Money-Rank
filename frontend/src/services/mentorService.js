@@ -13,5 +13,6 @@ export async function askStudentMentor(question) {
     searchSuggestionsHtml: typeof result?.searchSuggestionsHtml === 'string'
       ? result.searchSuggestionsHtml
       : '',
+    generatedBy: String(result?.generatedBy || 'safe-fallback'),
   };
 }

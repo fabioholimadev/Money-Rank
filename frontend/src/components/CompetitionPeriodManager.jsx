@@ -49,11 +49,25 @@ function toIsoTimestamp(value) {
 }
 
 function initialForm(period) {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Fortaleza',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
   return {
     name: period?.name || '',
-    startsAt: toFortalezaInput(period?.startsAt),
-    endsAt: toFortalezaInput(period?.endsAt),
+    startsAt: toFortalezaInput(period?.startsAt) || `${today}T07:30`,
+    endsAt: toFortalezaInput(period?.endsAt) || `${today}T08:10`,
   };
+}
+
+function replaceDate(value, date, fallbackTime) {
+  return `${date}T${value?.slice(11, 16) || fallbackTime}`;
+}
+
+function replaceTime(value, time) {
+  return `${value?.slice(0, 10) || ''}T${time}`;
 }
 
 function actionPresentation(status) {
@@ -165,7 +179,7 @@ export default function CompetitionPeriodManager({
     }
     void runAction(
       () => onUpdate({ periodId: currentPeriod.id, ...input }),
-      'Nome e datas atualizados.',
+      'Nome, data e horários atualizados.',
     );
   };
 
@@ -289,36 +303,62 @@ export default function CompetitionPeriodManager({
               </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-xs font-black uppercase tracking-wider text-slate-500">
+                <fieldset className="rounded-2xl border border-slate-700 p-4">
+                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-amber-300">
                     Início · Fortaleza
-                  </span>
-                  <input
-                    type="datetime-local"
-                    value={form.startsAt}
-                    onChange={(event) => setForm((current) => ({
-                      ...current,
-                      startsAt: event.target.value,
-                    }))}
-                    disabled={isSaving || isReadOnly}
-                    className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-2 block text-xs font-black uppercase tracking-wider text-slate-500">
+                  </legend>
+                  <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
+                    <label className="block">
+                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Data</span>
+                      <input
+                        type="date"
+                        value={form.startsAt.slice(0, 10)}
+                        onChange={(event) => setForm((current) => ({ ...current, startsAt: replaceDate(current.startsAt, event.target.value, '07:30') }))}
+                        disabled={isSaving || isReadOnly}
+                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Hora</span>
+                      <input
+                        type="time"
+                        step="60"
+                        value={form.startsAt.slice(11, 16)}
+                        onChange={(event) => setForm((current) => ({ ...current, startsAt: replaceTime(current.startsAt, event.target.value) }))}
+                        disabled={isSaving || isReadOnly}
+                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+                <fieldset className="rounded-2xl border border-slate-700 p-4">
+                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-amber-300">
                     Encerramento · Fortaleza
-                  </span>
-                  <input
-                    type="datetime-local"
-                    value={form.endsAt}
-                    onChange={(event) => setForm((current) => ({
-                      ...current,
-                      endsAt: event.target.value,
-                    }))}
-                    disabled={isSaving || isReadOnly}
-                    className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
-                  />
-                </label>
+                  </legend>
+                  <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
+                    <label className="block">
+                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Data</span>
+                      <input
+                        type="date"
+                        value={form.endsAt.slice(0, 10)}
+                        onChange={(event) => setForm((current) => ({ ...current, endsAt: replaceDate(current.endsAt, event.target.value, '08:10') }))}
+                        disabled={isSaving || isReadOnly}
+                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Hora</span>
+                      <input
+                        type="time"
+                        step="60"
+                        value={form.endsAt.slice(11, 16)}
+                        onChange={(event) => setForm((current) => ({ ...current, endsAt: replaceTime(current.endsAt, event.target.value) }))}
+                        disabled={isSaving || isReadOnly}
+                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                      />
+                    </label>
+                  </div>
+                </fieldset>
               </div>
 
               {!isReadOnly && (
