@@ -166,6 +166,34 @@ exports.createActivityDefinitionVersionEditorial = function createActivityDefini
 }
 ;
 
+const upsertLearningModuleSeedRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertLearningModuleSeed', inputVars);
+}
+upsertLearningModuleSeedRef.operationName = 'UpsertLearningModuleSeed';
+exports.upsertLearningModuleSeedRef = upsertLearningModuleSeedRef;
+
+exports.upsertLearningModuleSeed = function upsertLearningModuleSeed(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertLearningModuleSeedRef(dcInstance, inputVars));
+}
+;
+
+const upsertActivityDefinitionSeedRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertActivityDefinitionSeed', inputVars);
+}
+upsertActivityDefinitionSeedRef.operationName = 'UpsertActivityDefinitionSeed';
+exports.upsertActivityDefinitionSeedRef = upsertActivityDefinitionSeedRef;
+
+exports.upsertActivityDefinitionSeed = function upsertActivityDefinitionSeed(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertActivityDefinitionSeedRef(dcInstance, inputVars));
+}
+;
+
 const updateLearningModuleDraftEditorialRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

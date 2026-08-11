@@ -1,17 +1,7 @@
 import {
   completeMyCurrentPhase,
-  completeMyCurrentPhaseContent,
-  completeMyIntroduction,
   getMyActivityAttempt,
-  getMyCapiCoinTransactionBySource,
-  getMyProfile,
-  initializeMyTrail,
-  listMyCapiCoinTransactions,
-  listMyProgress,
   registerMyCurrentPhaseAttempt,
-  upsertMyProfileWithAvatar,
-  upsertMyProfileWithPhoto,
-  upsertMyProfileWithoutSyncedPhoto,
 } from '@money-rank/dataconnect';
 import {
   dataConnect,
@@ -24,6 +14,7 @@ import {
   toDataConnectClass,
 } from '../lib/profileDataMapper';
 import { normalizeAttemptReward } from '../lib/competitiveEconomy';
+import { fetchApiJson } from '../lib/api';
 
 const MIN_PHASE = 1;
 const MAX_PHASE = 4;
@@ -34,13 +25,6 @@ function requireDataConnect() {
       'O Capi Bank está temporariamente indisponível. Tente novamente em instantes.',
     );
   }
-}
-
-function readAffectedRows(result) {
-  const affectedRows = Number(result?.data?.affectedRows ?? 0);
-  return Number.isInteger(affectedRows) && affectedRows > 0
-    ? affectedRows
-    : 0;
 }
 
 function normalizePhaseNumber(phaseNumber) {
@@ -125,16 +109,6 @@ async function fetchAttemptById(attemptId) {
   return result.data.activityAttempts[0] ?? null;
 }
 
-async function fetchTransactionBySource(sourceId) {
-  const result = await getMyCapiCoinTransactionBySource(
-    dataConnect,
-    { sourceId },
-    { fetchPolicy: QueryFetchPolicy.SERVER_ONLY },
-  );
-
-  return result.data.capiCoinTransactions[0] ?? null;
-}
-
 function isHttpsUrl(value) {
   if (typeof value !== 'string') {
     return false;
@@ -148,28 +122,17 @@ function isHttpsUrl(value) {
 }
 
 export async function fetchMyStudentProfile() {
-  if (!isDataConnectEnabled) {
-    return null;
-  }
-
-  const result = await getMyProfile(dataConnect, {
-    fetchPolicy: QueryFetchPolicy.SERVER_ONLY,
-  });
-
-  return mapDataConnectUser(result.data.user);
+  const result = await fetchApiJson('/api/me/profile');
+  return mapDataConnectUser(result.profile);
 }
 
 export async function syncStudentProfile(profile) {
-  if (!isDataConnectEnabled) {
-    return null;
-  }
-
   const classGroup = toDataConnectClass(profile.turma);
   if (!classGroup) {
     throw new Error('A turma informada não é válida.');
   }
 
-  const variables = {
+  const body = {
     preferredName: profile.nome,
     classGroup,
   };
@@ -180,48 +143,26 @@ export async function syncStudentProfile(profile) {
   }
 
   if (avatarId) {
-    await upsertMyProfileWithAvatar(dataConnect, {
-      ...variables,
-      avatarId,
-    });
+    body.avatarId = avatarId;
   } else if (isHttpsUrl(profile.avatar_url)) {
-    await upsertMyProfileWithPhoto(dataConnect, {
-      ...variables,
-      avatarUrl: profile.avatar_url,
-    });
-  } else {
-    // Fotos locais em Base64 não devem ser gravadas no PostgreSQL.
-    await upsertMyProfileWithoutSyncedPhoto(dataConnect, variables);
+    body.avatarUrl = profile.avatar_url;
   }
-
-  return fetchMyStudentProfile();
+  const result = await fetchApiJson('/api/me/profile', {
+    method: 'PUT',
+    body,
+  });
+  return mapDataConnectUser(result.profile);
 }
 
 export async function fetchMyProgress() {
-  if (!isDataConnectEnabled) {
-    return [];
-  }
-
-  const result = await listMyProgress(dataConnect, {
-    fetchPolicy: QueryFetchPolicy.SERVER_ONLY,
-  });
-
-  return result.data.studentProgressEntries;
+  const result = await fetchApiJson('/api/me/progress');
+  return result.progress ?? [];
 }
 
 export async function fetchMyCapiCoinTransactions(offset = 0) {
-  if (!isDataConnectEnabled) {
-    return [];
-  }
-
   const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
-  const result = await listMyCapiCoinTransactions(
-    dataConnect,
-    { offset: safeOffset },
-    { fetchPolicy: QueryFetchPolicy.SERVER_ONLY },
-  );
-
-  return result.data.capiCoinTransactions;
+  const result = await fetchApiJson(`/api/me/transactions?offset=${safeOffset}`);
+  return result.transactions ?? [];
 }
 
 /**
@@ -230,22 +171,20 @@ export async function fetchMyCapiCoinTransactions(offset = 0) {
  * reiniciado.
  */
 export async function initializeLegacyTrail() {
-  requireDataConnect();
-  const result = await initializeMyTrail(dataConnect);
-  return readAffectedRows(result) > 0;
+  const result = await fetchApiJson('/api/me/trail/initialize', { method: 'POST' });
+  return result.saved === true;
 }
 
 export async function completeIntroductionStep() {
-  requireDataConnect();
-  const result = await completeMyIntroduction(dataConnect);
-
-  if (readAffectedRows(result) !== 1) {
+  const result = await fetchApiJson('/api/me/trail/introduction/complete', {
+    method: 'POST',
+  });
+  if (!result.saved) {
     throw new Error(
       'O Passo 0 já foi concluído ou não é a etapa atual do aluno.',
     );
   }
-
-  const transaction = await fetchTransactionBySource('introduction-0');
+  const transaction = result.transaction;
 
   return {
     reward: Number(transaction?.amount ?? 0),
@@ -258,18 +197,13 @@ export async function completeIntroductionStep() {
 }
 
 export async function completePhaseContent(phaseNumber) {
-  requireDataConnect();
   const normalizedPhase = normalizePhaseNumber(phaseNumber);
-  const result = await completeMyCurrentPhaseContent(dataConnect, {
-    phaseNumber: normalizedPhase,
+  const result = await fetchApiJson('/api/me/trail/content/complete', {
+    method: 'POST',
+    body: { phaseNumber: normalizedPhase },
   });
-
-  const saved = readAffectedRows(result) === 1;
-  const transaction = saved
-    ? await fetchTransactionBySource(
-        `phase-${normalizedPhase}-content`,
-      )
-    : null;
+  const saved = result.saved === true;
+  const transaction = result.transaction;
 
   return {
     saved,

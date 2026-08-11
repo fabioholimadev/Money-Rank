@@ -39,6 +39,8 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*CreateLearningModuleVersionEditorial*](#createlearningmoduleversioneditorial)
   - [*CreateActivityDefinitionVersionEditorial*](#createactivitydefinitionversioneditorial)
+  - [*UpsertLearningModuleSeed*](#upsertlearningmoduleseed)
+  - [*UpsertActivityDefinitionSeed*](#upsertactivitydefinitionseed)
   - [*UpdateLearningModuleDraftEditorial*](#updatelearningmoduledrafteditorial)
   - [*UpdateActivityDefinitionDraftEditorial*](#updateactivitydefinitiondrafteditorial)
   - [*SubmitLearningModuleForReviewEditorial*](#submitlearningmoduleforrevieweditorial)
@@ -3747,6 +3749,270 @@ executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.activityDefinitionVersion_insert);
   console.log(data.editorialAuditLog_insert);
+});
+```
+
+## UpsertLearningModuleSeed
+You can execute the `UpsertLearningModuleSeed` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+upsertLearningModuleSeed(vars: UpsertLearningModuleSeedVariables): MutationPromise<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+
+interface UpsertLearningModuleSeedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertLearningModuleSeedVariables): MutationRef<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+}
+export const upsertLearningModuleSeedRef: UpsertLearningModuleSeedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertLearningModuleSeed(dc: DataConnect, vars: UpsertLearningModuleSeedVariables): MutationPromise<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+
+interface UpsertLearningModuleSeedRef {
+  ...
+  (dc: DataConnect, vars: UpsertLearningModuleSeedVariables): MutationRef<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+}
+export const upsertLearningModuleSeedRef: UpsertLearningModuleSeedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertLearningModuleSeedRef:
+```typescript
+const name = upsertLearningModuleSeedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertLearningModuleSeed` mutation requires an argument of type `UpsertLearningModuleSeedVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertLearningModuleSeedVariables {
+  versionId: UUIDString;
+  auditId: UUIDString;
+  moduleKey: string;
+  phaseNumber: number;
+  title: string;
+  payload: unknown;
+  publishedAt: TimestampString;
+}
+```
+### Return Type
+Recall that executing the `UpsertLearningModuleSeed` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertLearningModuleSeedData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertLearningModuleSeedData {
+  learningModuleVersion_upsert: LearningModuleVersion_Key;
+  editorialAuditLog_upsert: EditorialAuditLog_Key;
+}
+```
+### Using `UpsertLearningModuleSeed`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertLearningModuleSeed, UpsertLearningModuleSeedVariables } from '@money-rank/dataconnect';
+
+// The `UpsertLearningModuleSeed` mutation requires an argument of type `UpsertLearningModuleSeedVariables`:
+const upsertLearningModuleSeedVars: UpsertLearningModuleSeedVariables = {
+  versionId: ..., 
+  auditId: ..., 
+  moduleKey: ..., 
+  phaseNumber: ..., 
+  title: ..., 
+  payload: ..., 
+  publishedAt: ..., 
+};
+
+// Call the `upsertLearningModuleSeed()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertLearningModuleSeed(upsertLearningModuleSeedVars);
+// Variables can be defined inline as well.
+const { data } = await upsertLearningModuleSeed({ versionId: ..., auditId: ..., moduleKey: ..., phaseNumber: ..., title: ..., payload: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertLearningModuleSeed(dataConnect, upsertLearningModuleSeedVars);
+
+console.log(data.learningModuleVersion_upsert);
+console.log(data.editorialAuditLog_upsert);
+
+// Or, you can use the `Promise` API.
+upsertLearningModuleSeed(upsertLearningModuleSeedVars).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion_upsert);
+  console.log(data.editorialAuditLog_upsert);
+});
+```
+
+### Using `UpsertLearningModuleSeed`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertLearningModuleSeedRef, UpsertLearningModuleSeedVariables } from '@money-rank/dataconnect';
+
+// The `UpsertLearningModuleSeed` mutation requires an argument of type `UpsertLearningModuleSeedVariables`:
+const upsertLearningModuleSeedVars: UpsertLearningModuleSeedVariables = {
+  versionId: ..., 
+  auditId: ..., 
+  moduleKey: ..., 
+  phaseNumber: ..., 
+  title: ..., 
+  payload: ..., 
+  publishedAt: ..., 
+};
+
+// Call the `upsertLearningModuleSeedRef()` function to get a reference to the mutation.
+const ref = upsertLearningModuleSeedRef(upsertLearningModuleSeedVars);
+// Variables can be defined inline as well.
+const ref = upsertLearningModuleSeedRef({ versionId: ..., auditId: ..., moduleKey: ..., phaseNumber: ..., title: ..., payload: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertLearningModuleSeedRef(dataConnect, upsertLearningModuleSeedVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.learningModuleVersion_upsert);
+console.log(data.editorialAuditLog_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.learningModuleVersion_upsert);
+  console.log(data.editorialAuditLog_upsert);
+});
+```
+
+## UpsertActivityDefinitionSeed
+You can execute the `UpsertActivityDefinitionSeed` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+upsertActivityDefinitionSeed(vars: UpsertActivityDefinitionSeedVariables): MutationPromise<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+
+interface UpsertActivityDefinitionSeedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertActivityDefinitionSeedVariables): MutationRef<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+}
+export const upsertActivityDefinitionSeedRef: UpsertActivityDefinitionSeedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertActivityDefinitionSeed(dc: DataConnect, vars: UpsertActivityDefinitionSeedVariables): MutationPromise<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+
+interface UpsertActivityDefinitionSeedRef {
+  ...
+  (dc: DataConnect, vars: UpsertActivityDefinitionSeedVariables): MutationRef<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+}
+export const upsertActivityDefinitionSeedRef: UpsertActivityDefinitionSeedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertActivityDefinitionSeedRef:
+```typescript
+const name = upsertActivityDefinitionSeedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertActivityDefinitionSeed` mutation requires an argument of type `UpsertActivityDefinitionSeedVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertActivityDefinitionSeedVariables {
+  versionId: UUIDString;
+  auditId: UUIDString;
+  activityKey: string;
+  phaseNumber: number;
+  title: string;
+  payload: unknown;
+  publishedAt: TimestampString;
+}
+```
+### Return Type
+Recall that executing the `UpsertActivityDefinitionSeed` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertActivityDefinitionSeedData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertActivityDefinitionSeedData {
+  activityDefinitionVersion_upsert: ActivityDefinitionVersion_Key;
+  editorialAuditLog_upsert: EditorialAuditLog_Key;
+}
+```
+### Using `UpsertActivityDefinitionSeed`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertActivityDefinitionSeed, UpsertActivityDefinitionSeedVariables } from '@money-rank/dataconnect';
+
+// The `UpsertActivityDefinitionSeed` mutation requires an argument of type `UpsertActivityDefinitionSeedVariables`:
+const upsertActivityDefinitionSeedVars: UpsertActivityDefinitionSeedVariables = {
+  versionId: ..., 
+  auditId: ..., 
+  activityKey: ..., 
+  phaseNumber: ..., 
+  title: ..., 
+  payload: ..., 
+  publishedAt: ..., 
+};
+
+// Call the `upsertActivityDefinitionSeed()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertActivityDefinitionSeed(upsertActivityDefinitionSeedVars);
+// Variables can be defined inline as well.
+const { data } = await upsertActivityDefinitionSeed({ versionId: ..., auditId: ..., activityKey: ..., phaseNumber: ..., title: ..., payload: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertActivityDefinitionSeed(dataConnect, upsertActivityDefinitionSeedVars);
+
+console.log(data.activityDefinitionVersion_upsert);
+console.log(data.editorialAuditLog_upsert);
+
+// Or, you can use the `Promise` API.
+upsertActivityDefinitionSeed(upsertActivityDefinitionSeedVars).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion_upsert);
+  console.log(data.editorialAuditLog_upsert);
+});
+```
+
+### Using `UpsertActivityDefinitionSeed`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertActivityDefinitionSeedRef, UpsertActivityDefinitionSeedVariables } from '@money-rank/dataconnect';
+
+// The `UpsertActivityDefinitionSeed` mutation requires an argument of type `UpsertActivityDefinitionSeedVariables`:
+const upsertActivityDefinitionSeedVars: UpsertActivityDefinitionSeedVariables = {
+  versionId: ..., 
+  auditId: ..., 
+  activityKey: ..., 
+  phaseNumber: ..., 
+  title: ..., 
+  payload: ..., 
+  publishedAt: ..., 
+};
+
+// Call the `upsertActivityDefinitionSeedRef()` function to get a reference to the mutation.
+const ref = upsertActivityDefinitionSeedRef(upsertActivityDefinitionSeedVars);
+// Variables can be defined inline as well.
+const ref = upsertActivityDefinitionSeedRef({ versionId: ..., auditId: ..., activityKey: ..., phaseNumber: ..., title: ..., payload: ..., publishedAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertActivityDefinitionSeedRef(dataConnect, upsertActivityDefinitionSeedVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.activityDefinitionVersion_upsert);
+console.log(data.editorialAuditLog_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.activityDefinitionVersion_upsert);
+  console.log(data.editorialAuditLog_upsert);
 });
 ```
 

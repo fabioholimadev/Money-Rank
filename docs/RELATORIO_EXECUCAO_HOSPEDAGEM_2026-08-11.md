@@ -66,3 +66,37 @@ Cloud SQL no Spark e de secrets que devem permanecer fora do Git e do chat.
 - guia: `docs/deploy/GUIA_HOSPEDAGEM_RENDER_FIREBASE_2026-08-11.md`;
 - evidência do contrato: `docs/evidence/pedagogical-bank-import-report.json`;
 - fonte: `docs/sources/banco-pedagogico-money-rank-preenchido.xlsx`.
+
+## Atualização pós-hospedagem — correção do Capi Bank e acesso docente
+
+O SQL Connect de produção foi consultado diretamente em 11/08/2026 e está
+operacional. A carga pedagógica foi reconciliada com 140 itens ativos: Perigo
+Doce 30, Custo do Vício 54, Ilusão do Dinheiro 24 e Engenharia do Desejo 32.
+O período `piloto-money-rank-2026-08-11` também está persistido com timezone
+`America/Fortaleza` e as janelas DSB, pausa e DSA previstas.
+
+O catálogo editorial, que estava vazio, foi provisionado por upsert
+transacional e idempotente. O estado remoto passou a conter cinco módulos de
+conteúdo e quatro definições de atividade. A Fase 2 recebeu o vídeo válido do
+Ministério da Saúde; slots sem URL confirmada continuam explicitamente
+`pending`, sem links inventados.
+
+As causas de integração corrigidas no código foram:
+
+- perfil, Capi Bank, ranking, período e painel docente passam pela API HTTP
+  autenticada, mesmo com o SDK direto desabilitado no frontend;
+- a impersonação do SQL Connect na gravação de perfil inclui UID, e-mail e
+  estado de verificação do e-mail;
+- contas presentes em `TEACHER_EMAILS` têm o papel `TEACHER` sincronizado no
+  banco depois que o perfil estiver completo;
+- a estrutura da imagem Docker preserva `backend/render-api` e `functions/src`,
+  permitindo carregar a lógica autoritativa dentro do container;
+- `/healthz` permanece independente do banco e `/readyz` reconcilia a conexão
+  com os 140 itens ativos.
+
+Para publicar a correção no Render, implante o mesmo commit primeiro em
+`money-rank-api` e depois em `money-rank-web`. Depois do deploy, valide
+`/healthz`, `/readyz`, faça logout/login com uma conta listada em
+`TEACHER_EMAILS` e confirme o painel administrativo. Como o Blueprint mantém
+`autoDeploy` desligado, use **Manual Deploy > Deploy latest commit** nos dois
+serviços.

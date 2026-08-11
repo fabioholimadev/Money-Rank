@@ -14,7 +14,7 @@ If a user is not using a supported framework, they can use the generated SDK dir
 Here's an example of how to use it with the first 5 operations:
 
 ```js
-import { upsertMyProfileWithAvatar, createLearningModuleVersionEditorial, createActivityDefinitionVersionEditorial, updateLearningModuleDraftEditorial, updateActivityDefinitionDraftEditorial, submitLearningModuleForReviewEditorial, submitActivityDefinitionForReviewEditorial, publishLearningModuleVersionEditorial, publishActivityDefinitionVersionEditorial, createResearchReviewEditorial } from '@money-rank/dataconnect';
+import { upsertMyProfileWithAvatar, createLearningModuleVersionEditorial, createActivityDefinitionVersionEditorial, upsertLearningModuleSeed, upsertActivityDefinitionSeed, updateLearningModuleDraftEditorial, updateActivityDefinitionDraftEditorial, submitLearningModuleForReviewEditorial, submitActivityDefinitionForReviewEditorial, publishLearningModuleVersionEditorial } from '@money-rank/dataconnect';
 
 
 // Operation UpsertMyProfileWithAvatar:  For variables, look at type UpsertMyProfileWithAvatarVars in ../index.d.ts
@@ -25,6 +25,12 @@ const { data } = await CreateLearningModuleVersionEditorial(dataConnect, createL
 
 // Operation CreateActivityDefinitionVersionEditorial:  For variables, look at type CreateActivityDefinitionVersionEditorialVars in ../index.d.ts
 const { data } = await CreateActivityDefinitionVersionEditorial(dataConnect, createActivityDefinitionVersionEditorialVars);
+
+// Operation UpsertLearningModuleSeed:  For variables, look at type UpsertLearningModuleSeedVars in ../index.d.ts
+const { data } = await UpsertLearningModuleSeed(dataConnect, upsertLearningModuleSeedVars);
+
+// Operation UpsertActivityDefinitionSeed:  For variables, look at type UpsertActivityDefinitionSeedVars in ../index.d.ts
+const { data } = await UpsertActivityDefinitionSeed(dataConnect, upsertActivityDefinitionSeedVars);
 
 // Operation UpdateLearningModuleDraftEditorial:  For variables, look at type UpdateLearningModuleDraftEditorialVars in ../index.d.ts
 const { data } = await UpdateLearningModuleDraftEditorial(dataConnect, updateLearningModuleDraftEditorialVars);
@@ -40,12 +46,6 @@ const { data } = await SubmitActivityDefinitionForReviewEditorial(dataConnect, s
 
 // Operation PublishLearningModuleVersionEditorial:  For variables, look at type PublishLearningModuleVersionEditorialVars in ../index.d.ts
 const { data } = await PublishLearningModuleVersionEditorial(dataConnect, publishLearningModuleVersionEditorialVars);
-
-// Operation PublishActivityDefinitionVersionEditorial:  For variables, look at type PublishActivityDefinitionVersionEditorialVars in ../index.d.ts
-const { data } = await PublishActivityDefinitionVersionEditorial(dataConnect, publishActivityDefinitionVersionEditorialVars);
-
-// Operation CreateResearchReviewEditorial:  For variables, look at type CreateResearchReviewEditorialVars in ../index.d.ts
-const { data } = await CreateResearchReviewEditorial(dataConnect, createResearchReviewEditorialVars);
 
 
 ```

@@ -1,30 +1,12 @@
-import { listVisibleCompetitionPeriods } from '@money-rank/dataconnect';
-import { QueryFetchPolicy } from 'firebase/data-connect';
-import {
-  dataConnect,
-  isDataConnectEnabled,
-} from '../lib/dataConnectClient';
+import { fetchApiJson } from '../lib/api';
 import {
   normalizeCompetitionPeriod,
   selectCurrentCompetitionPeriod,
 } from '../lib/competitionPeriod';
 
-function requireDataConnect() {
-  if (!isDataConnectEnabled) {
-    throw new Error(
-      'O Capi Bank está temporariamente indisponível. Tente novamente em instantes.',
-    );
-  }
-}
-
 export async function fetchVisibleCompetitionPeriods() {
-  requireDataConnect();
-
-  const result = await listVisibleCompetitionPeriods(dataConnect, {
-    fetchPolicy: QueryFetchPolicy.SERVER_ONLY,
-  });
-
-  return (result.data.competitionPeriods ?? [])
+  const result = await fetchApiJson('/api/period');
+  return (result.periods ?? [])
     .map(normalizeCompetitionPeriod)
     .filter(Boolean);
 }

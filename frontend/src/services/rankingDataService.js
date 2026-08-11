@@ -1,41 +1,24 @@
-import { getCompetitionRankings } from '@money-rank/dataconnect';
-import { QueryFetchPolicy } from 'firebase/data-connect';
-import { dataConnect, isDataConnectEnabled } from '../lib/dataConnectClient';
+import { fetchApiJson } from '../lib/api';
 import {
   normalizeClassRanking,
   normalizeIndividualRanking,
 } from '../lib/rankingDataMapper';
 import { fetchCurrentCompetitionPeriod } from './competitionDataService';
 
-const STUDENT_RANKING_LIMIT = 100;
-
 export async function fetchCompetitionRanking() {
-  if (!isDataConnectEnabled) {
-    throw new Error(
-      'O Capi Bank está temporariamente indisponível. Tente novamente em instantes.',
-    );
-  }
-
   const period = await fetchCurrentCompetitionPeriod();
   if (!period) {
     return { period: null, individuals: [], classes: [] };
   }
 
-  const result = await getCompetitionRankings(
-    dataConnect,
-    {
-      periodId: period.id,
-      studentLimit: STUDENT_RANKING_LIMIT,
-    },
-    { fetchPolicy: QueryFetchPolicy.SERVER_ONLY },
-  );
+  const result = await fetchApiJson('/api/ranking?classId=TODAS');
 
   return {
     period,
     individuals: normalizeIndividualRanking(
-      result.data.individualRanking,
+      result.individualRanking,
     ),
-    classes: normalizeClassRanking(result.data.classRanking),
+    classes: normalizeClassRanking(result.classRanking),
   };
 }
 

@@ -114,6 +114,91 @@ mutation CreateActivityDefinitionVersionEditorial(
   )
 }
 
+# Provisionamento idempotente do catálogo inicial. Os UUIDs são determinísticos,
+# portanto uma nova execução atualiza apenas a versão 1 do seed e não cria
+# módulos, atividades ou registros de auditoria duplicados.
+mutation UpsertLearningModuleSeed(
+  $versionId: UUID!
+  $auditId: UUID!
+  $moduleKey: String!
+  $phaseNumber: Int!
+  $title: String!
+  $payload: Any!
+  $publishedAt: Timestamp!
+) @auth(level: NO_ACCESS) @transaction {
+  learningModuleVersion_upsert(
+    data: {
+      id: $versionId
+      moduleKey: $moduleKey
+      phaseNumber: $phaseNumber
+      version: 1
+      status: PUBLISHED
+      publicationKey: $moduleKey
+      title: $title
+      changeSummary: "Catálogo inicial provisionado para o piloto"
+      payload: $payload
+      createdByUid: "system-seed"
+      publishedByUid: "system-seed"
+      publishedAt: $publishedAt
+      updatedAt_expr: "request.time"
+    }
+  )
+  editorialAuditLog_upsert(
+    data: {
+      id: $auditId
+      entityType: LEARNING_MODULE
+      entityId: $versionId
+      entityKey: $moduleKey
+      version: 1
+      action: "SEEDED"
+      actorUid: "system-seed"
+      summary: "Catálogo inicial provisionado para o piloto"
+      details: { initialStatus: "PUBLISHED" }
+    }
+  )
+}
+
+mutation UpsertActivityDefinitionSeed(
+  $versionId: UUID!
+  $auditId: UUID!
+  $activityKey: String!
+  $phaseNumber: Int!
+  $title: String!
+  $payload: Any!
+  $publishedAt: Timestamp!
+) @auth(level: NO_ACCESS) @transaction {
+  activityDefinitionVersion_upsert(
+    data: {
+      id: $versionId
+      activityKey: $activityKey
+      phaseNumber: $phaseNumber
+      version: 1
+      status: PUBLISHED
+      publicationKey: $activityKey
+      title: $title
+      changeSummary: "Catálogo inicial provisionado para o piloto"
+      payload: $payload
+      createdByUid: "system-seed"
+      publishedByUid: "system-seed"
+      publishedAt: $publishedAt
+      updatedAt_expr: "request.time"
+    }
+  )
+  editorialAuditLog_upsert(
+    data: {
+      id: $auditId
+      entityType: ACTIVITY_DEFINITION
+      entityId: $versionId
+      entityKey: $activityKey
+      version: 1
+      action: "SEEDED"
+      actorUid: "system-seed"
+      summary: "Catálogo inicial provisionado para o piloto"
+      details: { initialStatus: "PUBLISHED" }
+    }
+  )
+}
+
 mutation UpdateLearningModuleDraftEditorial(
   $versionId: UUID!
   $title: String!

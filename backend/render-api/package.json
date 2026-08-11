@@ -7,6 +7,7 @@
     "bank:generate": "node scripts/pedagogical-bank.mjs --generate",
     "bank:import": "node scripts/pedagogical-bank.mjs --commit",
     "bank:validate": "node scripts/pedagogical-bank.mjs",
+    "editorial:import": "node scripts/editorial-seed.mjs",
     "load:cleanup": "node scripts/load-test.mjs --cleanup",
     "load:full": "node scripts/load-test.mjs --full",
     "load:smoke": "node scripts/load-test.mjs --smoke",

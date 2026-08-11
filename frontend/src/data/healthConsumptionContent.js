@@ -88,13 +88,13 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Vídeo educativo do INCA sobre o tabagismo',
-        description: 'Introdução aos impactos individuais e coletivos do tabagismo.',
-        embedUrl: 'https://www.youtube.com/embed/PniRKApD7co',
-        sourceLabel: 'Instituto Nacional de Câncer (INCA)',
-        sourceUrl: 'https://www.youtube.com/watch?v=PniRKApD7co',
+        title: 'Conscientizar o jovem a evitar o cigarro',
+        description: 'Orientações de prevenção ao tabagismo na adolescência.',
+        embedUrl: 'https://www.youtube.com/embed/CQRtCPFxQPs',
+        sourceLabel: 'Ministério da Saúde',
+        sourceUrl: 'https://www.youtube.com/watch?v=CQRtCPFxQPs',
         format: 'YouTube',
-        estimatedMinutes: 7,
+        estimatedMinutes: 2,
         version: '1.0',
       },
       slides: pendingMaterial(

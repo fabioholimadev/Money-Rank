@@ -22,7 +22,6 @@ import {
   isValidAvatarId,
   isValidClassName,
 } from '../constants/profileOptions';
-import { isDataConnectEnabled } from '../lib/dataConnectClient';
 import {
   fetchMyProgress,
   fetchMyStudentProfile,
@@ -242,12 +241,6 @@ export function AuthProvider({ children }) {
         alunoRef.current = localSnapshot;
         setAluno(localSnapshot);
 
-        if (!isDataConnectEnabled) {
-          setTrailProgress([]);
-          setLoading(false);
-          return;
-        }
-
         setLoading(true);
         setTrailLoading(true);
 
@@ -403,25 +396,23 @@ export function AuthProvider({ children }) {
         profile_complete: true,
       };
 
-      let remoteProfile = null;
+      let remoteProfile;
 
-      if (isDataConnectEnabled) {
-        try {
-          remoteProfile = await syncStudentProfile(localCandidate);
-          setProfileSyncError(null);
-        } catch (error) {
-          console.warn(
-            'Não foi possível salvar o perfil no SQL Connect.',
-            error,
-          );
-          setProfileSyncError(
-            'Não foi possível salvar o perfil no Capi Bank.',
-          );
-          throw new Error(
-            'Não foi possível salvar o perfil no Capi Bank. Tente novamente em instantes.',
-            { cause: error },
-          );
-        }
+      try {
+        remoteProfile = await syncStudentProfile(localCandidate);
+        setProfileSyncError(null);
+      } catch (error) {
+        console.warn(
+          'Não foi possível salvar o perfil no SQL Connect.',
+          error,
+        );
+        setProfileSyncError(
+          'Não foi possível salvar o perfil no Capi Bank.',
+        );
+        throw new Error(
+          'Não foi possível salvar o perfil no Capi Bank. Tente novamente em instantes.',
+          { cause: error },
+        );
       }
 
       const completedProfile = {
@@ -461,7 +452,7 @@ export function AuthProvider({ children }) {
   const refreshTrailState = useCallback(async () => {
     const firebaseUser = auth.currentUser;
 
-    if (!firebaseUser || !isDataConnectEnabled) {
+    if (!firebaseUser) {
       return {
         profile: alunoRef.current,
         progress: [],
@@ -515,7 +506,7 @@ export function AuthProvider({ children }) {
       profileSyncError,
       trailProgress,
       trailLoading,
-      dataConnectEnabled: isDataConnectEnabled,
+      dataConnectEnabled: true,
       loginWithGoogle,
       logout,
       saveProfile,

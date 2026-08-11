@@ -1051,6 +1051,21 @@ export interface UpdateTeacherCompetitionPeriodVariables {
   actorUid: string;
 }
 
+export interface UpsertActivityDefinitionSeedData {
+  activityDefinitionVersion_upsert: ActivityDefinitionVersion_Key;
+  editorialAuditLog_upsert: EditorialAuditLog_Key;
+}
+
+export interface UpsertActivityDefinitionSeedVariables {
+  versionId: UUIDString;
+  auditId: UUIDString;
+  activityKey: string;
+  phaseNumber: number;
+  title: string;
+  payload: unknown;
+  publishedAt: TimestampString;
+}
+
 export interface UpsertEconomyConfigData {
   economyConfig_upsert: EconomyConfig_Key;
 }
@@ -1064,6 +1079,21 @@ export interface UpsertEconomyConfigVariables {
   streakTier3Percent: number;
   streakTier5Percent: number;
   streakTier7Percent: number;
+}
+
+export interface UpsertLearningModuleSeedData {
+  learningModuleVersion_upsert: LearningModuleVersion_Key;
+  editorialAuditLog_upsert: EditorialAuditLog_Key;
+}
+
+export interface UpsertLearningModuleSeedVariables {
+  versionId: UUIDString;
+  auditId: UUIDString;
+  moduleKey: string;
+  phaseNumber: number;
+  title: string;
+  payload: unknown;
+  publishedAt: TimestampString;
 }
 
 export interface UpsertMyProfileWithAvatarData {
@@ -1164,6 +1194,30 @@ export const createActivityDefinitionVersionEditorialRef: CreateActivityDefiniti
 
 export function createActivityDefinitionVersionEditorial(vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
 export function createActivityDefinitionVersionEditorial(dc: DataConnect, vars: CreateActivityDefinitionVersionEditorialVariables): MutationPromise<CreateActivityDefinitionVersionEditorialData, CreateActivityDefinitionVersionEditorialVariables>;
+
+interface UpsertLearningModuleSeedRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertLearningModuleSeedVariables): MutationRef<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertLearningModuleSeedVariables): MutationRef<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+  operationName: string;
+}
+export const upsertLearningModuleSeedRef: UpsertLearningModuleSeedRef;
+
+export function upsertLearningModuleSeed(vars: UpsertLearningModuleSeedVariables): MutationPromise<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+export function upsertLearningModuleSeed(dc: DataConnect, vars: UpsertLearningModuleSeedVariables): MutationPromise<UpsertLearningModuleSeedData, UpsertLearningModuleSeedVariables>;
+
+interface UpsertActivityDefinitionSeedRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertActivityDefinitionSeedVariables): MutationRef<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpsertActivityDefinitionSeedVariables): MutationRef<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+  operationName: string;
+}
+export const upsertActivityDefinitionSeedRef: UpsertActivityDefinitionSeedRef;
+
+export function upsertActivityDefinitionSeed(vars: UpsertActivityDefinitionSeedVariables): MutationPromise<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
+export function upsertActivityDefinitionSeed(dc: DataConnect, vars: UpsertActivityDefinitionSeedVariables): MutationPromise<UpsertActivityDefinitionSeedData, UpsertActivityDefinitionSeedVariables>;
 
 interface UpdateLearningModuleDraftEditorialRef {
   /* Allow users to create refs without passing in DataConnect */

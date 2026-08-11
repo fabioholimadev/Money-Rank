@@ -111,8 +111,15 @@ function secureRandom() {
   return crypto.randomInt(0, 2 ** 32) / (2 ** 32);
 }
 
-function dataConnectAuth(uid) {
-  return { impersonate: { authClaims: { sub: uid, email_verified: true } } };
+function dataConnectAuth(identity) {
+  const claims = typeof identity === 'string'
+    ? { sub: identity, email_verified: true }
+    : {
+      sub: identity.uid,
+      email: identity.email,
+      email_verified: identity.email_verified === true,
+    };
+  return { impersonate: { authClaims: claims } };
 }
 
 function databaseClass(classId) {
@@ -121,6 +128,45 @@ function databaseClass(classId) {
 
 function publicClass(classGroup) {
   return classGroup === 'THIRD_DSA' ? '3DSA' : classGroup === 'THIRD_DSB' ? '3DSB' : null;
+}
+
+const DATABASE_AVATARS = new Set([
+  'CAPI_CIENTISTA',
+  'CAPI_PROFESSORA',
+  'CAPI_PROGRAMADORA',
+  'CAPI_ECONOMISTA',
+  'CAPI_MEDICA',
+  'CAPI_ENGENHEIRA',
+]);
+
+function isTeacherEmail(email) {
+  return teacherEmails.has(String(email || '').trim().toLowerCase());
+}
+
+async function ensureTeacherRole(authClaims) {
+  if (!isTeacherEmail(authClaims?.email)) return null;
+  const data = unwrap(await sqlMutation('SetUserRoleByEmail', {
+    email: String(authClaims.email).trim().toLowerCase(),
+    role: 'TEACHER',
+  }));
+  return data.updatedUser || null;
+}
+
+async function getMyProfile(authClaims) {
+  let profile = unwrap(await sqlOperation(
+    'GetMyProfile',
+    {},
+    dataConnectAuth(authClaims.uid),
+  )).user || null;
+  if (profile && isTeacherEmail(authClaims.email) && profile.role !== 'TEACHER') {
+    await ensureTeacherRole(authClaims);
+    profile = unwrap(await sqlOperation(
+      'GetMyProfile',
+      {},
+      dataConnectAuth(authClaims.uid),
+    )).user || null;
+  }
+  return profile;
 }
 
 async function ensurePilotClass(uid, current) {
@@ -154,6 +200,126 @@ function graceAcceptsSession(current, session, binding) {
 }
 
 app.get('/healthz', (req, res) => res.json({ ok: true, service: 'money-rank-api', requestId: req.requestId }));
+app.get('/readyz', async (req, res, next) => {
+  try {
+    const data = unwrap(await sqlOperation('GetPedagogicalBankStatus', {}));
+    const counts = Object.fromEntries((data.counts || []).map((row) => [
+      row.activityId,
+      Number(row.activeItems || 0),
+    ]));
+    const activeItems = Object.values(counts).reduce((total, count) => total + count, 0);
+    return res.status(activeItems === 140 ? 200 : 503).json({
+      ok: activeItems === 140,
+      service: 'money-rank-api',
+      database: 'sql-connect',
+      activeItems,
+      counts,
+      requestId: req.requestId,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/me/profile', ...protectedRoute(), async (req, res, next) => {
+  try {
+    return res.json({ profile: await getMyProfile(req.auth) });
+  } catch (error) { return next(error); }
+});
+
+app.put('/api/me/profile', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const preferredName = String(req.body?.preferredName || '').trim().replace(/\s+/g, ' ');
+    const classGroup = String(req.body?.classGroup || '');
+    const avatarId = req.body?.avatarId ? String(req.body.avatarId) : null;
+    const avatarUrl = req.body?.avatarUrl ? String(req.body.avatarUrl).trim() : null;
+    if (preferredName.length < 2 || preferredName.length > 40) {
+      return res.status(400).json({ error: 'invalid_preferred_name', requestId: req.requestId });
+    }
+    if (!['THIRD_DSA', 'THIRD_DSB'].includes(classGroup)) {
+      return res.status(400).json({ error: 'invalid_class_group', requestId: req.requestId });
+    }
+    let operation = 'UpsertMyProfileWithoutSyncedPhoto';
+    const variables = { preferredName, classGroup };
+    if (avatarId) {
+      if (!DATABASE_AVATARS.has(avatarId)) {
+        return res.status(400).json({ error: 'invalid_avatar', requestId: req.requestId });
+      }
+      operation = 'UpsertMyProfileWithAvatar';
+      variables.avatarId = avatarId;
+    } else if (avatarUrl) {
+      let parsedUrl;
+      try { parsedUrl = new URL(avatarUrl); } catch { parsedUrl = null; }
+      if (parsedUrl?.protocol !== 'https:') {
+        return res.status(400).json({ error: 'invalid_avatar_url', requestId: req.requestId });
+      }
+      operation = 'UpsertMyProfileWithPhoto';
+      variables.avatarUrl = avatarUrl;
+    }
+    await sqlMutation(operation, variables, dataConnectAuth(req.auth));
+    await ensureTeacherRole(req.auth);
+    return res.json({ profile: await getMyProfile(req.auth) });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/me/progress', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const data = unwrap(await sqlOperation('ListMyProgress', {}, dataConnectAuth(req.auth.uid)));
+    return res.json({ progress: data.studentProgressEntries || [] });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/me/transactions', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const offset = Math.max(0, Number.parseInt(req.query.offset, 10) || 0);
+    const data = unwrap(await sqlOperation(
+      'ListMyCapiCoinTransactions',
+      { offset },
+      dataConnectAuth(req.auth.uid),
+    ));
+    return res.json({ transactions: data.capiCoinTransactions || [] });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/me/trail/initialize', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const data = unwrap(await sqlMutation('InitializeMyTrail', {}, dataConnectAuth(req.auth.uid)));
+    return res.json({ saved: Number(data.affectedRows || 0) > 0 });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/me/trail/introduction/complete', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const completion = unwrap(await sqlMutation('CompleteMyIntroduction', {}, dataConnectAuth(req.auth.uid)));
+    const transaction = unwrap(await sqlOperation(
+      'GetMyCapiCoinTransactionBySource',
+      { sourceId: 'introduction-0' },
+      dataConnectAuth(req.auth.uid),
+    )).capiCoinTransactions?.[0] || null;
+    return res.json({ saved: Number(completion.affectedRows || 0) === 1, transaction });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/me/trail/content/complete', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const phaseNumber = Number(req.body?.phaseNumber);
+    if (!Number.isInteger(phaseNumber) || phaseNumber < 1 || phaseNumber > 4) {
+      return res.status(400).json({ error: 'invalid_phase', requestId: req.requestId });
+    }
+    const completion = unwrap(await sqlMutation(
+      'CompleteMyCurrentPhaseContent',
+      { phaseNumber },
+      dataConnectAuth(req.auth.uid),
+    ));
+    const saved = Number(completion.affectedRows || 0) === 1;
+    const transaction = saved
+      ? unwrap(await sqlOperation(
+        'GetMyCapiCoinTransactionBySource',
+        { sourceId: `phase-${phaseNumber}-content` },
+        dataConnectAuth(req.auth.uid),
+      )).capiCoinTransactions?.[0] || null
+      : null;
+    return res.json({ saved, transaction });
+  } catch (error) { return next(error); }
+});
 app.get('/api/period', ...protectedRoute(), async (req, res, next) => {
   try {
     const current = periodState();
@@ -283,6 +449,10 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
     const payload = req.body || {};
     const uid = req.auth.uid;
 
+    if (teacherActions.has(action)) {
+      await ensureTeacherRole(req.auth);
+    }
+
     if (action === 'published-learning-content' || action === 'published-activity-catalog') {
       const studio = await import('../../functions/src/teacherStudio.js');
       const repository = await import('../../functions/src/editorialRepository.js');
@@ -397,8 +567,38 @@ app.get('/api/ranking', ...protectedRoute(), async (req, res, next) => {
   } catch (error) { return next(error); }
 });
 
+app.get('/api/teacher/periods', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 20, 1), 50);
+    const data = unwrap(await sqlOperation(
+      'ListTeacherCompetitionPeriods',
+      { limit },
+      dataConnectAuth(req.auth.uid),
+    ));
+    return res.json({ periods: data.periods || [] });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/dashboard', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const periodId = String(req.query.periodId || '').trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(periodId)) {
+      return res.status(400).json({ error: 'invalid_period_id', requestId: req.requestId });
+    }
+    const data = unwrap(await sqlOperation(
+      'GetTeacherDashboard',
+      { periodId, studentLimit: 100 },
+      dataConnectAuth(req.auth.uid),
+    ));
+    return res.json(data);
+  } catch (error) { return next(error); }
+});
+
 app.get('/api/export.xlsx', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
+    await ensureTeacherRole(req.auth);
     const periodId = await resolvePeriodUuid();
     const [dashboard, exportRows] = await Promise.all([
       sqlOperation('GetTeacherDashboard', { periodId, studentLimit: 100 }, dataConnectAuth(req.auth.uid)).then(unwrap),
