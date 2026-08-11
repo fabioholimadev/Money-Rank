@@ -22,12 +22,11 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Duas vezes Judite — Série Eu e meu dinheiro',
-        description: 'Vídeo introdutório sobre consumo e tomada de decisão.',
-        embedUrl: 'https://www.youtube.com/embed/k6O554uP2Kc',
-        sourceLabel: 'Banco Central do Brasil / Ministério da Justiça',
-        sourceUrl:
-          'https://www.gov.br/mj/pt-br/assuntos/seus-direitos/consumidor/escola-nacional-endc/videoteca/duas-vezes-judite-serie-eu-e-meu-dinheiro',
+        title: 'Introdução',
+        description: 'Vídeo introdutório da trilha Saúde e Consumo.',
+        embedUrl: 'https://www.youtube.com/embed/LKXPRhJjOpQ',
+        sourceLabel: 'Conteúdo fornecido pelo professor',
+        sourceUrl: 'https://youtu.be/LKXPRhJjOpQ',
         format: 'YouTube',
         estimatedMinutes: 5,
         version: '1.0',
@@ -49,11 +48,11 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Vídeo educativo — O Perigo do Doce',
+        title: 'O Perigo do Doce',
         description: 'Apresenta os conceitos centrais usados no quiz da fase.',
-        embedUrl: 'https://www.youtube.com/embed/ZnTJw_e7YDU',
-        sourceLabel: 'Conteúdo educativo selecionado pelo Money Rank',
-        sourceUrl: 'https://www.youtube.com/watch?v=ZnTJw_e7YDU',
+        embedUrl: 'https://www.youtube.com/embed/cDsiBieI51A',
+        sourceLabel: 'Conteúdo fornecido pelo professor',
+        sourceUrl: 'https://youtu.be/cDsiBieI51A',
         format: 'YouTube',
         estimatedMinutes: 6,
         version: '1.0',
@@ -88,11 +87,11 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Conscientizar o jovem a evitar o cigarro',
-        description: 'Orientações de prevenção ao tabagismo na adolescência.',
-        embedUrl: 'https://www.youtube.com/embed/CQRtCPFxQPs',
-        sourceLabel: 'Ministério da Saúde',
-        sourceUrl: 'https://www.youtube.com/watch?v=CQRtCPFxQPs',
+        title: 'O Custo do Vício',
+        description: 'Vídeo principal da segunda fase.',
+        embedUrl: 'https://www.youtube.com/embed/tsCgmv6ZtSU',
+        sourceLabel: 'Conteúdo fornecido pelo professor',
+        sourceUrl: 'https://youtu.be/tsCgmv6ZtSU',
         format: 'YouTube',
         estimatedMinutes: 2,
         version: '1.0',
@@ -121,13 +120,11 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Eu vou levar — Série Eu e meu dinheiro',
-        description: 'Narrativa sobre pressão de compra e decisões por impulso.',
-        embedUrl:
-          'https://www.youtube-nocookie.com/embed/FdTip4SdWMw?start=2',
-        sourceLabel: 'Banco Central do Brasil / Ministério da Justiça',
-        sourceUrl:
-          'https://www.gov.br/mj/pt-br/assuntos/seus-direitos/consumidor/escola-nacional-endc/videoteca/eu-vou-levar-serie-eu-e-meu-dinheiro',
+        title: 'A Ilusão do Dinheiro',
+        description: 'Vídeo principal da terceira fase.',
+        embedUrl: 'https://www.youtube.com/embed/4nl0aqqYObM',
+        sourceLabel: 'Conteúdo fornecido pelo professor',
+        sourceUrl: 'https://youtu.be/4nl0aqqYObM',
         format: 'YouTube',
         estimatedMinutes: 6,
         version: '1.0',
@@ -156,12 +153,11 @@ export const HEALTH_CONSUMPTION_CONTENT = {
     materialSlots: {
       video: {
         status: AVAILABLE,
-        title: 'Como funcionam as apostas on-line e o que diz a lei',
-        description: 'Contextualiza o funcionamento das bets e sua regulamentação.',
-        embedUrl: 'https://www.youtube.com/embed/liUKTPXW6Ac',
-        sourceLabel: 'TV Senado',
-        sourceUrl:
-          'https://www12.senado.leg.br/tv/programas/cidadania-1/2024/10/entenda-como-funcionam-as-apostas-online-e-o-que-diz-a-lei-das-bets',
+        title: 'A Engenharia do Desejo',
+        description: 'Vídeo principal da quarta fase.',
+        embedUrl: 'https://www.youtube.com/embed/6CKM8M6rsyI',
+        sourceLabel: 'Conteúdo fornecido pelo professor',
+        sourceUrl: 'https://youtu.be/6CKM8M6rsyI',
         format: 'YouTube',
         estimatedMinutes: 8,
         version: '1.0',
