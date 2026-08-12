@@ -3,6 +3,11 @@ import { getPerigoDoceDefinition } from './activityEngine.js';
 
 const OPTION_IDS = ['A', 'B', 'C', 'D'];
 const DIFFICULTIES = ['facil', 'media', 'desafiadora'];
+const ENGINE_DIFFICULTY = Object.freeze({
+  facil: 'EASY',
+  media: 'MEDIUM',
+  desafiadora: 'HARD',
+});
 
 function shuffle(values, random = Math.random) {
   const result = [...values];
@@ -94,23 +99,31 @@ function splitQuestionPayload(questions, source, model = null) {
       model,
       questions: questions.map((question) => ({
         id: question.id,
+        itemId: question.id,
         difficulty: question.difficulty,
         prompt: question.prompt,
-        options: question.options,
+        options: question.options.map((option) => ({
+          ...option,
+          label: option.text,
+        })),
       })),
     },
     answerKey: {
-      questions: questions.map(({
+      items: questions.map(({
         id,
+        difficulty,
         correctOptionId,
         explanation,
         sourceFactIds,
       }) => ({
-        id,
+        itemId: id,
+        difficulty: ENGINE_DIFFICULTY[difficulty] || 'MEDIUM',
         correctOptionId,
         explanation,
-        sourceFactIds,
+        source: { factIds: sourceFactIds },
+        tags: ['perigo-doce', 'gemini-generated'],
       })),
+      selectedItemIds: questions.map((question) => question.id),
     },
   };
 }
@@ -201,13 +214,26 @@ const responseSchema = {
   },
 };
 
-export async function buildAiPerigoDoceSession({ apiKey, model, definition }) {
+export async function buildAiPerigoDoceSession({
+  apiKey,
+  model,
+  definition,
+  onDiagnostic,
+}) {
   if (!apiKey || apiKey === 'local-fallback') {
+    onDiagnostic?.({
+      model,
+      ok: false,
+      source: 'fallback',
+      reason: 'missing_api_key',
+      latencyMs: 0,
+    });
     return buildFallbackPerigoDoceSession(Math.random, definition);
   }
 
   const activeDefinition = getPerigoDoceDefinition(definition);
   const ai = new GoogleGenAI({ apiKey });
+  const startedAt = Date.now();
   const prompt = [
     'Você é o Capi Tutor, tutor jovem e responsável de educação financeira para o 3º ano de escolas técnicas brasileiras.',
     'Gere exatamente cinco questões de múltipla escolha em português brasileiro.',
@@ -224,7 +250,6 @@ export async function buildAiPerigoDoceSession({ apiKey, model, definition }) {
       config: {
         responseMimeType: 'application/json',
         responseJsonSchema: responseSchema,
-        temperature: 0.55,
         maxOutputTokens: 4096,
       },
     });
@@ -232,13 +257,35 @@ export async function buildAiPerigoDoceSession({ apiKey, model, definition }) {
       JSON.parse(response.text),
       activeDefinition,
     );
-    return {
+    const prepared = {
       activityId: 'perigo-doce-quiz',
       variantId: 'ai',
       contentVersion: activeDefinition.contentVersion,
       ...splitQuestionPayload(questions, 'ai', model),
     };
-  } catch {
+    onDiagnostic?.({
+      model,
+      ok: true,
+      source: 'ai',
+      reason: null,
+      latencyMs: Date.now() - startedAt,
+    });
+    return prepared;
+  } catch (error) {
+    const diagnostic = {
+      model,
+      ok: false,
+      source: 'fallback',
+      reason: String(error?.message || 'gemini_request_failed').slice(0, 240),
+      errorName: String(error?.name || 'Error').slice(0, 80),
+      errorStatus: Number(error?.status) || undefined,
+      latencyMs: Date.now() - startedAt,
+    };
+    onDiagnostic?.(diagnostic);
+    console.warn(JSON.stringify({
+      event: 'perigo_doce_gemini_fallback',
+      ...diagnostic,
+    }));
     return buildFallbackPerigoDoceSession(Math.random, activeDefinition);
   }
 }

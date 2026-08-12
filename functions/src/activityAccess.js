@@ -1,5 +1,4 @@
-const OFFICIAL_START_STATES = new Set(['ACTIVE']);
-const OFFICIAL_SUBMIT_STATES = new Set(['ACTIVE', 'GRACE']);
+const ATTRIBUTABLE_PERIOD_STATES = new Set(['ACTIVE', 'GRACE']);
 
 function validTestGrant(testGrant, user, now) {
   if (!testGrant || !user?.uid) return false;
@@ -8,11 +7,6 @@ function validTestGrant(testGrant, user, now) {
     && testGrant.createdByUid === user.uid
     && Number.isFinite(endsAt)
     && now.getTime() < endsAt;
-}
-
-function officialClassAllowed(currentPeriod, session, user) {
-  if (!currentPeriod?.classId) return true;
-  return (session?.classId || user?.classId) === currentPeriod.classId;
 }
 
 export function canAccessActivity({
@@ -24,33 +18,12 @@ export function canAccessActivity({
   now = new Date(),
 }) {
   const isSubmit = operation === 'SUBMIT';
-  const officialStates = isSubmit
-    ? OFFICIAL_SUBMIT_STATES
-    : OFFICIAL_START_STATES;
-  const officialStateAllowed = officialStates.has(currentPeriod?.state);
-  const officialPeriodMatches = !isSubmit
-    || session?.competitionPeriodId === currentPeriod?.selectedPeriodId;
+  const validGrant = validTestGrant(testGrant, user, now);
 
-  if (
-    officialStateAllowed
-    && officialClassAllowed(currentPeriod, session, user)
-    && officialPeriodMatches
-  ) {
-    return {
-      allowed: true,
-      source: 'OFFICIAL_PERIOD',
-      reason: isSubmit
-        ? 'official_period_accepts_submission'
-        : 'official_period_active',
-      periodId: currentPeriod.selectedPeriodId,
-      testRunId: null,
-    };
-  }
-
-  if (validTestGrant(testGrant, user, now)) {
-    const testSessionMatches = !isSubmit
-      || (session?.isTest === true && session?.testRunId === testGrant.id);
-    if (testSessionMatches) {
+  // Sessões de teste continuam isoladas para nunca conceder progresso ou
+  // recompensa oficial por engano.
+  if (session?.isTest === true) {
+    if (validGrant && session.testRunId === testGrant.id) {
       return {
         allowed: true,
         source: 'TEST_RUN',
@@ -59,24 +32,36 @@ export function canAccessActivity({
         testRunId: testGrant.id,
       };
     }
+    return {
+      allowed: false,
+      source: 'BLOCKED',
+      reason: 'test_run_expired_or_mismatched',
+      periodId: null,
+      testRunId: testGrant?.id || null,
+    };
   }
 
-  let reason = currentPeriod?.reason || 'no_active_period';
-  if (currentPeriod?.state === 'PAUSED') reason = 'period_paused';
-  if (isSubmit && session?.isTest) reason = 'test_run_expired_or_mismatched';
-  if (isSubmit && session?.competitionPeriodId && !officialPeriodMatches) {
-    reason = 'session_period_mismatch';
-  }
-  if (!officialClassAllowed(currentPeriod, session, user)) {
-    reason = 'student_bound_to_other_class';
+  if (!isSubmit && validGrant) {
+    return {
+      allowed: true,
+      source: 'TEST_RUN',
+      reason: 'teacher_test_grant_active',
+      periodId: null,
+      testRunId: testGrant.id,
+    };
   }
 
+  const periodId = ATTRIBUTABLE_PERIOD_STATES.has(currentPeriod?.state)
+    ? currentPeriod?.selectedPeriodId || null
+    : null;
   return {
-    allowed: false,
-    source: 'BLOCKED',
-    reason,
-    periodId: currentPeriod?.selectedPeriodId || null,
-    testRunId: testGrant?.id || null,
+    allowed: true,
+    source: 'STANDARD_ACTIVITY',
+    reason: isSubmit
+      ? 'activity_submission_available'
+      : 'activity_available',
+    periodId,
+    testRunId: null,
   };
 }
 

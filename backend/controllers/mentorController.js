@@ -6,7 +6,7 @@
  * Variáveis de ambiente esperadas (backend/.env):
  *   MENTOR_PROVIDER   = "gemini" | "anthropic"   (padrão: gemini)
  *   GEMINI_API_KEY    = ...                        (se gemini)
- *   GEMINI_MODEL      = gemini-1.5-flash           (opcional)
+ *   GEMINI_MODEL      = gemini-3.6-flash           (opcional)
  *   ANTHROPIC_API_KEY = ...                        (se anthropic)
  *   ANTHROPIC_MODEL   = claude-3-5-haiku-20241022  (opcional)
  */
@@ -68,7 +68,7 @@ async function chamarGemini(systemPrompt, mensagens) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('CONFIG: GEMINI_API_KEY ausente no backend.');
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const contents = mensagens.map((m) => ({
@@ -79,7 +79,7 @@ async function chamarGemini(systemPrompt, mensagens) {
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents,
-    generationConfig: { temperature: 0.6, maxOutputTokens: 600 },
+    generationConfig: { maxOutputTokens: 600 },
   };
 
   const opcoesFetch = {

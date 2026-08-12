@@ -64,7 +64,7 @@ import {
 } from './competitionPeriodRepository.js';
 
 const REGION = 'southamerica-east1';
-const SESSION_DURATION_MILLISECONDS = 45 * 60 * 1_000;
+const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const isFunctionsEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const geminiModel = defineString('GEMINI_MODEL', {
@@ -151,13 +151,13 @@ function normalizeVariantId(value) {
   return variantId;
 }
 
-function publicSession(sessionId, phaseNumber, expiresAt, prepared) {
+function publicSession(sessionId, phaseNumber, prepared) {
   return {
     sessionId,
     phaseNumber,
     activityId: prepared.activityId,
     contentVersion: prepared.contentVersion,
-    expiresAt,
+    expiresAt: null,
     ...prepared.publicPayload,
   };
 }
@@ -223,9 +223,7 @@ export const startActivitySession = onCall(
             definition: editorialDefinition,
           });
       const sessionId = randomUUID();
-      const expiresAt = new Date(
-        Date.now() + SESSION_DURATION_MILLISECONDS,
-      ).toISOString();
+      const expiresAt = UNLIMITED_ACTIVITY_SESSION_END;
 
       await createActivitySession({
         sessionId,
@@ -239,7 +237,7 @@ export const startActivitySession = onCall(
         expiresAt,
       });
 
-      return publicSession(sessionId, phaseNumber, expiresAt, prepared);
+      return publicSession(sessionId, phaseNumber, prepared);
     } catch (error) {
       logger.error('Falha ao preparar sessão autoritativa.', {
         phaseNumber,
@@ -284,13 +282,6 @@ export const submitActivitySession = onCall(
           'Esta sessão já foi encerrada.',
         );
       }
-      if (Date.parse(session.expiresAt) <= Date.now()) {
-        throw new HttpsError(
-          'deadline-exceeded',
-          'A sessão expirou. Inicie uma nova rodada.',
-        );
-      }
-
       const calculatedResult = scoreActivitySession(session, answers);
       const savedResult = await persistActivityResult(
         session,

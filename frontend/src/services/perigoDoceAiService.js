@@ -186,7 +186,6 @@ export async function generatePerigoDoceQuestions(studentState = {}) {
         generationConfig: {
           responseMimeType: 'application/json',
           responseSchema: buildResponseSchema(Schema),
-          temperature: 0.55,
           maxOutputTokens: 4096,
         },
       },

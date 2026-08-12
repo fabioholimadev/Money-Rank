@@ -201,8 +201,9 @@ export async function answerStudentMentor({
     const response = await ai.interactions.create({
       model,
       input: prompt,
+      store: false,
       tools: [{ type: 'google_search' }],
-      generation_config: { temperature: 0.3, max_output_tokens: 1_400 },
+      generation_config: { max_output_tokens: 1_400 },
     }, { timeout: timeoutMs, maxRetries: 1 });
     const selected = selectMentorResponse(response);
     if (!selected) throw new Error('grounded_response_required');

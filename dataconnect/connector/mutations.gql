@@ -1622,7 +1622,6 @@ mutation RegisterMyCurrentPhaseAttempt(
               AND session.activity_id = $3
               AND session.phase_number = $4
               AND session.status = 'OPEN'
-              AND session.expires_at > CURRENT_TIMESTAMP
           )
           AND (
             (
@@ -1829,7 +1828,6 @@ mutation CompleteMyCurrentPhase(
               AND session.activity_id = $3
               AND session.phase_number = $4
               AND session.status = 'OPEN'
-              AND session.expires_at > CURRENT_TIMESTAMP
           )
           AND (
             (
@@ -2436,7 +2434,6 @@ mutation UpdateAuthoritativeActivitySessionState(
       WHERE id = $1::uuid
         AND user_uid = $2
         AND status = 'OPEN'
-        AND expires_at > CURRENT_TIMESTAMP
     """
     params: [$sessionId, $studentUid, $answerKey, $publicPayload]
   )

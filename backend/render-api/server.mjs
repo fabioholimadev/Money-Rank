@@ -38,8 +38,10 @@ const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
 const teacherEmails = new Set(String(process.env.TEACHER_EMAILS || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean));
 const isTest = process.env.NODE_ENV === 'test';
 const TIME_ZONE = 'America/Fortaleza';
+const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const runtimeDiagnostics = {
   sql: { lastSuccessAt: null, lastFailure: null },
+  activityGenerator: null,
   mentor: null,
   analyst: null,
 };
@@ -508,24 +510,43 @@ app.post('/api/activity/sessions/start', ...protectedRoute(), async (req, res, n
     const phaseNumber = Number(req.body?.phaseNumber); if (!Number.isInteger(phaseNumber) || phaseNumber < 1 || phaseNumber > 4) return res.status(400).json({ error: 'invalid_phase' });
     const module = await import('../../functions/src/activityEngine.js');
     const activityId = module.ACTIVITY_IDS_BY_PHASE[phaseNumber];
-    const [bankData, seenData] = await Promise.all([
-      sqlOperation('ListActivePedagogicalItemsForActivity', { activityId }).then(unwrap),
-      sqlOperation('ListStudentSeenPedagogicalItemIds', { studentUid: req.auth.uid, activityId }).then(unwrap),
-    ]);
-    const prepared = module.buildStaticSession(phaseNumber, {
-      variantId: req.body?.variantId || null,
-      random: secureRandom,
-      seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
-      definition: { items: bankData.pedagogicalItems || [] },
-    });
-    const sessionId = crypto.randomUUID(); const expiresAt = new Date(Date.now() + 45 * 60_000).toISOString();
+    let prepared;
+    if (phaseNumber === 1) {
+      const perigoDoce = await import('../../functions/src/perigoDoceSession.js');
+      prepared = await perigoDoce.buildAiPerigoDoceSession({
+        apiKey: geminiApiKey(),
+        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        onDiagnostic: (diagnostic) => {
+          runtimeDiagnostics.activityGenerator = {
+            ...diagnostic,
+            requestId: req.requestId,
+            at: new Date().toISOString(),
+          };
+        },
+      });
+    } else {
+      const [bankData, seenData] = await Promise.all([
+        sqlOperation('ListActivePedagogicalItemsForActivity', { activityId }).then(unwrap),
+        sqlOperation('ListStudentSeenPedagogicalItemIds', { studentUid: req.auth.uid, activityId }).then(unwrap),
+      ]);
+      prepared = module.buildStaticSession(phaseNumber, {
+        variantId: req.body?.variantId || null,
+        random: secureRandom,
+        seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
+        definition: { items: bankData.pedagogicalItems || [] },
+      });
+    }
+    const sessionId = crypto.randomUUID();
+    const expiresAt = access.source === 'TEST_RUN'
+      ? testGrant.endsAt
+      : UNLIMITED_ACTIVITY_SESSION_END;
     const answerKey = { ...prepared.answerKey, runtime: { competitionPeriodId: access.periodId, testRunId: access.testRunId, accessSource: access.source } };
     if (access.source === 'TEST_RUN') {
       await sqlMutation('CreateTestActivitySession', { sessionId, testRunId: access.testRunId, actorUid: req.auth.uid, activityId: prepared.activityId, phaseNumber, variantId: prepared.variantId, contentVersion: prepared.contentVersion, publicPayload: prepared.publicPayload, answerKey, expiresAt });
     } else {
       await sqlMutation('CreateAuthoritativeActivitySession', { sessionId, studentUid: req.auth.uid, activityId: prepared.activityId, phaseNumber, variantId: prepared.variantId, contentVersion: prepared.contentVersion, publicPayload: prepared.publicPayload, answerKey, expiresAt });
     }
-    res.status(201).json({ sessionId, phaseNumber, activityId: prepared.activityId, contentVersion: prepared.contentVersion, expiresAt, testMode: access.source === 'TEST_RUN', testRunId: access.testRunId, ...prepared.publicPayload });
+    res.status(201).json({ sessionId, phaseNumber, activityId: prepared.activityId, contentVersion: prepared.contentVersion, expiresAt: access.source === 'TEST_RUN' ? expiresAt : null, testMode: access.source === 'TEST_RUN', testRunId: access.testRunId, ...prepared.publicPayload });
   } catch (error) { next(error); }
 });
 
@@ -857,6 +878,7 @@ app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (re
       gemini: {
         keyRecognized: Boolean(geminiApiKey()),
         model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        activityGenerator: runtimeDiagnostics.activityGenerator,
         mentor: runtimeDiagnostics.mentor,
         analyst: runtimeDiagnostics.analyst,
       },

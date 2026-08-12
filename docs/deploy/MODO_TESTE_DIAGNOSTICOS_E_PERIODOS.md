@@ -4,8 +4,8 @@
 
 O servidor decide o acesso; a interface apenas apresenta o resultado.
 
-1. Um período oficial permite iniciar atividades quando o estado resolvido pelo servidor é `ACTIVE`, o instante atual pertence a `[starts_at, ends_at)` e a turma aplicável coincide.
-2. Uma submissão oficial exige a mesma janela e o mesmo `competition_period_id` gravado na sessão.
+1. As atividades normais podem ser iniciadas e concluídas independentemente do estado ou da janela de um período competitivo.
+2. Quando existe um período ativo, seu identificador é associado à atividade apenas para atribuição e análise competitiva; fora da janela, a atividade continua disponível sem essa associação.
 3. Fora de período, somente uma concessão `TestRun` ativa permite acesso. Ela deve pertencer ao mesmo professor autenticado, estar dentro do prazo do servidor e corresponder ao `test_run_id` da sessão.
 4. Qualquer outro caso é bloqueado com um motivo explícito.
 

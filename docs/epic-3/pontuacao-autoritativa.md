@@ -13,7 +13,7 @@ resultado e solicita ao Capi Bank a gravação atômica.
 aluno autenticado
   -> solicita uma sessão de atividade
   -> Cloud Function prepara payload público + gabarito privado
-  -> Capi Bank guarda a sessão por 45 minutos
+  -> Capi Bank guarda a sessão até a submissão
   -> navegador renderiza o payload público e envia somente IDs
   -> Cloud Function valida propriedade, prazo e respostas
   -> motor autoritativo calcula nota e aprovação
@@ -29,7 +29,7 @@ contra reutilização de token são ativados automaticamente.
 ## Contrato de segurança
 
 - sessão identificada por UUID e vinculada ao UID autenticado;
-- validade de 45 minutos;
+- sem limite de tempo para a execução normal;
 - gabarito armazenado somente em `ActivitySession.answerKey`;
 - operações que leem gabarito ou concedem recompensa usam
   `@auth(level: NO_ACCESS)` e só podem ser chamadas pelo Admin SDK;

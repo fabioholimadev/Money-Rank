@@ -280,7 +280,6 @@ export async function buildTeacherChatResponse({
         config: {
           responseMimeType: 'application/json',
           responseJsonSchema: RESPONSE_SCHEMA,
-          temperature: 0.25,
           maxOutputTokens: 180,
         },
       });
