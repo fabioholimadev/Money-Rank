@@ -45,11 +45,11 @@ contra reutilização de token são ativados automaticamente.
 
 ### Fase 1 — O Perigo Doce
 
-As cinco questões são preparadas no backend. Quando o segredo do Gemini está
-disponível, a IA recebe a base de conhecimento versionada e devolve JSON
-estruturado. Se a IA falhar, o backend monta um fallback determinístico. O
-campos `correctOptionId`, explicação e fontes internas nunca integram o
-payload público.
+As cinco questões são sorteadas no backend diretamente dos itens ativos do
+banco pedagógico, com a mesma política usada pelas demais fases. O sorteio
+respeita a proporção 2 fáceis, 2 médias e 1 desafiadora e evita repetir itens
+já vistos enquanto houver alternativas. Os campos `correctOptionId`,
+explicação e fontes internas nunca integram o payload público.
 
 ### Fase 2 — O Custo do Vício
 
@@ -99,8 +99,8 @@ npx -y firebase-tools@latest emulators:start --only dataconnect,functions
 ```
 
 No frontend, manter `VITE_USE_FUNCTIONS_EMULATOR=true` e iniciar o Vite em
-outro terminal. Sem `GEMINI_API_KEY`, a Fase 1 usa o fallback seguro do
-servidor, permitindo testar o fluxo sem segredo local.
+outro terminal. A Fase 1 não depende de `GEMINI_API_KEY`; essa chave permanece
+necessária somente para os recursos conversacionais que usam o Gemini.
 
 O projeto ativo deve permanecer `money-rank`, pois o frontend usa tokens do
 Firebase Auth real desse projeto. `demo-money-rank` serve para testes isolados

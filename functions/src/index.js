@@ -3,20 +3,20 @@ import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { defineSecret, defineString } from 'firebase-functions/params';
 import {
+  ACTIVITY_IDS_BY_PHASE,
   buildStaticSession,
-  getActivityDefinition,
   scoreActivitySession,
 } from './activityEngine.js';
 import {
   createActivitySession,
   getActivityResult,
   getActivitySession,
+  getPedagogicalActivityBank,
   getTeacherDashboardForChat,
   getStudentMentorContext,
   markActivitySessionSubmitted,
   persistActivityResult,
 } from './activityRepository.js';
-import { buildAiPerigoDoceSession } from './perigoDoceSession.js';
 import {
   buildTeacherChatResponse,
   normalizeTeacherQuestion,
@@ -47,7 +47,6 @@ import {
   submitEditorialForReview,
   updateEditorialDraft,
 } from './editorialRepository.js';
-import { getActivityKeyForPhase } from './editorialValidation.js';
 import {
   deleteTeacherStudioFile,
   uploadTeacherStudioFile,
@@ -191,37 +190,20 @@ function toClientResult(attempt) {
 }
 
 export const startActivitySession = onCall(
-  {
-    ...callableOptions,
-    secrets: [geminiApiKey],
-  },
+  callableOptions,
   async (request) => {
     const studentUid = requireStudent(request);
     const phaseNumber = normalizePhaseNumber(request.data?.phaseNumber);
     const variantId = normalizeVariantId(request.data?.variantId);
 
     try {
-      getActivityDefinition(phaseNumber);
-      const activityKey = getActivityKeyForPhase(phaseNumber);
-      const publishedVersion = activityKey
-        ? await getPublishedActivityDefinition(activityKey)
-        : null;
-      const editorialDefinition = publishedVersion
-        ? {
-            ...publishedVersion.payload,
-            contentVersion: `studio-${publishedVersion.version}`,
-          }
-        : null;
-      const prepared = phaseNumber === 1
-        ? await buildAiPerigoDoceSession({
-            apiKey: geminiApiKey.value(),
-            model: geminiModel.value(),
-            definition: editorialDefinition,
-          })
-        : buildStaticSession(phaseNumber, {
-            variantId,
-            definition: editorialDefinition,
-          });
+      const activityId = ACTIVITY_IDS_BY_PHASE[phaseNumber];
+      const bank = await getPedagogicalActivityBank(studentUid, activityId);
+      const prepared = buildStaticSession(phaseNumber, {
+        variantId,
+        definition: { items: bank.items },
+        seenItemIds: bank.seenItemIds,
+      });
       const sessionId = randomUUID();
       const expiresAt = UNLIMITED_ACTIVITY_SESSION_END;
 

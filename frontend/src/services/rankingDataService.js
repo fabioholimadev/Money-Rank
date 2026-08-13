@@ -3,22 +3,15 @@ import {
   normalizeClassRanking,
   normalizeIndividualRanking,
 } from '../lib/rankingDataMapper';
-import { fetchCurrentCompetitionPeriod } from './competitionDataService';
 
-export async function fetchCompetitionRanking() {
-  const period = await fetchCurrentCompetitionPeriod();
-  if (!period) {
-    return { period: null, individuals: [], classes: [] };
-  }
-
+export async function fetchGlobalRanking() {
   const result = await fetchApiJson('/api/ranking?classId=TODAS');
 
   return {
-    period,
+    scope: result.scope ?? 'ALL_TIME',
     individuals: normalizeIndividualRanking(
       result.individualRanking,
     ),
     classes: normalizeClassRanking(result.classRanking),
   };
 }
-

@@ -7,23 +7,7 @@ import {
   Person,
 } from '@mui/icons-material';
 import { getAvatarOption } from '../constants/profileOptions';
-import {
-  COMPETITION_PERIOD_STATUSES,
-  getEffectiveCompetitionStatus,
-} from '../lib/competitionPeriod';
-import { fetchCompetitionRanking } from '../services/rankingDataService';
-
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-  timeZone: 'America/Fortaleza',
-});
-
-const statusLabels = {
-  [COMPETITION_PERIOD_STATUSES.ACTIVE]: 'Competição em andamento',
-  [COMPETITION_PERIOD_STATUSES.PAUSED]: 'Competição pausada',
-  [COMPETITION_PERIOD_STATUSES.SCHEDULED]: 'Competição agendada',
-};
+import { fetchGlobalRanking } from '../services/rankingDataService';
 
 function positionPresentation(position) {
   switch (position) {
@@ -69,7 +53,7 @@ function RankingAvatar({ entry, isClassRanking }) {
 
 export default function Ranking() {
   const [ranking, setRanking] = useState({
-    period: null,
+    scope: 'ALL_TIME',
     individuals: [],
     classes: [],
   });
@@ -86,13 +70,13 @@ export default function Ranking() {
       setErrorMessage('');
 
       try {
-        const result = await fetchCompetitionRanking();
+        const result = await fetchGlobalRanking();
         if (isActive) setRanking(result);
       } catch (error) {
         console.error('Não foi possível carregar o ranking.', error);
         if (isActive) {
           setErrorMessage(
-            'O Capi Bank está organizando a disputa. Tente novamente em instantes.',
+            'Não foi possível carregar o ranking. Tente novamente em instantes.',
           );
         }
       } finally {
@@ -111,7 +95,7 @@ export default function Ranking() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
         <p className="text-sm font-bold uppercase tracking-widest text-white">
-          Preparando a disputa...
+          Preparando o ranking...
         </p>
       </div>
     );
@@ -121,10 +105,6 @@ export default function Ranking() {
   const activeList = isClassRanking
     ? ranking.classes
     : ranking.individuals;
-  const effectiveStatus = ranking.period
-    ? getEffectiveCompetitionStatus(ranking.period)
-    : null;
-
   return (
     <div className="relative min-h-screen bg-slate-950 p-4 text-white sm:p-6">
       <div
@@ -141,11 +121,11 @@ export default function Ranking() {
           <div>
             <h1 className="mb-2 flex items-center gap-3 text-2xl font-black tracking-tight md:text-4xl">
               <Leaderboard sx={{ fontSize: 34, color: '#fbbf24' }} />
-              Ranking da competição
+              Ranking geral
             </h1>
             <p className="text-sm text-slate-400">
-              Cada CapiCoin conquistada no período vira um ponto para você e
-              para sua turma.
+              Cada CapiCoin conquistada vira um ponto para você e para sua
+              turma, sem depender de um período competitivo.
             </p>
           </div>
 
@@ -176,21 +156,6 @@ export default function Ranking() {
             </button>
           </div>
         </div>
-
-        {ranking.period && (
-          <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-black text-cyan-200">{ranking.period.name}</p>
-              <p className="mt-1 text-xs text-slate-400">
-                {dateFormatter.format(new Date(ranking.period.startsAt))} até{' '}
-                {dateFormatter.format(new Date(ranking.period.endsAt))}
-              </p>
-            </div>
-            <span className="w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-black text-cyan-200">
-              {statusLabels[effectiveStatus] || 'Período configurado'}
-            </span>
-          </div>
-        )}
       </header>
 
       <main className="relative mx-auto max-w-4xl">
@@ -207,21 +172,7 @@ export default function Ranking() {
           </div>
         )}
 
-        {!errorMessage && !ranking.period ? (
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-10 text-center shadow-lg shadow-amber-500/5">
-            <Leaderboard
-              sx={{ fontSize: 46 }}
-              className="mx-auto text-amber-400"
-            />
-            <h2 className="mt-3 text-xl font-black">
-              A próxima disputa ainda não foi aberta
-            </h2>
-            <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
-              Assim que o professor agendar o período, os pontos gerais dos
-              alunos e das turmas aparecerão aqui.
-            </p>
-          </section>
-        ) : !errorMessage && activeList.length > 0 ? (
+        {!errorMessage && activeList.length > 0 ? (
           <div className="overflow-x-auto rounded-3xl border border-zinc-800 bg-zinc-900/80 shadow-lg shadow-amber-500/5 backdrop-blur-sm">
             <table className="w-full">
               <thead className="border-b border-zinc-800 bg-gradient-to-r from-slate-900/80 to-slate-900/60">
@@ -294,8 +245,7 @@ export default function Ranking() {
         ) : !errorMessage ? (
           <section className="rounded-3xl border border-zinc-800 bg-zinc-900/80 p-10 text-center shadow-lg shadow-amber-500/5">
             <p className="text-lg text-slate-400">
-              A disputa está pronta. Os primeiros pontos ainda não foram
-              registrados.
+              Os primeiros pontos ainda não foram registrados.
             </p>
           </section>
         ) : null}

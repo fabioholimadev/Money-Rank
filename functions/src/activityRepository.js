@@ -40,6 +40,25 @@ export async function getActivityResult(sessionId) {
   return unwrapData(response).activityAttempts?.[0] ?? null;
 }
 
+export async function getPedagogicalActivityBank(studentUid, activityId) {
+  const [bankResponse, seenResponse] = await Promise.all([
+    dataConnect.executeQuery(
+      'ListActivePedagogicalItemsForActivity',
+      { activityId },
+    ),
+    dataConnect.executeQuery(
+      'ListStudentSeenPedagogicalItemIds',
+      { studentUid, activityId },
+    ),
+  ]);
+  const bankData = unwrapData(bankResponse);
+  const seenData = unwrapData(seenResponse);
+  return {
+    items: bankData.pedagogicalItems ?? [],
+    seenItemIds: (seenData.seenItems ?? []).map((item) => item.itemId),
+  };
+}
+
 export async function getTeacherDashboardForChat(
   teacherUid,
   periodId,

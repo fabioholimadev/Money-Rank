@@ -53,6 +53,7 @@ test('limpeza é limitada ao test_run_id encerrado e preserva a auditoria', () =
 test('agregações oficiais excluem explicitamente dados de teste', () => {
   for (const queryName of [
     'GetCompetitionRankings',
+    'GetGlobalRankings',
     'GetTeacherDashboard',
     'GetCompetitionAbuseSignals',
     'GetPilotExportRows',

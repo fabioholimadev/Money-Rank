@@ -41,7 +41,6 @@ const TIME_ZONE = 'America/Fortaleza';
 const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const runtimeDiagnostics = {
   sql: { lastSuccessAt: null, lastFailure: null },
-  activityGenerator: null,
   mentor: null,
   analyst: null,
 };
@@ -323,14 +322,14 @@ function validUuid(value) {
   return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(String(value || ''));
 }
 
-async function resolveOfficialPeriodId(uid, requestedPeriodId = '') {
+async function resolveTeacherExportPeriodId(uid, requestedPeriodId = '') {
   if (requestedPeriodId) {
     if (!validUuid(requestedPeriodId)) throw new Error('invalid_period_id');
     return requestedPeriodId;
   }
   const { current } = await resolveRuntimePeriod(uid);
   if (current.state !== 'ACTIVE' || !current.selectedPeriodId) {
-    throw new Error('no_official_period_for_ranking');
+    throw new Error('no_official_period_for_export');
   }
   return current.selectedPeriodId;
 }
@@ -510,32 +509,16 @@ app.post('/api/activity/sessions/start', ...protectedRoute(), async (req, res, n
     const phaseNumber = Number(req.body?.phaseNumber); if (!Number.isInteger(phaseNumber) || phaseNumber < 1 || phaseNumber > 4) return res.status(400).json({ error: 'invalid_phase' });
     const module = await import('../../functions/src/activityEngine.js');
     const activityId = module.ACTIVITY_IDS_BY_PHASE[phaseNumber];
-    let prepared;
-    if (phaseNumber === 1) {
-      const perigoDoce = await import('../../functions/src/perigoDoceSession.js');
-      prepared = await perigoDoce.buildAiPerigoDoceSession({
-        apiKey: geminiApiKey(),
-        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-        onDiagnostic: (diagnostic) => {
-          runtimeDiagnostics.activityGenerator = {
-            ...diagnostic,
-            requestId: req.requestId,
-            at: new Date().toISOString(),
-          };
-        },
-      });
-    } else {
-      const [bankData, seenData] = await Promise.all([
-        sqlOperation('ListActivePedagogicalItemsForActivity', { activityId }).then(unwrap),
-        sqlOperation('ListStudentSeenPedagogicalItemIds', { studentUid: req.auth.uid, activityId }).then(unwrap),
-      ]);
-      prepared = module.buildStaticSession(phaseNumber, {
-        variantId: req.body?.variantId || null,
-        random: secureRandom,
-        seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
-        definition: { items: bankData.pedagogicalItems || [] },
-      });
-    }
+    const [bankData, seenData] = await Promise.all([
+      sqlOperation('ListActivePedagogicalItemsForActivity', { activityId }).then(unwrap),
+      sqlOperation('ListStudentSeenPedagogicalItemIds', { studentUid: req.auth.uid, activityId }).then(unwrap),
+    ]);
+    const prepared = module.buildStaticSession(phaseNumber, {
+      variantId: req.body?.variantId || null,
+      random: secureRandom,
+      seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
+      definition: { items: bankData.pedagogicalItems || [] },
+    });
     const sessionId = crypto.randomUUID();
     const expiresAt = access.source === 'TEST_RUN'
       ? testGrant.endsAt
@@ -784,12 +767,11 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
 
 app.get('/api/ranking', ...protectedRoute(), async (req, res, next) => {
   try {
-    const periodId = await resolveOfficialPeriodId(req.auth.uid, String(req.query.periodId || ''));
-    const data = unwrap(await sqlOperation('GetCompetitionRankings', { periodId, studentLimit: 100 }, dataConnectAuth(req.auth.uid)));
+    const data = unwrap(await sqlOperation('GetGlobalRankings', { studentLimit: 100 }, dataConnectAuth(req.auth.uid)));
     const classId = String(req.query.classId || 'TODAS').toUpperCase();
     const individualRanking = (data.individualRanking || []).filter((row) =>
       classId === 'TODAS' || publicClass(row.classGroup) === classId);
-    return res.json({ periodId, classId, individualRanking, classRanking: data.classRanking || [] });
+    return res.json({ scope: 'ALL_TIME', classId, individualRanking, classRanking: data.classRanking || [] });
   } catch (error) { return next(error); }
 });
 
@@ -887,7 +869,6 @@ app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (re
       gemini: {
         keyRecognized: Boolean(geminiApiKey()),
         model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
-        activityGenerator: runtimeDiagnostics.activityGenerator,
         mentor: runtimeDiagnostics.mentor,
         analyst: runtimeDiagnostics.analyst,
       },
@@ -939,7 +920,7 @@ app.get('/api/teacher/dashboard', ...protectedRoute(requireTeacher), async (req,
 app.get('/api/export.xlsx', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);
-    const periodId = await resolveOfficialPeriodId(req.auth.uid, String(req.query.periodId || ''));
+    const periodId = await resolveTeacherExportPeriodId(req.auth.uid, String(req.query.periodId || ''));
     const [dashboard, exportRows] = await Promise.all([
       sqlOperation('GetTeacherDashboard', { periodId, studentLimit: 100 }, dataConnectAuth(req.auth.uid)).then(unwrap),
       sqlOperation('GetPilotExportRows', { periodId }).then(unwrap),
@@ -997,7 +978,7 @@ app.use((error, req, res, next) => {
   let message = 'O servidor não conseguiu concluir a operação.';
   if (rawMessage === 'cors_origin_denied') { status = 403; code = rawMessage; message = 'Origem não autorizada.'; }
   else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
-  else if (rawMessage === 'no_official_period_for_ranking') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para o ranking.'; }
+  else if (rawMessage === 'no_official_period_for_export') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para exportação.'; }
   else if (error?.name === 'MentorUnavailableError') { status = 503; code = 'mentor_unavailable'; message = error.message; }
   else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
   console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));

@@ -3,8 +3,8 @@
 ## Objetivo
 
 Substituir a leitura do ranking pelo Supabase por uma agregação auditável do
-Firebase SQL Connect. O primeiro piloto mostra somente o total geral do período
-competitivo selecionado, sem subdivisão por semanas.
+Firebase SQL Connect. O ranking do aluno mostra o total geral acumulado, sem
+depender da existência de um período competitivo.
 
 ## Regra de pontuação
 
@@ -13,8 +13,8 @@ atual e pode diminuir quando o aluno gastar moedas. A pontuação competitiva é
 
 ```text
 SUM(capi_coin_transactions.amount)
-WHERE competition_period_id = período atual
-  AND amount > 0
+WHERE amount > 0
+  AND is_test = FALSE
 ```
 
 Assim:
@@ -22,26 +22,24 @@ Assim:
 - cada ganho válido conta para o aluno e para sua turma;
 - compras não diminuem pontos já conquistados;
 - recompensas suprimidas não geram transação positiva e não pontuam;
-- transações fora da janela não entram no período;
+- recompensas obtidas sem período também entram no ranking;
 - o total da turma é a soma dos seus estudantes, sem teto definido nesta Task.
 
 ## Consulta e desempenho
 
-`GetCompetitionRankings` devolve duas agregações:
+`GetGlobalRankings` devolve duas agregações:
 
 1. ranking individual, limitado a 100 estudantes;
 2. ranking das turmas `3º DSA` e `3º DSB`.
 
 A consulta usa SQL nativo porque precisa de `SUM`, `FILTER` e
 `DENSE_RANK()`. Empates recebem a mesma posição. O schema possui índice
-composto em `(competition_period_id, user_uid)` para reduzir o custo da
-agregação.
+por usuário e data para apoiar a leitura do livro-caixa.
 
 ## Segurança e privacidade
 
 - exige Firebase Auth com e-mail verificado;
 - uma CTE confirma que o UID autenticado possui perfil completo;
-- aceita somente período `SCHEDULED`, `ACTIVE` ou `PAUSED` ainda não encerrado;
 - considera somente perfis `STUDENT` completos das duas turmas permitidas;
 - não devolve UID nem e-mail;
 - nomes, turma e avatar aparecem porque constituem a experiência coletiva
@@ -52,34 +50,17 @@ agregação.
 
 A tela mantém abas para alunos e turmas e agora apresenta:
 
-- nome e intervalo do período no fuso `America/Fortaleza`;
-- estado agendado, ativo ou pausado;
-- pontos gerais do período, separados do saldo da carteira;
+- pontos gerais acumulados, separados do saldo da carteira;
 - participantes e estudantes registrados por turma;
 - empates coerentes com a posição calculada pelo banco;
-- estados de loading, erro, período ausente e pontuação vazia;
+- estados de loading, erro e pontuação vazia;
 - avatares profissionais e fotos HTTPS validadas.
 
 Nenhum texto de Supabase, PostgreSQL ou SQL Connect aparece para o aluno.
 
 ## Teste local
 
-Com o Data Connect Emulator ativo, criar uma janela de homologação:
-
-```powershell
-cd "C:\Documentos\Programação\Money Rank\functions"
-$env:DATA_CONNECT_EMULATOR_HOST="127.0.0.1:9399"
-npm run local:competition -- create
-```
-
-O utilitário recusa qualquer host que não seja o emulador local. Para
-encerrar a janela de teste:
-
-```powershell
-npm run local:competition -- close
-```
-
-Durante a janela:
+Com o Data Connect Emulator ativo:
 
 1. abrir `/ranking` e conferir as duas abas;
 2. concluir uma atividade aprovada;
@@ -89,7 +70,7 @@ Durante a janela:
 5. repetir uma atividade depois do intervalo de 30 segundos e conferir a
    recompensa reduzida;
 6. alternar entre alunos e turmas em tela pequena;
-7. encerrar o período e confirmar o estado sem competição atual.
+7. confirmar que o mesmo fluxo funciona sem período ativo.
 
 ## Testes automatizados
 
@@ -116,4 +97,3 @@ temporária foi encerrada depois do teste.
 - a administração visual de criar, pausar e encerrar períodos pertence ao
   Épico 5;
 - revisão visual ampla continua no pós-MVP.
-

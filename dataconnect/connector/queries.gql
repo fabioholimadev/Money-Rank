@@ -567,6 +567,128 @@ query GetCompetitionRankings(
   )
 }
 
+# Ranking geral visível a perfis autenticados. Soma todos os créditos positivos
+# do livro-caixa, inclusive recompensas de atividades concluídas sem período.
+# Períodos continuam disponíveis apenas como recorte administrativo e analítico.
+query GetGlobalRankings(
+  $studentLimit: Int = 100
+) @auth(level: USER_EMAIL_VERIFIED) {
+  individualRanking: _select(
+    sql: """
+      WITH authorized_viewer AS (
+        SELECT 1
+        FROM users AS viewer
+        WHERE
+          viewer.firebase_uid = $1
+          AND viewer.profile_completed = TRUE
+        LIMIT 1
+      ),
+      student_totals AS (
+        SELECT
+          student.preferred_name,
+          student.class_group,
+          student.avatar_id,
+          student.avatar_url,
+          COALESCE(SUM(transactions.amount), 0)::integer AS total_points
+        FROM users AS student
+        CROSS JOIN authorized_viewer
+        LEFT JOIN capi_coin_transactions AS transactions
+          ON transactions.user_uid = student.firebase_uid
+          AND transactions.amount > 0
+          AND transactions.is_test = FALSE
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+        GROUP BY
+          student.firebase_uid,
+          student.preferred_name,
+          student.class_group,
+          student.avatar_id,
+          student.avatar_url
+      ),
+      ranked_students AS (
+        SELECT
+          DENSE_RANK() OVER (ORDER BY total_points DESC)::integer AS position,
+          preferred_name,
+          class_group,
+          avatar_id,
+          avatar_url,
+          total_points
+        FROM student_totals
+      )
+      SELECT
+        position,
+        preferred_name AS "preferredName",
+        class_group::text AS "classGroup",
+        avatar_id::text AS "avatarId",
+        avatar_url AS "avatarUrl",
+        total_points AS "totalPoints"
+      FROM ranked_students
+      ORDER BY position ASC, preferred_name ASC
+      LIMIT LEAST(GREATEST($2, 1), 100)
+    """
+    params: [{ _expr: "auth.uid" }, $studentLimit]
+  )
+  classRanking: _select(
+    sql: """
+      WITH authorized_viewer AS (
+        SELECT 1
+        FROM users AS viewer
+        WHERE
+          viewer.firebase_uid = $1
+          AND viewer.profile_completed = TRUE
+        LIMIT 1
+      ),
+      student_totals AS (
+        SELECT
+          student.firebase_uid,
+          student.class_group,
+          COALESCE(SUM(transactions.amount), 0)::integer AS total_points
+        FROM users AS student
+        CROSS JOIN authorized_viewer
+        LEFT JOIN capi_coin_transactions AS transactions
+          ON transactions.user_uid = student.firebase_uid
+          AND transactions.amount > 0
+          AND transactions.is_test = FALSE
+        WHERE
+          student.role = 'STUDENT'
+          AND student.profile_completed = TRUE
+          AND student.class_group IN ('THIRD_DSA', 'THIRD_DSB')
+        GROUP BY student.firebase_uid, student.class_group
+      ),
+      class_totals AS (
+        SELECT
+          class_group,
+          COUNT(*)::integer AS registered_students,
+          COUNT(*) FILTER (WHERE total_points > 0)::integer
+            AS participating_students,
+          COALESCE(SUM(total_points), 0)::integer AS total_points
+        FROM student_totals
+        GROUP BY class_group
+      ),
+      ranked_classes AS (
+        SELECT
+          DENSE_RANK() OVER (ORDER BY total_points DESC)::integer AS position,
+          class_group,
+          registered_students,
+          participating_students,
+          total_points
+        FROM class_totals
+      )
+      SELECT
+        position,
+        class_group::text AS "classGroup",
+        registered_students AS "registeredStudents",
+        participating_students AS "participatingStudents",
+        total_points AS "totalPoints"
+      FROM ranked_classes
+      ORDER BY position ASC, class_group ASC
+    """
+    params: [{ _expr: "auth.uid" }]
+  )
+}
+
 # Consulta operacional exclusiva do backend administrativo. Ela identifica
 # rajadas de aprovações por aluno/hora sem impor teto diário de recompensas.
 query GetCompetitionAbuseSignals(

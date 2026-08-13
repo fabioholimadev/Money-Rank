@@ -44,7 +44,6 @@ export default function SystemDiagnosticsPanel() {
 
   const period = data?.database?.recognizedPeriod;
   const mentor = data?.gemini?.mentor;
-  const activityGenerator = data?.gemini?.activityGenerator;
   return (
     <details className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-5 sm:p-6">
       <summary className="flex cursor-pointer list-none items-center gap-2 font-black">
@@ -64,8 +63,6 @@ export default function SystemDiagnosticsPanel() {
           <h3 className="font-black text-white">Gemini</h3>
           <p>Chave reconhecida: {data?.gemini?.keyRecognized ? 'sim' : 'não'}</p>
           <p>Modelo: {value(data?.gemini?.model)}</p>
-          <p>Fase 1: {activityGenerator?.ok ? 'Gemini' : value(activityGenerator?.source, 'ainda não executada')}</p>
-          <p>Diagnóstico Fase 1: {value(activityGenerator?.reason, 'nenhum')}</p>
           <p>Última chamada real: {value(mentor?.at)}</p>
           <p>Pesquisa Google: {mentor?.searchUsed ? 'executada' : 'não comprovada'}</p>
           <p>Fontes: {value(mentor?.sourceCount, '0')} · Latência: {value(mentor?.latencyMs, '—')} ms</p>
