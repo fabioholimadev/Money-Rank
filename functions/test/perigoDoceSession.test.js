@@ -1,23 +1,44 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { getPerigoDoceDefinition } from '../src/activityEngine.js';
+import { getPerigoDoceDefinition, scoreActivitySession } from '../src/activityEngine.js';
 import {
   buildAiPerigoDoceSession,
+  buildFallbackPerigoDoceSession,
   parseGeneratedQuestions,
-  PerigoDoceUnavailableError,
 } from '../src/perigoDoceSession.js';
 
-test('Fase 1 fica indisponível sem Gemini em vez de usar fallback', async () => {
+test('fallback da Fase 1 usa conteúdo validado e o contrato autoritativo', () => {
+  const prepared = buildFallbackPerigoDoceSession(() => 0.25);
+  const answers = prepared.answerKey.items.map((item) => ({
+    questionId: item.itemId,
+    optionId: item.correctOptionId,
+  }));
+  const result = scoreActivitySession(
+    { phaseNumber: 1, answerKey: prepared.answerKey },
+    answers,
+  );
+
+  assert.equal(prepared.publicPayload.source, 'fallback');
+  assert.equal(prepared.publicPayload.questions.length, 5);
+  assert.equal(prepared.answerKey.items.length, 5);
+  assert.equal(JSON.stringify(prepared.publicPayload).includes('correctOptionId'), false);
+  assert.equal(prepared.answerKey.items[0].tags.includes('validated-fallback'), true);
+  assert.equal(result.score, 100);
+  assert.equal(result.passed, true);
+});
+
+test('Fase 1 registra fallback sem considerar o Gemini aprovado', async () => {
   const diagnostics = [];
-  await assert.rejects(() => buildAiPerigoDoceSession({
+  const prepared = await buildAiPerigoDoceSession({
     apiKey: '',
     model: 'gemini-3.6-flash',
     onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
-  }), (error) => error instanceof PerigoDoceUnavailableError
-    && error.code === 'activity_generation_unavailable');
+  });
 
-  assert.equal(diagnostics[0]?.source, 'unavailable');
+  assert.equal(prepared.publicPayload.source, 'fallback');
+  assert.equal(diagnostics[0]?.ok, false);
+  assert.equal(diagnostics[0]?.source, 'fallback');
   assert.equal(diagnostics[0]?.reason, 'missing_api_key');
 });
 

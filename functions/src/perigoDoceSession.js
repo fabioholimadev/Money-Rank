@@ -9,6 +9,15 @@ const ENGINE_DIFFICULTY = Object.freeze({
   desafiadora: 'HARD',
 });
 
+function shuffle(values, random = Math.random) {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(random() * (index + 1));
+    [result[index], result[target]] = [result[target], result[index]];
+  }
+  return result;
+}
+
 function requireText(value, field, minimum, maximum) {
   const text = typeof value === 'string' ? value.trim() : '';
   if (text.length < minimum || text.length > maximum) {
@@ -112,10 +121,46 @@ function splitQuestionPayload(questions, source, model = null) {
         correctOptionId,
         explanation,
         source: { factIds: sourceFactIds },
-        tags: ['perigo-doce', 'gemini-generated'],
+        tags: ['perigo-doce', source === 'ai' ? 'gemini-generated' : 'validated-fallback'],
       })),
       selectedItemIds: questions.map((question) => question.id),
     },
+  };
+}
+
+export function buildFallbackPerigoDoceSession(
+  random = Math.random,
+  overrideDefinition = null,
+) {
+  const definition = getPerigoDoceDefinition(overrideDefinition);
+  const facts = shuffle(definition.knowledge, random).slice(0, 5);
+  const questions = facts.map((fact, questionIndex) => {
+    const options = shuffle(
+      [
+        { text: fact.claim, correct: true },
+        ...fact.misconceptions.map((text) => ({ text, correct: false })),
+      ],
+      random,
+    ).map((option, optionIndex) => ({
+      ...option,
+      id: OPTION_IDS[optionIndex],
+    }));
+    return {
+      id: `fallback-${fact.id}-${questionIndex + 1}`,
+      difficulty: fact.difficulty,
+      prompt: `Com base no material validado sobre ${fact.topic.toLocaleLowerCase('pt-BR')}, qual afirmação está correta?`,
+      options: options.map(({ id, text }) => ({ id, text })),
+      correctOptionId: options.find((option) => option.correct).id,
+      explanation: `${fact.explanation} Fonte: ${fact.source.publisher}.`,
+      sourceFactIds: [fact.id],
+    };
+  });
+
+  return {
+    activityId: 'perigo-doce-quiz',
+    variantId: 'fallback',
+    contentVersion: definition.contentVersion,
+    ...splitQuestionPayload(questions, 'fallback'),
   };
 }
 
@@ -179,18 +224,6 @@ export function parseGeneratedQuestions(text, overrideDefinition = null) {
   return validateQuestions(JSON.parse(normalized), definition);
 }
 
-export class PerigoDoceUnavailableError extends Error {
-  constructor({ reason, model, cause }) {
-    super('A atividade Perigo Doce está temporariamente indisponível porque a geração por IA falhou.');
-    this.name = 'PerigoDoceUnavailableError';
-    this.code = 'activity_generation_unavailable';
-    this.status = 503;
-    this.reason = reason;
-    this.model = model;
-    this.cause = cause;
-  }
-}
-
 export async function buildAiPerigoDoceSession({
   apiKey,
   model,
@@ -201,15 +234,12 @@ export async function buildAiPerigoDoceSession({
     const diagnostic = {
       model,
       ok: false,
-      source: 'unavailable',
+      source: 'fallback',
       reason: 'missing_api_key',
       latencyMs: 0,
     };
     onDiagnostic?.(diagnostic);
-    throw new PerigoDoceUnavailableError({
-      reason: diagnostic.reason,
-      model,
-    });
+    return buildFallbackPerigoDoceSession(Math.random, definition);
   }
 
   const activeDefinition = getPerigoDoceDefinition(definition);
@@ -265,7 +295,7 @@ export async function buildAiPerigoDoceSession({
   const diagnostic = {
     model,
     ok: false,
-    source: 'unavailable',
+    source: 'fallback',
     reason: String(lastError?.message || 'gemini_request_failed').slice(0, 240),
     errorName: String(lastError?.name || 'Error').slice(0, 80),
     errorStatus: Number(lastError?.status) || undefined,
@@ -274,12 +304,8 @@ export async function buildAiPerigoDoceSession({
   };
   onDiagnostic?.(diagnostic);
   console.warn(JSON.stringify({
-    event: 'perigo_doce_gemini_unavailable',
+    event: 'perigo_doce_gemini_fallback',
     ...diagnostic,
   }));
-  throw new PerigoDoceUnavailableError({
-    reason: diagnostic.reason,
-    model,
-    cause: lastError,
-  });
+  return buildFallbackPerigoDoceSession(Math.random, activeDefinition);
 }

@@ -999,7 +999,6 @@ app.use((error, req, res, next) => {
   else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
   else if (rawMessage === 'no_official_period_for_ranking') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para o ranking.'; }
   else if (error?.name === 'MentorUnavailableError') { status = 503; code = 'mentor_unavailable'; message = error.message; }
-  else if (error?.name === 'PerigoDoceUnavailableError') { status = 503; code = 'activity_generation_unavailable'; message = error.message; }
   else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
   console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));
   return res.status(status).json({ error: code, message, diagnosticCode: req.requestId, requestId: req.requestId });
