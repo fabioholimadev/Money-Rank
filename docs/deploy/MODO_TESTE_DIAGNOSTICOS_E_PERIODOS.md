@@ -6,8 +6,8 @@ O servidor decide o acesso; a interface apenas apresenta o resultado.
 
 1. As atividades normais podem ser iniciadas e concluídas independentemente do estado ou da janela de um período competitivo.
 2. Quando existe um período ativo, seu identificador é associado à atividade apenas para atribuição e análise competitiva; fora da janela, a atividade continua disponível sem essa associação.
-3. Fora de período, somente uma concessão `TestRun` ativa permite acesso. Ela deve pertencer ao mesmo professor autenticado, estar dentro do prazo do servidor e corresponder ao `test_run_id` da sessão.
-4. Qualquer outro caso é bloqueado com um motivo explícito.
+3. O `TestRun` não libera nem bloqueia a trilha do aluno. Ele cria uma execução isolada para o professor testar as atividades sem alterar progresso, moedas ou ranking oficiais.
+4. Uma sessão de teste só pode ser usada pelo mesmo professor que criou a concessão, dentro do prazo do servidor e com o mesmo `test_run_id`; qualquer outro caso é bloqueado com um motivo explícito.
 
 As datas são gravadas como `timestamptz` e a exibição operacional usa `America/Fortaleza`. O início é inclusivo e o fim é exclusivo. O campo legado `schedule` não substitui a janela editada pelo professor.
 

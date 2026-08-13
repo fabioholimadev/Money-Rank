@@ -31,6 +31,12 @@ function answerFor(phaseNumber, item, optionId) {
   return { cardId: item.id, optionId };
 }
 
+function errorWithDiagnostic(error, fallback) {
+  const message = error?.message || fallback;
+  const diagnosticCode = error?.payload?.diagnosticCode || error?.payload?.requestId;
+  return diagnosticCode ? `${message} Código de diagnóstico: ${diagnosticCode}.` : message;
+}
+
 export default function AuthoritativeActivityRunner({ phaseNumber, title, accent = 'amber', testMode = false }) {
   const navigate = useNavigate();
   const { aluno, trailProgress, trailLoading, refreshTrailState } = useAuth();
@@ -71,7 +77,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
       setCurrentCredit(nextSession.mission?.initialCredit ?? 100);
       setResult(null);
     } catch (startError) {
-      setError(startError?.message || 'Não foi possível iniciar a atividade.');
+      setError(errorWithDiagnostic(startError, 'Não foi possível iniciar a atividade.'));
     } finally {
       setLoading(false);
     }
@@ -119,7 +125,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, accent
         setItemIndex((current) => current + 1);
       }
     } catch (advanceError) {
-      setError(advanceError?.message || 'Não foi possível registrar a resposta.');
+      setError(errorWithDiagnostic(advanceError, 'Não foi possível registrar a resposta.'));
     } finally {
       setLoading(false);
     }

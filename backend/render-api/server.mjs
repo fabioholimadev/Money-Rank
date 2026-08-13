@@ -552,7 +552,13 @@ app.post('/api/activity/sessions/start', ...protectedRoute(), async (req, res, n
 
 app.post('/api/activity/sessions/:sessionId/step', ...protectedRoute(), async (req, res, next) => {
   try {
-    const data = unwrap(await sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }, dataConnectAuth(req.auth.uid)));
+    // Esta consulta contem o gabarito e e declarada como NO_ACCESS no
+    // Data Connect. Ela precisa usar a credencial administrativa da API;
+    // impersonar o aluno aqui faz o conector recusar a operacao.
+    const data = unwrap(await sqlOperation(
+      'GetAuthoritativeActivitySession',
+      { sessionId: req.params.sessionId },
+    ));
     const session = data.activitySession;
     if (!session || session.userUid !== req.auth.uid || Number(session.phaseNumber) !== 3) return res.status(404).json({ error: 'session_not_found' });
     const [{ current }, testGrant] = await Promise.all([resolveRuntimePeriod(req.auth.uid), resolveActiveTestRun(req.auth.uid)]);
@@ -588,8 +594,8 @@ app.post('/api/activity/sessions/:sessionId/step', ...protectedRoute(), async (r
 app.post('/api/activity/sessions/:sessionId/submit', ...protectedRoute(), async (req, res, next) => {
   try {
     const [sessionData, priorResultData] = await Promise.all([
-      sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }, dataConnectAuth(req.auth.uid)).then(unwrap),
-      sqlOperation('GetAuthoritativeActivityResult', { sessionId: req.params.sessionId }, dataConnectAuth(req.auth.uid)).then(unwrap),
+      sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }).then(unwrap),
+      sqlOperation('GetAuthoritativeActivityResult', { sessionId: req.params.sessionId }).then(unwrap),
     ]);
     const session = sessionData.activitySession; if (!session || session.userUid !== req.auth.uid) return res.status(404).json({ error: 'session_not_found' });
     const priorResult = priorResultData.activityAttempts?.[0];
@@ -623,7 +629,10 @@ app.post('/api/activity/sessions/:sessionId/submit', ...protectedRoute(), async 
       await sqlMutation(result.passed ? 'CompleteMyCurrentPhase' : 'RegisterMyCurrentPhaseAttempt', { attemptId: session.id, sessionId: session.id, studentUid: req.auth.uid, activityId: session.activityId, phaseNumber: session.phaseNumber, score: result.score, correctAnswers: result.correctAnswers, wrongAnswers: result.wrongAnswers });
       await sqlMutation('MarkAuthoritativeActivitySessionSubmitted', { sessionId: session.id, studentUid: req.auth.uid });
     }
-    const savedData = unwrap(await sqlOperation('GetAuthoritativeActivityResult', { sessionId: session.id }, dataConnectAuth(req.auth.uid)));
+    const savedData = unwrap(await sqlOperation(
+      'GetAuthoritativeActivityResult',
+      { sessionId: session.id },
+    ));
     return res.json({ ...savedData.activityAttempts?.[0], ...result, testMode: access.source === 'TEST_RUN', testRunId: access.testRunId, officialRewardGranted: access.source !== 'TEST_RUN' && Number(savedData.activityAttempts?.[0]?.rewardAmount || 0) > 0, idempotentReplay: false });
   } catch (error) { next(error); }
 });
@@ -990,6 +999,7 @@ app.use((error, req, res, next) => {
   else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
   else if (rawMessage === 'no_official_period_for_ranking') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para o ranking.'; }
   else if (error?.name === 'MentorUnavailableError') { status = 503; code = 'mentor_unavailable'; message = error.message; }
+  else if (error?.name === 'PerigoDoceUnavailableError') { status = 503; code = 'activity_generation_unavailable'; message = error.message; }
   else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
   console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));
   return res.status(status).json({ error: code, message, diagnosticCode: req.requestId, requestId: req.requestId });

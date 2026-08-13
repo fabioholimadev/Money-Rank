@@ -9,15 +9,6 @@ const ENGINE_DIFFICULTY = Object.freeze({
   desafiadora: 'HARD',
 });
 
-function shuffle(values, random = Math.random) {
-  const result = [...values];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const target = Math.floor(random() * (index + 1));
-    [result[index], result[target]] = [result[target], result[index]];
-  }
-  return result;
-}
-
 function requireText(value, field, minimum, maximum) {
   const text = typeof value === 'string' ? value.trim() : '';
   if (text.length < minimum || text.length > maximum) {
@@ -128,42 +119,6 @@ function splitQuestionPayload(questions, source, model = null) {
   };
 }
 
-export function buildFallbackPerigoDoceSession(
-  random = Math.random,
-  overrideDefinition = null,
-) {
-  const definition = getPerigoDoceDefinition(overrideDefinition);
-  const facts = shuffle(definition.knowledge, random).slice(0, 5);
-  const questions = facts.map((fact, questionIndex) => {
-    const options = shuffle(
-      [
-        { text: fact.claim, correct: true },
-        ...fact.misconceptions.map((text) => ({ text, correct: false })),
-      ],
-      random,
-    ).map((option, optionIndex) => ({
-      ...option,
-      id: OPTION_IDS[optionIndex],
-    }));
-    return {
-      id: `fallback-${fact.id}-${questionIndex + 1}`,
-      difficulty: fact.difficulty,
-      prompt: `Com base no material validado sobre ${fact.topic.toLocaleLowerCase('pt-BR')}, qual afirmação está correta?`,
-      options: options.map(({ id, text }) => ({ id, text })),
-      correctOptionId: options.find((option) => option.correct).id,
-      explanation: `${fact.explanation} Fonte: ${fact.source.publisher}.`,
-      sourceFactIds: [fact.id],
-    };
-  });
-
-  return {
-    activityId: 'perigo-doce-quiz',
-    variantId: 'fallback',
-    contentVersion: definition.contentVersion,
-    ...splitQuestionPayload(questions, 'fallback'),
-  };
-}
-
 const responseSchema = {
   type: 'object',
   required: ['questions'],
@@ -214,6 +169,28 @@ const responseSchema = {
   },
 };
 
+export function parseGeneratedQuestions(text, overrideDefinition = null) {
+  const definition = getPerigoDoceDefinition(overrideDefinition);
+  const normalized = String(text || '')
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '');
+  if (!normalized) throw new Error('O Gemini devolveu uma resposta vazia.');
+  return validateQuestions(JSON.parse(normalized), definition);
+}
+
+export class PerigoDoceUnavailableError extends Error {
+  constructor({ reason, model, cause }) {
+    super('A atividade Perigo Doce está temporariamente indisponível porque a geração por IA falhou.');
+    this.name = 'PerigoDoceUnavailableError';
+    this.code = 'activity_generation_unavailable';
+    this.status = 503;
+    this.reason = reason;
+    this.model = model;
+    this.cause = cause;
+  }
+}
+
 export async function buildAiPerigoDoceSession({
   apiKey,
   model,
@@ -221,14 +198,18 @@ export async function buildAiPerigoDoceSession({
   onDiagnostic,
 }) {
   if (!apiKey || apiKey === 'local-fallback') {
-    onDiagnostic?.({
+    const diagnostic = {
       model,
       ok: false,
-      source: 'fallback',
+      source: 'unavailable',
       reason: 'missing_api_key',
       latencyMs: 0,
+    };
+    onDiagnostic?.(diagnostic);
+    throw new PerigoDoceUnavailableError({
+      reason: diagnostic.reason,
+      model,
     });
-    return buildFallbackPerigoDoceSession(Math.random, definition);
   }
 
   const activeDefinition = getPerigoDoceDefinition(definition);
@@ -243,49 +224,62 @@ export async function buildAiPerigoDoceSession({
     JSON.stringify({ knowledgeBase: activeDefinition.knowledge }),
   ].join('\n\n');
 
-  try {
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseJsonSchema: responseSchema,
-        maxOutputTokens: 4096,
-      },
-    });
-    const questions = validateQuestions(
-      JSON.parse(response.text),
-      activeDefinition,
-    );
-    const prepared = {
-      activityId: 'perigo-doce-quiz',
-      variantId: 'ai',
-      contentVersion: activeDefinition.contentVersion,
-      ...splitQuestionPayload(questions, 'ai', model),
-    };
-    onDiagnostic?.({
-      model,
-      ok: true,
-      source: 'ai',
-      reason: null,
-      latencyMs: Date.now() - startedAt,
-    });
-    return prepared;
-  } catch (error) {
-    const diagnostic = {
-      model,
-      ok: false,
-      source: 'fallback',
-      reason: String(error?.message || 'gemini_request_failed').slice(0, 240),
-      errorName: String(error?.name || 'Error').slice(0, 80),
-      errorStatus: Number(error?.status) || undefined,
-      latencyMs: Date.now() - startedAt,
-    };
-    onDiagnostic?.(diagnostic);
-    console.warn(JSON.stringify({
-      event: 'perigo_doce_gemini_fallback',
-      ...diagnostic,
-    }));
-    return buildFallbackPerigoDoceSession(Math.random, activeDefinition);
+  let lastError;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: attempt === 1
+          ? prompt
+          : `${prompt}\n\nA resposta anterior ficou vazia, incompleta ou inválida. Gere novamente o objeto JSON completo.`,
+        config: {
+          responseMimeType: 'application/json',
+          responseJsonSchema: responseSchema,
+          maxOutputTokens: 8192,
+        },
+      });
+      const questions = parseGeneratedQuestions(response.text, activeDefinition);
+      const prepared = {
+        activityId: 'perigo-doce-quiz',
+        variantId: 'ai',
+        contentVersion: activeDefinition.contentVersion,
+        ...splitQuestionPayload(questions, 'ai', model),
+      };
+      onDiagnostic?.({
+        model,
+        ok: true,
+        source: 'ai',
+        reason: null,
+        attempts: attempt,
+        latencyMs: Date.now() - startedAt,
+      });
+      return prepared;
+    } catch (error) {
+      lastError = error;
+      // Erros HTTP, especialmente falta de cota, não melhoram repetindo a
+      // mesma chamada. A segunda tentativa é reservada a conteúdo malformado.
+      if (Number(error?.status) > 0) break;
+    }
   }
+
+  const diagnostic = {
+    model,
+    ok: false,
+    source: 'unavailable',
+    reason: String(lastError?.message || 'gemini_request_failed').slice(0, 240),
+    errorName: String(lastError?.name || 'Error').slice(0, 80),
+    errorStatus: Number(lastError?.status) || undefined,
+    attempts: Number(lastError?.status) > 0 ? 1 : 2,
+    latencyMs: Date.now() - startedAt,
+  };
+  onDiagnostic?.(diagnostic);
+  console.warn(JSON.stringify({
+    event: 'perigo_doce_gemini_unavailable',
+    ...diagnostic,
+  }));
+  throw new PerigoDoceUnavailableError({
+    reason: diagnostic.reason,
+    model,
+    cause: lastError,
+  });
 }

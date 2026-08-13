@@ -1,44 +1,43 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { scoreActivitySession } from '../src/activityEngine.js';
+import { getPerigoDoceDefinition } from '../src/activityEngine.js';
 import {
   buildAiPerigoDoceSession,
-  buildFallbackPerigoDoceSession,
+  parseGeneratedQuestions,
+  PerigoDoceUnavailableError,
 } from '../src/perigoDoceSession.js';
 
-test('fallback da Fase 1 usa o mesmo contrato autoritativo do motor atual', () => {
-  const prepared = buildFallbackPerigoDoceSession(() => 0.25);
-
-  assert.equal(prepared.publicPayload.source, 'fallback');
-  assert.equal(prepared.publicPayload.questions.length, 5);
-  assert.equal(prepared.answerKey.items.length, 5);
-  assert.equal(prepared.answerKey.selectedItemIds.length, 5);
-  assert.equal(JSON.stringify(prepared.publicPayload).includes('correctOptionId'), false);
-
-  const answers = prepared.answerKey.items.map((item) => ({
-    questionId: item.itemId,
-    optionId: item.correctOptionId,
-  }));
-  const result = scoreActivitySession(
-    { phaseNumber: 1, answerKey: prepared.answerKey },
-    answers,
-  );
-
-  assert.equal(result.score, 100);
-  assert.equal(result.passed, true);
-});
-
-test('Fase 1 registra a causa quando a chave Gemini está ausente', async () => {
+test('Fase 1 fica indisponível sem Gemini em vez de usar fallback', async () => {
   const diagnostics = [];
-  const prepared = await buildAiPerigoDoceSession({
+  await assert.rejects(() => buildAiPerigoDoceSession({
     apiKey: '',
     model: 'gemini-3.6-flash',
     onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
-  });
+  }), (error) => error instanceof PerigoDoceUnavailableError
+    && error.code === 'activity_generation_unavailable');
 
-  assert.equal(prepared.publicPayload.source, 'fallback');
+  assert.equal(diagnostics[0]?.source, 'unavailable');
   assert.equal(diagnostics[0]?.reason, 'missing_api_key');
+});
+
+test('parser aceita JSON cercado por bloco Markdown', () => {
+  const definition = getPerigoDoceDefinition();
+  const questions = definition.knowledge.slice(0, 5).map((fact, index) => ({
+    id: `gemini-${fact.id}-${index + 1}`,
+    difficulty: fact.difficulty,
+    prompt: `Considerando o fato validado sobre ${fact.topic}, qual alternativa está correta?`,
+    options: [fact.claim, ...fact.misconceptions].map((text, optionIndex) => ({
+      id: ['A', 'B', 'C', 'D'][optionIndex],
+      text,
+    })),
+    correctOptionId: 'A',
+    explanation: fact.explanation,
+    sourceFactIds: [fact.id],
+  }));
+
+  const parsed = parseGeneratedQuestions(`\`\`\`json\n${JSON.stringify({ questions })}\n\`\`\``);
+  assert.equal(parsed.length, 5);
 });
 
 test('Gemini 3.6 não recebe parâmetros de amostragem descontinuados', async () => {

@@ -49,3 +49,24 @@ test('modo de teste continua limitado ao prazo administrativo', async () => {
     /session\.expires_at > CURRENT_TIMESTAMP[\s\S]*run\.ends_at > CURRENT_TIMESTAMP/,
   );
 });
+
+test('consultas autoritativas usam a credencial administrativa da API', async () => {
+  const renderApi = await readFile(renderApiPath, 'utf8');
+
+  for (const operationName of [
+    'GetAuthoritativeActivitySession',
+    'GetAuthoritativeActivityResult',
+  ]) {
+    assert.match(
+      renderApi,
+      new RegExp(`sqlOperation\\(\\s*'${operationName}'`),
+      `${operationName} precisa ser chamado pela API.`,
+    );
+    assert.doesNotMatch(
+      renderApi,
+      new RegExp(
+        `sqlOperation\\(\\s*'${operationName}'\\s*,\\s*\\{[^}]*\\}\\s*,\\s*dataConnectAuth`,
+      ),
+    );
+  }
+});
