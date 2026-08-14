@@ -45,25 +45,29 @@ for (const phase of phases) {
     ],
     `${phase.id} deve reservar os três espaços de materiais.`,
   );
-  assert.ok(
-    availableExtraIds.length >= 1,
-    `${phase.id} deve publicar slides ou resumo/documento.`,
-  );
-  assert.equal(
-    hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
-    false,
-    `${phase.id} não pode ser concluída somente com o vídeo.`,
-  );
-  assert.equal(
-    hasCompletedContentVisits(phase, [
-      CONTENT_MATERIAL_TYPES.VIDEO,
-      availableExtraIds[0],
-    ]),
-    true,
-    `${phase.id} deve aceitar vídeo mais um material extra.`,
-  );
+  if (availableExtraIds.length > 0) {
+    assert.equal(
+      hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
+      false,
+      `${phase.id} deve exigir um material extra quando ele está publicado.`,
+    );
+    assert.equal(
+      hasCompletedContentVisits(phase, [
+        CONTENT_MATERIAL_TYPES.VIDEO,
+        availableExtraIds[0],
+      ]),
+      true,
+      `${phase.id} deve aceitar vídeo mais um material extra publicado.`,
+    );
+  } else {
+    assert.equal(
+      hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
+      true,
+      `${phase.id} deve aceitar somente o vídeo quando os extras estão pendentes.`,
+    );
+  }
 }
 
 console.log(
-  'Modelo de materiais validado: vídeo obrigatório, slots fixos e pelo menos um material extra por fase.',
+  'Modelo de materiais validado: vídeo obrigatório e extras exigidos somente quando publicados.',
 );

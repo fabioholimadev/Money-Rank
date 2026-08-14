@@ -90,7 +90,7 @@ export default function StudentDashboard() {
       titulo: 'Trilhas de Aprendizado',
       corTitulo: 'text-emerald-400',
       texto:
-        'Cada Trilha é um módulo temático com Conteúdo (vídeo + slides) e Atividade (Quiz, Estudo de Caso, Simulação). Complete tudo para desbloquear a próxima fase.',
+        'Cada Trilha é um módulo temático com vídeo, materiais extras quando publicados e uma atividade. Complete o conteúdo disponível e a atividade para desbloquear a próxima fase.',
     },
     {
       icone: <Recycling sx={{ fontSize: 28 }} />,

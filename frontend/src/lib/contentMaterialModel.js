@@ -69,7 +69,12 @@ export function hasCompletedContentVisits(content, visitedMaterialIds) {
     return true;
   }
 
-  return getAvailableExtraMaterialIds(content).some((materialId) =>
+  const availableExtraMaterialIds = getAvailableExtraMaterialIds(content);
+  if (availableExtraMaterialIds.length === 0) {
+    return true;
+  }
+
+  return availableExtraMaterialIds.some((materialId) =>
     visited.has(materialId),
   );
 }
@@ -90,13 +95,6 @@ export function validatePhaseContent(content) {
     errors.push('O vídeo é obrigatório.');
   } else if (!video.embedUrl && !video.sourceUrl) {
     errors.push('O vídeo precisa de uma URL de incorporação ou de origem.');
-  }
-
-  if (
-    !content?.introduction &&
-    getAvailableExtraMaterialIds(content).length === 0
-  ) {
-    errors.push('A fase precisa de slides ou resumo/documento.');
   }
 
   return {

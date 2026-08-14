@@ -17,6 +17,7 @@ import {
 } from '../../services/studentDataService';
 import {
   CONTENT_MATERIAL_TYPES,
+  getAvailableExtraMaterialIds,
   getContentMaterialSlots,
   hasCompletedContentVisits,
   isMaterialAvailable,
@@ -232,7 +233,7 @@ function PendingMaterialPanel({ material, label }) {
         {material.description}
       </p>
       <p className="mt-5 rounded-full border border-slate-700 px-4 py-2 text-xs font-bold text-slate-500">
-        A ausência deste arquivo não bloqueia a fase quando outro material extra está disponível.
+        Materiais ainda não publicados não bloqueiam a conclusão da fase.
       </p>
     </div>
   );
@@ -311,6 +312,9 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
   const contentAlreadyCompleted =
     phaseProgress?.status === 'IN_PROGRESS' ||
     phaseProgress?.status === 'COMPLETED';
+  const availableExtraMaterialIds = getAvailableExtraMaterialIds(content);
+  const requiresExtraMaterial =
+    !content.introduction && availableExtraMaterialIds.length > 0;
   const destination = content.activityPath || content.nextPath;
   const canContinue =
     completionRequirementsMet &&
@@ -319,13 +323,18 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
     !isSaving &&
     !trailLoading;
   const activeSlot = tabs.find(({ id }) => id === activeTab) || tabs[0];
-  const completionMessage = content.introduction
-    ? completionRequirementsMet
-      ? 'O vídeo introdutório foi acessado. Confirme para avançar.'
-      : 'Acesse o vídeo introdutório para liberar a confirmação.'
-    : completionRequirementsMet
+  const completionMessage = completionRequirementsMet
+    ? requiresExtraMaterial
       ? 'O vídeo e pelo menos um material extra foram acessados. Confirme para avançar.'
-      : 'Acesse o vídeo e pelo menos um material extra publicado para liberar a confirmação.';
+      : 'O vídeo foi acessado. Confirme para avançar.'
+    : requiresExtraMaterial
+      ? 'Acesse o vídeo e pelo menos um material extra publicado para liberar a confirmação.'
+      : 'Acesse o vídeo para liberar a confirmação.';
+  const completionLabel = requiresExtraMaterial
+    ? content.completionLabel
+    : content.introduction
+      ? content.completionLabel
+      : 'Assisti ao vídeo desta fase';
 
   const selectTab = (slot) => {
     setActiveTab(slot.id);
@@ -507,7 +516,7 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
               onChange={(event) => setConfirmed(event.target.checked)}
               className="mt-0.5 h-4 w-4 accent-amber-500"
             />
-            <span>{content.completionLabel}</span>
+            <span>{completionLabel}</span>
           </label>
 
           <button
