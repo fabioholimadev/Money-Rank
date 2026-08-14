@@ -128,6 +128,25 @@ export function selectMentorResponse(response) {
   return { answer, ...grounding, generatedBy: 'gemini-grounded' };
 }
 
+export function selectUngroundedMentorResponse(response) {
+  const answer = validateAiAnswer(response?.output_text);
+  if (!answer) return null;
+  return {
+    answer,
+    sources: [],
+    citations: [],
+    searchSuggestionsHtml: '',
+    searchUsed: false,
+    generatedBy: 'gemini',
+  };
+}
+
+export function isGroundingQuotaError(error) {
+  return Number(error?.status) === 429
+    || error?.name === 'RateLimitError'
+    || /(?:quota|rate\s*limit)/i.test(String(error?.message || ''));
+}
+
 export class MentorUnavailableError extends Error {
   constructor({ requestId, reason, model, cause }) {
     super('CapiMentor temporariamente indisponível. Tente novamente mais tarde.');
@@ -157,6 +176,7 @@ export async function answerStudentMentor({
   requestId,
   timeoutMs = 15_000,
   onDiagnostic,
+  createClient = (key) => new GoogleGenAI({ apiKey: key }),
 }) {
   const normalizedQuestion = normalizeMentorQuestion(question);
   const classification = classifyMentorQuestion(normalizedQuestion);
@@ -186,7 +206,7 @@ export async function answerStudentMentor({
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: normalizedApiKey });
+    const ai = createClient(normalizedApiKey);
     const prompt = [
       'Você é o CapiMentor, tutor pedagógico do Money Rank para estudantes do ensino médio técnico.',
       'Antes de responder, execute a Pesquisa Google e use ao menos uma fonte pertinente. Priorize fontes oficiais.',
@@ -198,13 +218,45 @@ export async function answerStudentMentor({
       `Tópicos para possível reforço: ${context.difficultTopics.join('; ') || 'nenhum identificado'}.`,
       `Pergunta do estudante: ${normalizedQuestion}`,
     ].join('\n');
-    const response = await ai.interactions.create({
-      model,
-      input: prompt,
-      store: false,
-      tools: [{ type: 'google_search' }],
-      generation_config: { max_output_tokens: 1_400 },
-    }, { timeout: timeoutMs, maxRetries: 1 });
+    const fallbackPrompt = prompt.replace(
+      'Antes de responder, execute a Pesquisa Google e use ao menos uma fonte pertinente. Priorize fontes oficiais.',
+      'A Pesquisa Google não está disponível nesta chamada. Responda apenas com conhecimento geral estável, não afirme que pesquisou, não invente fontes e recomende a consulta a canais oficiais para dados atuais.',
+    );
+    let response;
+    try {
+      response = await ai.interactions.create({
+        model,
+        input: prompt,
+        store: false,
+        tools: [{ type: 'google_search' }],
+        generation_config: { max_output_tokens: 1_400 },
+      }, { timeout: timeoutMs, maxRetries: 1 });
+    } catch (groundingError) {
+      if (!isGroundingQuotaError(groundingError)) throw groundingError;
+      const fallbackResponse = await ai.interactions.create({
+        model,
+        input: fallbackPrompt,
+        store: false,
+        generation_config: { max_output_tokens: 1_400 },
+      }, { timeout: timeoutMs, maxRetries: 1 });
+      const fallback = selectUngroundedMentorResponse(fallbackResponse);
+      if (!fallback) throw new Error('ungrounded_response_required', { cause: groundingError });
+      const diagnostic = {
+        requestId,
+        interactionId: cleanText(fallbackResponse?.id, 160) || null,
+        model,
+        ok: true,
+        searchUsed: false,
+        sourceCount: 0,
+        latencyMs: Date.now() - startedAt,
+        reason: null,
+        fallbackReason: 'grounding_quota_unavailable',
+        groundingErrorStatus: Number(groundingError?.status) || 429,
+      };
+      onDiagnostic?.(diagnostic);
+      console.warn(JSON.stringify({ event: 'student_mentor_fallback', ...diagnostic }));
+      return { ...fallback, requestId, model };
+    }
     const selected = selectMentorResponse(response);
     if (!selected) throw new Error('grounded_response_required');
     const diagnostic = {

@@ -64,7 +64,11 @@ export default function SystemDiagnosticsPanel() {
           <p>Chave reconhecida: {data?.gemini?.keyRecognized ? 'sim' : 'não'}</p>
           <p>Modelo: {value(data?.gemini?.model)}</p>
           <p>Última chamada real: {value(mentor?.at)}</p>
-          <p>Pesquisa Google: {mentor?.searchUsed ? 'executada' : 'não comprovada'}</p>
+          <p>Pesquisa Google: {mentor?.searchUsed
+            ? 'executada'
+            : mentor?.fallbackReason === 'grounding_quota_unavailable'
+              ? 'indisponível no plano; Gemini sem pesquisa'
+              : 'não comprovada'}</p>
           <p>Fontes: {value(mentor?.sourceCount, '0')} · Latência: {value(mentor?.latencyMs, '—')} ms</p>
           <p>Request ID: {value(mentor?.requestId)}</p>
           <p>Erro sanitizado: {value(mentor?.errorMessage || mentor?.reason, 'nenhum')}</p>
@@ -78,7 +82,7 @@ export default function SystemDiagnosticsPanel() {
           <p>Versão: {value(data?.render?.buildVersion)}</p>
         </section>
       </div>
-      {probe && <p className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs text-emerald-200">Teste “O que é IPI?” aprovado com {probe.sources?.length || 0} fontes e Pesquisa Google.</p>}
+      {probe && <p className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs text-emerald-200">Teste “O que é IPI?” aprovado {probe.searchUsed ? `com ${probe.sources?.length || 0} fontes e Pesquisa Google` : 'com Gemini sem pesquisa online'}.</p>}
       {error && <p role="alert" className="mt-4 text-sm font-bold text-red-300">{error}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" disabled={loading} onClick={() => void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-700 px-3 text-xs font-black disabled:opacity-50"><Refresh sx={{ fontSize: 17 }} /> Atualizar</button>

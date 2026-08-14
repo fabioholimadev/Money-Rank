@@ -4,8 +4,10 @@ import {
   answerStudentMentor,
   classifyMentorQuestion,
   isSafeCitationUrl,
+  isGroundingQuotaError,
   MentorUnavailableError,
   selectMentorResponse,
+  selectUngroundedMentorResponse,
 } from '../src/studentMentor.js';
 
 const CONTEXT = {
@@ -49,6 +51,58 @@ test('rejeita resposta do Gemini sem prova de Pesquisa Google', () => {
     steps: [],
   });
   assert.equal(response, null);
+});
+
+test('aceita resposta sem fontes somente no seletor de contingência', () => {
+  const response = selectUngroundedMentorResponse({
+    output_text: 'O orçamento organiza receitas, despesas e objetivos para tornar escolhas mais conscientes. Ele ajuda a diferenciar necessidades de desejos, acompanhar gastos recorrentes e reservar recursos para imprevistos. A resposta é uma orientação educativa geral e deve ser conferida em fontes oficiais quando envolver regras ou valores atuais.',
+  });
+  assert.equal(response.generatedBy, 'gemini');
+  assert.equal(response.searchUsed, false);
+  assert.deepEqual(response.sources, []);
+});
+
+test('reconhece indisponibilidade de cota do grounding', () => {
+  assert.equal(isGroundingQuotaError({ name: 'RateLimitError', status: 429 }), true);
+  assert.equal(isGroundingQuotaError({ message: 'quota exceeded' }), true);
+  assert.equal(isGroundingQuotaError({ name: 'ApiError', status: 403 }), false);
+});
+
+test('usa Gemini sem pesquisa quando o grounding não está disponível no tier', async () => {
+  const calls = [];
+  let diagnostic;
+  const response = await answerStudentMentor({
+    question: 'O que é IPI e como ele se relaciona com educação fiscal?',
+    rawContext: CONTEXT,
+    apiKey: 'test-key',
+    model: 'gemini-test',
+    requestId: 'fallback-test',
+    onDiagnostic: (value) => { diagnostic = value; },
+    createClient: () => ({
+      interactions: {
+        create: async (payload) => {
+          calls.push(payload);
+          if (calls.length === 1) {
+            const error = new Error('429 quota exceeded for grounding');
+            error.name = 'RateLimitError';
+            error.status = 429;
+            throw error;
+          }
+          return {
+            id: 'interaction-fallback',
+            output_text: 'O IPI é um tributo federal relacionado a produtos industrializados. Na educação fiscal, ele ajuda a compreender como tributos podem estar incorporados aos preços e como a arrecadação se relaciona ao financiamento de políticas públicas. Para percentuais, exceções ou casos concretos, consulte sempre a legislação e os canais oficiais atualizados.',
+          };
+        },
+      },
+    }),
+  });
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0].tools, [{ type: 'google_search' }]);
+  assert.equal('tools' in calls[1], false);
+  assert.equal(response.generatedBy, 'gemini');
+  assert.equal(response.searchUsed, false);
+  assert.equal(diagnostic.ok, true);
+  assert.equal(diagnostic.fallbackReason, 'grounding_quota_unavailable');
 });
 
 test('extrai texto, pesquisa e fontes da Interactions API', () => {
