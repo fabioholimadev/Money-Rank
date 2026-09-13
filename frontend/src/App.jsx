@@ -91,29 +91,16 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
         </Route>
         <Route
-          path="/professor"
           element={
             <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
-              <TeacherDashboard />
+              <Layout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/professor/estudio"
-          element={
-            <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
-              <TeacherStudio />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/professor/teste/:phase"
-          element={
-            <ProtectedRoute requiredRole={USER_ROLES.TEACHER}>
-              <TeacherTestActivity />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route path="/professor" element={<TeacherDashboard />} />
+          <Route path="/professor/estudio" element={<TeacherStudio />} />
+          <Route path="/professor/teste/:phase" element={<TeacherTestActivity />} />
+        </Route>
       </Routes>
     </Router>
   );

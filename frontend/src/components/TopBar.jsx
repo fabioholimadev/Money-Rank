@@ -1,24 +1,51 @@
+import HomeRounded from '@mui/icons-material/HomeRounded';
+import MapRounded from '@mui/icons-material/MapRounded';
+import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import SchoolRounded from '@mui/icons-material/SchoolRounded';
+import EditNoteRounded from '@mui/icons-material/EditNoteRounded';
+import LocalFireDepartmentRounded from '@mui/icons-material/LocalFireDepartmentRounded';
+import MonetizationOnRounded from '@mui/icons-material/MonetizationOnRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
+import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LocalFireDepartment,
-  MonetizationOn,
-  Star,
-  Logout,
-} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
 
-const NAV_ITENS = [
-  { label: 'Home',    to: '/student'  },
-  { label: 'Trilha',  to: '/trilha'   },
-  { label: 'Ranking', to: '/ranking'  },
-  { label: 'Perfil',  to: '/perfil'   },
+const STUDENT_ITEMS = [
+  { label: 'Início', to: '/student', Icon: HomeRounded },
+  { label: 'Trilha', to: '/trilha', Icon: MapRounded },
+  { label: 'Ranking', to: '/ranking', Icon: EmojiEventsRounded },
+  { label: 'Perfil', to: '/perfil', Icon: PersonRounded },
 ];
 
-/** Formata números grandes de forma compacta: 1500 → "1.5k", 999 → "999" */
-function fmtNum(n) {
-  const num = Number(n) || 0;
-  if (num >= 1000) return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}k`;
-  return String(num);
+const TEACHER_ITEMS = [
+  { label: 'Visão da turma', to: '/professor', Icon: SchoolRounded },
+  { label: 'Estúdio', to: '/professor/estudio', Icon: EditNoteRounded },
+];
+
+function formatCompact(value) {
+  const number = Number(value) || 0;
+  if (number < 1000) return String(number);
+  return `${(number / 1000).toFixed(number >= 10000 ? 0 : 1)}k`;
+}
+
+function isCurrentPath(pathname, target) {
+  if (target === '/student' || target === '/professor') return pathname === target;
+  return pathname === target || pathname.startsWith(`${target}/`);
+}
+
+function Brand({ homePath }) {
+  return (
+    <Link to={homePath} className="flex items-center gap-3 rounded-2xl focus-visible:outline-offset-4">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302]">
+        MR
+      </span>
+      <span className="text-xl font-black tracking-tight text-white">
+        MONEY<span className="text-[#58cc02]">RANK</span>
+      </span>
+    </Link>
+  );
 }
 
 export default function TopBar() {
@@ -27,6 +54,11 @@ export default function TopBar() {
   const navigate = useNavigate();
 
   if (!aluno) return null;
+
+  const role = getProfileRole(aluno);
+  const isTeacher = role === USER_ROLES.TEACHER;
+  const items = isTeacher ? TEACHER_ITEMS : STUDENT_ITEMS;
+  const homePath = isTeacher ? '/professor' : '/student';
 
   const handleLogout = async () => {
     try {
@@ -38,80 +70,71 @@ export default function TopBar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-slate-950 border-b border-zinc-800">
-      <div className="mx-auto max-w-6xl h-full px-3 sm:px-4 flex items-center justify-between gap-2">
-
-        {/* ── Logo ──────────────────────────────────────────────────────── */}
-        <Link to="/student" className="flex items-center gap-1.5 shrink-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-400 flex items-center justify-center">
-            <span className="text-slate-950 font-black text-[10px] sm:text-xs">MR</span>
+    <>
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
+        <Brand homePath={homePath} />
+        {!isTeacher && (
+          <div className="flex items-center gap-3" aria-label="Resumo do progresso">
+            <span className="flex items-center gap-1 font-black text-[#ffc800]">
+              <LocalFireDepartmentRounded sx={{ fontSize: 20 }} />
+              {formatCompact(aluno.streak_atual)}
+            </span>
+            <span className="flex items-center gap-1 font-black text-[#58cc02]">
+              <MonetizationOnRounded sx={{ fontSize: 20 }} />
+              {formatCompact(aluno.capicoins)}
+            </span>
           </div>
-          <span className="hidden sm:block font-black tracking-tighter text-white text-base sm:text-lg">
-            MONEY<span className="text-amber-400">RANK</span>
-          </span>
-        </Link>
+        )}
+      </header>
 
-        {/* ── Nav horizontal — apenas desktop ───────────────────────────── */}
-        <nav className="hidden md:flex items-center gap-0.5">
-          {NAV_ITENS.map(({ label, to }) => {
-            const ativo = pathname === to || pathname.startsWith(to + '/');
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col border-r-2 border-[#37464f] bg-[#131f24] px-5 py-7 lg:flex">
+        <Brand homePath={homePath} />
+        <nav className="mt-10 flex flex-col gap-2" aria-label={isTeacher ? 'Área do professor' : 'Área do estudante'}>
+          {items.map(({ label, to, Icon }) => {
+            const active = isCurrentPath(pathname, to);
             return (
               <Link
                 key={to}
                 to={to}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                  ativo
-                    ? 'bg-amber-400/10 text-amber-400'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                aria-current={active ? 'page' : undefined}
+                className={`flex min-h-14 items-center gap-4 rounded-2xl border-2 px-4 text-sm font-black uppercase tracking-wide transition-colors ${
+                  active
+                    ? 'border-[#49c0f8] bg-[#1f2d33] text-[#49c0f8]'
+                    : 'border-transparent text-[#f1f7fb] hover:bg-[#1f2d33]'
                 }`}
               >
+                <Icon sx={{ fontSize: 27 }} aria-hidden="true" />
                 {label}
               </Link>
             );
           })}
         </nav>
 
-        {/* ── Status + Logout ───────────────────────────────────────────── */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="mt-auto space-y-4">
+          {!isTeacher && (
+            <div className="grid grid-cols-3 gap-2" aria-label="Resumo do progresso">
+              <span className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-[#37464f] bg-[#17262c] font-black text-[#ffc800]" title="Sequência">
+                <LocalFireDepartmentRounded sx={{ fontSize: 20 }} /> {formatCompact(aluno.streak_atual)}
+              </span>
+              <span className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-[#37464f] bg-[#17262c] font-black text-[#58cc02]" title="CapiCoins">
+                <MonetizationOnRounded sx={{ fontSize: 20 }} /> {formatCompact(aluno.capicoins)}
+              </span>
+              <span className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-[#37464f] bg-[#17262c] font-black text-[#49c0f8]" title="Fase">
+                <StarRounded sx={{ fontSize: 19 }} /> {aluno.fase_atual ?? 0}
+              </span>
+            </div>
+          )}
 
-          {/* Streak */}
-          <div className="flex items-center gap-0.5 shrink-0">
-            <LocalFireDepartment sx={{ fontSize: 15 }} className="text-orange-400" />
-            <span className="text-[11px] sm:text-sm font-black text-white tabular-nums">
-              {fmtNum(aluno.streak_atual)}
-            </span>
+          <div className="rounded-2xl border-2 border-[#37464f] bg-[#17262c] p-3">
+            <p className="truncate text-sm font-black text-white">{aluno.nome_preferido || aluno.displayName || 'Money Rank'}</p>
+            <p className="mt-0.5 text-xs font-bold text-[#a5b7c2]">{isTeacher ? 'Professor' : aluno.turma || 'Estudante'}</p>
           </div>
 
-          {/* CapiCoins */}
-          <div className="flex items-center gap-0.5 shrink-0">
-            <MonetizationOn sx={{ fontSize: 15 }} className="text-amber-400" />
-            <span className="text-[11px] sm:text-sm font-black text-white tabular-nums">
-              {fmtNum(aluno.capicoins)}
-            </span>
-          </div>
-
-          {/* Fase — sempre visível em qualquer tamanho de ecrã */}
-          <div className="flex items-center gap-0.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-1.5 sm:px-2.5 py-0.5 shrink-0">
-            <Star sx={{ fontSize: 11 }} className="text-emerald-400" />
-            <span className="text-[10px] sm:text-[11px] font-bold text-emerald-400 leading-none tabular-nums">
-              {/* Mobile: "F3" | Tablet+: "Fase 3" */}
-              <span className="sm:hidden">F{aluno.fase_atual ?? 0}</span>
-              <span className="hidden sm:inline">Fase {aluno.fase_atual ?? 0}</span>
-            </span>
-          </div>
-
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            aria-label="Sair"
-            className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs font-semibold hover:border-red-500/50 hover:text-red-400 transition-all shrink-0"
-          >
-            <Logout sx={{ fontSize: 14 }} />
-            <span className="hidden sm:inline">Sair</span>
+          <button type="button" onClick={handleLogout} className="flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 font-black text-[#a5b7c2] transition-colors hover:bg-[#1f2d33] hover:text-[#ff4b4b]">
+            <LogoutRounded aria-hidden="true" /> Sair
           </button>
         </div>
-
-      </div>
-    </header>
+      </aside>
+    </>
   );
 }
