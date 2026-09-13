@@ -24,7 +24,7 @@ function AssistantMessage({ message }) {
         {message.answer}
       </p>
       {message.suggestion && (
-        <div className="mt-3 border-t border-violet-300/10 pt-3">
+        <div className="mt-3 border-t border-[#37464f] pt-3">
           <p className="text-[10px] font-black uppercase tracking-widest text-[#7ed5fb]">
             Interpretação pedagógica
           </p>
@@ -144,7 +144,7 @@ export default function TeacherDataChat({ periodId }) {
           disabled={!periodId}
           aria-haspopup="dialog"
           aria-controls="teacher-data-chat-dialog"
-          className="fixed bottom-24 right-5 z-[60] inline-flex min-h-14 items-center gap-3 rounded-2xl bg-[#49c0f8] px-4 py-3 font-black text-[#13210f] shadow-xl shadow-violet-500/25 transition hover:scale-105 hover:bg-violet-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:bottom-5"
+          className="fixed bottom-24 right-5 z-[60] inline-flex min-h-14 items-center gap-3 rounded-2xl bg-[#49c0f8] px-4 py-3 font-black text-[#13210f] shadow-[0_4px_0_#1683b7] transition hover:-translate-y-0.5 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 md:bottom-5"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#131f24]/10">
             <AutoAwesome aria-hidden="true" sx={{ fontSize: 22 }} />
@@ -152,8 +152,8 @@ export default function TeacherDataChat({ periodId }) {
           <span className="hidden sm:inline">Perguntar ao Capi Analista</span>
           <span className="sr-only sm:hidden">Abrir o Capi Analista</span>
           <span className="absolute -right-1 -top-1 flex h-3 w-3" aria-hidden="true">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-300 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-violet-200" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#58cc02] opacity-75" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-[#58cc02]" />
           </span>
         </button>
       )}
@@ -164,18 +164,18 @@ export default function TeacherDataChat({ periodId }) {
             type="button"
             aria-label="Fechar o Capi Analista"
             onClick={closePanel}
-            className="fixed inset-0 z-[59] cursor-default bg-black/50 md:hidden"
+            className="fixed inset-0 z-50 cursor-default bg-[#0d171b]/70 md:hidden"
           />
           <section
             id="teacher-data-chat-dialog"
             role="dialog"
             aria-labelledby="teacher-data-chat-title"
             aria-describedby="teacher-data-chat-description"
-            className="capi-analyst-panel fixed inset-x-0 bottom-0 z-[60] flex h-[75vh] w-full flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900/95 shadow-2xl shadow-black/50 backdrop-blur-md md:bottom-5 md:left-auto md:right-5 md:h-[min(680px,calc(100vh-2.5rem))] md:w-[410px] md:rounded-3xl"
+            className="capi-analyst-panel fixed inset-x-0 bottom-[4.5rem] z-[60] flex h-[min(75dvh,680px)] w-full flex-col rounded-t-3xl border-2 border-[#37464f] bg-[#1f2d33]/98 shadow-2xl backdrop-blur-md md:bottom-5 md:left-auto md:right-5 md:h-[min(680px,calc(100vh-2.5rem))] md:w-[410px] md:rounded-3xl"
           >
-            <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3.5 md:rounded-t-3xl">
+            <header className="flex shrink-0 items-center justify-between border-b-2 border-[#37464f] bg-[#17262c] px-4 py-3.5 md:rounded-t-3xl">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#49c0f8]/10 text-[#7ed5fb] ring-2 ring-violet-400/20">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#49c0f8]/10 text-[#7ed5fb] ring-2 ring-[#49c0f8]/30">
                   <AutoAwesome aria-hidden="true" sx={{ fontSize: 21 }} />
                 </span>
                 <div className="min-w-0">
@@ -197,7 +197,7 @@ export default function TeacherDataChat({ periodId }) {
               </button>
             </header>
 
-            <p id="teacher-data-chat-description" className="shrink-0 border-b border-zinc-800 px-4 py-3 text-xs leading-5 text-[#78909b]">
+            <p id="teacher-data-chat-description" className="shrink-0 border-b border-[#37464f] px-4 py-3 text-xs leading-5 text-[#78909b]">
               Respostas usam somente dados agregados do período selecionado, sem e-mail, UID ou comando livre de banco.
             </p>
 
@@ -230,7 +230,7 @@ export default function TeacherDataChat({ periodId }) {
 
               {isSending && (
                 <div role="status" className="capi-analyst-message flex items-center gap-2 text-sm text-[#a5b7c2]">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-violet-300" />
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#58cc02]" />
                   Organizando os dados do período…
                 </div>
               )}
@@ -250,7 +250,7 @@ export default function TeacherDataChat({ periodId }) {
                       type="button"
                       onClick={() => void sendQuestion(suggestion)}
                       disabled={!periodId || isSending}
-                      className="rounded-full border border-[#49c0f8]/30 bg-[#49c0f8]/10 px-3 py-1.5 text-left text-xs font-semibold text-violet-200 transition hover:bg-[#49c0f8]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-2xl border-2 border-[#37464f] bg-[#17262c] px-3 py-2 text-left text-xs font-semibold text-[#dbe7ed] transition hover:border-[#49c0f8] hover:text-[#49c0f8] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {suggestion}
                     </button>
@@ -260,7 +260,7 @@ export default function TeacherDataChat({ periodId }) {
               <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSubmit} className="shrink-0 border-t border-zinc-800 p-3 md:rounded-b-3xl">
+            <form onSubmit={handleSubmit} className="shrink-0 border-t-2 border-[#37464f] bg-[#17262c] p-3 md:rounded-b-3xl">
               <label className="sr-only" htmlFor="teacher-data-question">
                 Pergunta sobre os dados do período
               </label>
@@ -285,7 +285,7 @@ export default function TeacherDataChat({ periodId }) {
                   type="submit"
                   disabled={!periodId || question.trim().length < 5 || isSending}
                   aria-label="Enviar pergunta"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#49c0f8] text-[#13210f] transition hover:bg-violet-300 active:scale-90 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-[#78909b]"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#58cc02] text-[#13210f] transition hover:bg-[#70e823] active:scale-90 disabled:cursor-not-allowed disabled:bg-[#37464f] disabled:text-[#78909b]"
                 >
                   <Send aria-hidden="true" sx={{ fontSize: 18 }} />
                 </button>

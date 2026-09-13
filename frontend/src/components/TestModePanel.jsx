@@ -64,7 +64,7 @@ export default function TestModePanel() {
             progresso nem ranking oficial.
           </p>
         </div>
-        <span className={`rounded-full border px-3 py-1 text-xs font-black ${active ? 'border-violet-300/40 text-violet-200' : 'border-[#53666f] text-[#a5b7c2]'}`}>
+        <span className={`rounded-full border-2 px-3 py-1 text-xs font-black ${active ? 'border-[#49c0f8] text-[#49c0f8]' : 'border-[#53666f] text-[#a5b7c2]'}`}>
           {active ? 'Modo de teste ativo' : testRun?.status === 'CLEANED' ? 'Dados limpos' : 'Modo de teste inativo'}
         </span>
       </div>
@@ -75,7 +75,7 @@ export default function TestModePanel() {
             <span className="mb-1 block text-xs font-black uppercase text-[#78909b]">Duração (minutos)</span>
             <input type="number" min="5" max="120" value={durationMinutes} onChange={(event) => setDurationMinutes(Number(event.target.value))} className="min-h-11 w-36 rounded-xl border border-[#53666f] bg-[#131f24] px-3" />
           </label>
-          <button type="button" disabled={loading} onClick={() => run(() => activateTeacherTestMode(durationMinutes))} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-300 px-4 text-sm font-black text-[#13210f] disabled:opacity-50">
+          <button type="button" disabled={loading} onClick={() => run(() => activateTeacherTestMode(durationMinutes))} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302] disabled:opacity-50">
             <Science sx={{ fontSize: 19 }} /> Ativar modo de teste
           </button>
         </div>
@@ -83,11 +83,11 @@ export default function TestModePanel() {
 
       {active && (
         <div className="mt-5">
-          <p className="text-sm font-bold text-violet-100">Encerra automaticamente em {DATE_TIME.format(new Date(testRun.endsAt))}.</p>
+          <p className="text-sm font-bold text-[#dbe7ed]">Encerra automaticamente em {DATE_TIME.format(new Date(testRun.endsAt))}.</p>
           <p className="mt-1 text-xs text-[#78909b]">Execução {testRun.id} · {testRun.sessionCount} sessões · {testRun.attemptCount} submissões · {testRun.auditCount} eventos auditados</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {ACTIVITIES.map(([phase, label]) => (
-              <button key={phase} type="button" onClick={() => navigate(`/professor/teste/${phase}`)} className="min-h-10 rounded-xl border border-violet-300/30 px-3 text-xs font-black text-violet-200 hover:border-violet-200">
+              <button key={phase} type="button" onClick={() => navigate(`/professor/teste/${phase}`)} className="min-h-10 rounded-xl border-2 border-[#37464f] bg-[#17262c] px-3 text-xs font-black text-[#49c0f8] hover:border-[#49c0f8]">
                 Iniciar {label}
               </button>
             ))}
