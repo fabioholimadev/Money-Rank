@@ -1,588 +1,232 @@
-import { useEffect, useState } from 'react';
-import {
-  School,
-  TrendingUp,
-  WorkspacePremium,
-  MonetizationOn,
-  AutoStories,
-  LocalFireDepartment,
-  BarChart,
-  Security,
-  Login,
-  ArrowForward,
-  SentimentVeryDissatisfied,
-  QueryStats,
-  RocketLaunch,
-  Favorite
-} from '@mui/icons-material';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
+import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
+import GroupsRounded from '@mui/icons-material/GroupsRounded';
+import InsightsRounded from '@mui/icons-material/InsightsRounded';
+import MenuRounded from '@mui/icons-material/MenuRounded';
+import SchoolRounded from '@mui/icons-material/SchoolRounded';
+import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
 
-function Landing() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [menuAberto, setMenuAberto] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+const NAV_ITEMS = [
+  ['Como funciona', '#como-funciona'],
+  ['O que você aprende', '#conteudos'],
+  ['Nossa trajetória', '#trajetoria'],
+  ['Equipe', '#equipe'],
+];
 
-  // ── Pilares da Gamificação (Carrossel Principal) ──
-  const carouselItems = [
-    { 
-      icon: <AutoStories sx={{ fontSize: '4.5rem', color: '#fbbf24' }} />, 
-      title: "Trilha de Aprendizado", 
-      text: "Fases interativas baseadas em consumo consciente, impostos e inflação. O aluno avança de nível conforme domina os conceitos fiscais práticos." 
-    },
-    { 
-      icon: <MonetizationOn sx={{ fontSize: '4.5rem', color: '#fbbf24' }} />, 
-      title: "Economia Baseada em CapiCoins", 
-      text: "A teoria vira prática imediatamente. Responder aos desafios e manter a constância rende CapiCoins, a moeda oficial que simula o poder de compra e poupança." 
-    },
-    { 
-      icon: <WorkspacePremium sx={{ fontSize: '4.5rem', color: '#fbbf24' }} />, 
-      title: "Ranking Competitivo Saudável", 
-      text: "Um Leaderboard em tempo real que engaja a sala de aula do 3º ano. A competição saudável estimula a colaboração e o debate sobre decisões financeiras." 
-    },
-    { 
-      icon: <BarChart sx={{ fontSize: '4.5rem', color: '#fbbf24' }} />, 
-      title: "Coleta de Dados de Desempenho", 
-      text: "Foco científico total. O painel do administrador permite mapear em quais conceitos fiscais a turma tem mais facilidade ou dificuldade para gerar relatórios precisos." 
-    }
-  ];
+const LEARNING_TOPICS = [
+  ['Organização financeira', 'Planejamento, orçamento, prioridades, reserva e decisões de curto e longo prazo.'],
+  ['Consumo, crédito e dívida', 'Preço, juros, publicidade, consumo consciente e consequências do endividamento.'],
+  ['Tributos no cotidiano', 'Por que existem tributos, como afetam escolhas e qual é sua função socioeconômica.'],
+  ['Serviços públicos e cidadania', 'Direitos, deveres, transparência, participação social e a relação com a arrecadação.'],
+  ['Riscos e informação', 'Apostas, produtos nocivos, falsas promessas financeiras e verificação de informações.'],
+];
 
-  // ── Estatísticas de Impacto (Sincronizadas com o Carrossel) ──
-  const floatingStatsLeft = [
-    { num: "3º Ano", label: "Foco do Projeto", icon: <School sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" },
-    { num: "Moeda", label: "CapiCoins Virtuais", icon: <MonetizationOn sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" },
-    { num: "Ranking", label: "Leaderboard Escolar", icon: <WorkspacePremium sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" },
-    { num: "Real-Time", label: "Métricas Prontas", icon: <BarChart sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" }
-  ];
+const JOURNEY = [
+  ['Ponto de partida', 'Oficinas de educação financeira e experiências em desafios de economia inspiram a proposta inicial.'],
+  ['Diagnóstico e roda de conversa', 'Estudantes discutem consumo, riscos, tributos, fiscalização e transparência.'],
+  ['Oficina O Perigo Doce', 'Atividades orientadas conectam escolhas de consumo, saúde pública e efeitos coletivos.'],
+  ['Oficina O Custo do Vício', 'Um estudo de caso leva os grupos a ler, argumentar e socializar conclusões sobre riscos e impactos.'],
+  ['Plataforma Money Rank', 'As aprendizagens se transformam em trilhas, vídeos, desafios, simulações e progressão.'],
+  ['Protótipos físico-digitais', 'O projeto avança para tabuleiro em MDF, peças 3D e estudos de integração com o sistema digital.'],
+];
 
-  // ── Top Tags (Badge list no topo do HERO)
-  const topTags = [
-    { label: "IA em Desenvolvimento", icon: <QueryStats sx={{ color: '#fbbf24', fontSize: 20 }} /> },
-    { label: "Economia Interna", icon: <MonetizationOn sx={{ color: '#fbbf24', fontSize: 20 }} /> },
-    { label: "Trilhas Gamificadas", icon: <AutoStories sx={{ color: '#fbbf24', fontSize: 20 }} /> },
-    { label: "Ranking Escolar", icon: <WorkspacePremium sx={{ color: '#fbbf24', fontSize: 20 }} /> },
-    { label: "Base Científica", icon: <School sx={{ color: '#fbbf24', fontSize: 20 }} /> },
-    { label: "Monitoramento", icon: <TrendingUp sx={{ color: '#fbbf24', fontSize: 20 }} /> }
-  ];
+const TEAM = [
+  ['S', 'Syllas', 'Professor coordenador'],
+  ['FL', 'Fabio de Lima', 'Programador'],
+  ['MV', 'Maria Vitória', 'Programadora'],
+  ['DM', 'Diógenes Melo', 'Programador'],
+  ['LN', 'Laura Nislyne', 'Designer'],
+  ['GH', 'Gabriel Holanda', 'Designer'],
+  ['VG', 'Vitor Gabriel', 'Designer'],
+];
 
-  const floatingStatsRight = [
-    { num: "Prático", label: "Fases de Consumo", icon: <AutoStories sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" },
-    { num: "Diário", label: "Streak Ativo (Foguinho)", icon: <LocalFireDepartment sx={{ fontSize: 24, color: '#ef4444' }} />, bg: "bg-red-500/10" },
-    { num: "Admin", label: "Visão do Professor", icon: <Security sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" },
-    { num: "100%", label: "Pesquisa Científica", icon: <QueryStats sx={{ fontSize: 24, color: '#f59e0b' }} />, bg: "bg-amber-500/10" }
-  ];
+const FAQ = [
+  ['Para quem é a Money Rank?', 'A plataforma foi pensada principalmente para estudantes do ensino médio e educadores que desejam trabalhar educação financeira e fiscal de forma prática.'],
+  ['A Money Rank usa dinheiro real?', 'Não. CapiCoins, pontuações e recompensas são virtuais e existem somente dentro da experiência educativa.'],
+  ['O que os estudantes aprendem?', 'Planejamento financeiro, consumo, crédito, dívida, tributos, serviços públicos, transparência, riscos e participação cidadã.'],
+  ['Professores podem acompanhar as turmas?', 'Sim. A área do professor apresenta progresso, participação e resultados para apoiar intervenções e conversas em sala.'],
+  ['A plataforma já está disponível?', 'O acesso de validação está disponível para participantes autorizados do projeto.'],
+];
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-
-    // Efeito de Revelação Dinâmica (Scroll Animation)
-    const revealEls = document.querySelectorAll('.reveal');
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('opacity-100', 'translate-y-0');
-          entry.target.classList.remove('opacity-0', 'translate-y-10');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    
-    revealEls.forEach(el => {
-      el.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700', 'ease-out');
-      revealObserver.observe(el);
-    });
-
-    // Timer Automático do Carrossel (4.5 segundos)
-    const sliderTimer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-    }, 4500);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      revealEls.forEach(el => revealObserver.unobserve(el));
-      clearInterval(sliderTimer);
-    };
-  }, [carouselItems.length]);
-
+function Brand() {
   return (
-    <div className='w-full overflow-hidden bg-slate-950 text-slate-100 font-sans'>
-      
-      {/* ══════════════════════════════
-          HEADER (BARRA DE NAVEGAÇÃO)
-         ══════════════════════════════ */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-slate-900/90 backdrop-blur-md border-b border-zinc-800 py-3 shadow-lg' : 'bg-transparent py-5'}`}>
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          <a href="#" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border-2 border-amber-400 rounded-full p-1 bg-slate-900">
-              <span className="text-amber-400 font-black text-sm md:text-lg">$</span>
-            </div>
-            <span className="text-2xl md:text-xl lg:text-xl font-black tracking-wider text-white group-hover:text-amber-400 transition-colors uppercase hidden sm:inline">
-              Money <span className="text-amber-400">Rank</span>
-            </span>
-          </a>
+    <a href="#inicio" className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#49c0f8]">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302]">MR</span>
+      <span className="text-xl font-black text-white">MONEY<span className="text-[#58cc02]">RANK</span></span>
+    </a>
+  );
+}
 
-          {/* Mobile: botão hambúrguer */}
-          <button
-            onClick={() => setMenuAberto(true)}
-            className="md:hidden ml-auto p-2 rounded-md text-slate-200"
-            aria-label="Abrir menu"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#problema" className="hover:text-amber-400 transition-colors">O Desafio</a>
-            <a href="#solucao" className="hover:text-amber-400 transition-colors">A Solução</a>
-            <a href="#diferenciais" className="hover:text-amber-400 transition-colors">Diferenciais</a>
-            <a href="#quem-faz-acontecer" className="hover:text-amber-400 transition-colors">Nossa Pesquisa</a>
-          </nav>
-
-          <div className="hidden md:flex items-center gap-4">
-            <a href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
-              Entrar
-            </a>
-            <a href="/login" className="flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-amber-400/10">
-              <Login sx={{ fontSize: 16 }} />
-              Acessar Sistema
-            </a>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Mobile Menu — Fullscreen Overlay ─────────────────────────── */}
-      <div
-        className={`fixed inset-0 z-[60] md:hidden flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md transition-all duration-300 ${
-          menuAberto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Fechar */}
-        <button
-          onClick={() => setMenuAberto(false)}
-          aria-label="Fechar menu"
-          className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Logo no topo */}
-        <div className="absolute top-5 left-6 flex items-center gap-2">
-          <div className="w-8 h-8 flex items-center justify-center border-2 border-amber-400 rounded-full bg-slate-900">
-            <span className="text-amber-400 font-black text-sm">$</span>
-          </div>
-          <span className="text-white font-black text-lg tracking-wider">Money <span className="text-amber-400">Rank</span></span>
-        </div>
-
-        {/* Links centralizados */}
-        <nav className="flex flex-col items-center gap-2 w-full px-8 mb-10">
-          {[
-            { href: '#problema',           label: 'O Desafio'     },
-            { href: '#solucao',            label: 'A Solução'     },
-            { href: '#diferenciais',       label: 'Diferenciais'  },
-            { href: '#quem-faz-acontecer', label: 'Nossa Pesquisa'},
-          ].map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              onClick={() => setMenuAberto(false)}
-              className="w-full text-center py-4 text-2xl font-black text-slate-200 hover:text-amber-400 transition-colors border-b border-zinc-800/60 last:border-0"
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-
-        {/* CTA Buttons */}
-        <div className="flex flex-col items-center gap-3 w-full px-8 max-w-xs">
-          <a
-            href="/login"
-            onClick={() => setMenuAberto(false)}
-            className="w-full text-center py-3.5 rounded-2xl border border-slate-700 text-slate-200 font-bold text-base hover:border-amber-400/50 hover:text-amber-400 transition-all"
-          >
-            Entrar
-          </a>
-          <a
-            href="/login"
-            onClick={() => setMenuAberto(false)}
-            className="w-full text-center py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-base transition-all shadow-lg shadow-amber-400/20"
-          >
-            Acessar Sistema
-          </a>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════
-          HERO SECTION
-         ══════════════════════════════ */}
-      <section className="relative min-h-screen pt-32 pb-20 flex items-center justify-center px-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-900 via-slate-950 to-slate-950">
-        <div className="absolute top-20 right-10 w-96 h-96 bg-amber-500/5 rounded-full filter blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-amber-400/5 rounded-full filter blur-3xl pointer-events-none"></div>
-
-        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          
-          {/* Conteúdo Esquerda */}
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/20 px-3 py-1 rounded-full text-xs font-bold text-amber-400 uppercase tracking-widest">
-              <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-              Validação Aberta — Projeto de Pesquisa
-            </div>
-
-            <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
-              Educação Fiscal <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">
-                Gamificada e Prática.
-              </span>
-            </h1>
-
-            {/* TAGS ORGANIZADAS (Alinhamento à esquerda, em blocos limpos) */}
-            <div className="flex flex-wrap gap-3 justify-start max-w-lg">
-              {topTags.map((t, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-amber-400/20 shadow-sm">
-                  <span className="flex items-center">{t.icon}</span>
-                  <span className="text-amber-400 text-sm font-semibold tracking-wide">{t.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-slate-400 text-base md:text-lg max-w-xl leading-relaxed">
-              Uma ferramenta laboratorial desenvolvida sob medida para turmas de Ensino Médio. Ensinando economia, cidadania fiscal e inteligência financeira através do jogo.
-            </p>
-
-            <div className="pt-2 flex flex-col sm:flex-row gap-4">
-              <a href="/login" className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black py-2 px-4 md:py-4 md:px-8 rounded-2xl transition-all shadow-lg shadow-amber-500/20 group text-sm md:text-lg w-max">
-                Acessar o Money Rank
-                <ArrowForward sx={{ fontSize: 16 }} className="group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-          </div>
-
-          {/* Visual Direita (Carrossel Dinâmico) */}
-          <div className="relative flex items-center justify-center py-10 lg:py-0">
-            
-            {/* Card Central */}
-            <div className="w-full max-w-sm bg-zinc-900/90 border border-zinc-800 p-4 md:p-8 rounded-3xl shadow-2xl relative z-30 backdrop-blur-sm min-h-[340px] flex flex-col justify-between">
-              <div key={currentSlide} className="flex flex-col items-center text-center gap-4 animate-[fadeIn_0.4s_ease-in-out]">
-                <div className="p-4 bg-amber-400/10 rounded-2xl border border-amber-400/20 shadow-inner">
-                  {carouselItems[currentSlide].icon}
-                </div>
-                <h3 className="text-xl font-extrabold text-white">
-                  {carouselItems[currentSlide].title}
-                </h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  {carouselItems[currentSlide].text}
-                </p>
-              </div>
-
-              {/* Indicadores */}
-              <div className="flex justify-center gap-2 pt-6">
-                {carouselItems.map((_, i) => (
-                  <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-amber-400 w-5' : 'bg-zinc-700 w-1.5'}`}></span>
-                ))}
-              </div>
-            </div>
-
-            {/* CARDS FLUTUANTES CORRIGIDOS (Mais próximos do card central) */}
-            <div className="absolute -left-2 md:-left-20 bottom-10 lg:bottom-16 z-40 flex items-center gap-3 bg-slate-900 border border-zinc-800 p-3 lg:p-4 rounded-2xl shadow-xl animate-[fadeIn_0.4s_ease-in-out]" key={`fl-${currentSlide}`}>
-              <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center ${floatingStatsLeft[currentSlide].bg}`}>
-                {floatingStatsLeft[currentSlide].icon}
-              </div>
-              <div>
-                <div className="text-sm lg:text-base font-black text-white">{floatingStatsLeft[currentSlide].num}</div>
-                <div className="text-[10px] lg:text-xs text-slate-400 font-medium">{floatingStatsLeft[currentSlide].label}</div>
-              </div>
-            </div>
-
-            <div className="absolute -right-2 md:-right-20 top-10 lg:top-16 z-40 flex items-center gap-3 bg-slate-900 border border-zinc-800 p-3 lg:p-4 rounded-2xl shadow-xl animate-[fadeIn_0.4s_ease-in-out]" key={`fr-${currentSlide}`}>
-              <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center ${floatingStatsRight[currentSlide].bg}`}>
-                {floatingStatsRight[currentSlide].icon}
-              </div>
-              <div>
-                <div className="text-sm lg:text-base font-black text-white">{floatingStatsRight[currentSlide].num}</div>
-                <div className="text-[10px] lg:text-xs text-slate-400 font-medium">{floatingStatsRight[currentSlide].label}</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          O CAOS DAS SOLUÇÕES TRADICIONAIS
-         ══════════════════════════════ */}
-      <section id="problema" className="py-24 bg-zinc-900/30 border-y border-zinc-900">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="reveal text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <div className="text-amber-400 font-bold text-xs uppercase tracking-widest">O Gargalo Atual</div>
-            <h2 className="text-3xl font-black text-white">Por que Planilhas e Textos não Bastam?</h2>
-            <p className="text-slate-400 text-sm max-w-xl mx-auto">Ensinar economia para adolescentes exige ferramentas modernas que conversem diretamente com a linguagem digital deles.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="reveal flex flex-col items-center text-center p-4 md:p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
-              <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mb-6 border border-zinc-700 shadow-inner">
-                <SentimentVeryDissatisfied className="text-red-400" sx={{ fontSize: 28 }} />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">Desinteresse Geral</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Textos longos afastam a atenção dos estudantes dos terceiros anos, gerando baixa absorção de conteúdo fiscal de cidadania.</p>
-            </div>
-
-            <div className="reveal flex flex-col items-center text-center p-4 md:p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
-              <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mb-6 border border-zinc-700 shadow-inner">
-                <BarChart className="text-amber-400" sx={{ fontSize: 28 }} />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">Ausência de Dados</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Professores não possuem ferramentas rápidas para mapear quais erros estruturais e dúvidas financeiras a turma comete com maior frequência.</p>
-            </div>
-
-            <div className="reveal flex flex-col items-center text-center p-8 bg-zinc-900/60 rounded-3xl border border-zinc-800 shadow-md">
-              <div className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center mb-6 border border-zinc-700 shadow-inner">
-                <MonetizationOn className="text-amber-400" sx={{ fontSize: 28 }} />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">Falta de Prática Real</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Sem simulações imediatas de escolhas (investir ou gastar), o conhecimento de sala de aula evapora rapidamente.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          A SOLUÇÃO: O SISTEMA MONEY RANK
-         ══════════════════════════════ */}
-      <section id="solucao" className="py-24 bg-slate-950 border-b border-zinc-900">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="reveal text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <div className="text-amber-400 font-bold text-xs uppercase tracking-widest">A Revolução Prática</div>
-            <h2 className="text-3xl font-black text-white">A Engrenagem Completa do Jogo</h2>
-            <p className="text-slate-400 text-sm max-w-xl mx-auto">Unindo mecânicas consagradas de jogos com pilares sérios de economia de forma limpa, direta e sem fricção.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800/80 flex gap-5 reveal hover:border-amber-400/30 transition-all">
-               <div className="flex-shrink-0 w-12 h-12 bg-amber-400/10 rounded-xl flex items-center justify-center border border-amber-400/20">
-                  <AutoStories className="text-amber-400" sx={{ fontSize: 24 }} />
-               </div>
-               <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Trilha Modular</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">Fases bloqueadas por cadeados garantem que os alunos sigam um progresso lógico de aprendizado cronológico.</p>
-               </div>
-            </div>
-
-            <div className="bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800/80 flex gap-5 reveal hover:border-amber-400/30 transition-all">
-               <div className="flex-shrink-0 w-12 h-12 bg-amber-400/10 rounded-xl flex items-center justify-center border border-amber-400/20">
-                  <LocalFireDepartment className="text-red-400" sx={{ fontSize: 24 }} />
-               </div>
-               <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Motor de Constância</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">O contador de Streak ativa o senso de responsabilidade diária. Acessar com frequência bonifica o saldo do aluno.</p>
-               </div>
-            </div>
-
-            <div className="bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800/80 flex gap-5 reveal hover:border-amber-400/30 transition-all">
-               <div className="flex-shrink-0 w-12 h-12 bg-amber-400/10 rounded-xl flex items-center justify-center border border-amber-400/20">
-                  <WorkspacePremium className="text-amber-400" sx={{ fontSize: 24 }} />
-               </div>
-               <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Leaderboard Classificatório</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">O ranking global da escola expõe quem são os maiores detentores de CapiCoins obtidas por puro mérito de acertos.</p>
-               </div>
-            </div>
-
-            <div className="bg-zinc-900/40 p-6 rounded-2xl border border-zinc-800/80 flex gap-5 reveal hover:border-amber-400/30 transition-all">
-               <div className="flex-shrink-0 w-12 h-12 bg-amber-400/10 rounded-xl flex items-center justify-center border border-amber-400/20">
-                  <BarChart className="text-blue-400" sx={{ fontSize: 24 }} />
-               </div>
-               <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Painel Coletor (Admin)</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">A área exclusiva do professor exibe a métrica consolidada e tabulada para alimentar os artigos de pesquisa científica.</p>
-               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          DIFERENCIAIS E MERCADO CIENTÍFICO
-         ══════════════════════════════ */}
-      <section id="diferenciais" className="py-24 bg-gradient-to-br from-zinc-950 via-slate-900 to-zinc-950 text-white relative overflow-hidden border-b border-zinc-900">
-        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="max-w-6xl mx-auto px-6 relative z-10 reveal">
-          
-          <div className="text-center mb-16 space-y-2">
-            <div className="inline-block px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 font-bold text-xs tracking-wider uppercase">
-              Por que o Money Rank?
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black text-white">Nossos Diferenciais Acadêmicos</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-zinc-900/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800">
-               <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-amber-400"><School sx={{ fontSize: 20 }} /> Foco no Ensino Médio</h3>
-               <p className="text-sm text-slate-400 leading-relaxed">Diferente de apps comerciais complexos, nossa linguagem e mecânica são inteiramente adaptadas para a realidade das salas de aula do 3º ano público e privado.</p>
-            </div>
-            <div className="bg-zinc-900/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800">
-               <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-amber-400"><MonetizationOn sx={{ fontSize: 20 }} /> Zero Dinheiro Real</h3>
-               <p className="text-sm text-slate-400 leading-relaxed">Nenhum risco financeiro. Foco exclusivo em educação fiscal simulada, protegendo e blindando os menores de idade dentro de uma sandbox segura.</p>
-            </div>
-            <div className="bg-zinc-900/40 backdrop-blur-md p-8 rounded-2xl border border-zinc-800">
-               <h3 className="text-lg font-bold mb-3 flex items-center gap-2 text-amber-400"><Security sx={{ fontSize: 20 }} /> Alinhado à BNCC</h3>
-               <p className="text-sm text-slate-400 leading-relaxed">Desenvolvido estritamente integrado aos temas contemporâneos transversais da BNCC (Educação Financeira e Cidadania Fiscal).</p>
-            </div>
-          </div>
-
-          {/* DADOS COLETADOS/MÉTRICAS DO PROJETO */}
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 md:p-12 text-center shadow-2xl flex flex-col md:flex-row items-center justify-around gap-8 text-white">
-             <div>
-               <div className="text-3xl md:text-4xl font-black text-amber-400 mb-1">Múltiplas</div>
-               <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Turmas Avaliadas em Paralelo</div>
-             </div>
-             
-             <div className="hidden md:block w-px h-16 bg-zinc-800"></div>
-             
-             <div>
-               <div className="text-3xl md:text-4xl font-black text-amber-300 mb-1">Estatísticas</div>
-               <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Exportáveis para Relatório</div>
-             </div>
-
-             <div className="hidden md:block w-px h-16 bg-zinc-800"></div>
-
-             <div>
-               <div className="text-3xl md:text-4xl font-black text-amber-400 mb-1">100%</div>
-               <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Foco em Inovação Tecnológica Social</div>
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          QUEM FAZ ACONTECER (Equipe)
-         ══════════════════════════════ */}
-      <section id="quem-faz-acontecer" className="py-24 bg-slate-950 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-amber-400 font-bold text-xs uppercase tracking-widest mb-4 text-center md:text-left">Equipe Pesquisadora</div>
-          <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-3xl p-8 mb-12 shadow-lg shadow-amber-500/5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="space-y-2 border-l-2 border-amber-400 pl-4">
-                <div className="text-amber-400 font-black text-lg">Medalha de Ouro</div>
-                <p className="text-slate-400 text-sm leading-relaxed">Conquistas notáveis em competições de elite de educação financeira: OLITEF, OBMF e Desafio Eu Quero Ser Economista.</p>
-              </div>
-              <div className="space-y-2 border-l-2 border-amber-400 pl-4">
-                <div className="text-amber-400 font-black text-lg">O Ponto de Partida</div>
-                <p className="text-slate-400 text-sm leading-relaxed">A ideia nasceu durante a Oficina de Educação Financeira criada pelo professor Syllas junto com os alunos Fábio, Maria Vitória e Maria Isabella.</p>
-              </div>
-              <div className="space-y-2 border-l-2 border-amber-400 pl-4">
-                <div className="text-amber-400 font-black text-lg">Próximo Passo</div>
-                <p className="text-slate-400 text-sm leading-relaxed">Implementar o Money Rank como ferramenta prática de intervenção durante a nova formação de Educação Fiscal.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Syllas (Professor) */}
-           <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 text-center shadow-md hover:border-amber-400/40 transition-colors">
-              <div className="w-24 h-24 mx-auto mb-4 bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-400/20">
-                <img src="/Syllas.jpeg" alt="Syllas" className="w-full h-full object-cover object-top" />
-              </div>
-              <div className="text-white font-bold text-lg">Syllas</div>
-              <div className="text-amber-400 text-sm font-medium">Professor / Orientador</div>
-            </div>
-
-            {/* Fabio De Lima */}
-            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 text-center shadow-md hover:border-amber-400/40 transition-colors">
-              <div className="w-24 h-24 mx-auto mb-4 bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-400/20">
-                <img src="/Fabio.jpeg" alt="Fabio De Lima" className="w-full h-full object-cover object-top" />
-              </div>
-              <div className="text-white font-bold text-lg">Fabio De Lima</div>
-              <div className="text-slate-400 text-sm">Pesquisador / Dev</div>
-            </div>
-
-            {/* Maria Vitoria */}
-            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 text-center shadow-md hover:border-amber-400/40 transition-colors">
-              <div className="w-24 h-24 mx-auto mb-4 bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-400/20">
-                <img src="/Vitoria.jpeg" alt="Maria Vitoria" className="w-full h-full object-cover object-top" />
-              </div>
-              <div className="text-white font-bold text-lg">Maria Vitoria</div>
-              <div className="text-slate-400 text-sm">Pesquisadora</div>
-            </div>
-
-            {/* Maria Isabella */}
-            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 text-center shadow-md hover:border-amber-400/40 transition-colors">
-              <div className="w-24 h-24 mx-auto mb-4 bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-400/20">
-                <img src="/Isabella.jpeg" alt="Maria Isabella" className="w-full h-full object-cover" />
-              </div>
-              <div className="text-white font-bold text-lg">Maria Isabella</div>
-              <div className="text-slate-400 text-sm">Pesquisadora</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          FINAL CTA (ACESSAR OU AJUDAR)
-         ══════════════════════════════ */}
-      <section className="pb-20 pt-10 bg-slate-950">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="reveal bg-gradient-to-br from-zinc-900 to-slate-900 border border-zinc-800 rounded-3xl p-10 text-center space-y-6 relative overflow-hidden shadow-xl">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500"></div>
-            <div className="flex justify-center">
-              <RocketLaunch className="text-amber-400 animate-bounce" sx={{ fontSize: '3.5rem' }} />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-black text-white">Pronto para rodar o Laboratório?</h2>
-            <p className="text-slate-400 max-w-lg mx-auto text-sm leading-relaxed">
-              Ajude nossa pesquisa sendo um dos primeiros a testar as funcionalidades acadêmicas do projeto.
-            </p>
-            <div className="pt-4 flex justify-center">
-              <a href="" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black py-4 px-8 rounded-2xl text-lg transition-all shadow-lg shadow-amber-400/20">
-                Preencher Formulário de Validação
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════
-          FOOTER
-         ══════════════════════════════ */}
-      <footer className="border-t border-zinc-900 bg-slate-950 text-slate-400 text-xs">
-        <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div className="space-y-3">
-            <span className="text-sm font-black tracking-wider text-white uppercase">
-              Money <span className="text-amber-400">Rank</span>
-            </span>
-            <p className="leading-relaxed text-slate-400">
-              Inovação social e gamificação aplicada à cidadania fiscal. Desenvolvido para transformar as dinâmicas de economia das salas de aula públicas e privadas.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-[10px]">Escopo Científico</h4>
-            <ul className="space-y-2">
-              <li>Mapeamento de Desempenho Escolar</li>
-              <li>Prêmio Nacional de Educação Fiscal</li>
-              <li>Submissão Jovem Cientista</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="text-slate-200 font-bold uppercase tracking-wider text-[10px]">Experiência</h4>
-            <ul className="space-y-2">
-              <li>Trilhas gamificadas</li>
-              <li>CapiCoins, streaks e rankings</li>
-              <li>Conteúdos com IA responsável</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-6xl mx-auto px-6 py-6 border-t border-zinc-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <span>&copy; 2026 Money Rank — Todos os direitos reservados.</span>
-          <span className="inline-flex items-center gap-1.5">
-            Desenvolvido com <Favorite className="text-red-500" sx={{ fontSize: 14 }} /> para o Futuro da Educação Fiscal
-          </span>
-        </div>
-      </footer>
+function SectionTitle({ eyebrow, title, description, centered = false }) {
+  return (
+    <div className={centered ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
+      <p className="text-xs font-black uppercase tracking-[0.24em] text-[#58cc02]">{eyebrow}</p>
+      <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">{title}</h2>
+      {description && <p className="mt-4 text-base leading-relaxed text-[#a5b7c2] sm:text-lg">{description}</p>}
     </div>
   );
 }
 
-export default Landing;
+function VisualPlaceholder({ label, description }) {
+  return (
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] p-7 text-center">
+      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f2d33] text-[#49c0f8]"><InsightsRounded sx={{ fontSize: 30 }} /></span>
+      <p className="mt-4 font-black text-white">{label}</p>
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#a5b7c2]">{description}</p>
+      <span className="mt-5 rounded-xl border-2 border-[#37464f] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-wider text-[#78909c]">Imagem será adicionada em /public</span>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div id="inicio" className="min-h-screen bg-[#131f24] text-[#f1f7fb]">
+      <header className="sticky top-0 z-50 border-b-2 border-[#37464f] bg-[#131f24]/95 backdrop-blur">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+          <Brand />
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegação da landing page">
+            {NAV_ITEMS.map(([label, href]) => <a key={href} href={href} className="text-sm font-black text-[#dbe7ed] transition-colors hover:text-[#49c0f8]">{label}</a>)}
+          </nav>
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link to="/login" className="font-black text-[#dbe7ed] hover:text-white">Entrar</Link>
+            <Link to="/login" className="rounded-2xl bg-[#58cc02] px-5 py-3 font-black text-[#13210f] shadow-[0_4px_0_#46a302] active:translate-y-1 active:shadow-none">Acessar plataforma</Link>
+          </div>
+          <button type="button" className="rounded-xl border-2 border-[#37464f] p-2 text-white lg:hidden" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}>{menuOpen ? <CloseRounded /> : <MenuRounded />}</button>
+        </div>
+        {menuOpen && (
+          <nav className="border-t-2 border-[#37464f] bg-[#17262c] px-5 py-5 lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-2">
+              {NAV_ITEMS.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 font-black hover:bg-[#1f2d33]">{label}</a>)}
+              <Link to="/login" className="mt-2 rounded-2xl bg-[#58cc02] px-5 py-3 text-center font-black text-[#13210f] shadow-[0_4px_0_#46a302]">Acessar plataforma</Link>
+            </div>
+          </nav>
+        )}
+      </header>
+
+      <main>
+        <section className="border-b-2 border-[#37464f] px-5 py-20 sm:px-8 sm:py-28">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#49c0f8]">Educação financeira e fiscal para o ensino médio</p>
+            <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-black leading-[1.06] text-white sm:text-6xl lg:text-7xl">Aprenda finanças. Entenda os tributos. <span className="text-[#58cc02]">Pratique jogando.</span></h1>
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-[#a5b7c2] sm:text-xl">A Money Rank transforma decisões do cotidiano em trilhas, desafios e simulações para estudantes, com uma experiência gamificada e acompanhamento para educadores.</p>
+            <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+              <Link to="/login" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#58cc02] px-7 font-black text-[#13210f] shadow-[0_5px_0_#46a302] active:translate-y-1 active:shadow-none">Acessar a plataforma <ArrowForwardRounded /></Link>
+              <a href="#como-funciona" className="inline-flex min-h-14 items-center justify-center rounded-2xl border-2 border-[#37464f] bg-[#1f2d33] px-7 font-black text-white hover:border-[#49c0f8]">Ver como funciona</a>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle centered eyebrow="Uma experiência prática" title="Finanças fazem parte da vida. Aprender também pode fazer parte do jogo." description="Da organização do dinheiro aos tributos que ajudam a financiar serviços públicos, a Money Rank aproxima conceitos financeiros e fiscais da realidade dos estudantes." />
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {[['Aprendizado em etapas', SchoolRounded], ['Decisões práticas', TaskAltRounded], ['Progresso visível', EmojiEventsRounded]].map(([label, Icon]) => <div key={label} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-7 shadow-[0_5px_0_#0d171b]"><Icon className="text-[#49c0f8]" sx={{ fontSize: 34 }} /><h3 className="mt-5 text-xl font-black text-white">{label}</h3></div>)}
+            </div>
+          </div>
+        </section>
+
+        <section id="como-funciona" className="border-y-2 border-[#37464f] bg-[#17262c] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle eyebrow="Como funciona" title="Aprenda em pequenas etapas. Evolua a cada decisão." />
+            <div className="mt-10 grid gap-5 lg:grid-cols-3">
+              {[
+                ['1', 'Explore uma trilha', 'Avance por conteúdos organizados em uma sequência clara, do essencial às decisões mais complexas.'],
+                ['2', 'Coloque em prática', 'Resolva desafios e analise situações do cotidiano em um ambiente educativo, sem usar dinheiro real.'],
+                ['3', 'Acompanhe sua evolução', 'Receba retorno, conquiste CapiCoins virtuais, mantenha sua sequência e visualize o progresso.'],
+              ].map(([number, title, text]) => <article key={number} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-7"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#58cc02] text-xl font-black text-[#13210f] shadow-[0_4px_0_#46a302]">{number}</span><h3 className="mt-6 text-xl font-black text-white">{title}</h3><p className="mt-3 leading-relaxed text-[#a5b7c2]">{text}</p></article>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle eyebrow="Produto em ação" title="Veja como a Money Rank transforma conteúdo em experiência" description="Os espaços abaixo estão preparados para receber capturas reais, sem sobreposições promocionais ou dados pessoais." />
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              <VisualPlaceholder label="Tela da trilha" description="Caminho de aprendizagem, etapas concluídas e próximo desafio." />
+              <VisualPlaceholder label="Desafio e feedback" description="Situação prática, opções e explicação para o estudante." />
+              <VisualPlaceholder label="Progresso e turma" description="Sequência, conquistas, ranking ou painel do professor." />
+            </div>
+          </div>
+        </section>
+
+        <section id="conteudos" className="border-y-2 border-[#37464f] bg-[#17262c] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle eyebrow="O que você aprende" title="Conhecimento para decidir melhor, individual e coletivamente" />
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              {LEARNING_TOPICS.map(([title, text]) => <article key={title} className="flex gap-4 rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-6"><CheckCircleRounded className="mt-0.5 shrink-0 text-[#58cc02]" /><div><h3 className="font-black text-white">{title}</h3><p className="mt-2 text-sm leading-relaxed text-[#a5b7c2]">{text}</p></div></article>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle centered eyebrow="Para a comunidade escolar" title="Uma experiência para quem aprende e para quem ensina" />
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              <article className="rounded-3xl border-2 border-[#49c0f8] bg-[#1f2d33] p-8"><SchoolRounded className="text-[#49c0f8]" sx={{ fontSize: 38 }} /><h3 className="mt-5 text-2xl font-black">Para estudantes</h3><p className="mt-3 leading-relaxed text-[#a5b7c2]">Aprenda no seu ritmo, pratique com situações próximas da sua realidade e entenda o motivo por trás de cada decisão.</p></article>
+              <article className="rounded-3xl border-2 border-[#58cc02] bg-[#1f2d33] p-8"><GroupsRounded className="text-[#58cc02]" sx={{ fontSize: 38 }} /><h3 className="mt-5 text-2xl font-black">Para educadores</h3><p className="mt-3 leading-relaxed text-[#a5b7c2]">Use as trilhas como apoio às atividades, acompanhe o progresso da turma e transforme resultados em novas conversas em sala.</p></article>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y-2 border-[#37464f] bg-[#17262c] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle eyebrow="Por que a Money Rank" title="Feita para aprender fazendo" />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {['Financeiro e fiscal no mesmo caminho', 'Feita para o contexto escolar', 'Aprender fazendo', 'Sem dinheiro real', 'Construída e testada em pesquisa-ação'].map((item) => <div key={item} className="rounded-2xl border-2 border-[#37464f] bg-[#1f2d33] p-5 font-black text-white">{item}</div>)}
+            </div>
+          </div>
+        </section>
+
+        <section id="trajetoria" className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle eyebrow="Nossa trajetória" title="Do primeiro debate à construção da Money Rank" description="A Money Rank nasceu dentro da escola e evolui com pesquisa, oficinas, protótipos e testes. As etapas abaixo não inventam datas ou resultados ainda não publicados." />
+            <ol className="mt-12 grid gap-5 lg:grid-cols-2">
+              {JOURNEY.map(([title, text], index) => <li key={title} className="grid gap-5 rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-6 sm:grid-cols-[auto_1fr]"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#49c0f8] font-black text-[#10252d]">{index + 1}</span><div><h3 className="text-lg font-black text-white">{title}</h3><p className="mt-2 text-sm leading-relaxed text-[#a5b7c2]">{text}</p><div className="mt-5 rounded-2xl border-2 border-dashed border-[#536670] bg-[#17262c] p-4 text-xs font-black uppercase tracking-wider text-[#78909c]">Espaço para registro real da etapa</div></div></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section className="border-y-2 border-[#37464f] bg-[#17262c] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl rounded-3xl border-2 border-[#37464f] bg-gradient-to-br from-[#1f2d33] to-[#183328] p-8 sm:p-10">
+            <SectionTitle eyebrow="Pesquisa e fundamento" title="Educação financeira e fiscal conectada à vida cidadã" description="Educação financeira ajuda o estudante a analisar recursos, necessidades, riscos e escolhas. Educação fiscal amplia essa visão ao relacionar tributos, direitos, deveres, serviços públicos, transparência e participação social." />
+            <p className="mt-6 text-sm font-bold text-[#dbe7ed]">Conteúdos concebidos em diálogo com referências oficiais de educação financeira e cidadania fiscal.</p>
+          </div>
+        </section>
+
+        <section id="equipe" className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <SectionTitle centered eyebrow="Equipe" title="Quem constrói a Money Rank" description="Um projeto desenvolvido por estudantes e educadores, reunindo programação, design e pesquisa para aproximar finanças e cidadania da realidade escolar." />
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {TEAM.map(([initials, name, role]) => <article key={name} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-5 text-center"><div className="mx-auto flex aspect-square max-w-24 items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] text-xl font-black text-[#49c0f8]" aria-label={`Espaço para retrato de ${name}`}>{initials}</div><h3 className="mt-4 font-black text-white">{name}</h3><p className="mt-1 text-xs font-bold text-[#a5b7c2]">{role}</p></article>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y-2 border-[#37464f] bg-[#17262c] px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-4xl">
+            <SectionTitle centered eyebrow="Perguntas frequentes" title="Antes de começar" />
+            <div className="mt-10 space-y-3">{FAQ.map(([question, answer]) => <details key={question} className="group rounded-2xl border-2 border-[#37464f] bg-[#1f2d33] p-5"><summary className="cursor-pointer font-black text-white marker:text-[#58cc02]">{question}</summary><p className="mt-3 leading-relaxed text-[#a5b7c2]">{answer}</p></details>)}</div>
+          </div>
+        </section>
+
+        <section className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-5xl rounded-[2rem] border-2 border-[#58cc02] bg-gradient-to-br from-[#1f2d33] to-[#183328] p-9 text-center shadow-[0_7px_0_#0d171b] sm:p-14">
+            <h2 className="text-3xl font-black text-white sm:text-4xl">Pronto para aprender finanças e cidadania fiscal de um jeito mais prático?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-[#a5b7c2]">Explore as trilhas, enfrente desafios e acompanhe sua evolução na Money Rank.</p>
+            <Link to="/login" className="mt-8 inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#58cc02] px-7 font-black text-[#13210f] shadow-[0_5px_0_#46a302] active:translate-y-1 active:shadow-none">Acessar a plataforma <ArrowForwardRounded /></Link>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t-2 border-[#37464f] bg-[#17262c] px-5 py-8 sm:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-center text-sm text-[#a5b7c2] sm:flex-row sm:text-left"><Brand /><p>Projeto educacional em desenvolvimento para o ensino médio.</p></div>
+      </footer>
+    </div>
+  );
+}
