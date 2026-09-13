@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import {
-  Close,
-  Send,
-  AutoAwesome,
-  ErrorOutlined,
-} from '@mui/icons-material';
+import Close from '@mui/icons-material/Close';
+import Send from '@mui/icons-material/Send';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import ErrorOutlined from '@mui/icons-material/ErrorOutlined';
 import { useAuth } from '../contexts/AuthContext';
 import { askStudentMentor } from '../services/mentorService';
 
@@ -104,88 +102,69 @@ export default function CapiMentor() {
 
   return (
     <>
-      {/* Keyframes locais — componente autossuficiente, sem depender do index.css */}
-      <style>{`
-        @keyframes capi-pop {
-          0% { opacity: 0; transform: translateY(16px) scale(0.96); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes capi-fade {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes capi-blink {
-          0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-          40% { opacity: 1; transform: translateY(-3px); }
-        }
-        .capi-panel { animation: capi-pop 0.22s cubic-bezier(0.16,1,0.3,1); }
-        .capi-msg { animation: capi-fade 0.25s ease both; }
-        .capi-dot { animation: capi-blink 1.2s infinite ease-in-out; }
-      `}</style>
-
-      {/* ── BOTÃO FLUTUANTE (FAB) ───────────────────────────────────────── */}
+      {/* ── BOTÃO FLUTUANTE (FAB) ────────────────────────────────────────── */}
       {!aberto && (
         <button
           onClick={() => setAberto(true)}
-          aria-label="Abrir o CapiMentor"
-          className="fixed bottom-24 md:bottom-5 right-5 z-[60] flex items-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 font-black text-slate-950 shadow-xl shadow-amber-500/25 transition-all hover:scale-105 hover:bg-amber-300 active:scale-95"
+          aria-label="Abrir CapiMentor (assistente de IA)"
+          className="group fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-[#49c0f8] bg-[#1f2d33] shadow-[0_4px_0_#1683b7] transition-all hover:-translate-y-0.5 active:translate-y-1 active:shadow-none md:bottom-6 md:right-6 cursor-pointer"
         >
           <img
             src={MENTOR_AVATAR}
-            alt=""
-            className="h-8 w-8 rounded-xl object-cover ring-2 ring-slate-950/20"
+            alt="CapiMentor"
+            className="h-11 w-11 rounded-xl object-cover ring-2 ring-[#49c0f8]/50 transition-all group-hover:ring-[#58cc02]"
           />
-          <span className="hidden sm:inline">Falar com o CapiMentor</span>
-          <span className="absolute -right-1 -top-1 flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-200" />
+          {/* Badge pulsante online */}
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#58cc02] opacity-75" />
+            <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-[#1f2d33] bg-[#58cc02]" />
           </span>
         </button>
       )}
 
-      {/* ── PAINEL DO CHAT ──────────────────────────────────────────────── */}
+      {/* ── PAINEL DO CHAT (GLASSMORPHISM DARK NEON) ────────────────────── */}
       {aberto && (
         <>
           {/* Backdrop (apenas mobile) */}
           <div 
-            className="fixed inset-0 z-[59] bg-black/50 md:hidden"
+            className="fixed inset-0 z-50 bg-[#0d171b]/70 backdrop-blur-xs md:hidden"
             onClick={() => setAberto(false)}
           />
           
           <div
-            className="capi-panel fixed inset-x-0 bottom-0 z-[60] flex flex-col w-full h-[70vh] md:h-[600px] md:w-[380px] md:bottom-5 md:right-5 md:left-auto md:rounded-3xl rounded-t-3xl border border-zinc-800 bg-zinc-900/95 backdrop-blur-md shadow-2xl shadow-black/50"
+            className="capi-panel fixed inset-x-0 bottom-[4.5rem] z-[60] flex h-[min(75dvh,620px)] w-full flex-col rounded-t-3xl border-2 border-[#37464f] bg-[#1f2d33]/98 shadow-2xl backdrop-blur-xl md:bottom-6 md:left-auto md:right-6 md:h-[620px] md:w-[400px] md:rounded-3xl"
             role="dialog"
             aria-label="CapiMentor — Tutor de IA"
           >
             {/* Header */}
-            <header className="flex items-center justify-between border-b border-zinc-800 px-3 md:px-4 py-3 md:py-3.5 md:rounded-t-3xl flex-shrink-0">
-              <div className="flex items-center gap-2 md:gap-3">
+            <header className="flex items-center justify-between border-b border-[#37464f] px-4 py-3.5 md:rounded-t-3xl flex-shrink-0 bg-[#131f24]/50">
+              <div className="flex items-center gap-3">
                 <img
                   src={MENTOR_AVATAR}
                   alt="Avatar do CapiMentor"
-                  className="h-10 w-10 rounded-2xl object-cover ring-2 ring-amber-400/30"
+                  className="h-10 w-10 rounded-xl object-cover ring-2 ring-[#49c0f8]/60 shadow-md"
                 />
                 <div>
-                  <p className="flex items-center gap-1 text-xs md:text-sm font-black text-white">
+                  <p className="flex items-center gap-1 text-sm font-black text-white">
                     CapiMentor
-                    <AutoAwesome sx={{ fontSize: 12 }} className="text-amber-400" />
+                    <AutoAwesome sx={{ fontSize: 14 }} className="text-amber-400 animate-spin-slow" />
                   </p>
-                  <p className="text-[10px] md:text-[11px] font-semibold text-emerald-400">
-                    online • tutor de finanças
+                  <p className="text-[11px] font-bold text-[#58cc02]">
+                    Online • Tutor Especialista
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setAberto(false)}
                 aria-label="Fechar"
-                className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white"
+                className="rounded-xl p-1.5 text-[#a5b7c2] transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
               >
                 <Close sx={{ fontSize: 20 }} />
               </button>
             </header>
 
             {/* Mensagens */}
-            <div className="flex-1 space-y-2 md:space-y-3 overflow-y-auto px-3 md:px-4 py-3 md:py-4">
+            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 scrollbar-thin">
               {mensagens.map((m, i) => (
                 <div
                   key={i}
@@ -194,28 +173,28 @@ export default function CapiMentor() {
                   }`}
                 >
                   <div
-                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 md:px-3.5 py-2 md:py-2.5 text-xs md:text-sm leading-relaxed ${
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-xs md:text-sm leading-relaxed shadow-sm ${
                       m.role === 'user'
-                        ? 'rounded-br-md bg-amber-400 font-medium text-slate-950'
-                        : 'rounded-bl-md border border-zinc-800 bg-slate-950/60 text-slate-200'
+                        ? 'rounded-br-xs bg-[#58cc02] font-bold text-[#131f24]'
+                        : 'rounded-bl-xs border border-[#37464f] bg-[#17262c] text-[#f1f7fb]'
                     }`}
                   >
                     {m.content}
                     {m.generatedBy && (
-                      <p className={`mt-2 text-[10px] font-bold ${
-                        m.generatedBy === 'policy' ? 'text-amber-300' : 'text-emerald-300'
+                      <p className={`mt-2 text-[10px] font-black uppercase tracking-wider ${
+                        m.generatedBy === 'policy' ? 'text-amber-400' : 'text-[#58cc02]'
                       }`}>
                         {m.generatedBy === 'gemini-grounded'
-                          ? 'Gemini + Pesquisa Google'
+                          ? 'Gemini + Grounding Web'
                           : m.generatedBy === 'gemini'
-                            ? 'Gemini'
-                            : 'Orientação de segurança'}
+                            ? 'Gemini 2.0 Flash'
+                            : 'Diretriz de Segurança'}
                       </p>
                     )}
                     {m.sources?.length > 0 && (
-                      <div className="mt-3 border-t border-slate-700/70 pt-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-300">
-                          Fontes para conferir
+                      <div className="mt-3 border-t border-[#37464f] pt-2">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                          Fontes Auditadas
                         </p>
                         <ul className="mt-1.5 space-y-1">
                           {m.sources.map((source) => (
@@ -224,7 +203,7 @@ export default function CapiMentor() {
                                 href={source.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-[11px] text-cyan-300 underline decoration-cyan-500/40 underline-offset-2 hover:text-cyan-200"
+                                className="text-[11px] font-medium text-cyan-400 underline decoration-cyan-500/40 underline-offset-2 hover:text-cyan-300"
                               >
                                 {source.title}
                               </a>
@@ -235,7 +214,7 @@ export default function CapiMentor() {
                     )}
                     {m.searchSuggestionsHtml && (
                       <div
-                        className="mt-2 overflow-hidden rounded-lg text-[10px]"
+                        className="mt-2 overflow-hidden rounded-xl text-[10px]"
                         dangerouslySetInnerHTML={{
                           __html: m.searchSuggestionsHtml,
                         }}
@@ -248,11 +227,11 @@ export default function CapiMentor() {
               {/* Indicador "digitando" */}
               {carregando && (
               <div className="capi-msg flex justify-start">
-                <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-zinc-800 bg-slate-950/60 px-4 py-3">
+                <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-xs border border-[#37464f] bg-[#17262c] px-4 py-3">
                   {[0, 1, 2].map((d) => (
                     <span
                       key={d}
-                      className="capi-dot h-1.5 w-1.5 rounded-full bg-amber-400"
+                      className="capi-dot h-2 w-2 rounded-full bg-[#58cc02]"
                       style={{ animationDelay: `${d * 0.15}s` }}
                     />
                   ))}
@@ -262,7 +241,7 @@ export default function CapiMentor() {
 
             {/* Erro */}
             {erro && (
-              <div className="capi-msg flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-xs text-red-300">
+              <div className="capi-msg flex items-start gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-300">
                 <ErrorOutlined sx={{ fontSize: 16 }} className="mt-0.5 shrink-0" />
                 <span>{erro}</span>
               </div>
@@ -275,7 +254,7 @@ export default function CapiMentor() {
                   <button
                     key={s}
                     onClick={() => enviar(s)}
-                    className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-400/20"
+                    className="cursor-pointer rounded-2xl border-2 border-[#37464f] bg-[#17262c] px-3.5 py-2 text-left text-xs font-bold text-[#dbe7ed] transition-colors hover:border-[#49c0f8] hover:text-[#49c0f8]"
                   >
                     {s}
                   </button>
@@ -287,28 +266,28 @@ export default function CapiMentor() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-zinc-800 p-3 sm:rounded-b-3xl">
-            <div className="flex items-end gap-2 rounded-2xl border border-slate-700 bg-slate-950/60 p-1.5 focus-within:border-amber-400/50 transition-colors">
+          <div className="border-t-2 border-[#37464f] bg-[#17262c] p-3 sm:rounded-b-3xl">
+            <div className="flex items-end gap-2 rounded-2xl border-2 border-[#37464f] bg-[#131f24] p-2 transition-all focus-within:border-[#49c0f8]">
               <textarea
                 ref={inputRef}
                 rows={1}
                 value={rascunho}
                 onChange={(e) => setRascunho(e.target.value.slice(0, 500))}
                 onKeyDown={aoTeclar}
-                placeholder="Pergunte sobre impostos, dinheiro…"
-                className="max-h-28 flex-1 resize-none bg-transparent px-2.5 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+                placeholder="Tire dúvidas sobre finanças e cidadania…"
+                className="max-h-28 flex-1 resize-none bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder:text-[#78909c] focus:outline-none"
               />
               <button
                 onClick={() => enviar()}
                 disabled={carregando || !rascunho.trim()}
                 aria-label="Enviar"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-slate-950 transition-all hover:bg-amber-300 active:scale-90 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-500"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#58cc02] text-[#131f24] font-black transition-all hover:bg-[#46a302] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#37464f] disabled:text-[#78909c] shadow-sm cursor-pointer"
               >
                 <Send sx={{ fontSize: 18 }} />
               </button>
             </div>
-            <p className="mt-2 px-1 text-center text-[10px] text-slate-600">
-              O CapiMentor pode errar. Confira com o professor ou uma fonte oficial.
+            <p className="mt-2 px-1 text-center text-[10px] text-[#78909c] font-medium">
+              O CapiMentor é um tutor IA para estudos. Sempre confirme decisões importantes.
             </p>
          </div>
         </div>

@@ -9,14 +9,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 function InfoCard({ icon, label, value, accent = 'text-white' }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-5 backdrop-blur-sm transition hover:border-zinc-700">
+    <div className="rounded-3xl border border-[#37464f] bg-[#17262c] p-5 shadow-sm transition-all hover:border-[#58cc02]/30 hover:shadow-md">
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-slate-500">{icon}</span>
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
+        <span className="text-[#58cc02]">{icon}</span>
+        <span className="text-xs font-black uppercase tracking-wider text-[#a5b7c2]">
           {label}
         </span>
       </div>
-      <p className={`truncate text-sm font-semibold ${accent}`}>{value}</p>
+      <p className={`truncate text-base font-black ${accent}`}>{value}</p>
     </div>
   );
 }
@@ -38,7 +38,7 @@ export default function Perfil() {
       <div className="flex min-h-[60vh] items-center justify-center">
         <div
           aria-label="Carregando perfil"
-          className="h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent"
+          className="h-10 w-10 animate-spin rounded-full border-4 border-[#58cc02] border-t-transparent"
           role="status"
         />
       </div>
@@ -46,82 +46,94 @@ export default function Perfil() {
   }
 
   return (
-    <div className="relative flex flex-col gap-8 text-white">
+    <div className="relative flex flex-col gap-8 text-[#F8F8F8]">
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        className="pointer-events-none fixed inset-0 opacity-[0.02]"
         style={{
           backgroundImage:
-            'linear-gradient(#fbbf24 1px, transparent 1px), linear-gradient(90deg, #fbbf24 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
+            'radial-gradient(#58cc02 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
         }}
       />
 
       <header className="relative">
-        <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400/70">
+        <span className="text-xs font-black uppercase tracking-[0.25em] text-[#58cc02]">
           Meu Perfil
         </span>
-        <h1 className="mt-0.5 text-3xl font-black tracking-tighter">
-          Configurações
+        <h1 className="mt-1 text-3xl sm:text-4xl font-black tracking-tight text-white">
+          Configurações da Conta
         </h1>
       </header>
 
-      <section className="relative flex items-center gap-5 rounded-3xl border border-zinc-800 bg-zinc-900/80 p-7 backdrop-blur-sm">
-        <ProfileAvatar
-          avatarId={aluno.avatar_id}
-          name={aluno.nome}
-          photoUrl={aluno.avatar_url}
-          size="lg"
-        />
+      {/* ── CARD PRINCIPAL DE IDENTIFICAÇÃO ─────────────────────────── */}
+      <section className="relative flex items-center gap-5 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6 sm:p-7 shadow-xl">
+        <div className="relative">
+          <ProfileAvatar
+            avatarId={aluno.avatar_id}
+            className="border-2 border-[#58cc02] shadow-[0_0_20px_rgba(93,214,44,0.25)]"
+            name={aluno.nome}
+            photoUrl={aluno.avatar_url}
+            size="lg"
+          />
+        </div>
         <div className="min-w-0">
-          <p className="truncate text-xl font-black tracking-tight">
+          <p className="truncate text-xl sm:text-2xl font-black tracking-tight text-white">
             {aluno.nome}
           </p>
-          <p className="mt-1 truncate text-xs uppercase tracking-widest text-slate-500">
-            {aluno.turma} · {aluno.is_admin ? 'Professor' : 'Estudante'}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#58cc02]/10 border border-[#58cc02]/30 text-[#58cc02]">
+              {aluno.turma || '3º DSA'}
+            </span>
+            <span className="text-xs text-[#78909c]">•</span>
+            <span className="text-xs font-bold text-[#a5b7c2]">
+              {aluno.is_admin ? 'Professor / Orientador' : 'Estudante'}
+            </span>
+          </div>
         </div>
       </section>
 
+      {/* ── INFORMAÇÕES DA CONTA ────────────────────────────────────── */}
       <section className="relative">
-        <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
-          Informações da conta
+        <h2 className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-[#a5b7c2]">
+          Dados Cadastrais
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <InfoCard
             icon={<EmailOutlined sx={{ fontSize: 20 }} />}
-            label="E-mail"
+            label="E-mail Google"
             value={aluno.email}
           />
           <InfoCard
-            accent="text-amber-400"
+            accent="text-[#58cc02]"
             icon={<MonetizationOn sx={{ fontSize: 20 }} />}
-            label="Saldo"
-            value={`${aluno.capicoins ?? 0} CapiCoins`}
+            label="Saldo em Carteira"
+            value={`${(aluno.capicoins ?? 0).toLocaleString('pt-BR')} CapiCoins`}
           />
           <InfoCard
             icon={<GroupsOutlined sx={{ fontSize: 20 }} />}
-            label="Turma"
-            value={aluno.turma}
+            label="Turma Atual"
+            value={aluno.turma || 'Não definida'}
           />
         </div>
       </section>
 
-      <section className="relative rounded-3xl border border-zinc-800 bg-zinc-900/80 p-6 backdrop-blur-sm sm:p-7">
+      {/* ── FORMULÁRIO DE EDIÇÃO ────────────────────────────────────── */}
+      <section className="relative rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6 sm:p-8 shadow-xl">
         <div className="mb-6">
-          <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-slate-300">
-            Alterar dados
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#58cc02]">
+            Alterar Dados
           </h2>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            Atualize o nome, a turma ou o avatar exibidos no jogo.
+          <p className="mt-1 text-xs sm:text-sm text-[#a5b7c2]">
+            Atualize seu nome preferido, turma escolar ou selecione um novo avatar profissional.
           </p>
         </div>
 
         {successMessage && (
           <div
-            className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300"
+            className="mb-5 flex items-center gap-2 rounded-2xl border border-[#58cc02]/40 bg-[#58cc02]/10 px-4 py-3 text-sm font-bold text-[#58cc02]"
             role="status"
           >
-            <Check sx={{ fontSize: 19 }} />
+            <Check sx={{ fontSize: 20 }} />
             {successMessage}
           </div>
         )}
@@ -134,10 +146,11 @@ export default function Perfil() {
         />
       </section>
 
-      <section className="relative rounded-3xl border border-amber-400/20 bg-amber-400/5 p-6">
-        <p className="text-sm leading-relaxed text-slate-400">
-          Seu perfil e seu progresso ficam protegidos no Capi Bank para
-          acompanhar você durante toda a trilha.
+      {/* ── AUDITORIA CAPI BANK ─────────────────────────────────────── */}
+      <section className="relative rounded-3xl border border-[#58cc02]/20 bg-[#1f2d33] p-6 shadow-sm">
+        <p className="text-xs sm:text-sm leading-relaxed text-[#a5b7c2]">
+          Seu perfil e seu histórico de transações são auditados pelo{' '}
+          <strong className="text-white">Capi Bank</strong> com integridade transacional garantida para a competição.
         </p>
       </section>
     </div>

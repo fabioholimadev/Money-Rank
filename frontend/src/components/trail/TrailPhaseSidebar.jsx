@@ -1,10 +1,9 @@
-import {
-  CheckCircle,
-  Lock,
-  MenuBook,
-  PlayArrow,
-} from '@mui/icons-material';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Lock from '@mui/icons-material/Lock';
+import MenuBook from '@mui/icons-material/MenuBook';
+import PlayArrow from '@mui/icons-material/PlayArrow';
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../../contexts/AuthContext';
 import { TRAIL_CATEGORIES } from '../../data/trailCategories';
 import {
@@ -27,12 +26,12 @@ function NavigationButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex min-h-9 w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[0.7rem] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
+      className={`flex min-h-9 w-full items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[0.7rem] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#49c0f8] ${
         active
-          ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
+          ? 'border-[#49c0f8]/50 bg-[#58cc02]/15 text-[#49c0f8]'
           : disabled
-            ? 'cursor-not-allowed border-slate-800/70 bg-slate-950/20 text-slate-700'
-            : 'border-slate-800 bg-slate-950/50 text-slate-400 hover:border-slate-700 hover:text-white'
+            ? 'cursor-not-allowed border-[#37464f]/70 bg-[#131f24]/20 text-[#536670]'
+            : 'border-[#37464f] bg-[#131f24]/50 text-[#a5b7c2] hover:border-[#536670] hover:text-white'
       }`}
     >
       {icon}
@@ -81,8 +80,8 @@ function TrailNavigationList({
             key={module.id}
             className={`rounded-2xl border p-3 ${
               phaseUnlocked
-                ? 'border-slate-800 bg-slate-900/70'
-                : 'border-slate-900 bg-slate-950/40 opacity-60'
+                ? 'border-[#37464f] bg-[#17262c]/70'
+                : 'border-[#2b3940] bg-[#131f24]/40 opacity-60'
             }`}
           >
             <div className="mb-2 flex items-center gap-2">
@@ -92,7 +91,7 @@ function TrailNavigationList({
                 {module.fase}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[0.6rem] font-bold uppercase tracking-wider text-slate-500">
+                <p className="text-[0.6rem] font-bold uppercase tracking-wider text-[#78909c]">
                   {module.etapaLabel || `Fase ${module.fase}`}
                 </p>
                 <p className="truncate text-xs font-black text-white">
@@ -154,7 +153,7 @@ export default function TrailPhaseSidebar() {
 
   return (
     <>
-      <details className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 lg:hidden">
+      <details className="rounded-2xl border border-[#37464f] bg-[#17262c]/90 p-4 lg:hidden">
         <summary className="cursor-pointer text-sm font-black text-white">
           Navegação da trilha · Fase atual {currentPhase}
         </summary>
@@ -163,8 +162,8 @@ export default function TrailPhaseSidebar() {
         </div>
       </details>
 
-      <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-slate-800 bg-slate-950/90 p-4 shadow-xl shadow-black/20 lg:block">
-        <p className="mb-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-amber-400">
+      <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-[#37464f] bg-[#131f24]/90 p-4 shadow-xl shadow-black/20 lg:block">
+        <p className="mb-1 text-[0.65rem] font-black uppercase tracking-[0.2em] text-[#49c0f8]">
           Saúde &amp; Consumo
         </p>
         <h2 className="mb-4 text-base font-black text-white">

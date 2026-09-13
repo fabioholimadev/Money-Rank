@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import {
-  ArrowBack,
-  ArrowForward,
-  Cancel,
-  CheckCircle,
-  MonetizationOn,
-} from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import MonetizationOn from '@mui/icons-material/MonetizationOn';
 import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../../contexts/AuthContext';
 import {
   completePhaseActivity,
@@ -99,7 +98,7 @@ export default function SimpleTrailActivity({ activity }) {
         <button
           type="button"
           onClick={() => navigate('/trilha')}
-          className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-slate-400 transition-colors hover:text-amber-400"
+          className="mb-7 inline-flex items-center gap-2 text-sm font-bold text-[#a5b7c2] transition-colors hover:text-[#49c0f8]"
         >
           <ArrowBack sx={{ fontSize: 19 }} aria-hidden="true" />
           Voltar ao mapa
@@ -108,19 +107,19 @@ export default function SimpleTrailActivity({ activity }) {
         {!result ? (
           <>
             <header className="mb-7">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#49c0f8]">
                 {activity.stepLabel} · {activity.mechanicLabel}
               </p>
               <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
                 {activity.title}
               </h1>
-              <p className="mt-3 text-sm text-slate-400">
+              <p className="mt-3 text-sm text-[#a5b7c2]">
                 A primeira conclusão vale 100 CapiCoins-base. Revisões
                 aprovadas valem 20, e o streak multiplica a recompensa.
               </p>
             </header>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:p-7">
+            <section className="rounded-3xl border border-[#37464f] bg-[#17262c] p-5 sm:p-7">
               <h2 className="text-lg font-black leading-relaxed sm:text-xl">
                 {activity.prompt}
               </h2>
@@ -130,7 +129,7 @@ export default function SimpleTrailActivity({ activity }) {
                   const selected = selectedIndex === index;
                   const answered = selectedIndex !== null;
                   let color =
-                    'border-slate-700 bg-slate-950/60 text-slate-300 hover:border-amber-500/50';
+                    'border-[#536670] bg-[#131f24]/60 text-[#dbe7ed] hover:border-[#49c0f8]/50';
 
                   if (answered && option.correct) {
                     color =
@@ -140,7 +139,7 @@ export default function SimpleTrailActivity({ activity }) {
                       'border-red-500 bg-red-500/10 text-red-200';
                   } else if (answered) {
                     color =
-                      'border-slate-800 bg-slate-950/30 text-slate-600';
+                      'border-[#37464f] bg-[#131f24]/30 text-[#78909c]';
                   }
 
                   return (
@@ -185,7 +184,7 @@ export default function SimpleTrailActivity({ activity }) {
                     onClick={
                       selectedOption.correct ? finishActivity : retry
                     }
-                    className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-black text-slate-950 transition-colors hover:bg-amber-400 disabled:opacity-50"
+                    className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#58cc02] px-4 py-3 text-sm font-black text-[#131f24] transition-colors hover:bg-[#70e823] disabled:opacity-50"
                   >
                     {isSaving
                       ? 'Salvando progresso...'
@@ -211,10 +210,10 @@ export default function SimpleTrailActivity({ activity }) {
             </section>
           </>
         ) : (
-          <section className="rounded-3xl border border-amber-500/30 bg-slate-900 p-7 text-center">
+          <section className="rounded-3xl border border-[#49c0f8]/30 bg-[#17262c] p-7 text-center">
             <MonetizationOn
               sx={{ fontSize: 54 }}
-              className="mx-auto text-amber-400"
+              className="mx-auto text-[#49c0f8]"
               aria-hidden="true"
             />
             <h1 className="mt-3 text-2xl font-black">
@@ -222,14 +221,14 @@ export default function SimpleTrailActivity({ activity }) {
                 ? 'Revisão concluída!'
                 : 'Fase concluída!'}
             </h1>
-            <p className="mt-3 text-sm text-slate-400">
+            <p className="mt-3 text-sm text-[#a5b7c2]">
               {getRewardSuppressionMessage(
                 result.rewardSuppressionReason,
               ) ??
                 `+${result.reward} CapiCoins registrados. Saldo atual: ${result.profile?.capicoins ?? 0}.`}
             </p>
             {!result.rewardSuppressed && (
-              <p className="mt-2 text-xs font-semibold text-slate-400">
+              <p className="mt-2 text-xs font-semibold text-[#a5b7c2]">
                 Base: {result.baseReward} · Streak:{' '}
                 {result.multiplierPercent}% · Bônus: +
                 {result.streakBonus}
@@ -243,7 +242,7 @@ export default function SimpleTrailActivity({ activity }) {
             <button
               type="button"
               onClick={() => navigate(activity.nextPath)}
-              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-950 transition-colors hover:bg-amber-400"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#58cc02] px-5 py-3 text-sm font-black text-[#131f24] transition-colors hover:bg-[#70e823]"
             >
               {activity.nextLabel}
               <ArrowForward sx={{ fontSize: 18 }} aria-hidden="true" />

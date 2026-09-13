@@ -3,8 +3,8 @@ import Lock from '@mui/icons-material/Lock';
 import PlayArrow from '@mui/icons-material/PlayArrow';
 
 const MODULE_OFFSETS = [
-  'md:-translate-x-10',
-  'md:translate-x-10',
+  'md:-translate-x-8',
+  'md:translate-x-8',
 ];
 
 export default function TrailModuleCard({
@@ -23,26 +23,26 @@ export default function TrailModuleCard({
   return (
     <article
       className={`
-        relative w-full max-w-sm rounded-3xl border p-5
+        relative w-full max-w-sm rounded-3xl border p-6
         transition-all duration-300 ${offsetClass}
         ${
           liberado
-            ? `bg-slate-900 ${modulo.corBorda} hover:-translate-y-1 hover:shadow-xl ${modulo.corSombra}`
-            : 'border-slate-800/60 bg-slate-900/40 opacity-60'
+            ? `bg-[#17262c] border-[#37464f] hover:border-[#58cc02]/40 hover:-translate-y-1 hover:shadow-2xl`
+            : 'border-white/[0.04] bg-[#1f2d33]/50 opacity-50'
         }
       `}
     >
       {concluido && (
         <div
-          className="absolute -right-2 -top-2 rounded-full bg-green-500 p-0.5 shadow-lg shadow-green-500/40"
+          className="absolute -right-2 -top-2 rounded-full bg-[#58cc02] p-1 shadow-lg shadow-[#58cc02]/30 flex items-center justify-center"
           title="Fase concluída"
         >
-          <CheckCircle sx={{ fontSize: 18 }} className="text-white" />
+          <CheckCircle sx={{ fontSize: 20 }} className="text-[#131f24]" />
         </div>
       )}
 
       {!liberado && (
-        <div className="absolute right-4 top-4 text-slate-600">
+        <div className="absolute right-4 top-4 text-[#78909c]">
           <Lock sx={{ fontSize: 20 }} aria-hidden="true" />
         </div>
       )}
@@ -51,17 +51,17 @@ export default function TrailModuleCard({
         <div
           className={`
             flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl
-            bg-gradient-to-br ${modulo.cor} shadow-lg
+            bg-[#1f2d33] border border-[#37464f] shadow-md
             ${!liberado ? 'grayscale' : ''}
           `}
         >
-          <span className="text-lg font-black text-white">
+          <span className="text-lg font-black text-[#58cc02]">
             {modulo.fase}
           </span>
         </div>
 
         <div>
-          <p className="mb-0.5 text-xs font-bold uppercase tracking-widest text-slate-500">
+          <p className="mb-0.5 text-xs font-black uppercase tracking-wider text-[#78909c]">
             {etapaLabel}
           </p>
           <h3 className="text-base font-black leading-tight text-white">
@@ -70,18 +70,18 @@ export default function TrailModuleCard({
         </div>
       </div>
 
-      <p className="mb-4 text-xs leading-relaxed text-slate-400">
+      <p className="mb-5 text-xs leading-relaxed text-[#a5b7c2]">
         {modulo.descricao}
       </p>
 
       {liberado ? (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <button
             type="button"
             onClick={() => onNavigate(`${modulo.rota}/conteudo`)}
-            className="flex w-full items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2.5 text-left text-slate-300 transition-colors hover:border-amber-500/50 hover:text-amber-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            className="flex w-full items-center gap-2 rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3 text-left text-[#dbe7ed] transition-colors hover:border-[#536670] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#58cc02] cursor-pointer"
           >
-            <IconeConteudo sx={{ fontSize: 18 }} aria-hidden="true" />
+            <IconeConteudo sx={{ fontSize: 18 }} className="text-[#58cc02]" aria-hidden="true" />
             <span className="flex-1 text-xs font-bold">
               {modulo.rotuloConteudo ||
                 (concluido ? 'Rever conteúdo' : 'Ver conteúdo')}
@@ -95,31 +95,31 @@ export default function TrailModuleCard({
               onClick={() =>
                 onNavigate(`${modulo.rota}/atividade`)
               }
-              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+              className={`flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer ${
                 atividadeLiberada
-                  ? `bg-gradient-to-r ${modulo.cor} hover:brightness-110 hover:shadow-lg`
-                  : 'cursor-not-allowed border border-slate-800 bg-slate-950/30 text-slate-600 shadow-none'
+                  ? 'bg-[#58cc02] hover:bg-[#46a302] text-[#131f24] font-black shadow-[0_4px_0_#46a302] active:translate-y-1 active:shadow-none'
+                  : 'cursor-not-allowed border border-white/[0.04] bg-[#1f2d33] text-[#78909c] shadow-none'
               }`}
             >
               {atividadeLiberada ? (
                 <PlayArrow
                   sx={{ fontSize: 18 }}
-                  className="text-white"
+                  className="text-[#131f24]"
                   aria-hidden="true"
                 />
               ) : (
-                <Lock sx={{ fontSize: 17 }} aria-hidden="true" />
+                <Lock sx={{ fontSize: 16 }} aria-hidden="true" />
               )}
               <IconeAtividade
                 sx={{ fontSize: 16 }}
                 className={
-                  atividadeLiberada ? 'text-white/80' : 'text-slate-700'
+                  atividadeLiberada ? 'text-[#131f24]' : 'text-[#78909c]'
                 }
                 aria-hidden="true"
               />
               <span
-                className={`text-xs font-bold ${
-                  atividadeLiberada ? 'text-white' : 'text-slate-600'
+                className={`text-xs font-black ${
+                  atividadeLiberada ? 'text-[#131f24]' : 'text-[#78909c]'
                 }`}
               >
                 {modulo.nomeAtividade}
@@ -128,13 +128,13 @@ export default function TrailModuleCard({
           )}
 
           {!modulo.contentOnly && !atividadeLiberada && (
-            <p className="text-center text-[0.65rem] font-semibold text-slate-600">
+            <p className="text-center text-[10px] font-bold uppercase tracking-wider text-[#78909c]">
               Conclua o conteúdo para liberar a atividade
             </p>
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#78909c]">
           <Lock sx={{ fontSize: 14 }} aria-hidden="true" />
           <span>Complete a fase anterior para desbloquear</span>
         </div>

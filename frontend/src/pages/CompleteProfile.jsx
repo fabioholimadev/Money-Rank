@@ -23,38 +23,37 @@ export default function CompleteProfile() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-8 text-white sm:py-12">
-      <div className="pointer-events-none absolute -left-28 top-12 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-12 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-[#131f24] px-4 py-8 text-[#F8F8F8] sm:py-12">
+      <div className="pointer-events-none absolute -left-28 top-12 h-80 w-80 rounded-full bg-[#58cc02]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-12 h-80 w-80 rounded-full bg-[#58cc02]/5 blur-3xl" />
 
       <div className="relative mx-auto w-full max-w-3xl">
-        <header className="mb-7 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400 font-black text-slate-950 shadow-lg shadow-amber-400/20">
+        <header className="mb-8 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#58cc02] font-black text-[#131f24] shadow-[0_0_20px_rgba(93,214,44,0.3)]">
             MR
           </div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400">
-            Primeiro acesso
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-[#58cc02]">
+            Primeiro Acesso
           </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-            Complete seu perfil
+          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl text-white">
+            Complete seu Perfil
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
-            Só precisamos de três informações para personalizar sua jornada e
-            conectar você à sua turma.
+          <p className="mx-auto mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-[#a5b7c2]">
+            Personalize sua identidade e conecte sua conta à sua turma para começar na Trilha.
           </p>
         </header>
 
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900/90 p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-8">
-          <div className="mb-7 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+        <section className="rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6 shadow-2xl backdrop-blur-md sm:p-8">
+          <div className="mb-7 flex items-start gap-3 rounded-2xl border border-[#58cc02]/30 bg-[#58cc02]/10 p-4">
             <VerifiedUserOutlined
-              className="mt-0.5 shrink-0 text-emerald-400"
-              sx={{ fontSize: 21 }}
+              className="mt-0.5 shrink-0 text-[#58cc02]"
+              sx={{ fontSize: 22 }}
             />
             <div>
-              <p className="text-sm font-bold text-emerald-300">
-                Conta Google verificada
+              <p className="text-sm font-black text-[#58cc02]">
+                Conta Google Verificada
               </p>
-              <p className="mt-1 break-all text-xs text-slate-500">
+              <p className="mt-0.5 break-all text-xs text-[#a5b7c2]">
                 {aluno?.email}
               </p>
             </div>
@@ -63,23 +62,23 @@ export default function CompleteProfile() {
           <ProfileForm
             initialProfile={aluno}
             onSubmit={handleSubmit}
-            submitLabel="Concluir e começar"
+            submitLabel="Concluir e Começar"
           />
         </section>
 
-        <button
-          className="mx-auto mt-5 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-400"
-          onClick={handleChangeAccount}
-          type="button"
-        >
-          <Logout sx={{ fontSize: 16 }} />
-          Entrar com outra conta
-        </button>
+        <div className="mt-6 text-center">
+          <button
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-[#a5b7c2] transition hover:text-rose-400 hover:bg-[#1f2d33] focus:outline-none focus:ring-2 focus:ring-rose-400"
+            onClick={handleChangeAccount}
+            type="button"
+          >
+            <Logout sx={{ fontSize: 16 }} />
+            Entrar com outra conta
+          </button>
+        </div>
 
-        <p className="mx-auto mt-4 max-w-xl text-center text-[11px] leading-relaxed text-slate-600">
-          Nesta etapa de migração, turma, Capi ou foto ficam neste dispositivo.
-          A sincronização entre dispositivos será adicionada com o Firebase SQL
-          Connect.
+        <p className="mx-auto mt-4 max-w-xl text-center text-[11px] leading-relaxed text-[#78909c]">
+          Seu progresso e CapiCoins ficam sincronizados com o Capi Bank com integridade auditável.
         </p>
       </div>
     </main>

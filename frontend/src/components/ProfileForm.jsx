@@ -210,13 +210,13 @@ export default function ProfileForm({
     <form className="space-y-7" onSubmit={handleSubmit}>
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-200">
-            <Person className="text-amber-400" sx={{ fontSize: 19 }} />
+          <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
+            <Person className="text-[#58cc02]" sx={{ fontSize: 18 }} />
             Nome preferido
           </span>
           <input
             autoComplete="name"
-            className="w-full rounded-xl border border-zinc-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-60"
+            className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 disabled:opacity-60 placeholder:text-[#78909c]"
             disabled={isBusy}
             maxLength={40}
             onChange={(event) => setNome(event.target.value)}
@@ -225,18 +225,18 @@ export default function ProfileForm({
             type="text"
             value={nome}
           />
-          <span className="mt-1.5 block text-right text-xs text-slate-600">
+          <span className="mt-1.5 block text-right text-xs text-[#78909c] font-medium">
             {nome.length}/40
           </span>
         </label>
 
         <label className="block">
-          <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-200">
-            <GroupsOutlined className="text-emerald-400" sx={{ fontSize: 19 }} />
+          <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
+            <GroupsOutlined className="text-[#58cc02]" sx={{ fontSize: 18 }} />
             Turma
           </span>
           <select
-            className="w-full rounded-xl border border-zinc-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-60"
+            className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 disabled:opacity-60 cursor-pointer"
             disabled={isBusy}
             onChange={(event) => setTurma(event.target.value)}
             required
@@ -251,17 +251,17 @@ export default function ProfileForm({
               </option>
             ))}
           </select>
-          <span className="mt-1.5 block text-xs text-slate-600">
+          <span className="mt-1.5 block text-xs text-[#78909c] font-medium">
             Turmas disponíveis: 3º DSA e 3º DSB.
           </span>
         </label>
       </div>
 
       <fieldset disabled={isBusy}>
-        <legend className="text-sm font-bold text-slate-200">
+        <legend className="text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
           Escolha sua Capi profissional
         </legend>
-        <p className="mt-1 text-xs leading-relaxed text-slate-500">
+        <p className="mt-1 text-xs leading-relaxed text-[#a5b7c2]">
           Você também pode enviar uma foto pessoal logo abaixo.
         </p>
 
@@ -277,10 +277,10 @@ export default function ProfileForm({
               <button
                 aria-checked={isSelected}
                 aria-label={avatar.label}
-                className={`relative flex min-h-36 flex-col items-center justify-center gap-2 rounded-2xl border p-2 transition focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                className={`relative flex min-h-36 flex-col items-center justify-center gap-2 rounded-2xl border p-2.5 transition focus:outline-none focus:ring-2 focus:ring-[#58cc02] cursor-pointer ${
                   isSelected
-                    ? 'border-amber-400 bg-amber-400/10'
-                    : 'border-zinc-800 bg-slate-950/70 hover:border-zinc-600'
+                    ? 'border-[#58cc02] bg-[#58cc02]/10 ring-2 ring-[#58cc02]/40 shadow-lg'
+                    : 'border-[#37464f] bg-[#17262c] hover:border-[#536670]'
                 }`}
                 key={avatar.id}
                 onClick={() => selectAvatar(avatar.id)}
@@ -288,13 +288,13 @@ export default function ProfileForm({
                 type="button"
               >
                 <ProfileAvatar avatarId={avatar.id} size="lg" />
-                <span className="text-center text-[10px] font-bold leading-tight text-slate-300">
+                <span className="text-center text-[10px] font-bold leading-tight text-[#dbe7ed]">
                   {avatar.label}
                 </span>
                 {isSelected && (
                   <Check
-                    className="absolute right-1.5 top-1.5 rounded-full bg-slate-950/80 text-amber-400"
-                    sx={{ fontSize: 19 }}
+                    className="absolute right-1.5 top-1.5 rounded-full bg-[#1f2d33] text-[#58cc02]"
+                    sx={{ fontSize: 18 }}
                   />
                 )}
               </button>
@@ -304,18 +304,18 @@ export default function ProfileForm({
       </fieldset>
 
       <div className="relative flex items-center gap-3">
-        <span className="h-px flex-1 bg-zinc-800" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-600">
+        <span className="h-px flex-1 bg-white/[0.08]" />
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#78909c]">
           ou use sua foto
         </span>
-        <span className="h-px flex-1 bg-zinc-800" />
+        <span className="h-px flex-1 bg-white/[0.08]" />
       </div>
 
       <div
         className={`flex flex-col items-center gap-4 rounded-2xl border border-dashed p-5 sm:flex-row ${
           photoUrl && !avatarId
-            ? 'border-emerald-400/50 bg-emerald-400/5'
-            : 'border-zinc-700 bg-slate-950/50'
+            ? 'border-[#58cc02]/50 bg-[#58cc02]/5'
+            : 'border-[#37464f] bg-[#17262c]'
         }`}
       >
         <ProfileAvatar
@@ -325,12 +325,12 @@ export default function ProfileForm({
           size="lg"
         />
         <div className="flex-1 text-center sm:text-left">
-          <p className="text-sm font-bold text-slate-200">
+          <p className="text-sm font-bold text-[#f1f7fb]">
             {photoUrl && !avatarId
               ? 'Foto pessoal selecionada'
               : 'Prefere usar sua própria foto?'}
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+          <p className="mt-1 text-xs leading-relaxed text-[#a5b7c2]">
             JPG, PNG ou WebP, com até 5 MB. A imagem será recortada em formato
             quadrado e reduzida automaticamente.
           </p>
@@ -345,7 +345,7 @@ export default function ProfileForm({
           type="file"
         />
         <label
-          className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-zinc-700 px-4 py-2.5 text-xs font-bold text-slate-200 transition hover:border-amber-400 hover:text-amber-300 ${
+          className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#37464f] bg-[#1f2d33] px-4 py-2.5 text-xs font-bold text-[#f1f7fb] transition hover:border-[#58cc02] hover:text-[#58cc02] ${
             isBusy ? 'pointer-events-none opacity-50' : ''
           }`}
           htmlFor={photoInputId}
@@ -353,7 +353,7 @@ export default function ProfileForm({
           {isProcessingPhoto ? (
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-slate-500 border-t-amber-400"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-slate-500 border-t-[#58cc02]"
             />
           ) : (
             <PhotoCamera sx={{ fontSize: 18 }} />
@@ -368,7 +368,7 @@ export default function ProfileForm({
 
       {errorMessage && (
         <div
-          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300"
           role="alert"
         >
           {errorMessage}
@@ -376,14 +376,14 @@ export default function ProfileForm({
       )}
 
       <button
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-5 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-400/15 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#58cc02] hover:bg-[#46a302] px-6 py-4 text-sm font-black text-[#131f24] shadow-[0_4px_0_#46a302] transition-all active:translate-y-1 active:shadow-none focus:outline-none focus:ring-2 focus:ring-[#58cc02] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
         disabled={isBusy || (requireChanges && !hasChanges)}
         type="submit"
       >
         {isSubmitting && (
           <span
             aria-hidden="true"
-            className="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-slate-950"
+            className="h-4 w-4 animate-spin rounded-full border-2 border-[#131f24]/30 border-t-[#131f24]"
           />
         )}
         {isSubmitting ? 'Salvando…' : submitLabel}

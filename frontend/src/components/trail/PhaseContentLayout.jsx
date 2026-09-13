@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
-import {
-  ArrowBack,
-  ArrowForward,
-  ArticleOutlined,
-  CheckCircle,
-  DownloadOutlined,
-  Launch,
-  PlayCircleOutlined,
-  Slideshow,
-} from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import ArticleOutlined from '@mui/icons-material/ArticleOutlined';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
+import Launch from '@mui/icons-material/Launch';
+import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
+import Slideshow from '@mui/icons-material/Slideshow';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -54,7 +52,7 @@ function MaterialMetadata({ material }) {
       {metadata.map((item) => (
         <span
           key={item}
-          className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-[11px] font-bold text-slate-400"
+          className="rounded-full border border-[#536670] bg-[#131f24]/70 px-3 py-1 text-[11px] font-bold text-[#a5b7c2]"
         >
           {item}
         </span>
@@ -73,7 +71,7 @@ function SourceLink({ material }) {
       href={material.sourceUrl}
       target="_blank"
       rel="noreferrer"
-      className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 transition-colors hover:text-amber-400"
+      className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#a5b7c2] transition-colors hover:text-[#49c0f8]"
     >
       <Launch sx={{ fontSize: 15 }} aria-hidden="true" />
       Fonte: {material.sourceLabel || 'abrir material original'}
@@ -89,7 +87,7 @@ function VideoPanel({ material }) {
           {material.title}
         </h2>
         {material.description && (
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <p className="mt-2 text-sm leading-relaxed text-[#a5b7c2]">
             {material.description}
           </p>
         )}
@@ -98,7 +96,7 @@ function VideoPanel({ material }) {
       <MaterialMetadata material={material} />
 
       {material.embedUrl ? (
-        <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
+        <div className="relative aspect-video overflow-hidden rounded-2xl border border-[#37464f] bg-black">
           <iframe
             src={material.embedUrl}
             title={material.title}
@@ -128,7 +126,7 @@ function ExternalMaterialButton({ material, label }) {
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-950 transition-all hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300"
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#58cc02] px-5 py-3 text-sm font-black text-[#131f24] transition-all hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#49c0f8]"
     >
       <DownloadOutlined sx={{ fontSize: 20 }} aria-hidden="true" />
       {label}
@@ -144,7 +142,7 @@ function SlidesPanel({ material }) {
           {material.title}
         </h2>
         {material.description && (
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <p className="mt-2 text-sm leading-relaxed text-[#a5b7c2]">
             {material.description}
           </p>
         )}
@@ -153,7 +151,7 @@ function SlidesPanel({ material }) {
       <MaterialMetadata material={material} />
 
       {material.embedUrl ? (
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-800 bg-black md:aspect-video">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#37464f] bg-black md:aspect-video">
           <iframe
             src={material.embedUrl}
             title={material.title}
@@ -178,7 +176,7 @@ function SummaryPanel({ material }) {
           {material.title}
         </h2>
         {material.description && (
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <p className="mt-2 text-sm leading-relaxed text-[#a5b7c2]">
             {material.description}
           </p>
         )}
@@ -191,13 +189,13 @@ function SummaryPanel({ material }) {
           {material.sections.map((section, index) => (
             <article
               key={section.title}
-              className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5"
+              className="rounded-2xl border border-[#37464f] bg-[#131f24]/70 p-5"
             >
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-sm font-black text-amber-400">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[#58cc02]/15 text-sm font-black text-[#49c0f8]">
                 {index + 1}
               </div>
               <h3 className="mb-2 font-black text-white">{section.title}</h3>
-              <p className="text-sm leading-relaxed text-slate-400">
+              <p className="text-sm leading-relaxed text-[#a5b7c2]">
                 {section.description}
               </p>
             </article>
@@ -221,18 +219,18 @@ function SummaryPanel({ material }) {
 
 function PendingMaterialPanel({ material, label }) {
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-6 py-10 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-slate-400">
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[#536670] bg-[#131f24]/40 px-6 py-10 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f2d33] text-[#a5b7c2]">
         <ArticleOutlined sx={{ fontSize: 28 }} aria-hidden="true" />
       </div>
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-400">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#49c0f8]">
         Espaço reservado: {label}
       </p>
       <h2 className="mt-3 text-xl font-black text-white">{material.title}</h2>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#a5b7c2]">
         {material.description}
       </p>
-      <p className="mt-5 rounded-full border border-slate-700 px-4 py-2 text-xs font-bold text-slate-500">
+      <p className="mt-5 rounded-full border border-[#536670] px-4 py-2 text-xs font-bold text-[#78909c]">
         Materiais ainda não publicados não bloqueiam a conclusão da fase.
       </p>
     </div>
@@ -398,20 +396,20 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
         <button
           type="button"
           onClick={() => navigate('/trilha')}
-          className="mb-7 inline-flex items-center gap-2 rounded-lg text-sm font-bold text-slate-400 transition-colors hover:text-amber-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400"
+          className="mb-7 inline-flex items-center gap-2 rounded-lg text-sm font-bold text-[#a5b7c2] transition-colors hover:text-[#49c0f8] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#49c0f8]"
         >
           <ArrowBack sx={{ fontSize: 19 }} aria-hidden="true" />
           Voltar ao mapa
         </button>
 
         <header className="mb-7">
-          <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-amber-400">
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-[#49c0f8]">
             Saúde &amp; Consumo · {content.stepLabel}
           </p>
-          <h1 className="bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
+          <h1 className="bg-gradient-to-r from-[#58cc02] via-[#49c0f8] to-[#58cc02] bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl md:text-5xl">
             {content.title}
           </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#a5b7c2] sm:text-base">
             {content.description}
           </p>
         </header>
@@ -420,7 +418,7 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
           <div
             role="tablist"
             aria-label={`Conteúdos de ${content.title}`}
-            className="mb-6 grid grid-cols-3 gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-2"
+            className="mb-6 grid grid-cols-3 gap-2 rounded-2xl border border-[#37464f] bg-[#17262c] p-2"
           >
             {tabs.map((slot) => {
               const selected = activeTab === slot.id;
@@ -437,10 +435,10 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
                   aria-selected={selected}
                   aria-controls={`${content.id}-${slot.id}-panel`}
                   onClick={() => selectTab(slot)}
-                  className={`relative flex min-h-14 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-black transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 sm:px-3 sm:text-sm ${
+                  className={`relative flex min-h-14 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-black transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#49c0f8] sm:px-3 sm:text-sm ${
                     selected
-                      ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-[#58cc02] text-[#131f24] shadow-lg shadow-[#58cc02]/20'
+                      : 'text-[#a5b7c2] hover:bg-[#1f2d33] hover:text-white'
                   }`}
                 >
                   <Icon sx={{ fontSize: 19 }} aria-hidden="true" />
@@ -469,19 +467,19 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
               ? `${content.id}-${activeSlot.id}-tab`
               : undefined
           }
-          className="mb-7 rounded-3xl border border-slate-800 bg-slate-900 p-3 shadow-2xl shadow-black/20 sm:p-6"
+          className="mb-7 rounded-3xl border border-[#37464f] bg-[#17262c] p-3 shadow-2xl shadow-black/20 sm:p-6"
         >
           <MaterialPanel slot={activeSlot} />
         </section>
 
-        <section className="rounded-3xl border border-amber-500/20 bg-slate-900/80 p-5 sm:p-7">
+        <section className="rounded-3xl border border-[#49c0f8]/20 bg-[#17262c]/80 p-5 sm:p-7">
           <div className="mb-5 flex items-start gap-3">
             <CheckCircle
               sx={{ fontSize: 25 }}
               className={
                 completionRequirementsMet
                   ? 'text-emerald-400'
-                  : 'text-slate-600'
+                  : 'text-[#78909c]'
               }
               aria-hidden="true"
             />
@@ -491,10 +489,10 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
                   ? 'Pronto para começar?'
                   : 'Conclua o conteúdo antes da atividade'}
               </h2>
-              <p className="mt-1 text-xs leading-relaxed text-slate-400 sm:text-sm">
+              <p className="mt-1 text-xs leading-relaxed text-[#a5b7c2] sm:text-sm">
                 {completionMessage}
               </p>
-              <p className="mt-2 text-xs font-bold text-amber-400">
+              <p className="mt-2 text-xs font-bold text-[#49c0f8]">
                 {contentAlreadyCompleted
                   ? 'Revisão do conteúdo: 0 CapiCoins'
                   : 'Primeira conclusão: 20 CapiCoins-base + streak'}
@@ -505,8 +503,8 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
           <label
             className={`mb-5 flex items-start gap-3 rounded-2xl border p-4 text-sm transition-colors ${
               completionRequirementsMet
-                ? 'cursor-pointer border-slate-700 bg-slate-950/60 text-slate-200'
-                : 'cursor-not-allowed border-slate-800 bg-slate-950/30 text-slate-600'
+                ? 'cursor-pointer border-[#536670] bg-[#131f24]/60 text-[#f1f7fb]'
+                : 'cursor-not-allowed border-[#37464f] bg-[#131f24]/30 text-[#78909c]'
             }`}
           >
             <input
@@ -514,7 +512,7 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
               checked={confirmed}
               disabled={!completionRequirementsMet}
               onChange={(event) => setConfirmed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-amber-500"
+              className="mt-0.5 h-4 w-4 accent-[#58cc02]"
             />
             <span>{completionLabel}</span>
           </label>
@@ -523,7 +521,7 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
             type="button"
             disabled={!canContinue}
             onClick={saveAndContinue}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/15 transition-all hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300 disabled:cursor-not-allowed disabled:grayscale disabled:opacity-40 sm:text-base"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#58cc02] to-[#49c0f8] px-5 py-3 text-sm font-black text-[#131f24] shadow-lg shadow-[#58cc02]/15 transition-all hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#49c0f8] disabled:cursor-not-allowed disabled:grayscale disabled:opacity-40 sm:text-base"
           >
             {isSaving ? 'Salvando progresso...' : content.continueLabel}
             <ArrowForward sx={{ fontSize: 20 }} aria-hidden="true" />
