@@ -28,7 +28,6 @@
     "@money-rank/dataconnect": "file:src/lib/dataconnect-sdk",
     "@mui/icons-material": "^9.1.0",
     "@mui/material": "^9.1.0",
-    "@supabase/supabase-js": "^2.106.0",
     "@tailwindcss/postcss": "^4.3.0",
     "firebase": "^12.17.0",
     "lucide-react": "^1.17.0",

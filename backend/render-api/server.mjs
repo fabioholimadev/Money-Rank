@@ -28,6 +28,7 @@ if (!getApps().length) {
     : undefined;
   initializeApp({
     ...(credential ? { credential } : {}),
+    ...(config.projectId ? { projectId: config.projectId } : {}),
     ...(config.storageBucket ? { storageBucket: config.storageBucket } : {}),
   });
 }
@@ -37,6 +38,11 @@ const app = express();
 const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
 const teacherEmails = new Set(String(process.env.TEACHER_EMAILS || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean));
 const isTest = process.env.NODE_ENV === 'test';
+export function shouldEnforceAppCheck(environment = process.env) {
+  if (environment.NODE_ENV === 'production') return true;
+  return String(environment.APP_CHECK_ENFORCEMENT || 'true').trim().toLowerCase() !== 'false';
+}
+const appCheckEnforced = shouldEnforceAppCheck();
 const TIME_ZONE = 'America/Fortaleza';
 const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const runtimeDiagnostics = {
@@ -79,6 +85,7 @@ async function authenticate(req, res, next) {
 }
 
 async function verifyAppCheck(req, res, next) {
+  if (!appCheckEnforced) return next();
   if (isTest && req.headers['x-test-app-check'] === 'valid') return next();
   const token = String(req.headers['x-firebase-appcheck'] || '');
   if (!token) return res.status(401).json({ error: 'missing_app_check', requestId: req.requestId });

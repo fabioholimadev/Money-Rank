@@ -38,23 +38,18 @@ export async function ensureFirebaseAppCheck() {
   }
 
   const {
-    CustomProvider,
     getToken,
     initializeAppCheck,
     ReCaptchaEnterpriseProvider,
   } = await import('firebase/app-check');
 
   if (!globalThis[appCheckInstanceKey]) {
-    const provider =
-      firebaseAppCheckMode === 'debug'
-        ? new CustomProvider({
-            getToken: async () => {
-              throw new Error(
-                'O provedor local só pode ser usado com um token de depuração do App Check.',
-              );
-            },
-          })
-        : new ReCaptchaEnterpriseProvider(siteKey);
+    // Em modo debug, o SDK troca FIREBASE_APPCHECK_DEBUG_TOKEN antes de
+    // consultar o provedor. O valor reserva existe apenas para inicializar o
+    // provedor e nunca e usado para atestacao em desenvolvimento.
+    const provider = new ReCaptchaEnterpriseProvider(
+      siteKey || 'money-rank-local-debug',
+    );
 
     globalThis[appCheckInstanceKey] = initializeAppCheck(firebaseApp, {
       provider,

@@ -60,5 +60,5 @@ npm run test:trail-progress
 - Não registrar chaves, tokens, fotos enviadas ou dados pessoais no Git.
 - O cliente não pode escolher o valor de recompensas; a economia deve ser
   aplicada no banco.
-- O backend Supabase ainda e legado de transição e não deve ser removido sem
-  concluir a migração do ranking e do CapiMentor.
+- Toda comunicacao autoritativa nova deve usar a API HTTP em
+  `backend/render-api`; nao recrie clientes diretos do Supabase no navegador.

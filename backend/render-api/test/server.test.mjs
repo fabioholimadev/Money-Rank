@@ -3,12 +3,18 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 process.env.NODE_ENV = 'test';
 process.env.TEACHER_EMAILS = 'teacher@example.com';
-const { app, periodStateFromPeriods } = await import('../server.mjs');
+const { app, periodStateFromPeriods, shouldEnforceAppCheck } = await import('../server.mjs');
 let server; let base;
 test.before(async () => { server = http.createServer(app); await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve)); base = `http://127.0.0.1:${server.address().port}`; });
 test.after(() => server.close());
 test('healthz is public', async () => { const response = await fetch(`${base}/healthz`); assert.equal(response.status, 200); });
 test('protected endpoint requires both test auth and app check', async () => { const response = await fetch(`${base}/api/period`, { headers: { 'x-test-uid': 'u1' } }); assert.equal(response.status, 401); });
+test('App Check can be disabled only outside production', () => {
+  assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'development', APP_CHECK_ENFORCEMENT: 'false' }), false);
+  assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'test', APP_CHECK_ENFORCEMENT: 'false' }), false);
+  assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'production', APP_CHECK_ENFORCEMENT: 'false' }), true);
+  assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'development' }), true);
+});
 test('student cannot activate teacher test mode', async () => {
   const response = await fetch(`${base}/api/teacher/test-mode/start`, {
     method: 'POST',

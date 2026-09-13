@@ -2,7 +2,7 @@ import { getToken as getAppCheckToken } from 'firebase/app-check';
 import { auth } from './firebaseConfig';
 import { ensureFirebaseAppCheck } from './firebaseAppCheck';
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export async function fetchApi(endpoint, options = {}) {
   const headers = { ...(options.headers || {}) };

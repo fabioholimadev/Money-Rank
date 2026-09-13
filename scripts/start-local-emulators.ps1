@@ -1,5 +1,6 @@
 param(
-    [string]$ProjectId = "money-rank"
+    [string]$ProjectId = "money-rank",
+    [switch]$FullFirebaseStack
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,51 +17,54 @@ function Test-LocalPort {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$dataConnectRunning = Test-LocalPort -Port 9399
-$functionsRunning = Test-LocalPort -Port 5001
-$storageRunning = Test-LocalPort -Port 9199
+$services = @("dataconnect")
+$ports = @(9399)
 
-if ($dataConnectRunning -and $functionsRunning -and $storageRunning) {
-    Write-Host "Capi Bank, Functions e Storage já estão ativos."
+if ($FullFirebaseStack) {
+    $services += @("functions", "storage")
+    $ports += @(5001, 9199)
+
+    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+        throw @"
+O emulador do Firebase Storage exige Java, mas o comando 'java' nao foi encontrado.
+Instale um JDK compativel, abra um novo terminal e repita com -FullFirebaseStack.
+Para o backend HTTP atual, execute o script sem esse parametro.
+"@
+    }
+
+    $functionsDirectory = Join-Path $repositoryRoot "functions"
+    $localEnvironmentPath = Join-Path $functionsDirectory ".env.local"
+    $localSecretsPath = Join-Path $functionsDirectory ".secret.local"
+
+    if (-not (Test-Path $localEnvironmentPath)) {
+        Set-Content `
+            -LiteralPath $localEnvironmentPath `
+            -Value "GEMINI_MODEL=gemini-3.6-flash" `
+            -Encoding Ascii
+    }
+
+    if (-not (Test-Path $localSecretsPath)) {
+        Set-Content `
+            -LiteralPath $localSecretsPath `
+            -Value "GEMINI_API_KEY=local-fallback" `
+            -Encoding Ascii
+        Write-Host "Gemini local sem chave: fallback cientifico ativado."
+    }
+}
+
+$activePorts = @($ports | Where-Object { Test-LocalPort -Port $_ })
+if ($activePorts.Count -eq $ports.Count) {
+    Write-Host "Os emuladores solicitados ja estao ativos."
     exit 0
 }
 
-if ($dataConnectRunning -or $functionsRunning -or $storageRunning) {
-    throw @"
-O ambiente local está parcialmente ativo.
-Encerre o terminal que mantém o emulador aberto e execute novamente este script.
-O Money Rank precisa iniciar Capi Bank, Functions e Storage juntos para evitar falhas nas atividades.
-"@
-}
-
-if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
-    throw @"
-O emulador do Firebase Storage exige Java, mas o comando 'java' não foi encontrado.
-Instale um JDK compatível com a Firebase CLI, abra um novo terminal e execute este script novamente.
-"@
-}
-
-$functionsDirectory = Join-Path $repositoryRoot "functions"
-$localEnvironmentPath = Join-Path $functionsDirectory ".env.local"
-$localSecretsPath = Join-Path $functionsDirectory ".secret.local"
-
-if (-not (Test-Path $localEnvironmentPath)) {
-    Set-Content `
-        -LiteralPath $localEnvironmentPath `
-        -Value "GEMINI_MODEL=gemini-3.6-flash" `
-        -Encoding Ascii
-}
-
-if (-not (Test-Path $localSecretsPath)) {
-    Set-Content `
-        -LiteralPath $localSecretsPath `
-        -Value "GEMINI_API_KEY=local-fallback" `
-        -Encoding Ascii
-    Write-Host "Gemini local sem chave: fallback científico ativado."
+if ($activePorts.Count -gt 0) {
+    throw "O ambiente local esta parcialmente ativo nas portas: $($activePorts -join ', '). Encerre os processos antigos e tente novamente."
 }
 
 Set-Location $repositoryRoot
-Write-Host "Iniciando Capi Bank, serviço seguro de atividades e Storage..."
-npx -y firebase-tools@latest emulators:start `
-    --only dataconnect,functions,storage `
+$serviceList = $services -join ","
+Write-Host "Iniciando emuladores Firebase: $serviceList"
+& npx -y firebase-tools@latest emulators:start `
+    --only $serviceList `
     --project $ProjectId

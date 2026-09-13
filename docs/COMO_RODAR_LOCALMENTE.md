@@ -1,247 +1,177 @@
 # Como rodar o Money Rank localmente
 
-Este guia descreve o ambiente de desenvolvimento no Windows com PowerShell.
-Execute os comandos a partir da raiz do repositório, salvo quando o texto
-indicar outra pasta.
+Este guia descreve o ambiente atual no Windows com PowerShell. A aplicacao usa
+uma unica API HTTP em `backend/render-api`; o backend Supabase antigo foi
+removido.
 
-## 1. Pré-requisitos
+## 1. Pre-requisitos
 
-- Node.js 22 ou superior;
+- Node.js 22, que corresponde ao runtime de producao;
 - npm;
-- Java/JDK disponível no `PATH` (necessário para o emulador do Storage);
-- acesso ao projeto Firebase `money-rank` para testar login com Google;
-- opcionalmente, Docker Desktop para executar somente o SQL Connect em um
-  contêiner.
+- acesso ao projeto Firebase `money-rank` para testar o login Google;
+- Java apenas para o modo opcional com Storage Emulator.
 
 Confira o ambiente:
 
 ```powershell
 node --version
 npm --version
-java -version
 npx -y firebase-tools@latest --version
 ```
 
-O projeto exige Node.js 22. Se `java` não for reconhecido, instale um JDK,
-abra um novo terminal e repita a verificação.
+## 2. Primeira instalacao
 
-## 2. Instalar as dependências
-
-Não existe um `package.json` na raiz. Cada aplicação possui suas próprias
-dependências:
+Nao existe `package.json` na raiz. Instale cada aplicacao separadamente:
 
 ```powershell
 cd frontend
-npm install
+npm ci
 
 cd ..\functions
-npm install
+npm ci
 
 cd ..\backend\render-api
-npm install
+npm ci
 
 cd ..\..
 ```
 
-O diretório `backend` sem o sufixo `render-api` contém a API antiga baseada em
-Supabase. Para o desenvolvimento atual, use `backend/render-api`.
-
-## 3. Configurar o frontend
-
-Crie o arquivo local a partir do exemplo versionado:
+Crie a configuracao do frontend:
 
 ```powershell
 Copy-Item .\frontend\.env.example .\frontend\.env.local
 ```
 
-Para usar os emuladores locais, ajuste estas variáveis em
-`frontend/.env.local`:
+O exemplo ja aponta `VITE_API_URL` para `http://localhost:8080`.
 
-```dotenv
-VITE_DATA_CONNECT_ENABLED=false
-VITE_USE_DATA_CONNECT_EMULATOR=true
-VITE_DATA_CONNECT_EMULATOR_HOST=127.0.0.1
-VITE_DATA_CONNECT_EMULATOR_PORT=9399
+## 3. Fluxo diario atual
 
-VITE_USE_FUNCTIONS_EMULATOR=true
-VITE_FUNCTIONS_EMULATOR_HOST=127.0.0.1
-VITE_FUNCTIONS_EMULATOR_PORT=5001
-```
+Use tres terminais, todos iniciados na raiz do repositorio.
 
-O frontend já contém a configuração pública do Firebase. Para o login local,
-o provedor Google deve estar habilitado e `localhost` deve constar nos domínios
-autorizados do Firebase Authentication.
-
-## 4. Configurar o Gemini local
-
-O script dos emuladores cria automaticamente:
-
-- `functions/.env.local`, com o modelo configurado;
-- `functions/.secret.local`, com `GEMINI_API_KEY=local-fallback` quando ainda
-  não existe uma chave.
-
-Com `local-fallback`, as funcionalidades continuam executando a resposta local
-determinística, mas não chamam o Gemini. Para testar o Gemini de verdade, edite
-somente o arquivo ignorado pelo Git:
-
-```dotenv
-# functions/.secret.local
-GEMINI_API_KEY=SUA_CHAVE_LOCAL
-```
-
-E confirme o modelo:
-
-```dotenv
-# functions/.env.local
-GEMINI_MODEL=gemini-3.6-flash
-```
-
-Nunca grave a chave em `.env.example`, no código-fonte ou em um commit. Depois
-de alterar a chave, reinicie os emuladores. Nos logs, uma resposta marcada como
-fallback normalmente indica chave ausente/inválida, indisponibilidade ou erro
-do provedor.
-
-## 5. Iniciar o ambiente Firebase local
-
-Em um primeiro terminal, na raiz do projeto:
+### Terminal 1 — Capi Bank local
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1
 ```
 
-O script inicia os serviços juntos e deve permanecer aberto:
+Esse comando inicia somente o SQL Connect em `127.0.0.1:9399`, suficiente para
+a API HTTP atual. Ele nao depende de Java ou Docker.
 
-| Serviço | Endereço local |
-| --- | --- |
-| SQL Connect (Capi Bank) | `127.0.0.1:9399` |
-| Cloud Functions | `127.0.0.1:5001` |
-| Firebase Storage | `127.0.0.1:9199` |
-
-Se uma dessas portas já estiver ocupada e as outras não, encerre o processo
-antigo antes de executar o script novamente. Pare os emuladores com `Ctrl+C`.
-
-### Alternativa: somente SQL Connect com Docker
-
-Esta alternativa não inicia Functions nem Storage:
+### Terminal 2 — API HTTP
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start-dataconnect-docker.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local-api.ps1
 ```
 
-Use-a para trabalhar apenas no esquema, nas operações GraphQL ou no SDK. O
-Docker Desktop precisa estar em execução.
+Na primeira execucao, o script cria `backend/render-api/.env.local` a partir do
+exemplo versionado. A configuracao local:
 
-## 6. Iniciar o frontend
+- escuta em `http://localhost:8080`;
+- aceita o frontend em `http://localhost:5173`;
+- usa o SQL Connect Emulator em `127.0.0.1:9399`;
+- desativa App Check explicitamente somente em desenvolvimento.
 
-Em um segundo terminal:
+Use `-InstallDependencies` para forcar um novo `npm ci` antes de iniciar.
+
+### Terminal 3 — frontend
 
 ```powershell
 cd frontend
 npm run dev
 ```
 
-Acesse o endereço exibido pelo Vite, normalmente
+Acesse o endereco exibido pelo Vite, normalmente
 `http://localhost:5173`.
 
-## 7. API HTTP atual (opcional)
+## 4. Verificar se o backend esta pronto
 
-A API usada na hospedagem fica em `backend/render-api`. Ela acessa os serviços
-reais do Firebase Admin e exige credenciais de uma conta de serviço, Firebase
-App Check e SQL Connect configurados. O frontend abre sem ela, mas as telas que
-usam `fetchApi` precisam dessa API para funcionar integralmente.
-
-Caso precise testá-la, copie o exemplo e preencha localmente os valores sem
-versioná-los:
+Com a API em execucao:
 
 ```powershell
-Copy-Item .\backend\render-api\.env.example .\backend\render-api\.env.local
+Invoke-RestMethod http://localhost:8080/healthz
+Invoke-WebRequest http://localhost:8080/readyz
 ```
 
-O servidor não carrega esse arquivo automaticamente. O Node.js 22 pode
-carregá-lo diretamente:
+- `/healthz` confirma que o processo HTTP esta ativo;
+- `/readyz` confirma acesso ao Capi Bank e exige os 140 itens pedagogicos
+  ativos; responde `503` quando o banco iniciou, mas ainda nao foi populado.
+
+## 5. App Check
+
+`APP_CHECK_ENFORCEMENT=false` e aceito apenas fora de producao. A API ignora
+essa desativacao quando `NODE_ENV=production`, mesmo que a variavel seja
+configurada incorretamente.
+
+Para testar localmente com App Check real:
+
+1. altere `APP_CHECK_ENFORCEMENT=true` na API;
+2. defina `VITE_FIREBASE_APPCHECK_DEBUG=true` no frontend;
+3. inicie o frontend e copie o token exibido pelo SDK no console do navegador;
+4. registre o token em **Firebase Console > App Check > Manage debug tokens**;
+5. opcionalmente grave o token somente em `frontend/.env.local` como
+   `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN`.
+
+Nunca versione ou envie um token de depuracao em builds de producao.
+
+## 6. Pilha Firebase completa opcional
+
+Functions e Storage nao sao necessarios para o fluxo HTTP diario. Para testar
+esses emuladores de referencia:
 
 ```powershell
-cd backend\render-api
-node --env-file=.env.local server.mjs
+powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1 -FullFirebaseStack
 ```
 
-O padrão da API é a porta `8080`. Se o frontend precisar chamá-la, defina
-`VITE_API_URL=http://localhost:8080` em `frontend/.env.local` e configure
-`FRONTEND_ORIGIN=http://localhost:5173` na API. Requisições protegidas também
-precisam de tokens válidos do Firebase Auth e do App Check.
+Esse modo inicia SQL Connect (`9399`), Functions (`5001`) e Storage (`9199`) e
+exige Java no `PATH`.
 
-## 8. Testes e validações
+## 7. Gemini local
 
-### Functions
+A API funciona sem `GEMINI_API_KEY`, usando as contingencias previstas. Para
+testar o provedor real, preencha a chave somente no arquivo ignorado
+`backend/render-api/.env.local`:
+
+```dotenv
+GEMINI_API_KEY=SUA_CHAVE_LOCAL
+GEMINI_MODEL=gemini-3.6-flash
+```
+
+Reinicie a API depois da alteracao. Nunca grave a chave em exemplos, codigo ou
+commits.
+
+## 8. Testes e validacoes
 
 ```powershell
 cd functions
 npm run lint
 npm test
-cd ..
-```
 
-### API HTTP
-
-```powershell
-cd backend\render-api
+cd ..\backend\render-api
 npm test
-cd ..\..
-```
 
-### Frontend
-
-```powershell
-cd frontend
+cd ..\..\frontend
 npm run lint
 npm run build
+
 cd ..
-```
-
-### Esquema e operações do SQL Connect
-
-```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\test-dataconnect.ps1
+git diff --check
 ```
 
-O resultado esperado inclui:
+## 9. Solucao de problemas
 
-```text
-SQL Connect validado: esquema, relacoes e operacoes carregados.
-```
-
-## 9. Solução de problemas
-
-- **`java` não encontrado:** instale um JDK e reabra o PowerShell.
-- **Porta 9399, 5001 ou 9199 ocupada:** encerre o emulador anterior e reinicie
-  o conjunto completo.
-- **Login Google falha:** confirme o provedor Google e o domínio `localhost` no
+- **Porta 8080 ocupada:** encerre a API anterior ou altere `PORT` e
+  `VITE_API_URL` juntos.
+- **Porta 9399 ocupada:** encerre o SQL Connect Emulator anterior antes de
+  executar o script novamente.
+- **`healthz` passa e `readyz` falha:** confira o Terminal 1 e confirme que o
+  banco pedagogico foi carregado.
+- **Erro de CORS:** `FRONTEND_ORIGIN` deve ser exatamente a origem exibida pelo
+  Vite.
+- **Resposta `missing_app_check`:** use a desativacao local documentada ou
+  registre um token debug; producao nunca aceita o bypass.
+- **Login Google falha:** habilite o provedor Google e autorize `localhost` no
   Firebase Authentication.
-- **Gemini cai no fallback:** confira `functions/.secret.local`, reinicie os
-  emuladores e observe o erro sanitizado no terminal das Functions.
-- **Dados locais não aparecem:** confirme as duas flags
-  `VITE_USE_DATA_CONNECT_EMULATOR` e `VITE_USE_FUNCTIONS_EMULATOR` e reinicie o
-  Vite após alterar `.env.local`.
-- **Docker informa que não está disponível:** abra o Docker Desktop e aguarde
-  o daemon ficar pronto.
-- **Alteração em arquivo `.gql`:** valide/regere o SDK e reinstale a
-  dependência local:
-
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File .\scripts\test-dataconnect.ps1
-  cd frontend
-  npm install .\src\lib\dataconnect-sdk
-  ```
-
-## Fluxo rápido para o dia a dia
-
-Depois da primeira instalação e configuração:
-
-```powershell
-# Terminal 1, na raiz
-powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1
-
-# Terminal 2
-cd frontend
-npm run dev
-```
+- **Java nao encontrado:** Java e necessario apenas com
+  `-FullFirebaseStack`.
+- **Gemini usa fallback:** confira a chave local e reinicie a API.
