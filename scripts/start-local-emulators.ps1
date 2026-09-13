@@ -19,6 +19,8 @@ function Test-LocalPort {
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $services = @("dataconnect")
 $ports = @(9399)
+$nodeVersion = "22"
+$firebaseToolsVersion = "15.30.0"
 
 if ($FullFirebaseStack) {
     $services += @("functions", "storage")
@@ -65,6 +67,21 @@ if ($activePorts.Count -gt 0) {
 Set-Location $repositoryRoot
 $serviceList = $services -join ","
 Write-Host "Iniciando emuladores Firebase: $serviceList"
-& npx -y firebase-tools@latest emulators:start `
-    --only $serviceList `
-    --project $ProjectId
+Write-Host "Usando Node $nodeVersion isolado e Firebase CLI $firebaseToolsVersion."
+
+$previousNodeOptions = $env:NODE_OPTIONS
+try {
+    $env:NODE_OPTIONS = "--max-old-space-size=4096"
+    & npx -y `
+        -p "node@$nodeVersion" `
+        -p "firebase-tools@$firebaseToolsVersion" `
+        firebase emulators:start `
+        --only $serviceList `
+        --project $ProjectId
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Os emuladores Firebase encerraram com o codigo $LASTEXITCODE."
+    }
+} finally {
+    $env:NODE_OPTIONS = $previousNodeOptions
+}
