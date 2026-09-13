@@ -53,18 +53,18 @@ export default function TestModePanel() {
   const canClean = ['ENDED', 'EXPIRED'].includes(testRun?.status);
 
   return (
-    <section className="mt-6 rounded-3xl border border-violet-400/25 bg-violet-400/5 p-5 sm:p-6">
+    <section className="mt-6 rounded-3xl border border-[#49c0f8]/25 bg-[#49c0f8]/5 p-5 sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-violet-300">Validação isolada</p>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#7ed5fb]">Validação isolada</p>
           <h2 className="mt-1 text-xl font-black">Modo de teste do professor</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#a5b7c2]">
             Acesso exclusivo desta conta de professor. As sessões usam o banco pedagógico real,
             mas recebem <code>is_test</code> e <code>test_run_id</code>; não alteram saldo,
             progresso nem ranking oficial.
           </p>
         </div>
-        <span className={`rounded-full border px-3 py-1 text-xs font-black ${active ? 'border-violet-300/40 text-violet-200' : 'border-slate-700 text-slate-400'}`}>
+        <span className={`rounded-full border px-3 py-1 text-xs font-black ${active ? 'border-violet-300/40 text-violet-200' : 'border-[#53666f] text-[#a5b7c2]'}`}>
           {active ? 'Modo de teste ativo' : testRun?.status === 'CLEANED' ? 'Dados limpos' : 'Modo de teste inativo'}
         </span>
       </div>
@@ -72,10 +72,10 @@ export default function TestModePanel() {
       {!active && !canClean && (
         <div className="mt-5 flex flex-wrap items-end gap-3">
           <label>
-            <span className="mb-1 block text-xs font-black uppercase text-slate-500">Duração (minutos)</span>
-            <input type="number" min="5" max="120" value={durationMinutes} onChange={(event) => setDurationMinutes(Number(event.target.value))} className="min-h-11 w-36 rounded-xl border border-slate-700 bg-slate-950 px-3" />
+            <span className="mb-1 block text-xs font-black uppercase text-[#78909b]">Duração (minutos)</span>
+            <input type="number" min="5" max="120" value={durationMinutes} onChange={(event) => setDurationMinutes(Number(event.target.value))} className="min-h-11 w-36 rounded-xl border border-[#53666f] bg-[#131f24] px-3" />
           </label>
-          <button type="button" disabled={loading} onClick={() => run(() => activateTeacherTestMode(durationMinutes))} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-300 px-4 text-sm font-black text-slate-950 disabled:opacity-50">
+          <button type="button" disabled={loading} onClick={() => run(() => activateTeacherTestMode(durationMinutes))} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-violet-300 px-4 text-sm font-black text-[#13210f] disabled:opacity-50">
             <Science sx={{ fontSize: 19 }} /> Ativar modo de teste
           </button>
         </div>
@@ -84,7 +84,7 @@ export default function TestModePanel() {
       {active && (
         <div className="mt-5">
           <p className="text-sm font-bold text-violet-100">Encerra automaticamente em {DATE_TIME.format(new Date(testRun.endsAt))}.</p>
-          <p className="mt-1 text-xs text-slate-500">Execução {testRun.id} · {testRun.sessionCount} sessões · {testRun.attemptCount} submissões · {testRun.auditCount} eventos auditados</p>
+          <p className="mt-1 text-xs text-[#78909b]">Execução {testRun.id} · {testRun.sessionCount} sessões · {testRun.attemptCount} submissões · {testRun.auditCount} eventos auditados</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {ACTIVITIES.map(([phase, label]) => (
               <button key={phase} type="button" onClick={() => navigate(`/professor/teste/${phase}`)} className="min-h-10 rounded-xl border border-violet-300/30 px-3 text-xs font-black text-violet-200 hover:border-violet-200">
@@ -100,7 +100,7 @@ export default function TestModePanel() {
 
       {canClean && (
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <p className="text-sm text-slate-300">Execução encerrada: {testRun.sessionCount} sessões, {testRun.attemptCount} submissões e {testRun.auditCount} eventos auditados.</p>
+          <p className="text-sm text-[#d8e2e7]">Execução encerrada: {testRun.sessionCount} sessões, {testRun.attemptCount} submissões e {testRun.auditCount} eventos auditados.</p>
           <button type="button" disabled={loading} onClick={() => run(cleanTeacherTestModeData)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-red-400/30 px-3 text-xs font-black text-red-300 disabled:opacity-50">
             <DeleteSweep sx={{ fontSize: 18 }} /> Limpar dados do teste
           </button>

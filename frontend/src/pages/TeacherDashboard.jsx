@@ -3,7 +3,6 @@ import {
   AutoGraph,
   Download,
   GroupsOutlined,
-  Logout,
   EditNote,
   MonetizationOn,
   Refresh,
@@ -29,11 +28,11 @@ import {
 } from '../services/teacherCompetitionService';
 
 const PERIOD_STATUS = {
-  DRAFT: { label: 'Rascunho', style: 'border-slate-700 text-slate-300' },
+  DRAFT: { label: 'Rascunho', style: 'border-[#53666f] text-[#d8e2e7]' },
   SCHEDULED: { label: 'Agendado', style: 'border-cyan-500/30 text-cyan-300' },
   ACTIVE: { label: 'Ativo', style: 'border-emerald-500/30 text-emerald-300' },
-  PAUSED: { label: 'Pausado', style: 'border-amber-500/30 text-amber-300' },
-  CLOSED: { label: 'Encerrado', style: 'border-slate-700 text-slate-400' },
+  PAUSED: { label: 'Pausado', style: 'border-[#58cc02]/30 text-[#79e72e]' },
+  CLOSED: { label: 'Encerrado', style: 'border-[#53666f] text-[#a5b7c2]' },
 };
 
 const NUMBER_FORMATTER = new Intl.NumberFormat('pt-BR');
@@ -78,16 +77,16 @@ function choosePeriodId(availablePeriods, currentId = '') {
   );
 }
 
-function ProgressBar({ value, color = 'bg-amber-400', label }) {
+function ProgressBar({ value, color = 'bg-[#58cc02]', label }) {
   const safeValue = Math.min(Math.max(Number(value) || 0, 0), 100);
 
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
+        <span className="text-[#a5b7c2]">{label}</span>
         <span className="font-black text-white">{safeValue}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+      <div className="h-2 overflow-hidden rounded-full bg-[#17262c]">
         <div
           className={`h-full rounded-full transition-all ${color}`}
           style={{ width: `${safeValue}%` }}
@@ -99,27 +98,27 @@ function ProgressBar({ value, color = 'bg-amber-400', label }) {
 
 function SummaryCard({ Icon, label, value, detail, accent }) {
   return (
-    <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    <article className="rounded-2xl border border-[#37464f] bg-[#1f2d33] p-5">
       <div className={`mb-4 inline-flex rounded-xl p-2.5 ${accent}`}>
         <Icon sx={{ fontSize: 22 }} aria-hidden="true" />
       </div>
       <p className="text-2xl font-black tracking-tight text-white">{value}</p>
-      <p className="mt-1 text-sm font-bold text-slate-300">{label}</p>
-      <p className="mt-1 text-xs text-slate-500">{detail}</p>
+      <p className="mt-1 text-sm font-bold text-[#d8e2e7]">{label}</p>
+      <p className="mt-1 text-xs text-[#78909b]">{detail}</p>
     </article>
   );
 }
 
 function EmptyState({ title, message }) {
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center">
+    <section className="mt-8 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-8 text-center">
       <WarningAmber
-        className="text-amber-400"
+        className="text-[#58cc02]"
         sx={{ fontSize: 42 }}
         aria-hidden="true"
       />
       <h2 className="mt-3 text-xl font-black">{title}</h2>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-400">
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#a5b7c2]">
         {message}
       </p>
     </section>
@@ -127,7 +126,7 @@ function EmptyState({ title, message }) {
 }
 
 export default function TeacherDashboard() {
-  const { aluno, logout } = useAuth();
+  const { aluno } = useAuth();
   const navigate = useNavigate();
   const [periods, setPeriods] = useState([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState('');
@@ -251,11 +250,6 @@ export default function TeacherDashboard() {
     if (selectedPeriodId) await loadDashboard(selectedPeriodId);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
   const handlePeriodChanged = async (changedPeriod) => {
     setIsLoadingPeriods(true);
     setIsLoadingDashboard(true);
@@ -311,17 +305,17 @@ export default function TeacherDashboard() {
     : PERIOD_STATUS.DRAFT;
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-7 text-white sm:px-6">
-      <div className="mx-auto max-w-7xl">
-        <header className="flex flex-col gap-5 border-b border-slate-800 pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="text-white">
+      <div>
+        <header className="flex flex-col gap-5 border-b border-[#37464f] pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-400">
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#58cc02]">
               Money Rank · Área pedagógica
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
               Visão da turma
             </h1>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-2 text-sm text-[#a5b7c2]">
               Olá, {aluno?.nome}. Acompanhe participação, progresso e
               dificuldades com dados consolidados do Capi Bank.
             </p>
@@ -331,7 +325,7 @@ export default function TeacherDashboard() {
             <button
               type="button"
               onClick={() => navigate('/professor/estudio')}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 transition hover:bg-amber-300"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] transition hover:bg-[#79e72e]"
             >
               <EditNote sx={{ fontSize: 18 }} aria-hidden="true" />
               Estúdio de conteúdos
@@ -349,25 +343,17 @@ export default function TeacherDashboard() {
               type="button"
               onClick={handleRefresh}
               disabled={isLoadingPeriods || isLoadingDashboard}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-bold text-slate-300 transition hover:border-amber-400/50 hover:text-amber-300 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-bold text-[#d8e2e7] transition hover:border-[#58cc02]/50 hover:text-[#79e72e] disabled:opacity-50"
             >
               <Refresh sx={{ fontSize: 18 }} aria-hidden="true" />
               Atualizar
             </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-bold text-slate-300 transition hover:border-red-400/60 hover:text-red-300"
-            >
-              <Logout sx={{ fontSize: 18 }} aria-hidden="true" />
-              Sair
-            </button>
           </div>
         </header>
 
-        <section className="mt-6 grid gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <section className="mt-6 grid gap-4 rounded-2xl border border-[#37464f] bg-[#1f2d33] p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <label className="block">
-            <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">
+            <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[#78909b]">
               Período analisado
             </span>
             <select
@@ -378,7 +364,7 @@ export default function TeacherDashboard() {
                 setSelectedPeriodId(event.target.value);
               }}
               disabled={isLoadingPeriods || periods.length === 0}
-              className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-bold text-white outline-none transition focus:border-amber-400 disabled:opacity-50"
+              className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-4 text-sm font-bold text-white outline-none transition focus:border-[#58cc02] disabled:opacity-50"
             >
               {periods.length === 0 && <option value="">Nenhum período</option>}
               {periods.map((period) => (
@@ -398,7 +384,7 @@ export default function TeacherDashboard() {
               >
                 {statusConfig.label}
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-[#78909b]">
                 Horário de Fortaleza
               </span>
               <CompetitionPeriodManager
@@ -445,7 +431,7 @@ export default function TeacherDashboard() {
 
         {(isLoadingPeriods || isLoadingDashboard) && (
           <div role="status" className="flex min-h-64 items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-amber-400" />
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#53666f] border-t-amber-400" />
           </div>
         )}
 
@@ -478,14 +464,14 @@ export default function TeacherDashboard() {
                 label="Pontos competitivos"
                 value={formatNumber(summary.totalPoints)}
                 detail="Créditos válidos do período"
-                accent="bg-amber-400/10 text-amber-300"
+                accent="bg-[#58cc02]/10 text-[#79e72e]"
               />
               <SummaryCard
                 Icon={TaskAlt}
                 label="Tentativas"
                 value={formatNumber(summary.totalAttempts)}
                 detail={`${summary.approvalRate}% aprovadas`}
-                accent="bg-violet-400/10 text-violet-300"
+                accent="bg-[#49c0f8]/10 text-[#7ed5fb]"
               />
               <SummaryCard
                 Icon={SchoolOutlined}
@@ -505,7 +491,7 @@ export default function TeacherDashboard() {
 
             <section className="mt-8">
               <div className="mb-4">
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-400">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#58cc02]">
                   Comparação coletiva
                 </p>
                 <h2 className="mt-1 text-2xl font-black">3º DSA x 3º DSB</h2>
@@ -514,21 +500,21 @@ export default function TeacherDashboard() {
                 {dashboard.classes.map((classMetric) => (
                   <article
                     key={classMetric.className}
-                    className="rounded-3xl border border-slate-800 bg-slate-900 p-6"
+                    className="rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-xl font-black">{classMetric.className}</p>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-[#78909b]">
                           {classMetric.participatingStudents} de{' '}
                           {classMetric.registeredStudents} participaram
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-black text-amber-300">
+                        <p className="text-2xl font-black text-[#79e72e]">
                           {formatNumber(classMetric.totalPoints)}
                         </p>
-                        <p className="text-xs text-slate-500">pontos</p>
+                        <p className="text-xs text-[#78909b]">pontos</p>
                       </div>
                     </div>
                     <div className="mt-6 space-y-4">
@@ -543,13 +529,13 @@ export default function TeacherDashboard() {
                         color="bg-cyan-400"
                       />
                     </div>
-                    <div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-800 pt-5 text-sm">
+                    <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[#37464f] pt-5 text-sm">
                       <div>
-                        <p className="text-slate-500">Nota média</p>
+                        <p className="text-[#78909b]">Nota média</p>
                         <p className="mt-1 font-black">{classMetric.averageScore}%</p>
                       </div>
                       <div>
-                        <p className="text-slate-500">Tentativas</p>
+                        <p className="text-[#78909b]">Tentativas</p>
                         <p className="mt-1 font-black">
                           {formatNumber(classMetric.totalAttempts)}
                         </p>
@@ -560,12 +546,12 @@ export default function TeacherDashboard() {
               </div>
             </section>
 
-            <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-violet-300">
+            <section className="mt-8 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-5 sm:p-6">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#7ed5fb]">
                 Diagnóstico por atividade
               </p>
               <h2 className="mt-1 text-2xl font-black">Onde a turma encontra dificuldade</h2>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-[#78909b]">
                 A dificuldade representa a proporção de respostas erradas entre todas as respostas registradas no período.
               </p>
 
@@ -573,14 +559,14 @@ export default function TeacherDashboard() {
                 {dashboard.phases.map((phase) => (
                   <article
                     key={phase.phaseNumber}
-                    className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-950 p-4 lg:grid-cols-[minmax(220px,1fr)_minmax(260px,1.4fr)_auto] lg:items-center"
+                    className="grid gap-4 rounded-2xl border border-[#37464f] bg-[#131f24] p-4 lg:grid-cols-[minmax(220px,1fr)_minmax(260px,1.4fr)_auto] lg:items-center"
                   >
                     <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+                      <p className="text-xs font-black uppercase tracking-widest text-[#78909b]">
                         Fase {phase.phaseNumber}
                       </p>
                       <h3 className="mt-1 font-black">{phase.title}</h3>
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-[#78909b]">
                         {phase.studentsCompleted} concluíram · {phase.totalAttempts}{' '}
                         tentativas
                       </p>
@@ -592,17 +578,17 @@ export default function TeacherDashboard() {
                         phase.difficultyRate >= 50
                           ? 'bg-red-400'
                           : phase.difficultyRate >= 30
-                            ? 'bg-amber-400'
+                            ? 'bg-[#58cc02]'
                             : 'bg-emerald-400'
                       }
                     />
                     <div className="flex gap-6 text-sm lg:text-right">
                       <div>
-                        <p className="text-slate-500">Média</p>
+                        <p className="text-[#78909b]">Média</p>
                         <p className="font-black">{phase.averageScore}%</p>
                       </div>
                       <div>
-                        <p className="text-slate-500">Aprovação</p>
+                        <p className="text-[#78909b]">Aprovação</p>
                         <p className="font-black">{phase.approvalRate}%</p>
                       </div>
                     </div>
@@ -611,14 +597,14 @@ export default function TeacherDashboard() {
               </div>
             </section>
 
-            <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
+            <section className="mt-8 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-5 sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
                     Acompanhamento pedagógico
                   </p>
                   <h2 className="mt-1 text-2xl font-black">Alunos</h2>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <p className="mt-2 text-sm text-[#78909b]">
                     Nomes são visíveis somente para professor autorizado; e-mail e UID não são consultados.
                   </p>
                 </div>
@@ -628,12 +614,12 @@ export default function TeacherDashboard() {
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="Buscar aluno"
-                    className="min-h-11 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm outline-none focus:border-cyan-400"
+                    className="min-h-11 rounded-xl border border-[#53666f] bg-[#131f24] px-4 text-sm outline-none focus:border-cyan-400"
                   />
                   <select
                     value={classFilter}
                     onChange={(event) => setClassFilter(event.target.value)}
-                    className="min-h-11 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-bold outline-none focus:border-cyan-400"
+                    className="min-h-11 rounded-xl border border-[#53666f] bg-[#131f24] px-4 text-sm font-bold outline-none focus:border-cyan-400"
                   >
                     <option value="ALL">Todas as turmas</option>
                     <option value="3º DSA">3º DSA</option>
@@ -645,7 +631,7 @@ export default function TeacherDashboard() {
               <div className="mt-5 overflow-x-auto">
                 <table className="w-full min-w-[940px] border-collapse text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-800 text-xs uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-[#37464f] text-xs uppercase tracking-wider text-[#78909b]">
                       <th className="px-3 py-3">Aluno</th>
                       <th className="px-3 py-3">Turma</th>
                       <th className="px-3 py-3">Progresso geral</th>
@@ -661,7 +647,7 @@ export default function TeacherDashboard() {
                     {filteredStudents.map((student) => (
                       <tr
                         key={student.key}
-                        className="border-b border-slate-800/70 text-slate-300 last:border-0"
+                        className="border-b border-[#37464f]/70 text-[#d8e2e7] last:border-0"
                       >
                         <td className="px-3 py-4 font-bold text-white">
                           {student.preferredName}
@@ -669,7 +655,7 @@ export default function TeacherDashboard() {
                         <td className="px-3 py-4">{student.className}</td>
                         <td className="px-3 py-4">
                           <span className="font-black">{student.progressPercent}%</span>
-                          <span className="ml-2 text-xs text-slate-500">
+                          <span className="ml-2 text-xs text-[#78909b]">
                             Fase {student.currentPhase}
                           </span>
                         </td>
@@ -679,10 +665,10 @@ export default function TeacherDashboard() {
                         <td className="px-3 py-4">
                           {formatNumber(student.capiCoins)}
                         </td>
-                        <td className="px-3 py-4 font-black text-amber-300">
+                        <td className="px-3 py-4 font-black text-[#79e72e]">
                           {formatNumber(student.totalPoints)}
                         </td>
-                        <td className="px-3 py-4 text-xs text-slate-500">
+                        <td className="px-3 py-4 text-xs text-[#78909b]">
                           {formatDateTime(student.lastActivityAt)}
                         </td>
                       </tr>
@@ -692,7 +678,7 @@ export default function TeacherDashboard() {
               </div>
 
               {filteredStudents.length === 0 && (
-                <p className="py-8 text-center text-sm text-slate-500">
+                <p className="py-8 text-center text-sm text-[#78909b]">
                   Nenhum aluno corresponde aos filtros selecionados.
                 </p>
               )}
@@ -700,6 +686,6 @@ export default function TeacherDashboard() {
           </>
         )}
       </div>
-    </main>
+    </div>
   );
 }

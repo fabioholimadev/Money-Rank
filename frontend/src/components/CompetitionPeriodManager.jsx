@@ -205,7 +205,7 @@ export default function CompetitionPeriodManager({
         ref={triggerRef}
         type="button"
         onClick={openManager}
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/30 px-4 text-sm font-black text-amber-300 transition hover:border-amber-300 hover:text-amber-200"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#58cc02]/30 px-4 text-sm font-black text-[#79e72e] transition hover:border-amber-300 hover:text-amber-200"
       >
         <EditCalendar sx={{ fontSize: 19 }} aria-hidden="true" />
         Gerenciar períodos
@@ -213,7 +213,7 @@ export default function CompetitionPeriodManager({
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/80 p-0 backdrop-blur-sm sm:items-center sm:p-5"
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-[#131f24]/80 p-0 backdrop-blur-sm sm:items-center sm:p-5"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget && !isSaving) closeManager();
@@ -226,17 +226,17 @@ export default function CompetitionPeriodManager({
             onKeyDown={(event) => {
               if (event.key === 'Escape' && !isSaving) closeManager();
             }}
-            className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-slate-700 bg-slate-900 p-5 shadow-2xl sm:rounded-3xl sm:p-6"
+            className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-[#53666f] bg-[#1f2d33] p-5 shadow-2xl sm:rounded-3xl sm:p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-400">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#58cc02]">
                   Competição
                 </p>
                 <h2 id="period-manager-title" className="mt-1 text-2xl font-black">
                   Gerenciar períodos
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
+                <p className="mt-2 text-sm leading-6 text-[#a5b7c2]">
                   Ajuste a janela, pause ou encerre a competição sem apagar o
                   histórico já registrado.
                 </p>
@@ -247,21 +247,21 @@ export default function CompetitionPeriodManager({
                 disabled={isSaving}
                 autoFocus
                 aria-label="Fechar gerenciamento de períodos"
-                className="rounded-xl border border-slate-700 p-2 text-slate-400 transition hover:text-white disabled:opacity-50"
+                className="rounded-xl border border-[#53666f] p-2 text-[#a5b7c2] transition hover:text-white disabled:opacity-50"
               >
                 <Close aria-hidden="true" />
               </button>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-slate-950 p-1.5">
+            <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-[#131f24] p-1.5">
               <button
                 type="button"
                 onClick={() => switchMode('edit')}
                 disabled={!selectedPeriod}
                 className={`min-h-10 rounded-xl text-sm font-black transition ${
                   mode === 'edit'
-                    ? 'bg-amber-400 text-slate-950'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#58cc02] text-[#13210f]'
+                    : 'text-[#a5b7c2] hover:text-white'
                 } disabled:opacity-40`}
               >
                 Período selecionado
@@ -271,8 +271,8 @@ export default function CompetitionPeriodManager({
                 onClick={() => switchMode('create')}
                 className={`min-h-10 rounded-xl text-sm font-black transition ${
                   mode === 'create'
-                    ? 'bg-amber-400 text-slate-950'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#58cc02] text-[#13210f]'
+                    : 'text-[#a5b7c2] hover:text-white'
                 }`}
               >
                 <Add sx={{ mr: 0.5, fontSize: 17 }} aria-hidden="true" />
@@ -281,7 +281,7 @@ export default function CompetitionPeriodManager({
             </div>
 
             {mode === 'edit' && periods.length > 1 && (
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-[#78909b]">
                 Para administrar outro período, feche esta janela e selecione-o
                 na caixa do painel.
               </p>
@@ -289,7 +289,7 @@ export default function CompetitionPeriodManager({
 
             <form onSubmit={handleSave} className="mt-5 space-y-4">
               <label className="block">
-                <span className="mb-2 block text-xs font-black uppercase tracking-wider text-slate-500">
+                <span className="mb-2 block text-xs font-black uppercase tracking-wider text-[#78909b]">
                   Nome do período
                 </span>
                 <input
@@ -300,63 +300,63 @@ export default function CompetitionPeriodManager({
                   }))}
                   disabled={isSaving || isReadOnly}
                   placeholder="Ex.: Disputa de agosto"
-                  className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-bold outline-none transition focus:border-amber-400 disabled:opacity-50"
+                  className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-4 text-sm font-bold outline-none transition focus:border-[#58cc02] disabled:opacity-50"
                 />
               </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <fieldset className="rounded-2xl border border-slate-700 p-4">
-                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-amber-300">
+                <fieldset className="rounded-2xl border border-[#53666f] p-4">
+                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-[#79e72e]">
                     Início · Fortaleza
                   </legend>
                   <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
                     <label className="block">
-                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Data</span>
+                      <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Data</span>
                       <input
                         type="date"
                         value={form.startsAt.slice(0, 10)}
                         onChange={(event) => setForm((current) => ({ ...current, startsAt: replaceDate(current.startsAt, event.target.value, '07:30') }))}
                         disabled={isSaving || isReadOnly}
-                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                        className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-3 text-sm outline-none focus:border-[#58cc02] disabled:opacity-50"
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Hora</span>
+                      <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Hora</span>
                       <input
                         type="time"
                         step="60"
                         value={form.startsAt.slice(11, 16)}
                         onChange={(event) => setForm((current) => ({ ...current, startsAt: replaceTime(current.startsAt, event.target.value) }))}
                         disabled={isSaving || isReadOnly}
-                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                        className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-3 text-sm outline-none focus:border-[#58cc02] disabled:opacity-50"
                       />
                     </label>
                   </div>
                 </fieldset>
-                <fieldset className="rounded-2xl border border-slate-700 p-4">
-                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-amber-300">
+                <fieldset className="rounded-2xl border border-[#53666f] p-4">
+                  <legend className="px-2 text-xs font-black uppercase tracking-wider text-[#79e72e]">
                     Encerramento · Fortaleza
                   </legend>
                   <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
                     <label className="block">
-                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Data</span>
+                      <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Data</span>
                       <input
                         type="date"
                         value={form.endsAt.slice(0, 10)}
                         onChange={(event) => setForm((current) => ({ ...current, endsAt: replaceDate(current.endsAt, event.target.value, '08:10') }))}
                         disabled={isSaving || isReadOnly}
-                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                        className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-3 text-sm outline-none focus:border-[#58cc02] disabled:opacity-50"
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-[10px] font-black uppercase text-slate-500">Hora</span>
+                      <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Hora</span>
                       <input
                         type="time"
                         step="60"
                         value={form.endsAt.slice(11, 16)}
                         onChange={(event) => setForm((current) => ({ ...current, endsAt: replaceTime(current.endsAt, event.target.value) }))}
                         disabled={isSaving || isReadOnly}
-                        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-amber-400 disabled:opacity-50"
+                        className="min-h-12 w-full rounded-xl border border-[#53666f] bg-[#131f24] px-3 text-sm outline-none focus:border-[#58cc02] disabled:opacity-50"
                       />
                     </label>
                   </div>
@@ -367,7 +367,7 @@ export default function CompetitionPeriodManager({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-400 px-5 text-sm font-black text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-400 px-5 text-sm font-black text-[#13210f] transition hover:bg-cyan-300 disabled:opacity-50"
                 >
                   {mode === 'create' ? 'Criar rascunho' : 'Salvar nome e datas'}
                 </button>
@@ -375,10 +375,10 @@ export default function CompetitionPeriodManager({
             </form>
 
             {mode === 'edit' && currentPeriod && (
-              <div className="mt-6 border-t border-slate-800 pt-5">
+              <div className="mt-6 border-t border-[#37464f] pt-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    <p className="text-xs font-black uppercase tracking-wider text-[#78909b]">
                       Funcionamento atual
                     </p>
                     <p className="mt-1 font-black text-white">
@@ -397,7 +397,7 @@ export default function CompetitionPeriodManager({
                           className={`inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 text-xs font-black transition disabled:opacity-50 ${
                             status === 'CLOSED'
                               ? 'border-red-400/30 text-red-300 hover:border-red-300'
-                              : 'border-slate-700 text-slate-300 hover:border-amber-400/50 hover:text-amber-200'
+                              : 'border-[#53666f] text-[#d8e2e7] hover:border-[#58cc02]/50 hover:text-amber-200'
                           }`}
                         >
                           <Icon sx={{ fontSize: 18 }} aria-hidden="true" />
@@ -419,7 +419,7 @@ export default function CompetitionPeriodManager({
                         type="button"
                         onClick={() => handleStatus('CLOSED')}
                         disabled={isSaving}
-                        className="min-h-10 rounded-xl bg-red-400 px-4 text-xs font-black text-slate-950 disabled:opacity-50"
+                        className="min-h-10 rounded-xl bg-red-400 px-4 text-xs font-black text-[#13210f] disabled:opacity-50"
                       >
                         Confirmar encerramento
                       </button>
@@ -427,7 +427,7 @@ export default function CompetitionPeriodManager({
                         type="button"
                         onClick={() => setConfirmClose(false)}
                         disabled={isSaving}
-                        className="min-h-10 rounded-xl border border-slate-700 px-4 text-xs font-bold text-slate-300 disabled:opacity-50"
+                        className="min-h-10 rounded-xl border border-[#53666f] px-4 text-xs font-bold text-[#d8e2e7] disabled:opacity-50"
                       >
                         Cancelar
                       </button>

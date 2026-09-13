@@ -56,7 +56,7 @@ function WorkflowStatus({ status }) {
   return (
     <section
       aria-label="Etapas da publicação"
-      className="rounded-2xl border border-slate-800 bg-slate-900 p-4"
+      className="rounded-2xl border border-[#37464f] bg-[#1f2d33] p-4"
     >
       <div className="grid gap-2 sm:grid-cols-3">
         {WORKFLOW_STEPS.map((step, index) => {
@@ -68,27 +68,27 @@ function WorkflowStatus({ status }) {
               aria-current={isCurrent ? 'step' : undefined}
               className={`rounded-xl border px-4 py-3 ${
                 isCurrent
-                  ? 'border-amber-400 bg-amber-400/10'
+                  ? 'border-[#58cc02] bg-[#58cc02]/10'
                   : isComplete
                     ? 'border-emerald-500/30 bg-emerald-500/10'
-                    : 'border-slate-800 bg-slate-950/60'
+                    : 'border-[#37464f] bg-[#131f24]/60'
               }`}
             >
-              <p className={`text-sm font-black ${isCurrent ? 'text-amber-300' : isComplete ? 'text-emerald-300' : 'text-slate-500'}`}>
+              <p className={`text-sm font-black ${isCurrent ? 'text-[#79e72e]' : isComplete ? 'text-emerald-300' : 'text-[#78909b]'}`}>
                 {step.label}
               </p>
-              <p className="mt-1 text-xs text-slate-500">{step.description}</p>
+              <p className="mt-1 text-xs text-[#78909b]">{step.description}</p>
             </div>
           );
         })}
       </div>
       {archived && (
-        <p className="mt-3 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300">
+        <p className="mt-3 rounded-xl border border-[#53666f] bg-[#131f24] px-4 py-3 text-sm text-[#d8e2e7]">
           Esta versão foi arquivada e permanece disponível somente para auditoria.
         </p>
       )}
       {status === 'IN_REVIEW' && (
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-sm text-[#a5b7c2]">
           A versão enviada para revisão é somente leitura. Confira a prévia e publique quando estiver aprovada.
         </p>
       )}
@@ -136,14 +136,14 @@ function PreviewPanel({ type, payload, status }) {
           Prévia sem recompensa
         </p>
         <h2 className="mt-2 text-2xl font-black text-white">{payload.title}</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-300">{payload.description}</p>
-        <p className="mt-3 rounded-xl border border-cyan-500/20 bg-slate-950/50 px-4 py-3 text-xs leading-5 text-cyan-100/80">
+        <p className="mt-2 text-sm leading-6 text-[#d8e2e7]">{payload.description}</p>
+        <p className="mt-3 rounded-xl border border-cyan-500/20 bg-[#131f24]/50 px-4 py-3 text-xs leading-5 text-cyan-100/80">
           Esta é a prévia da versão {STATUS_LABELS[status]?.toLowerCase()}.
           Alunos continuam vendo a versão publicada até você concluir a publicação.
         </p>
         {video?.embedUrl && (
           <div className="mt-4">
-            <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-700 bg-black">
+            <div className="relative aspect-video overflow-hidden rounded-2xl border border-[#53666f] bg-black">
               <iframe
                 src={video.embedUrl}
                 title={`Prévia: ${video.title}`}
@@ -154,7 +154,7 @@ function PreviewPanel({ type, payload, status }) {
                 className="absolute inset-0 h-full w-full"
               />
             </div>
-            <p className="mt-2 break-all text-xs text-slate-400">
+            <p className="mt-2 break-all text-xs text-[#a5b7c2]">
               URL salva: {video.embedUrl}
             </p>
             <a
@@ -165,7 +165,7 @@ function PreviewPanel({ type, payload, status }) {
             >
               Abrir vídeo em uma nova guia
             </a>
-            <p className="mt-2 text-xs leading-5 text-slate-500">
+            <p className="mt-2 text-xs leading-5 text-[#78909b]">
               Se a nova guia funcionar e o quadro não, verifique a proteção
               contra rastreamento do Firefox. Se o YouTube informar que a
               reprodução em outros sites foi desativada, habilite incorporação
@@ -175,10 +175,10 @@ function PreviewPanel({ type, payload, status }) {
         )}
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {materials.map(([key, material]) => (
-            <article key={key} className="rounded-xl border border-slate-700 bg-slate-950/70 p-4">
-              <p className="text-xs font-black uppercase text-amber-300">{key}</p>
+            <article key={key} className="rounded-xl border border-[#53666f] bg-[#131f24]/70 p-4">
+              <p className="text-xs font-black uppercase text-[#79e72e]">{key}</p>
               <p className="mt-1 text-sm font-bold text-white">{material.title}</p>
-              <p className="mt-2 text-xs text-slate-500">{material.status}</p>
+              <p className="mt-2 text-xs text-[#78909b]">{material.status}</p>
             </article>
           ))}
         </div>
@@ -195,7 +195,7 @@ function PreviewPanel({ type, payload, status }) {
         Prévia estrutural sem CapiCoins
       </p>
       <h2 className="mt-2 text-2xl font-black text-white">{payload.title}</h2>
-      <p className="mt-2 text-sm text-slate-300">
+      <p className="mt-2 text-sm text-[#d8e2e7]">
         A estrutura possui {count} itens principais. Nenhuma tentativa, progresso
         ou recompensa é criada nesta visualização.
       </p>
@@ -385,22 +385,22 @@ export default function TeacherStudio() {
   const editable = draft?.status === 'DRAFT';
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-7 text-white sm:px-6">
-      <div className="mx-auto max-w-7xl">
-        <header className="flex flex-col gap-4 border-b border-slate-800 pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="text-white">
+      <div>
+        <header className="flex flex-col gap-4 border-b border-[#37464f] pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <button
               type="button"
               onClick={() => navigate('/professor')}
-              className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-amber-300"
+              className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#a5b7c2] hover:text-[#79e72e]"
             >
               <ArrowBack sx={{ fontSize: 18 }} /> Voltar ao painel
             </button>
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400">
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-[#58cc02]">
               Money Rank · Governança pedagógica
             </p>
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">Estúdio do Professor</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#a5b7c2]">
               Edite em rascunho, confira a prévia e publique com auditoria. Uma
               prévia nunca altera progresso ou CapiCoins.
             </p>
@@ -409,13 +409,13 @@ export default function TeacherStudio() {
             type="button"
             onClick={() => loadStudio(selectedId)}
             disabled={isLoading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-300 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-black text-[#d8e2e7] disabled:opacity-50"
           >
             <Refresh sx={{ fontSize: 18 }} /> Atualizar
           </button>
         </header>
 
-        <nav className="mt-6 grid grid-cols-2 gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-2 lg:grid-cols-4">
+        <nav className="mt-6 grid grid-cols-2 gap-2 rounded-2xl border border-[#37464f] bg-[#1f2d33] p-2 lg:grid-cols-4">
           {TABS.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -434,7 +434,7 @@ export default function TeacherStudio() {
                 setMessage('');
               }}
               className={`flex min-h-12 items-center justify-center gap-2 rounded-xl text-sm font-black ${
-                tab === id ? 'bg-amber-400 text-slate-950' : 'text-slate-400 hover:bg-slate-800'
+                tab === id ? 'bg-[#58cc02] text-[#13210f]' : 'text-[#a5b7c2] hover:bg-[#17262c]'
               }`}
             >
               <Icon sx={{ fontSize: 19 }} /> {label}
@@ -446,14 +446,14 @@ export default function TeacherStudio() {
           !['LEARNING_MODULE', 'ACTIVITY_DEFINITION'].includes(tab)
           || !draft
         ) && (
-          <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
+          <p role="status" aria-live="polite" className="mt-5 rounded-xl border border-[#53666f] bg-[#1f2d33] p-4 text-sm text-[#d8e2e7]">
             {message}
           </p>
         )}
 
         {isLoading && (
           <div className="flex min-h-64 items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-amber-400" />
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#53666f] border-t-amber-400" />
           </div>
         )}
 
@@ -469,14 +469,14 @@ export default function TeacherStudio() {
         {!isLoading && tab === 'AUDIT' && (
           <section className="mt-6 space-y-3">
             {(studio?.audit ?? []).map((item) => (
-              <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+              <article key={item.id} className="rounded-2xl border border-[#37464f] bg-[#1f2d33] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-black text-white">{item.entityKey} · v{item.version}</p>
-                  <span className="rounded-full border border-slate-700 px-3 py-1 text-xs font-black text-amber-300">
+                  <span className="rounded-full border border-[#53666f] px-3 py-1 text-xs font-black text-[#79e72e]">
                     {item.action}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-400">{item.summary}</p>
+                <p className="mt-2 text-sm text-[#a5b7c2]">{item.summary}</p>
                 <p className="mt-2 text-xs text-slate-600">
                   {new Date(item.createdAt).toLocaleString('pt-BR')}
                 </p>
@@ -487,7 +487,7 @@ export default function TeacherStudio() {
 
         {!isLoading && ['LEARNING_MODULE', 'ACTIVITY_DEFINITION'].includes(tab) && draft && (
           <div className="mt-6 grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="h-fit rounded-2xl border border-slate-800 bg-slate-900 p-4 xl:sticky xl:top-4">
+            <aside className="h-fit rounded-2xl border border-[#37464f] bg-[#1f2d33] p-4 xl:sticky xl:top-4">
               <StudioField label="Item editorial">
                 <select
                   className={inputClassName}
@@ -509,7 +509,7 @@ export default function TeacherStudio() {
                 </select>
               </StudioField>
               <div className="mt-4">
-                <p className="mb-2 text-xs font-black uppercase tracking-wider text-slate-500">
+                <p className="mb-2 text-xs font-black uppercase tracking-wider text-[#78909b]">
                   Versões deste item
                 </p>
                 <div className="space-y-2" role="list" aria-label="Versões disponíveis">
@@ -529,8 +529,8 @@ export default function TeacherStudio() {
                         }}
                         className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-colors ${
                           selected
-                            ? 'border-amber-400 bg-amber-400/10 text-white'
-                            : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-600'
+                            ? 'border-[#58cc02] bg-[#58cc02]/10 text-white'
+                            : 'border-[#37464f] bg-[#131f24]/60 text-[#a5b7c2] hover:border-slate-600'
                         }`}
                       >
                         <span className="font-black">v{item.version}</span>
@@ -540,8 +540,8 @@ export default function TeacherStudio() {
                             : item.status === 'IN_REVIEW'
                               ? 'bg-cyan-500/10 text-cyan-300'
                               : item.status === 'DRAFT'
-                                ? 'bg-amber-500/10 text-amber-300'
-                                : 'bg-slate-800 text-slate-400'
+                                ? 'bg-[#58cc02]/10 text-[#79e72e]'
+                                : 'bg-[#17262c] text-[#a5b7c2]'
                         }`}
                         >
                           {STATUS_LABELS[item.status]}
@@ -551,8 +551,8 @@ export default function TeacherStudio() {
                   })}
                 </div>
               </div>
-              <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-500">Versão</p>
+              <div className="mt-4 rounded-xl border border-[#37464f] bg-[#131f24] p-4">
+                <p className="text-xs text-[#78909b]">Versão</p>
                 <p className="mt-1 font-black">v{draft.version} · {STATUS_LABELS[draft.status]}</p>
               </div>
               {['PUBLISHED', 'ARCHIVED'].includes(draft.status) && (
@@ -560,7 +560,7 @@ export default function TeacherStudio() {
                   type="button"
                   disabled={Boolean(busyAction)}
                   onClick={createDraft}
-                  className="mt-4 min-h-11 w-full rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 disabled:opacity-50"
+                  className="mt-4 min-h-11 w-full rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] disabled:opacity-50"
                 >
                   Criar nova versão
                 </button>
@@ -570,7 +570,7 @@ export default function TeacherStudio() {
             <section className="min-w-0 space-y-5">
               <WorkflowStatus status={draft.status} />
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+              <div className="rounded-2xl border border-[#37464f] bg-[#1f2d33] p-5">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <StudioField label="Nome editorial">
                     <input
@@ -595,7 +595,7 @@ export default function TeacherStudio() {
                       type="button"
                       disabled={Boolean(busyAction)}
                       onClick={saveDraft}
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-400 px-4 text-sm font-black text-slate-950 disabled:opacity-50"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-cyan-400 px-4 text-sm font-black text-[#13210f] disabled:opacity-50"
                     >
                       <Save sx={{ fontSize: 18 }} /> Salvar e validar
                     </button>
@@ -605,7 +605,7 @@ export default function TeacherStudio() {
                       type="button"
                       disabled={Boolean(busyAction)}
                       onClick={submitReview}
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-200 disabled:opacity-50"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-black text-slate-200 disabled:opacity-50"
                     >
                       <CheckCircle sx={{ fontSize: 18 }} /> Enviar para revisão
                     </button>
@@ -615,7 +615,7 @@ export default function TeacherStudio() {
                       type="button"
                       disabled={Boolean(busyAction)}
                       onClick={publishVersion}
-                      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-black text-slate-950 disabled:opacity-50"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-black text-[#13210f] disabled:opacity-50"
                     >
                       <Publish sx={{ fontSize: 18 }} /> Publicar
                     </button>
@@ -623,14 +623,14 @@ export default function TeacherStudio() {
                   <button
                     type="button"
                     onClick={() => setShowPreview((value) => !value)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-black text-slate-200"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-black text-slate-200"
                   >
                     <Preview sx={{ fontSize: 18 }} /> {showPreview ? 'Fechar prévia' : 'Ver prévia'}
                   </button>
                 </div>
                 {draft.status === 'DRAFT' && (
-                  <p className="mt-3 text-xs leading-5 text-slate-500">
-                    O botão <strong className="text-slate-300">Publicar</strong>{' '}
+                  <p className="mt-3 text-xs leading-5 text-[#78909b]">
+                    O botão <strong className="text-[#d8e2e7]">Publicar</strong>{' '}
                     aparece depois que esta versão for salva e enviada para revisão.
                   </p>
                 )}
@@ -675,6 +675,6 @@ export default function TeacherStudio() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -31,7 +31,7 @@ function PedagogicalApproval({ item, disabled, onChange }) {
   const approved = item.review.pedagogical === 'teacher_approved';
   const needsResearch = item.review.technical === 'source_verified';
   return (
-    <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 p-4">
+    <div className="rounded-xl border border-[#58cc02]/25 bg-[#58cc02]/10 p-4">
       <label className="flex items-start gap-3 text-sm font-bold text-amber-100">
         <input
           type="checkbox"
@@ -252,7 +252,7 @@ function PerigoDoceEditor({ payload, disabled, onChange }) {
             ],
           })
         }
-        className="min-h-11 rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 disabled:opacity-40"
+        className="min-h-11 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] disabled:opacity-40"
       >
         Adicionar fato para futuras questões
       </button>
@@ -470,7 +470,7 @@ function CustoVicioEditor({ payload, disabled, onChange }) {
           {(caseItem.decisions ?? []).map((decision, decisionIndex) => (
             <div
               key={decision.id}
-              className="rounded-xl border border-slate-800 bg-slate-950/60 p-4"
+              className="rounded-xl border border-[#37464f] bg-[#131f24]/60 p-4"
             >
               <p className="mb-3 text-xs font-black uppercase tracking-wider text-cyan-300">
                 Decisão {decisionIndex + 1}
@@ -540,8 +540,8 @@ function CustoVicioEditor({ payload, disabled, onChange }) {
               </StudioField>
               <div className="mt-3 grid gap-3 lg:grid-cols-3">
                 {decision.options.map((option, optionIndex) => (
-                  <div key={option.id} className="space-y-3 rounded-xl border border-slate-800 p-3">
-                    <p className="text-xs font-black uppercase tracking-wider text-amber-300">
+                  <div key={option.id} className="space-y-3 rounded-xl border border-[#37464f] p-3">
+                    <p className="text-xs font-black uppercase tracking-wider text-[#79e72e]">
                       Leitura {option.points} ponto(s)
                     </p>
                     <StudioField label="Texto da opção">
@@ -609,7 +609,7 @@ function CustoVicioEditor({ payload, disabled, onChange }) {
         type="button"
         disabled={disabled || cases.length >= 12}
         onClick={() => onChange({ ...payload, cases: [...cases, createCaseTemplate()] })}
-        className="min-h-11 rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 disabled:opacity-40"
+        className="min-h-11 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] disabled:opacity-40"
       >
         Adicionar personagem com cinco decisões
       </button>
@@ -695,8 +695,8 @@ function IlusaoDinheiroEditor({ payload, disabled, onChange }) {
           </StudioField>
           <div className="grid gap-3 lg:grid-cols-3">
             {decision.choices.map((choice, choiceIndex) => (
-              <div key={choice.id} className="rounded-xl border border-slate-800 p-3">
-                <p className="mb-2 text-xs font-black text-amber-300">
+              <div key={choice.id} className="rounded-xl border border-[#37464f] p-3">
+                <p className="mb-2 text-xs font-black text-[#79e72e]">
                   Caminho {choice.analysisPoints} ponto(s)
                 </p>
                 <textarea
@@ -1006,7 +1006,7 @@ function EngenhariaDesejoEditor({ payload, disabled, onChange }) {
         type="button"
         disabled={disabled || cards.length >= 40}
         onClick={() => onChange({ ...payload, cards: [...cards, createAdTemplate()] })}
-        className="min-h-11 rounded-xl bg-amber-400 px-4 text-sm font-black text-slate-950 disabled:opacity-40"
+        className="min-h-11 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] disabled:opacity-40"
       >
         Adicionar publicidade fictícia
       </button>

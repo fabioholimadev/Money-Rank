@@ -16,7 +16,7 @@ const SUGGESTED_QUESTIONS = [
 
 function AssistantMessage({ message }) {
   return (
-    <div className="max-w-[88%] rounded-2xl rounded-bl-sm border border-violet-400/20 bg-violet-400/10 px-3.5 py-3">
+    <div className="max-w-[88%] rounded-2xl rounded-bl-sm border border-[#49c0f8]/20 bg-[#49c0f8]/10 px-3.5 py-3">
       <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-emerald-300">
         Dado calculado no período selecionado
       </p>
@@ -25,22 +25,22 @@ function AssistantMessage({ message }) {
       </p>
       {message.suggestion && (
         <div className="mt-3 border-t border-violet-300/10 pt-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-violet-300">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#7ed5fb]">
             Interpretação pedagógica
           </p>
-          <p className="mt-1 text-sm leading-6 text-slate-300">
+          <p className="mt-1 text-sm leading-6 text-[#d8e2e7]">
             {message.suggestion}
           </p>
         </div>
       )}
       {message.aiStatus === 'unavailable' && (
-        <p className="mt-3 text-[11px] font-bold text-amber-300">
+        <p className="mt-3 text-[11px] font-bold text-[#79e72e]">
           A IA de interpretação está indisponível; os dados calculados acima continuam válidos.
           {message.diagnosticCode ? ` Código: ${message.diagnosticCode}.` : ''}
         </p>
       )}
       {message.scope && (
-        <p className="mt-3 text-[11px] leading-5 text-slate-500">
+        <p className="mt-3 text-[11px] leading-5 text-[#78909b]">
           {message.scope}. {message.limitations}
         </p>
       )}
@@ -144,9 +144,9 @@ export default function TeacherDataChat({ periodId }) {
           disabled={!periodId}
           aria-haspopup="dialog"
           aria-controls="teacher-data-chat-dialog"
-          className="fixed bottom-24 right-5 z-[60] inline-flex min-h-14 items-center gap-3 rounded-2xl bg-violet-400 px-4 py-3 font-black text-slate-950 shadow-xl shadow-violet-500/25 transition hover:scale-105 hover:bg-violet-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:bottom-5"
+          className="fixed bottom-24 right-5 z-[60] inline-flex min-h-14 items-center gap-3 rounded-2xl bg-[#49c0f8] px-4 py-3 font-black text-[#13210f] shadow-xl shadow-violet-500/25 transition hover:scale-105 hover:bg-violet-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:bottom-5"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/10">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#131f24]/10">
             <AutoAwesome aria-hidden="true" sx={{ fontSize: 22 }} />
           </span>
           <span className="hidden sm:inline">Perguntar ao Capi Analista</span>
@@ -175,7 +175,7 @@ export default function TeacherDataChat({ periodId }) {
           >
             <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3.5 md:rounded-t-3xl">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-400/10 text-violet-300 ring-2 ring-violet-400/20">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#49c0f8]/10 text-[#7ed5fb] ring-2 ring-violet-400/20">
                   <AutoAwesome aria-hidden="true" sx={{ fontSize: 21 }} />
                 </span>
                 <div className="min-w-0">
@@ -191,13 +191,13 @@ export default function TeacherDataChat({ periodId }) {
                 type="button"
                 onClick={closePanel}
                 aria-label="Fechar"
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-2 text-[#78909b] transition hover:bg-[#17262c] hover:text-white"
               >
                 <Close aria-hidden="true" sx={{ fontSize: 20 }} />
               </button>
             </header>
 
-            <p id="teacher-data-chat-description" className="shrink-0 border-b border-zinc-800 px-4 py-3 text-xs leading-5 text-slate-500">
+            <p id="teacher-data-chat-description" className="shrink-0 border-b border-zinc-800 px-4 py-3 text-xs leading-5 text-[#78909b]">
               Respostas usam somente dados agregados do período selecionado, sem e-mail, UID ou comando livre de banco.
             </p>
 
@@ -208,7 +208,7 @@ export default function TeacherDataChat({ periodId }) {
               className="flex-1 space-y-3 overflow-y-auto px-3 py-4 sm:px-4"
             >
               {messages.length === 0 && (
-                <div className="rounded-2xl rounded-bl-sm border border-violet-400/20 bg-violet-400/10 p-4 text-sm leading-6 text-slate-200">
+                <div className="rounded-2xl rounded-bl-sm border border-[#49c0f8]/20 bg-[#49c0f8]/10 p-4 text-sm leading-6 text-slate-200">
                   Olá! Posso resumir o período, comparar turmas e apontar atividades que merecem mais atenção. O que você quer analisar?
                 </div>
               )}
@@ -217,7 +217,7 @@ export default function TeacherDataChat({ periodId }) {
                 message.role === 'teacher' ? (
                   <div
                     key={`teacher-${index}-${message.text}`}
-                    className="capi-analyst-message ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-amber-400 px-3.5 py-2.5 text-sm font-semibold leading-6 text-slate-950"
+                    className="capi-analyst-message ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-[#58cc02] px-3.5 py-2.5 text-sm font-semibold leading-6 text-[#13210f]"
                   >
                     {message.text}
                   </div>
@@ -229,7 +229,7 @@ export default function TeacherDataChat({ periodId }) {
               )}
 
               {isSending && (
-                <div role="status" className="capi-analyst-message flex items-center gap-2 text-sm text-slate-400">
+                <div role="status" className="capi-analyst-message flex items-center gap-2 text-sm text-[#a5b7c2]">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-violet-300" />
                   Organizando os dados do período…
                 </div>
@@ -250,7 +250,7 @@ export default function TeacherDataChat({ periodId }) {
                       type="button"
                       onClick={() => void sendQuestion(suggestion)}
                       disabled={!periodId || isSending}
-                      className="rounded-full border border-violet-400/30 bg-violet-400/10 px-3 py-1.5 text-left text-xs font-semibold text-violet-200 transition hover:bg-violet-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-full border border-[#49c0f8]/30 bg-[#49c0f8]/10 px-3 py-1.5 text-left text-xs font-semibold text-violet-200 transition hover:bg-[#49c0f8]/20 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {suggestion}
                     </button>
@@ -264,7 +264,7 @@ export default function TeacherDataChat({ periodId }) {
               <label className="sr-only" htmlFor="teacher-data-question">
                 Pergunta sobre os dados do período
               </label>
-              <div className="flex items-end gap-2 rounded-2xl border border-slate-700 bg-slate-950/60 p-1.5 transition focus-within:border-violet-400/60">
+              <div className="flex items-end gap-2 rounded-2xl border border-[#53666f] bg-[#131f24]/60 p-1.5 transition focus-within:border-[#49c0f8]/60">
                 <textarea
                   ref={inputRef}
                   id="teacher-data-question"
@@ -279,13 +279,13 @@ export default function TeacherDataChat({ periodId }) {
                   }}
                   disabled={!periodId || isSending}
                   placeholder="Pergunte sobre turmas e atividades…"
-                  className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-2.5 py-2 text-sm text-white outline-none placeholder:text-slate-500 disabled:opacity-50"
+                  className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-2.5 py-2 text-sm text-white outline-none placeholder:text-[#78909b] disabled:opacity-50"
                 />
                 <button
                   type="submit"
                   disabled={!periodId || question.trim().length < 5 || isSending}
                   aria-label="Enviar pergunta"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400 text-slate-950 transition hover:bg-violet-300 active:scale-90 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-500"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#49c0f8] text-[#13210f] transition hover:bg-violet-300 active:scale-90 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-[#78909b]"
                 >
                   <Send aria-hidden="true" sx={{ fontSize: 18 }} />
                 </button>

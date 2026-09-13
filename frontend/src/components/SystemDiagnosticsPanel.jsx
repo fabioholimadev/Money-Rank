@@ -45,12 +45,12 @@ export default function SystemDiagnosticsPanel() {
   const period = data?.database?.recognizedPeriod;
   const mentor = data?.gemini?.mentor;
   return (
-    <details className="mt-6 rounded-3xl border border-slate-700 bg-slate-900 p-5 sm:p-6">
+    <details className="mt-6 rounded-3xl border border-[#53666f] bg-[#1f2d33] p-5 sm:p-6">
       <summary className="flex cursor-pointer list-none items-center gap-2 font-black">
         <HealthAndSafety className="text-cyan-300" /> Diagnóstico administrativo
       </summary>
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-xs leading-6 text-slate-300">
+        <section className="rounded-2xl border border-[#37464f] bg-[#131f24] p-4 text-xs leading-6 text-[#d8e2e7]">
           <h3 className="font-black text-white">Banco e período</h3>
           <p>SQL Connect: {data?.database?.accessible ? 'acessível' : 'indisponível'}</p>
           <p>Itens ativos: {value(data?.database?.activeItems)}</p>
@@ -59,7 +59,7 @@ export default function SystemDiagnosticsPanel() {
           <p>Período reconhecido: {value(period?.selectedPeriodName)}</p>
           <p>Última falha SQL: {value(data?.database?.lastFailure?.message, 'nenhuma neste processo')}</p>
         </section>
-        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-xs leading-6 text-slate-300">
+        <section className="rounded-2xl border border-[#37464f] bg-[#131f24] p-4 text-xs leading-6 text-[#d8e2e7]">
           <h3 className="font-black text-white">Gemini</h3>
           <p>Chave reconhecida: {data?.gemini?.keyRecognized ? 'sim' : 'não'}</p>
           <p>Modelo: {value(data?.gemini?.model)}</p>
@@ -73,7 +73,7 @@ export default function SystemDiagnosticsPanel() {
           <p>Request ID: {value(mentor?.requestId)}</p>
           <p>Erro sanitizado: {value(mentor?.errorMessage || mentor?.reason, 'nenhum')}</p>
         </section>
-        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-xs leading-6 text-slate-300">
+        <section className="rounded-2xl border border-[#37464f] bg-[#131f24] p-4 text-xs leading-6 text-[#d8e2e7]">
           <h3 className="font-black text-white">Build publicado</h3>
           <p>Frontend: {value(import.meta.env.VITE_BUILD_COMMIT, 'commit não injetado')}</p>
           <p>API: {value(data?.render?.apiCommit)}</p>
@@ -85,7 +85,7 @@ export default function SystemDiagnosticsPanel() {
       {probe && <p className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs text-emerald-200">Teste “O que é IPI?” aprovado {probe.searchUsed ? `com ${probe.sources?.length || 0} fontes e Pesquisa Google` : 'com Gemini sem pesquisa online'}.</p>}
       {error && <p role="alert" className="mt-4 text-sm font-bold text-red-300">{error}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" disabled={loading} onClick={() => void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-700 px-3 text-xs font-black disabled:opacity-50"><Refresh sx={{ fontSize: 17 }} /> Atualizar</button>
+        <button type="button" disabled={loading} onClick={() => void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#53666f] px-3 text-xs font-black disabled:opacity-50"><Refresh sx={{ fontSize: 17 }} /> Atualizar</button>
         <button type="button" disabled={loading} onClick={() => void testGemini()} className="min-h-10 rounded-xl border border-cyan-400/30 px-3 text-xs font-black text-cyan-300 disabled:opacity-50">Executar teste real do Gemini + Pesquisa Google</button>
       </div>
     </details>

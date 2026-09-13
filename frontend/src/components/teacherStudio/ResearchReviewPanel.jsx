@@ -130,7 +130,7 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
           <button
             type="submit"
             disabled={busyId === 'new'}
-            className="min-h-11 rounded-xl bg-amber-400 px-5 text-sm font-black text-slate-950 disabled:opacity-50"
+            className="min-h-11 rounded-xl bg-[#58cc02] px-5 text-sm font-black text-[#13210f] disabled:opacity-50"
           >
             {busyId === 'new' ? 'Registrando...' : 'Adicionar à fila'}
           </button>
@@ -138,31 +138,31 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
       </StudioSection>
 
       {message && (
-        <p className="rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
+        <p className="rounded-xl border border-[#53666f] bg-[#1f2d33] p-3 text-sm text-[#d8e2e7]">
           {message}
         </p>
       )}
 
       <div className="space-y-3">
         {research.map((item) => (
-          <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <article key={item.id} className="rounded-2xl border border-[#37464f] bg-[#1f2d33] p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-wider text-cyan-300">
                   {item.activityKey} · {item.proposedBy}
                 </p>
                 <h3 className="mt-1 font-black text-white">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{item.claim}</p>
+                <p className="mt-2 text-sm leading-6 text-[#a5b7c2]">{item.claim}</p>
                 <a
                   href={item.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 inline-block text-sm font-bold text-amber-300 underline"
+                  className="mt-3 inline-block text-sm font-bold text-[#79e72e] underline"
                 >
                   Conferir fonte original
                 </a>
               </div>
-              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs font-black text-slate-300">
+              <span className="rounded-full border border-[#53666f] px-3 py-1 text-xs font-black text-[#d8e2e7]">
                 {item.status}
               </span>
             </div>
@@ -172,7 +172,7 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
                   type="button"
                   disabled={busyId === item.id}
                   onClick={() => decide(item.id, 'TEACHER_APPROVED')}
-                  className="min-h-10 rounded-xl bg-emerald-400 px-4 text-sm font-black text-slate-950 disabled:opacity-50"
+                  className="min-h-10 rounded-xl bg-emerald-400 px-4 text-sm font-black text-[#13210f] disabled:opacity-50"
                 >
                   Aprovar fonte
                 </button>
@@ -189,7 +189,7 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
           </article>
         ))}
         {research.length === 0 && (
-          <p className="rounded-2xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">
+          <p className="rounded-2xl border border-dashed border-[#53666f] p-8 text-center text-sm text-[#78909b]">
             Nenhuma pesquisa aguardando validação.
           </p>
         )}
