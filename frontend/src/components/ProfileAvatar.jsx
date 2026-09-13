@@ -44,7 +44,7 @@ export default function ProfileAvatar({
   return (
     <span
       aria-label="Avatar padrão"
-      className={`inline-flex shrink-0 items-center justify-center border border-slate-700 bg-slate-900 text-slate-500 ${sizeClasses} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center border-2 border-[#37464f] bg-[#17262c] text-[#78909c] ${sizeClasses} ${className}`}
       role="img"
     >
       <AccountCircle sx={{ fontSize: '65%' }} />

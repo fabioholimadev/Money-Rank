@@ -1,9 +1,12 @@
-export function PageHeader({ eyebrow, title, description, actions, className = '' }) {
+export function PageHeader({ eyebrow, title, description, icon, actions, className = '' }) {
   return (
     <header className={`flex flex-col gap-5 md:flex-row md:items-end md:justify-between ${className}`}>
       <div className="min-w-0">
         {eyebrow && <p className="mr-eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1 text-3xl font-black tracking-tight text-[#f1f7fb] sm:text-4xl">{title}</h1>
+        <h1 className="mt-1 flex items-center gap-3 text-3xl font-black tracking-tight text-[#f1f7fb] sm:text-4xl">
+          {icon && <span className="text-[#58cc02]">{icon}</span>}
+          {title}
+        </h1>
         {description && <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#a5b7c2]">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap gap-3">{actions}</div>}

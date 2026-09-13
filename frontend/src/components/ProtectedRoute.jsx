@@ -15,10 +15,10 @@ export default function ProtectedRoute({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="flex min-h-screen items-center justify-center bg-[#131f24]">
         <div
           aria-label="Verificando autenticação"
-          className="h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent"
+          className="h-10 w-10 animate-spin rounded-full border-4 border-[#37464f] border-t-[#58cc02]"
           role="status"
         />
       </div>

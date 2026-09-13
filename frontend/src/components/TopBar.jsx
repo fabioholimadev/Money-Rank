@@ -8,6 +8,7 @@ import LocalFireDepartmentRounded from '@mui/icons-material/LocalFireDepartmentR
 import MonetizationOnRounded from '@mui/icons-material/MonetizationOnRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
@@ -35,20 +36,30 @@ function isCurrentPath(pathname, target) {
   return pathname === target || pathname.startsWith(`${target}/`);
 }
 
-function Brand({ homePath }) {
+function Brand({ homePath, collapsed = false, onToggle }) {
   return (
-    <Link to={homePath} className="flex items-center gap-3 rounded-2xl focus-visible:outline-offset-4">
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302]">
+    <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302] transition-transform active:translate-y-1 active:shadow-none"
+        aria-label={collapsed ? 'Abrir barra lateral' : 'Recolher barra lateral'}
+        aria-expanded={!collapsed}
+        title={collapsed ? 'Abrir menu' : 'Recolher menu'}
+      >
         MR
-      </span>
-      <span className="text-xl font-black tracking-tight text-white">
-        MONEY<span className="text-[#58cc02]">RANK</span>
-      </span>
-    </Link>
+        <MenuOpenRounded className={`absolute -bottom-2 -right-2 rounded-full border-2 border-[#131f24] bg-[#49c0f8] p-0.5 text-[#10252d] transition-transform ${collapsed ? 'rotate-180' : ''}`} sx={{ fontSize: 19 }} />
+      </button>
+      {!collapsed && (
+        <Link to={homePath} className="rounded-xl text-xl font-black tracking-tight text-white focus-visible:outline-offset-4">
+          MONEY<span className="text-[#58cc02]">RANK</span>
+        </Link>
+      )}
+    </div>
   );
 }
 
-export default function TopBar() {
+export default function TopBar({ collapsed = false, onToggle }) {
   const { aluno, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -72,7 +83,10 @@ export default function TopBar() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
-        <Brand homePath={homePath} />
+        <Link to={homePath} className="flex items-center gap-3 rounded-2xl">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#58cc02] text-xs font-black text-[#13210f] shadow-[0_4px_0_#46a302]">MR</span>
+          <span className="hidden text-lg font-black tracking-tight text-white min-[390px]:inline">MONEY<span className="text-[#58cc02]">RANK</span></span>
+        </Link>
         {!isTeacher && (
           <div className="flex items-center gap-3" aria-label="Resumo do progresso">
             <span className="flex items-center gap-1 font-black text-[#ffc800]">
@@ -87,8 +101,8 @@ export default function TopBar() {
         )}
       </header>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col border-r-2 border-[#37464f] bg-[#131f24] px-5 py-7 lg:flex">
-        <Brand homePath={homePath} />
+      <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r-2 border-[#37464f] bg-[#131f24] py-7 transition-[width,padding] duration-300 lg:flex ${collapsed ? 'w-[5.75rem] px-3' : 'w-[17.5rem] px-5'}`}>
+        <Brand homePath={homePath} collapsed={collapsed} onToggle={onToggle} />
         <nav className="mt-10 flex flex-col gap-2" aria-label={isTeacher ? 'Área do professor' : 'Área do estudante'}>
           {items.map(({ label, to, Icon }) => {
             const active = isCurrentPath(pathname, to);
@@ -97,21 +111,22 @@ export default function TopBar() {
                 key={to}
                 to={to}
                 aria-current={active ? 'page' : undefined}
-                className={`flex min-h-14 items-center gap-4 rounded-2xl border-2 px-4 text-sm font-black uppercase tracking-wide transition-colors ${
+                title={collapsed ? label : undefined}
+                className={`flex min-h-14 items-center rounded-2xl border-2 text-sm font-black uppercase tracking-wide transition-colors ${collapsed ? 'justify-center px-2' : 'gap-4 px-4'} ${
                   active
                     ? 'border-[#49c0f8] bg-[#1f2d33] text-[#49c0f8]'
                     : 'border-transparent text-[#f1f7fb] hover:bg-[#1f2d33]'
                 }`}
               >
                 <Icon sx={{ fontSize: 27 }} aria-hidden="true" />
-                {label}
+                {!collapsed && label}
               </Link>
             );
           })}
         </nav>
 
         <div className="mt-auto space-y-4">
-          {!isTeacher && (
+          {!isTeacher && !collapsed && (
             <div className="grid grid-cols-3 gap-2" aria-label="Resumo do progresso">
               <span className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-[#37464f] bg-[#17262c] font-black text-[#ffc800]" title="Sequência">
                 <LocalFireDepartmentRounded sx={{ fontSize: 20 }} /> {formatCompact(aluno.streak_atual)}
@@ -125,13 +140,13 @@ export default function TopBar() {
             </div>
           )}
 
-          <div className="rounded-2xl border-2 border-[#37464f] bg-[#17262c] p-3">
+          {!collapsed && <div className="rounded-2xl border-2 border-[#37464f] bg-[#17262c] p-3">
             <p className="truncate text-sm font-black text-white">{aluno.nome_preferido || aluno.displayName || 'Money Rank'}</p>
             <p className="mt-0.5 text-xs font-bold text-[#a5b7c2]">{isTeacher ? 'Professor' : aluno.turma || 'Estudante'}</p>
-          </div>
+          </div>}
 
-          <button type="button" onClick={handleLogout} className="flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 font-black text-[#a5b7c2] transition-colors hover:bg-[#1f2d33] hover:text-[#ff4b4b]">
-            <LogoutRounded aria-hidden="true" /> Sair
+          <button type="button" onClick={handleLogout} title="Sair" className={`flex min-h-12 w-full items-center rounded-2xl font-black text-[#a5b7c2] transition-colors hover:bg-[#1f2d33] hover:text-[#ff4b4b] ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}>
+            <LogoutRounded aria-hidden="true" /> {!collapsed && 'Sair'}
           </button>
         </div>
       </aside>
