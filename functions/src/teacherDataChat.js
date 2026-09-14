@@ -28,7 +28,7 @@ const RESPONSE_SCHEMA = {
   additionalProperties: false,
   required: ['suggestion'],
   properties: {
-    suggestion: { type: 'string', minLength: 20, maxLength: 280 },
+    suggestion: { type: 'string', minLength: 20, maxLength: 420 },
   },
 };
 
@@ -221,12 +221,19 @@ function validateSuggestion(value) {
   const suggestion = value.trim().replace(/\s+/g, ' ');
   if (
     suggestion.length < 20 ||
-    suggestion.length > 280 ||
-    /\d|%|R\$|capicoins?|nome|e-?mail|uid/i.test(suggestion)
+    /\b(nome|e-?mail|uid|senha|token)\b/i.test(suggestion)
   ) {
     return null;
   }
-  return suggestion;
+  if (suggestion.length <= 420) return suggestion;
+  const excerpt = suggestion.slice(0, 421);
+  const sentenceEnd = Math.max(
+    excerpt.lastIndexOf('. '),
+    excerpt.lastIndexOf('! '),
+    excerpt.lastIndexOf('? '),
+  );
+  const safeEnd = sentenceEnd >= 120 ? sentenceEnd + 1 : excerpt.lastIndexOf(' ', 420);
+  return `${excerpt.slice(0, safeEnd > 0 ? safeEnd : 420).trim()}…`;
 }
 
 function parseSuggestionResponse(value) {
@@ -308,7 +315,7 @@ export async function buildTeacherChatResponse({
         config: {
           responseMimeType: 'application/json',
           responseJsonSchema: RESPONSE_SCHEMA,
-          maxOutputTokens: 180,
+          maxOutputTokens: 220,
         },
       });
       const candidate = parseSuggestionResponse(response.text);

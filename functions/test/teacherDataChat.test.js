@@ -135,3 +135,23 @@ test('aceita JSON do analista envolvido por texto e bloco Markdown', async () =>
   assert.equal(response.generatedBy, 'aggregate+gemini');
   assert.match(response.suggestion, /Retome os objetivos/);
 });
+
+test('aceita recomendação pedagógica que menciona uma fase agregada', async () => {
+  const response = await buildTeacherChatResponse({
+    question: 'Qual fase apresenta maior dificuldade?',
+    rawContext: CONTEXT,
+    apiKey: 'test-key',
+    model: 'gemini-test',
+    requestId: 'teacher-phase-test',
+    createClient: () => ({
+      models: {
+        generateContent: async () => ({
+          text: '{"suggestion":"Retome o conceito da Fase 2 com um exemplo prático e observe a evolução coletiva nas próximas tentativas."}',
+        }),
+      },
+    }),
+  });
+
+  assert.equal(response.aiStatus, 'ok');
+  assert.match(response.suggestion, /Fase 2/);
+});
