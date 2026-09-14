@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ArrowBack,
-  CheckCircle,
-  EditNote,
-  History,
-  MenuBook,
-  Preview,
-  Publish,
-  Refresh,
-  Science,
-  Save,
-} from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import EditNote from '@mui/icons-material/EditNote';
+import History from '@mui/icons-material/History';
+import MenuBook from '@mui/icons-material/MenuBook';
+import Preview from '@mui/icons-material/Preview';
+import Publish from '@mui/icons-material/Publish';
+import Refresh from '@mui/icons-material/Refresh';
+import Science from '@mui/icons-material/Science';
+import Save from '@mui/icons-material/Save';
 import { useNavigate } from 'react-router-dom';
 import LearningModuleEditor from '../components/teacherStudio/LearningModuleEditor';
 import ResearchReviewPanel from '../components/teacherStudio/ResearchReviewPanel';

@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  AutoGraph,
-  Download,
-  GroupsOutlined,
-  MonetizationOn,
-  Refresh,
-  SchoolOutlined,
-  TaskAlt,
-  WarningAmber,
-} from '@mui/icons-material';
+import AutoGraph from '@mui/icons-material/AutoGraph';
+import Download from '@mui/icons-material/Download';
+import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
+import MonetizationOn from '@mui/icons-material/MonetizationOn';
+import Refresh from '@mui/icons-material/Refresh';
+import SchoolOutlined from '@mui/icons-material/SchoolOutlined';
+import TaskAlt from '@mui/icons-material/TaskAlt';
+import WarningAmber from '@mui/icons-material/WarningAmber';
 import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
 import TeacherDataChat from '../components/TeacherDataChat';

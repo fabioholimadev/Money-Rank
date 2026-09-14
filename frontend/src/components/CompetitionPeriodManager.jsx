@@ -1,13 +1,11 @@
 import { useRef, useState } from 'react';
-import {
-  Add,
-  CalendarMonth,
-  Close,
-  EditCalendar,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  StopCircleOutlined,
-} from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import Close from '@mui/icons-material/Close';
+import EditCalendar from '@mui/icons-material/EditCalendar';
+import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
+import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
+import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
 
 const STATUS_LABELS = Object.freeze({
   DRAFT: 'Rascunho',

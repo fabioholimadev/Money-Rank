@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { HealthAndSafety, Refresh } from '@mui/icons-material';
+import HealthAndSafety from '@mui/icons-material/HealthAndSafety';
+import Refresh from '@mui/icons-material/Refresh';
 import { API_BASE } from '../lib/api';
 import { fetchTeacherDiagnostics, runGeminiProbe } from '../services/diagnosticsService';
 

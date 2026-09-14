@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DeleteSweep, Science, StopCircleOutlined } from '@mui/icons-material';
+import DeleteSweep from '@mui/icons-material/DeleteSweep';
+import Science from '@mui/icons-material/Science';
+import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
 import { useNavigate } from 'react-router-dom';
 import {
   activateTeacherTestMode,

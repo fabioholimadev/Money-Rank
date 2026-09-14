@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  AutoAwesome,
-  Close,
-  ErrorOutlined,
-  Send,
-} from '@mui/icons-material';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import Close from '@mui/icons-material/Close';
+import ErrorOutlined from '@mui/icons-material/ErrorOutlined';
+import Send from '@mui/icons-material/Send';
 import { askTeacherData } from '../services/teacherDataChatService';
 
 const SUGGESTED_QUESTIONS = [
