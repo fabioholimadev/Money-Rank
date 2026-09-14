@@ -16,6 +16,7 @@ const ANSWER_REQUEST = /\b(gabarito|qual (é )?a (resposta|alternativa)|marco [a
 const OFFICIAL_HOST = /(?:^|\.)(?:gov\.br|gov|leg\.br|jus\.br|edu\.br|edu|who\.int|paho\.org)$/i;
 const PRIVATE_HOST = /^(?:localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|\[?::1\]?$)/i;
 export const MENTOR_QUESTION_MAX_LENGTH = 1_200;
+const MENTOR_ANSWER_MIN_LENGTH = 40;
 const MENTOR_ANSWER_MAX_LENGTH = 1_600;
 
 function cleanText(value, maximum = 500) {
@@ -67,7 +68,8 @@ function validateAiAnswer(value) {
           : excerpt.lastIndexOf(' ', MENTOR_ANSWER_MAX_LENGTH);
         return `${excerpt.slice(0, safeEnd > 0 ? safeEnd : MENTOR_ANSWER_MAX_LENGTH).trim()}…`;
       })();
-  if (answer.length < 120 || /\b(uid|e-?mail|token|prompt interno)\b/i.test(answer)) return null;
+  if (answer.length < MENTOR_ANSWER_MIN_LENGTH
+    || /\b(uid|e-?mail|token|prompt interno)\b/i.test(answer)) return null;
   return answer;
 }
 
@@ -158,6 +160,19 @@ export function selectUngroundedMentorResponse(response) {
   };
 }
 
+export function selectGeneratedMentorResponse(response) {
+  const answer = validateAiAnswer(response?.text);
+  if (!answer) return null;
+  return {
+    answer,
+    sources: [],
+    citations: [],
+    searchSuggestionsHtml: '',
+    searchUsed: false,
+    generatedBy: 'gemini',
+  };
+}
+
 export function isGroundingQuotaError(error) {
   return Number(error?.status) === 429
     || error?.name === 'RateLimitError'
@@ -221,7 +236,13 @@ export async function answerStudentMentor({
   timeoutMs = 15_000,
   allowOfflineFallback = false,
   onDiagnostic,
-  createClient = (key) => new GoogleGenAI({ apiKey: key }),
+  createClient = (key) => new GoogleGenAI({
+    apiKey: key,
+    httpOptions: {
+      timeout: timeoutMs,
+      retryOptions: { strategy: 'attempt-count-backoff', maxRetries: 1 },
+    },
+  }),
 }) {
   const normalizedQuestion = normalizeMentorQuestion(question);
   const classification = classifyMentorQuestion(normalizedQuestion);
@@ -292,17 +313,16 @@ export async function answerStudentMentor({
       }, { timeout: timeoutMs, maxRetries: 1 });
     } catch (groundingError) {
       if (!isGroundingQuotaError(groundingError)) throw groundingError;
-      const fallbackResponse = await ai.interactions.create({
+      const fallbackResponse = await ai.models.generateContent({
         model,
-        input: fallbackPrompt,
-        store: false,
-        generation_config: { max_output_tokens: 700 },
-      }, { timeout: timeoutMs, maxRetries: 1 });
-      const fallback = selectUngroundedMentorResponse(fallbackResponse);
+        contents: fallbackPrompt,
+        config: { maxOutputTokens: 700 },
+      });
+      const fallback = selectGeneratedMentorResponse(fallbackResponse);
       if (!fallback) throw new Error('ungrounded_response_required', { cause: groundingError });
       const diagnostic = {
         requestId,
-        interactionId: cleanText(fallbackResponse?.id, 160) || null,
+        interactionId: cleanText(fallbackResponse?.responseId, 160) || null,
         model,
         ok: true,
         searchUsed: false,

@@ -116,6 +116,7 @@ test('mantém resposta factual disponível sem chave do Gemini', async () => {
 });
 
 test('aceita JSON do analista envolvido por texto e bloco Markdown', async () => {
+  let generationPayload;
   const response = await buildTeacherChatResponse({
     question: 'Como está a participação?',
     rawContext: CONTEXT,
@@ -124,9 +125,12 @@ test('aceita JSON do analista envolvido por texto e bloco Markdown', async () =>
     requestId: 'teacher-json-test',
     createClient: () => ({
       models: {
-        generateContent: async () => ({
-          text: 'Here is the JSON:\n```json\n{"suggestion":"Retome os objetivos com a turma e combine uma etapa curta para ampliar o envolvimento."}\n```',
-        }),
+        generateContent: async (payload) => {
+          generationPayload = payload;
+          return {
+            text: 'Here is the JSON:\n```json\n{"suggestion":"Retome os objetivos com a turma e combine uma etapa curta para ampliar o envolvimento."}\n```',
+          };
+        },
       },
     }),
   });
@@ -134,6 +138,7 @@ test('aceita JSON do analista envolvido por texto e bloco Markdown', async () =>
   assert.equal(response.aiStatus, 'ok');
   assert.equal(response.generatedBy, 'aggregate+gemini');
   assert.match(response.suggestion, /Retome os objetivos/);
+  assert.equal(generationPayload.config.maxOutputTokens, 1_200);
 });
 
 test('aceita recomendação pedagógica que menciona uma fase agregada', async () => {

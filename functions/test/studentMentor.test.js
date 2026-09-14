@@ -8,6 +8,7 @@ import {
   MentorUnavailableError,
   MENTOR_QUESTION_MAX_LENGTH,
   normalizeMentorQuestion,
+  selectGeneratedMentorResponse,
   selectMentorResponse,
   selectUngroundedMentorResponse,
 } from '../src/studentMentor.js';
@@ -91,6 +92,14 @@ test('aceita resposta sem fontes somente no seletor de contingência', () => {
   assert.deepEqual(response.sources, []);
 });
 
+test('aceita resposta concisa do generateContent no fallback', () => {
+  const response = selectGeneratedMentorResponse({
+    text: 'IPI é um imposto federal aplicado a produtos industrializados e ligado à educação fiscal.',
+  });
+  assert.equal(response.generatedBy, 'gemini');
+  assert.equal(response.searchUsed, false);
+});
+
 test('reconhece indisponibilidade de cota do grounding', () => {
   assert.equal(isGroundingQuotaError({ name: 'RateLimitError', status: 429 }), true);
   assert.equal(isGroundingQuotaError({ message: 'quota exceeded' }), true);
@@ -98,7 +107,8 @@ test('reconhece indisponibilidade de cota do grounding', () => {
 });
 
 test('usa Gemini sem pesquisa quando o grounding não está disponível no tier', async () => {
-  const calls = [];
+  const interactionCalls = [];
+  const generationCalls = [];
   let diagnostic;
   const response = await answerStudentMentor({
     question: 'O que é IPI e como ele se relaciona com educação fiscal?',
@@ -110,24 +120,29 @@ test('usa Gemini sem pesquisa quando o grounding não está disponível no tier'
     createClient: () => ({
       interactions: {
         create: async (payload) => {
-          calls.push(payload);
-          if (calls.length === 1) {
-            const error = new Error('429 quota exceeded for grounding');
-            error.name = 'RateLimitError';
-            error.status = 429;
-            throw error;
-          }
+          interactionCalls.push(payload);
+          const error = new Error('429 quota exceeded for grounding');
+          error.name = 'RateLimitError';
+          error.status = 429;
+          throw error;
+        },
+      },
+      models: {
+        generateContent: async (payload) => {
+          generationCalls.push(payload);
           return {
-            id: 'interaction-fallback',
-            output_text: 'O IPI é um tributo federal relacionado a produtos industrializados. Na educação fiscal, ele ajuda a compreender como tributos podem estar incorporados aos preços e como a arrecadação se relaciona ao financiamento de políticas públicas. Para percentuais, exceções ou casos concretos, consulte sempre a legislação e os canais oficiais atualizados.',
+            responseId: 'generate-content-fallback',
+            text: 'O IPI é um tributo federal relacionado a produtos industrializados. Na educação fiscal, ele ajuda a compreender como tributos podem estar incorporados aos preços e como a arrecadação se relaciona ao financiamento de políticas públicas. Para percentuais, exceções ou casos concretos, consulte sempre a legislação e os canais oficiais atualizados.',
           };
         },
       },
     }),
   });
-  assert.equal(calls.length, 2);
-  assert.deepEqual(calls[0].tools, [{ type: 'google_search' }]);
-  assert.equal('tools' in calls[1], false);
+  assert.equal(interactionCalls.length, 1);
+  assert.deepEqual(interactionCalls[0].tools, [{ type: 'google_search' }]);
+  assert.equal(generationCalls.length, 1);
+  assert.equal(generationCalls[0].model, 'gemini-test');
+  assert.match(generationCalls[0].contents, /Pesquisa Google não está disponível/);
   assert.equal(response.generatedBy, 'gemini');
   assert.equal(response.searchUsed, false);
   assert.equal(diagnostic.ok, true);

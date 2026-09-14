@@ -315,7 +315,8 @@ export async function buildTeacherChatResponse({
         config: {
           responseMimeType: 'application/json',
           responseJsonSchema: RESPONSE_SCHEMA,
-          maxOutputTokens: 220,
+          // Gemini usa parte do limite para raciocínio interno antes de emitir o JSON.
+          maxOutputTokens: 1_200,
         },
       });
       const candidate = parseSuggestionResponse(response.text);
