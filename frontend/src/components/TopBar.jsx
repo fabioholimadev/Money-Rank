@@ -11,7 +11,7 @@ import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
-import { BrandMark } from './BrandIdentity';
+import BrandIdentity, { BrandMark, BrandName } from './BrandIdentity';
 
 const STUDENT_ITEMS = [
   { label: 'Início', to: '/student', Icon: HomeRounded },
@@ -35,7 +35,7 @@ function isCurrentPath(pathname, target) {
   return pathname === target || pathname.startsWith(`${target}/`);
 }
 
-function Brand({ collapsed = false, onToggle }) {
+function Brand({ collapsed = false, homePath, onToggle }) {
   return (
     <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
       <button
@@ -49,6 +49,11 @@ function Brand({ collapsed = false, onToggle }) {
         <BrandMark className="h-10 w-10" alt="" />
         <MenuOpenRounded className={`absolute -bottom-2 -right-2 rounded-full border-2 border-[#131f24] bg-[#49c0f8] p-0.5 text-[#10252d] transition-transform ${collapsed ? 'rotate-180' : ''}`} sx={{ fontSize: 19 }} />
       </button>
+      {!collapsed && (
+        <Link to={homePath} className="rounded-lg focus:outline-none focus:ring-2 focus:ring-[#49c0f8]">
+          <BrandName className="text-xl" />
+        </Link>
+      )}
     </div>
   );
 }
@@ -78,10 +83,13 @@ export default function TopBar({ collapsed = false, onToggle }) {
     <>
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
         <Link to={homePath} className="flex items-center gap-3 rounded-2xl">
-          <BrandMark className="h-11 w-11" />
+          <BrandIdentity
+            markClassName="h-11 w-11"
+            nameClassName="text-base min-[390px]:text-lg"
+          />
         </Link>
         {!isTeacher && (
-          <div className="flex items-center gap-3" aria-label="Resumo do progresso">
+          <div className="hidden items-center gap-3 min-[430px]:flex" aria-label="Resumo do progresso">
             <span className="flex items-center gap-1 font-black text-[#ffc800]">
               <LocalFireDepartmentRounded sx={{ fontSize: 20 }} />
               {formatCompact(aluno.streak_atual)}
@@ -95,7 +103,7 @@ export default function TopBar({ collapsed = false, onToggle }) {
       </header>
 
       <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r-2 border-[#37464f] bg-[#131f24] py-7 transition-[width,padding] duration-300 lg:flex ${collapsed ? 'w-[5.75rem] px-3' : 'w-[17.5rem] px-5'}`}>
-        <Brand collapsed={collapsed} onToggle={onToggle} />
+        <Brand collapsed={collapsed} homePath={homePath} onToggle={onToggle} />
         <nav className="mt-10 flex flex-col gap-2" aria-label={isTeacher ? 'Área do professor' : 'Área do estudante'}>
           {items.map(({ label, to, Icon }) => {
             const active = isCurrentPath(pathname, to);

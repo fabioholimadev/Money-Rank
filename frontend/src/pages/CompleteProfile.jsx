@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ProfileForm from '../components/ProfileForm';
 import { useAuth } from '../contexts/AuthContext';
 import { getHomePathForProfile } from '../lib/roleAccess';
-import { BrandMark } from '../components/BrandIdentity';
+import BrandIdentity from '../components/BrandIdentity';
 
 export default function CompleteProfile() {
   const { aluno, saveProfile, logout } = useAuth();
@@ -30,7 +30,11 @@ export default function CompleteProfile() {
 
       <div className="relative mx-auto w-full max-w-3xl">
         <header className="mb-8 text-center">
-          <BrandMark className="mx-auto mb-5 h-14 w-14" />
+          <BrandIdentity
+            className="mb-5 justify-center"
+            markClassName="h-14 w-14"
+            nameClassName="text-2xl"
+          />
           <p className="text-xs font-black uppercase tracking-[0.25em] text-[#58cc02]">
             Primeiro Acesso
           </p>
