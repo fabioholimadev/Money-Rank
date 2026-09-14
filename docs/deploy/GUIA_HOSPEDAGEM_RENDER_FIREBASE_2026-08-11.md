@@ -138,6 +138,7 @@ Cadastre no `money-rank-api`:
 | Chave | Valor/origem |
 |---|---|
 | `FRONTEND_ORIGIN` | `https://money-rank-web.onrender.com` |
+| `APP_CHECK_ENFORCEMENT` | `true` |
 | `FIREBASE_PROJECT_ID` | `money-rank` |
 | `FIREBASE_CLIENT_EMAIL` | secret da conta de serviço |
 | `FIREBASE_PRIVATE_KEY` | secret da conta de serviço, com quebras de linha preservadas |
@@ -146,8 +147,6 @@ Cadastre no `money-rank-api`:
 | `SQL_CONNECT_LOCATION` | `southamerica-east1` |
 | `SQL_CONNECT_SERVICE` | `money-rank-service` |
 | `SQL_CONNECT_CONNECTOR` | `money-rank-connector` |
-| `PERIOD_ID` | `piloto-money-rank-2026-08-11` |
-| `PERIOD_DATE` | `2026-08-11` |
 | `GEMINI_API_KEY` | secret, se mentor/analista forem usados |
 | `GEMINI_MODEL` | `gemini-3.6-flash` |
 
@@ -157,6 +156,7 @@ Cadastre no `money-rank-web`:
 
 | Chave | Valor |
 |---|---|
+| `NODE_VERSION` | `22.22.0` |
 | `VITE_API_URL` | URL pública efetiva do `money-rank-api` |
 | `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` | chave pública do App Check |
 | `VITE_DATA_CONNECT_ENABLED` | `false` |
@@ -164,6 +164,11 @@ Cadastre no `money-rank-web`:
 
 Não crie `VITE_FIREBASE_PRIVATE_KEY`, `VITE_GEMINI_API_KEY` ou qualquer outra
 variável de segredo no frontend.
+
+O build de produção executa `npm run build:render` e é interrompido antes da
+publicação quando a URL da API, a chave pública do App Check, o commit ou as
+flags de produção estiverem ausentes ou inseguras. O validador informa somente
+o nome da configuração inválida e nunca imprime os valores.
 
 ## 7. Publicar e validar
 

@@ -38,36 +38,17 @@ for (const phase of phases) {
 
   assert.deepEqual(
     slots.map(({ id }) => id),
-    [
-      CONTENT_MATERIAL_TYPES.VIDEO,
-      CONTENT_MATERIAL_TYPES.SLIDES,
-      CONTENT_MATERIAL_TYPES.SUMMARY,
-    ],
-    `${phase.id} deve reservar os três espaços de materiais.`,
+    [CONTENT_MATERIAL_TYPES.VIDEO],
+    `${phase.id} deve exibir somente o vídeo durante a apresentação.`,
   );
-  if (availableExtraIds.length > 0) {
-    assert.equal(
-      hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
-      false,
-      `${phase.id} deve exigir um material extra quando ele está publicado.`,
-    );
-    assert.equal(
-      hasCompletedContentVisits(phase, [
-        CONTENT_MATERIAL_TYPES.VIDEO,
-        availableExtraIds[0],
-      ]),
-      true,
-      `${phase.id} deve aceitar vídeo mais um material extra publicado.`,
-    );
-  } else {
-    assert.equal(
-      hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
-      true,
-      `${phase.id} deve aceitar somente o vídeo quando os extras estão pendentes.`,
-    );
-  }
+  assert.deepEqual(availableExtraIds, [], `${phase.id} não deve expor materiais extras.`);
+  assert.equal(
+    hasCompletedContentVisits(phase, [CONTENT_MATERIAL_TYPES.VIDEO]),
+    true,
+    `${phase.id} deve aceitar somente o vídeo.`,
+  );
 }
 
 console.log(
-  'Modelo de materiais validado: vídeo obrigatório e extras exigidos somente quando publicados.',
+  'Modelo de materiais validado: somente o vídeo é exibido e obrigatório.',
 );

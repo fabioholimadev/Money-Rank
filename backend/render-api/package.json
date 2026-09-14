@@ -2,7 +2,7 @@
   "name": "money-rank-render-api",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": { "node": ">=22 <23" },
   "scripts": {
     "bank:generate": "node scripts/pedagogical-bank.mjs --generate",
     "bank:import": "node scripts/pedagogical-bank.mjs --commit",
@@ -23,7 +23,7 @@
     "express-rate-limit": "^8.1.0",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.3.4",
-    "firebase-admin": "^14.2.0",
+    "firebase-admin": "^14.4.0",
     "helmet": "^8.1.0",
     "jszip": "^3.10.1"
   }

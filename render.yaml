@@ -5,11 +5,13 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    autoDeploy: false
+    autoDeployTrigger: off
     healthCheckPath: /healthz
     envVars:
       - key: NODE_ENV
         value: production
+      - key: APP_CHECK_ENFORCEMENT
+        value: "true"
       - key: FRONTEND_ORIGIN
         sync: false
       - key: TEACHER_EMAILS
@@ -36,7 +38,7 @@ services:
     runtime: static
     name: money-rank-web
     rootDir: frontend
-    buildCommand: npm ci && npm run lint && VITE_BUILD_COMMIT=$RENDER_GIT_COMMIT npm run build
+    buildCommand: npm ci && npm run lint && VITE_BUILD_COMMIT=$RENDER_GIT_COMMIT npm run build:render
     staticPublishPath: ./dist
     # Nao publica automaticamente enquanto API/Firestore nao estiverem prontos.
     autoDeployTrigger: off
@@ -58,13 +60,13 @@ services:
         name: Permissions-Policy
         value: camera=(), geolocation=(), microphone=()
     envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
       - key: VITE_API_URL
         sync: false
       - key: VITE_DATA_CONNECT_ENABLED
         value: "false"
       - key: VITE_USE_DATA_CONNECT_EMULATOR
-        value: "false"
-      - key: VITE_USE_FUNCTIONS_EMULATOR
         value: "false"
       - key: VITE_FIREBASE_AI_ENABLED
         value: "false"

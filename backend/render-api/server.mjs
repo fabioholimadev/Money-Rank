@@ -9,18 +9,24 @@ import { getAppCheck } from 'firebase-admin/app-check';
 import { getDataConnect } from 'firebase-admin/data-connect';
 import ExcelJS from 'exceljs';
 import { canAccessActivity } from '../../functions/src/activityAccess.js';
+import { assertRuntimeEnvironment, normalizeFrontendOrigins } from './runtime-config.mjs';
 
+const environmentAudit = assertRuntimeEnvironment();
+const runtimeConfig = environmentAudit.configuration;
 const config = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  dataConnect: {
-    location: process.env.SQL_CONNECT_LOCATION || 'southamerica-east1',
-    serviceId: process.env.SQL_CONNECT_SERVICE || 'money-rank-service',
-    connector: process.env.SQL_CONNECT_CONNECTOR || 'money-rank-connector',
-  },
+  ...runtimeConfig.firebase,
+  dataConnect: runtimeConfig.dataConnect,
 };
+
+console.log(JSON.stringify({
+  event: 'runtime_environment_audit',
+  ok: environmentAudit.ok,
+  warnings: environmentAudit.warnings,
+  frontendOriginCount: runtimeConfig.frontendOrigins.length,
+  teacherEmailCount: runtimeConfig.teacherEmails.length,
+  geminiConfigured: Boolean(runtimeConfig.gemini.apiKey),
+  geminiModel: runtimeConfig.gemini.model,
+}));
 
 export function configureFirebaseProjectEnvironment(projectId, environment = process.env) {
   const normalizedProjectId = String(projectId || '').trim();
@@ -48,13 +54,10 @@ if (!getApps().length) {
 
 const dataConnect = getDataConnect(config.dataConnect);
 const app = express();
-const teacherEmails = new Set(String(process.env.TEACHER_EMAILS || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean));
+const teacherEmails = new Set(runtimeConfig.teacherEmails);
 const isTest = process.env.NODE_ENV === 'test';
 export function allowedFrontendOrigins(environment = process.env) {
-  const configured = String(environment.FRONTEND_ORIGIN || '')
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+  const configured = normalizeFrontendOrigins(environment.FRONTEND_ORIGIN);
   const allowed = new Set(configured);
 
   if (environment.NODE_ENV === 'test') allowed.add('http://localhost:5173');
@@ -74,7 +77,7 @@ export function isFrontendOriginAllowed(origin, environment = process.env) {
     return false;
   }
 }
-const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
+const frontendOrigin = runtimeConfig.frontendOrigins.join(',');
 export function shouldEnforceAppCheck(environment = process.env) {
   if (environment.NODE_ENV === 'production') return true;
   return String(environment.APP_CHECK_ENFORCEMENT || 'true').trim().toLowerCase() !== 'false';
@@ -89,7 +92,10 @@ const runtimeDiagnostics = {
 };
 
 function geminiApiKey() {
-  return String(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+  return runtimeConfig.gemini.apiKey;
+}
+function geminiModel() {
+  return runtimeConfig.gemini.model;
 }
 
 app.disable('x-powered-by');
@@ -392,6 +398,7 @@ app.get('/readyz', async (req, res, next) => {
       service: 'money-rank-api',
       database: 'sql-connect',
       geminiConfigured: Boolean(geminiApiKey()),
+      environmentWarnings: environmentAudit.warnings,
       activeItems,
       counts,
       build: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'unknown',
@@ -719,7 +726,7 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
         question,
         rawContext: context,
         apiKey: geminiApiKey(),
-        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        model: geminiModel(),
         requestId: req.requestId,
         allowOfflineFallback: true,
         onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
@@ -741,7 +748,7 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
         question,
         rawContext: context,
         apiKey: geminiApiKey(),
-        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        model: geminiModel(),
         requestId: req.requestId,
         onDiagnostic: (diagnostic) => { runtimeDiagnostics.analyst = { ...diagnostic, at: new Date().toISOString() }; },
       });
@@ -913,7 +920,7 @@ app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (re
       },
       gemini: {
         keyRecognized: Boolean(geminiApiKey()),
-        model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+        model: geminiModel(),
         mentor: runtimeDiagnostics.mentor,
         analyst: runtimeDiagnostics.analyst,
       },
@@ -938,7 +945,7 @@ app.post('/api/teacher/diagnostics/gemini-probe', ...protectedRoute(requireTeach
       question: 'O que é IPI?',
       rawContext: { profile: { role: 'STUDENT', profileCompleted: true, currentPhase: 0 }, progress: [] },
       apiKey: geminiApiKey(),
-      model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+      model: geminiModel(),
       requestId: req.requestId,
       onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
     });
@@ -1030,6 +1037,6 @@ app.use((error, req, res, next) => {
   return res.status(status).json({ error: code, message, diagnosticCode: req.requestId, requestId: req.requestId });
 });
 
-const port = Number(process.env.PORT || 8080);
+const port = runtimeConfig.port;
 if (process.env.NODE_ENV !== 'test') app.listen(port, '0.0.0.0', () => console.log(JSON.stringify({ event: 'listening', port })));
 export { app };

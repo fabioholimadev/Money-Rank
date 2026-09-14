@@ -3,9 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": { "node": ">=22 <23" },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:render": "node scripts/validate-production-env.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test:competitive-economy": "node ../scripts/test-competitive-economy.mjs",
@@ -33,7 +35,7 @@
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.18.1"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

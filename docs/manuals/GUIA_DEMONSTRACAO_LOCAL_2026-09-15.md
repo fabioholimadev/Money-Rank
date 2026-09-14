@@ -53,6 +53,10 @@ Espere aparecer uma linha JSON com `"event":"listening"` e `"port":8080`.
 Deixe o terminal aberto: ele também mostrará diagnósticos do CapiMentor e do
 Capi Analista durante a apresentação.
 
+Antes da linha `listening`, a API mostra `runtime_environment_audit`. O campo
+`ok` deve ser `true` e `warnings` deve estar vazio. A mensagem contém apenas
+nomes e contagens, nunca os valores dos segredos.
+
 ## Terminal 3 — interface
 
 Abra o terceiro PowerShell na raiz e execute:
