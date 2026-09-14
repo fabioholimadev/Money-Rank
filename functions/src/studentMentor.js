@@ -168,6 +168,33 @@ function sanitizedFailure(error) {
   };
 }
 
+export function buildOfflineMentorResponse(question, context, requestId) {
+  const normalized = normalizeMentorQuestion(question).toLocaleLowerCase('pt-BR');
+  let answer;
+
+  if (/\bipi\b|imposto sobre produtos industrializados/.test(normalized)) {
+    answer = 'O IPI é um imposto federal relacionado a produtos industrializados. Na educação fiscal, ele ajuda a perceber que parte do preço de muitos produtos envolve tributos e que a arrecadação financia atividades públicas. A alíquota e as exceções variam conforme o produto e a legislação, então valores atuais devem ser conferidos nos canais oficiais da Receita Federal.';
+  } else if (/apost|jogo|bet/.test(normalized)) {
+    answer = 'Aposta não é investimento porque o resultado depende de um evento incerto e a plataforma opera com vantagem estatística. Um investimento também possui risco, mas representa um ativo ou projeto analisável, com regras de retorno e proteções próprias. Para proteger o orçamento, dinheiro de necessidades, dívidas ou reserva não deve ser tratado como saldo para apostas.';
+  } else if (/saúde|consumo|ultraprocess|açúcar/.test(normalized)) {
+    answer = 'Saúde e consumo se conectam pelas escolhas individuais, pelos preços, pela publicidade e pelos custos coletivos. Comparar rótulos, necessidade, frequência e impacto no orçamento ajuda a decidir com mais consciência. Políticas públicas de informação, prevenção e tributação também podem influenciar esse ambiente.';
+  } else if (/imposto|tribut|cidadania|política pública/.test(normalized)) {
+    answer = 'Educação fiscal liga tributos, serviços públicos e cidadania. Entender de onde vem a arrecadação e como o orçamento público é usado permite acompanhar prioridades, cobrar transparência e participar melhor das decisões coletivas. Regras e valores atuais sempre devem ser confirmados em fontes oficiais.';
+  } else {
+    answer = `Vamos relacionar sua pergunta ao tema atual: ${context.currentTopic}. Uma boa análise separa necessidade de desejo, compara custos e consequências, verifica a fonte da informação e considera impactos individuais e coletivos. Se você reformular a dúvida com uma situação concreta, eu posso ajudar a comparar as alternativas sem entregar o gabarito.`;
+  }
+
+  return {
+    answer,
+    sources: [],
+    citations: [],
+    searchSuggestionsHtml: '',
+    searchUsed: false,
+    generatedBy: 'offline-educational-fallback',
+    requestId,
+  };
+}
+
 export async function answerStudentMentor({
   question,
   rawContext,
@@ -175,6 +202,7 @@ export async function answerStudentMentor({
   model,
   requestId,
   timeoutMs = 15_000,
+  allowOfflineFallback = false,
   onDiagnostic,
   createClient = (key) => new GoogleGenAI({ apiKey: key }),
 }) {
@@ -199,8 +227,20 @@ export async function answerStudentMentor({
   const startedAt = Date.now();
   const normalizedApiKey = typeof apiKey === 'string' ? apiKey.trim() : '';
   if (!normalizedApiKey || normalizedApiKey === 'local-fallback') {
-    const diagnostic = { requestId, model, ok: false, searchUsed: false, sourceCount: 0, latencyMs: 0, reason: 'missing_api_key' };
+    const diagnostic = {
+      requestId,
+      model,
+      ok: allowOfflineFallback,
+      searchUsed: false,
+      sourceCount: 0,
+      latencyMs: 0,
+      reason: allowOfflineFallback ? 'offline_fallback_missing_api_key' : 'missing_api_key',
+    };
     onDiagnostic?.(diagnostic);
+    if (allowOfflineFallback) {
+      console.warn(JSON.stringify({ event: 'student_mentor_offline_fallback', ...diagnostic }));
+      return buildOfflineMentorResponse(normalizedQuestion, context, requestId);
+    }
     console.warn(JSON.stringify({ event: 'student_mentor_unavailable', ...diagnostic }));
     throw new MentorUnavailableError({ requestId, reason: 'missing_api_key', model });
   }

@@ -71,6 +71,10 @@ function privateItem(item) {
     stage: item.stage,
     pathCondition: item.pathCondition,
     tags: item.tags,
+    // A fase 3 escolhe o proximo item no servidor depois de cada decisao.
+    // O payload publico precisa permanecer no estado privado da sessao para
+    // que a proxima pergunta possa ser projetada sem consultar o banco outra vez.
+    publicPayload: item.publicPayload,
     ...item.secretPayload,
   };
 }

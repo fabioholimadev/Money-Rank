@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 process.env.NODE_ENV = 'test';
 process.env.TEACHER_EMAILS = 'teacher@example.com';
-const { app, allowedFrontendOrigins, isFrontendOriginAllowed, periodStateFromPeriods, shouldEnforceAppCheck } = await import('../server.mjs');
+const { app, allowedFrontendOrigins, configureFirebaseProjectEnvironment, isFrontendOriginAllowed, periodStateFromPeriods, shouldEnforceAppCheck } = await import('../server.mjs');
 let server; let base;
 test.before(async () => { server = http.createServer(app); await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve)); base = `http://127.0.0.1:${server.address().port}`; });
 test.after(() => server.close());
@@ -14,6 +14,12 @@ test('App Check can be disabled only outside production', () => {
   assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'test', APP_CHECK_ENFORCEMENT: 'false' }), false);
   assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'production', APP_CHECK_ENFORCEMENT: 'false' }), true);
   assert.equal(shouldEnforceAppCheck({ NODE_ENV: 'development' }), true);
+});
+test('shared Firebase modules receive an explicit project id', () => {
+  const environment = {};
+  configureFirebaseProjectEnvironment('money-rank', environment);
+  assert.equal(environment.GCLOUD_PROJECT, 'money-rank');
+  assert.equal(environment.GOOGLE_CLOUD_PROJECT, 'money-rank');
 });
 test('local CORS accepts loopback aliases even when Vite selects another port', () => {
   const environment = { NODE_ENV: 'development', FRONTEND_ORIGIN: 'http://localhost:5173' };

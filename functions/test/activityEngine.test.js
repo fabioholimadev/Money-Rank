@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  advanceIlusaoDinheiroSession,
   buildStaticSession,
   scoreActivitySession,
 } from '../src/activityEngine.js';
@@ -97,6 +98,22 @@ test('Ilusão aplica nota 70/30, crédito limitado e final com precedência', ()
   assert.equal(result.score, Math.round(result.quality * 0.7 + result.creditScore * 0.3));
   assert.equal(result.ending, 'EQUILIBRIO');
   assert.equal(result.passed, true);
+});
+
+test('Ilusão entrega a pergunta publica da proxima etapa', () => {
+  const prepared = buildStaticSession(3, { random: fixedRandom });
+  const firstItem = prepared.answerKey.items.find((item) =>
+    prepared.answerKey.selectedItemIds.includes(item.itemId));
+  const choiceId = Object.keys(firstItem.scores)[0];
+  const advanced = advanceIlusaoDinheiroSession(
+    prepared.answerKey,
+    { itemId: firstItem.itemId, choiceId },
+    fixedRandom,
+  );
+  assert.equal(advanced.nextItem.stage, 2);
+  assert.equal(typeof advanced.nextItem.prompt, 'string');
+  assert.equal(advanced.nextItem.prompt.length > 0, true);
+  assert.equal(advanced.nextItem.options.length > 0, true);
 });
 
 test('Engenharia sorteia oito temas, 2/4/2 e quatro V/quatro F', () => {

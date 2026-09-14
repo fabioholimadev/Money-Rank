@@ -22,6 +22,19 @@ const config = {
   },
 };
 
+export function configureFirebaseProjectEnvironment(projectId, environment = process.env) {
+  const normalizedProjectId = String(projectId || '').trim();
+  if (!normalizedProjectId) return environment;
+  environment.GCLOUD_PROJECT ||= normalizedProjectId;
+  environment.GOOGLE_CLOUD_PROJECT ||= normalizedProjectId;
+  return environment;
+}
+
+// Os modulos compartilhados de functions resolvem uma segunda copia do
+// firebase-admin. As variaveis tornam o projeto explicito tambem para essa
+// instancia, inclusive quando ela e carregada dinamicamente no ambiente local.
+configureFirebaseProjectEnvironment(config.projectId);
+
 if (!getApps().length) {
   const credential = config.projectId && config.clientEmail && config.privateKey
     ? cert({ projectId: config.projectId, clientEmail: config.clientEmail, privateKey: config.privateKey })
@@ -708,6 +721,7 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
         apiKey: geminiApiKey(),
         model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
         requestId: req.requestId,
+        allowOfflineFallback: true,
         onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
       });
       if (!answer) return res.status(403).json({ error: 'student_profile_required' });

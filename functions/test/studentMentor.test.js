@@ -45,6 +45,20 @@ test('falha de pesquisa fica explícita e não vira resposta de contingência', 
     && error.requestId === 'req-test');
 });
 
+test('CapiMentor oferece explicação pedagógica local quando a API não foi configurada', async () => {
+  const response = await answerStudentMentor({
+    question: 'O que é IPI?',
+    rawContext: CONTEXT,
+    apiKey: 'local-fallback',
+    model: 'unused',
+    requestId: 'offline-test',
+    allowOfflineFallback: true,
+  });
+  assert.match(response.answer, /imposto federal/i);
+  assert.equal(response.generatedBy, 'offline-educational-fallback');
+  assert.equal(response.searchUsed, false);
+});
+
 test('rejeita resposta do Gemini sem prova de Pesquisa Google', () => {
   const response = selectMentorResponse({
     output_text: 'Um orçamento permite visualizar receitas, necessidades e escolhas ao longo do tempo. Ao comparar gastos recorrentes com uma meta, o estudante consegue avaliar prioridades e reduzir decisões por impulso sem transformar planejamento em punição. Fontes oficiais ajudam a confirmar conceitos e dados antes de tomar uma decisão.',
