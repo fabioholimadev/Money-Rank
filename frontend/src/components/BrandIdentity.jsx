@@ -1,16 +1,11 @@
 export function BrandMark({ className = 'h-11 w-11', alt = 'Money Rank' }) {
-  return <img src="/brand/money-rank-mark.svg" alt={alt} className={`shrink-0 object-contain ${className}`} />;
+  return <img src="/brand/capi-mark.png" alt={alt} className={`shrink-0 object-contain ${className}`} />;
 }
 
-export function BrandWordmark({ className = 'h-7 w-auto', alt = 'Money Rank' }) {
-  return <img src="/brand/money-rank-wordmark.svg" alt={alt} className={`object-contain ${className}`} />;
-}
-
-export default function BrandIdentity({ compact = false, className = '' }) {
+export default function BrandIdentity({ className = '' }) {
   return (
-    <span className={`inline-flex items-center gap-3 ${className}`}>
+    <span className={`inline-flex items-center ${className}`}>
       <BrandMark />
-      {!compact && <BrandWordmark />}
     </span>
   );
 }

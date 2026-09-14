@@ -5,7 +5,6 @@ import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
-import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import MenuRounded from '@mui/icons-material/MenuRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
@@ -67,32 +66,6 @@ function SectionTitle({ eyebrow, title, description, centered = false }) {
       <p className="text-xs font-black uppercase tracking-[0.24em] text-[#58cc02]">{eyebrow}</p>
       <h2 className="mt-3 text-3xl font-black leading-tight text-white sm:text-4xl">{title}</h2>
       {description && <p className="mt-4 text-base leading-relaxed text-[#a5b7c2] sm:text-lg">{description}</p>}
-    </div>
-  );
-}
-
-function VisualPlaceholder({ label, description, src }) {
-  const [imageUnavailable, setImageUnavailable] = useState(false);
-
-  if (src && !imageUnavailable) {
-    return (
-      <figure className="min-h-64 overflow-hidden rounded-3xl border-2 border-[#37464f] bg-[#17262c]">
-        <img
-          src={src}
-          alt={label}
-          className="h-full min-h-64 w-full object-cover"
-          onError={() => setImageUnavailable(true)}
-        />
-      </figure>
-    );
-  }
-
-  return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] p-7 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f2d33] text-[#49c0f8]"><InsightsRounded sx={{ fontSize: 30 }} /></span>
-      <p className="mt-4 font-black text-white">{label}</p>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#a5b7c2]">{description}</p>
-      <span className="mt-5 rounded-xl border-2 border-[#37464f] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-wider text-[#78909c]">Imagem será adicionada em /public</span>
     </div>
   );
 }
@@ -165,17 +138,6 @@ export default function LandingPage() {
                 ['2', 'Coloque em prática', 'Resolva desafios e analise situações do cotidiano em um ambiente educativo, sem usar dinheiro real.'],
                 ['3', 'Acompanhe sua evolução', 'Receba retorno, conquiste CapiCoins virtuais, mantenha sua sequência e visualize o progresso.'],
               ].map(([number, title, text]) => <article key={number} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-7"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#58cc02] text-xl font-black text-[#13210f] shadow-[0_4px_0_#46a302]">{number}</span><h3 className="mt-6 text-xl font-black text-white">{title}</h3><p className="mt-3 leading-relaxed text-[#a5b7c2]">{text}</p></article>)}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-5 py-20 sm:px-8">
-          <div className="mx-auto max-w-6xl">
-            <SectionTitle eyebrow="Produto em ação" title="Veja como a Money Rank transforma conteúdo em experiência" description="Os espaços abaixo estão preparados para receber capturas reais, sem sobreposições promocionais ou dados pessoais." />
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              <VisualPlaceholder src="/landing/produto-trilha.webp" label="Tela da trilha" description="Caminho de aprendizagem, etapas concluídas e próximo desafio." />
-              <VisualPlaceholder src="/landing/produto-desafio.webp" label="Desafio e feedback" description="Situação prática, opções e explicação para o estudante." />
-              <VisualPlaceholder src="/landing/produto-progresso.webp" label="Progresso e turma" description="Sequência, conquistas, ranking ou painel do professor." />
             </div>
           </div>
         </section>

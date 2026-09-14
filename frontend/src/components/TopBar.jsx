@@ -11,7 +11,7 @@ import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
-import { BrandMark, BrandWordmark } from './BrandIdentity';
+import { BrandMark } from './BrandIdentity';
 
 const STUDENT_ITEMS = [
   { label: 'Início', to: '/student', Icon: HomeRounded },
@@ -35,25 +35,20 @@ function isCurrentPath(pathname, target) {
   return pathname === target || pathname.startsWith(`${target}/`);
 }
 
-function Brand({ homePath, collapsed = false, onToggle }) {
+function Brand({ collapsed = false, onToggle }) {
   return (
     <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
       <button
         type="button"
         onClick={onToggle}
-        className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302] transition-transform active:translate-y-1 active:shadow-none"
+        className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-[#58cc02] bg-[#17262c] p-1 shadow-[0_4px_0_#0d171b] transition-transform active:translate-y-1 active:shadow-none"
         aria-label={collapsed ? 'Abrir barra lateral' : 'Recolher barra lateral'}
         aria-expanded={!collapsed}
         title={collapsed ? 'Abrir menu' : 'Recolher menu'}
       >
-        <BrandMark className="h-11 w-11" alt="" />
+        <BrandMark className="h-10 w-10" alt="" />
         <MenuOpenRounded className={`absolute -bottom-2 -right-2 rounded-full border-2 border-[#131f24] bg-[#49c0f8] p-0.5 text-[#10252d] transition-transform ${collapsed ? 'rotate-180' : ''}`} sx={{ fontSize: 19 }} />
       </button>
-      {!collapsed && (
-        <Link to={homePath} className="rounded-xl focus-visible:outline-offset-4">
-          <BrandWordmark className="h-7 w-auto" />
-        </Link>
-      )}
     </div>
   );
 }
@@ -83,8 +78,7 @@ export default function TopBar({ collapsed = false, onToggle }) {
     <>
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
         <Link to={homePath} className="flex items-center gap-3 rounded-2xl">
-          <BrandMark className="h-10 w-10" />
-          <BrandWordmark className="hidden h-6 w-auto min-[390px]:block" />
+          <BrandMark className="h-11 w-11" />
         </Link>
         {!isTeacher && (
           <div className="flex items-center gap-3" aria-label="Resumo do progresso">
@@ -101,7 +95,7 @@ export default function TopBar({ collapsed = false, onToggle }) {
       </header>
 
       <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r-2 border-[#37464f] bg-[#131f24] py-7 transition-[width,padding] duration-300 lg:flex ${collapsed ? 'w-[5.75rem] px-3' : 'w-[17.5rem] px-5'}`}>
-        <Brand homePath={homePath} collapsed={collapsed} onToggle={onToggle} />
+        <Brand collapsed={collapsed} onToggle={onToggle} />
         <nav className="mt-10 flex flex-col gap-2" aria-label={isTeacher ? 'Área do professor' : 'Área do estudante'}>
           {items.map(({ label, to, Icon }) => {
             const active = isCurrentPath(pathname, to);

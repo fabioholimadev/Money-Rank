@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title id="title">Money Rank</title>
-  <rect x="4" y="2" width="56" height="56" rx="18" fill="#58cc02"/>
-  <path d="M4 40h56v6c0 8.84-7.16 16-16 16H20C11.16 62 4 54.84 4 46v-6Z" fill="#46a302"/>
-  <rect x="4" y="2" width="56" height="54" rx="18" fill="#58cc02"/>
-  <text x="32" y="37" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="900" fill="#13210f">MR</text>
-</svg>
