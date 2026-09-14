@@ -35,13 +35,13 @@ const JOURNEY = [
 ];
 
 const TEAM = [
-  ['S', 'Syllas', 'Professor coordenador'],
-  ['FL', 'Fabio de Lima', 'Programador'],
-  ['MV', 'Maria Vitória', 'Programadora'],
-  ['DM', 'Diógenes Melo', 'Programador'],
-  ['LN', 'Laura Nislyne', 'Designer'],
-  ['GH', 'Gabriel Holanda', 'Designer'],
-  ['VG', 'Vitor Gabriel', 'Designer'],
+  ['S', 'Syllas', 'Professor coordenador', '/landing/equipe/syllas.webp'],
+  ['FL', 'Fabio de Lima', 'Programador', '/landing/equipe/fabio-de-lima.webp'],
+  ['MV', 'Maria Vitória', 'Programadora', '/landing/equipe/maria-vitoria.webp'],
+  ['DM', 'Diógenes Melo', 'Programador', '/landing/equipe/diogenes-melo.webp'],
+  ['LN', 'Laura Nislyne', 'Designer', '/landing/equipe/laura-nislyne.webp'],
+  ['GH', 'Gabriel Holanda', 'Designer', '/landing/equipe/gabriel-holanda.webp'],
+  ['VG', 'Vitor Gabriel', 'Designer', '/landing/equipe/vitor-gabriel.webp'],
 ];
 
 const FAQ = [
@@ -71,7 +71,22 @@ function SectionTitle({ eyebrow, title, description, centered = false }) {
   );
 }
 
-function VisualPlaceholder({ label, description }) {
+function VisualPlaceholder({ label, description, src }) {
+  const [imageUnavailable, setImageUnavailable] = useState(false);
+
+  if (src && !imageUnavailable) {
+    return (
+      <figure className="min-h-64 overflow-hidden rounded-3xl border-2 border-[#37464f] bg-[#17262c]">
+        <img
+          src={src}
+          alt={label}
+          className="h-full min-h-64 w-full object-cover"
+          onError={() => setImageUnavailable(true)}
+        />
+      </figure>
+    );
+  }
+
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] p-7 text-center">
       <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f2d33] text-[#49c0f8]"><InsightsRounded sx={{ fontSize: 30 }} /></span>
@@ -80,6 +95,16 @@ function VisualPlaceholder({ label, description }) {
       <span className="mt-5 rounded-xl border-2 border-[#37464f] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-wider text-[#78909c]">Imagem será adicionada em /public</span>
     </div>
   );
+}
+
+function Portrait({ initials, name, src }) {
+  const [imageUnavailable, setImageUnavailable] = useState(false);
+
+  if (src && !imageUnavailable) {
+    return <img src={src} alt={`Retrato de ${name}`} className="mx-auto aspect-square w-24 rounded-3xl border-2 border-[#536670] object-cover" onError={() => setImageUnavailable(true)} />;
+  }
+
+  return <div className="mx-auto flex aspect-square max-w-24 items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] text-xl font-black text-[#49c0f8]" aria-label={`Espaço para retrato de ${name}`}>{initials}</div>;
 }
 
 export default function LandingPage() {
@@ -148,9 +173,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-6xl">
             <SectionTitle eyebrow="Produto em ação" title="Veja como a Money Rank transforma conteúdo em experiência" description="Os espaços abaixo estão preparados para receber capturas reais, sem sobreposições promocionais ou dados pessoais." />
             <div className="mt-10 grid gap-6 lg:grid-cols-3">
-              <VisualPlaceholder label="Tela da trilha" description="Caminho de aprendizagem, etapas concluídas e próximo desafio." />
-              <VisualPlaceholder label="Desafio e feedback" description="Situação prática, opções e explicação para o estudante." />
-              <VisualPlaceholder label="Progresso e turma" description="Sequência, conquistas, ranking ou painel do professor." />
+              <VisualPlaceholder src="/landing/produto-trilha.webp" label="Tela da trilha" description="Caminho de aprendizagem, etapas concluídas e próximo desafio." />
+              <VisualPlaceholder src="/landing/produto-desafio.webp" label="Desafio e feedback" description="Situação prática, opções e explicação para o estudante." />
+              <VisualPlaceholder src="/landing/produto-progresso.webp" label="Progresso e turma" description="Sequência, conquistas, ranking ou painel do professor." />
             </div>
           </div>
         </section>
@@ -203,7 +228,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-6xl">
             <SectionTitle centered eyebrow="Equipe" title="Quem constrói a Money Rank" description="Um projeto desenvolvido por estudantes e educadores, reunindo programação, design e pesquisa para aproximar finanças e cidadania da realidade escolar." />
             <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {TEAM.map(([initials, name, role]) => <article key={name} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-5 text-center"><div className="mx-auto flex aspect-square max-w-24 items-center justify-center rounded-3xl border-2 border-dashed border-[#536670] bg-[#17262c] text-xl font-black text-[#49c0f8]" aria-label={`Espaço para retrato de ${name}`}>{initials}</div><h3 className="mt-4 font-black text-white">{name}</h3><p className="mt-1 text-xs font-bold text-[#a5b7c2]">{role}</p></article>)}
+              {TEAM.map(([initials, name, role, src]) => <article key={name} className="rounded-3xl border-2 border-[#37464f] bg-[#1f2d33] p-5 text-center"><Portrait initials={initials} name={name} src={src} /><h3 className="mt-4 font-black text-white">{name}</h3><p className="mt-1 text-xs font-bold text-[#a5b7c2]">{role}</p></article>)}
             </div>
           </div>
         </section>

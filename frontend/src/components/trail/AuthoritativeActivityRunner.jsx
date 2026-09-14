@@ -21,6 +21,17 @@ const CHARACTERS = Object.freeze([
   { id: 'rafael-vape', name: 'Rafael', description: 'Custo recorrente, pressão social, dependência e apoio.' },
 ]);
 
+const DIFFICULTY_LABELS = Object.freeze({
+  EASY: 'Fácil',
+  MEDIUM: 'Média',
+  HARD: 'Difícil',
+});
+
+function difficultyLabel(value) {
+  const normalized = String(value || '').trim().toUpperCase();
+  return DIFFICULTY_LABELS[normalized] || value;
+}
+
 function sessionItems(phaseNumber, session) {
   if (phaseNumber === 1) return session.questions || [];
   if (phaseNumber === 2) return session.caseData?.decisions || [];
@@ -202,7 +213,7 @@ export default function AuthoritativeActivityRunner({ phaseNumber, title, testMo
               <span className="px-3 py-1 rounded-full bg-[#17262c] border border-[#37464f]">
                 Etapa {itemIndex + 1}{phaseNumber === 3 ? ' de 6' : ` de ${items.length}`}
               </span>
-              <span className="text-[#58cc02] font-bold">{currentItem.difficulty}</span>
+              <span className="text-[#58cc02] font-bold">{difficultyLabel(currentItem.difficulty)}</span>
               {phaseNumber === 3 && (
                 <span className="text-amber-400 font-bold">Crédito Atual: {currentCredit}</span>
               )}
