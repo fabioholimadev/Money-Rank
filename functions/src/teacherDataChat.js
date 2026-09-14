@@ -229,6 +229,33 @@ function validateSuggestion(value) {
   return suggestion;
 }
 
+function parseSuggestionResponse(value) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) return null;
+
+  const fencedJson = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+  const objectStart = text.indexOf('{');
+  const objectEnd = text.lastIndexOf('}');
+  const candidates = [
+    text,
+    fencedJson,
+    objectStart >= 0 && objectEnd > objectStart
+      ? text.slice(objectStart, objectEnd + 1)
+      : null,
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      const suggestion = validateSuggestion(parsed?.suggestion);
+      if (suggestion) return suggestion;
+    } catch {
+      // Alguns modelos envolvem o JSON em uma frase ou em um bloco Markdown.
+    }
+  }
+  return null;
+}
+
 export async function buildTeacherChatResponse({
   question,
   rawContext,
@@ -237,6 +264,13 @@ export async function buildTeacherChatResponse({
   requestId,
   timeoutMs = 15_000,
   onDiagnostic,
+  createClient = (key) => new GoogleGenAI({
+    apiKey: key,
+    httpOptions: {
+      timeout: timeoutMs,
+      retryOptions: { strategy: 'attempt-count-backoff', maxRetries: 1 },
+    },
+  }),
 }) {
   const intent = classifyTeacherQuestion(question);
   if (intent === TEACHER_CHAT_INTENTS.UNSUPPORTED) {
@@ -260,13 +294,7 @@ export async function buildTeacherChatResponse({
   if (apiKey && apiKey !== 'local-fallback') {
     const startedAt = Date.now();
     try {
-      const ai = new GoogleGenAI({
-        apiKey,
-        httpOptions: {
-          timeout: timeoutMs,
-          retryOptions: { strategy: 'attempt-count-backoff', maxRetries: 1 },
-        },
-      });
+      const ai = createClient(apiKey);
       const response = await ai.models.generateContent({
         model,
         contents: [
@@ -283,9 +311,7 @@ export async function buildTeacherChatResponse({
           maxOutputTokens: 180,
         },
       });
-      const candidate = validateSuggestion(
-        JSON.parse(response.text)?.suggestion,
-      );
+      const candidate = parseSuggestionResponse(response.text);
       if (candidate) {
         suggestion = candidate;
         generatedBy = 'aggregate+gemini';

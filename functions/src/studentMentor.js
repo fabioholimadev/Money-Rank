@@ -15,6 +15,8 @@ const OUT_OF_SCOPE = [
 const ANSWER_REQUEST = /\b(gabarito|qual (é )?a (resposta|alternativa)|marco [abcd]|responda por mim)\b/i;
 const OFFICIAL_HOST = /(?:^|\.)(?:gov\.br|gov|leg\.br|jus\.br|edu\.br|edu|who\.int|paho\.org)$/i;
 const PRIVATE_HOST = /^(?:localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|\[?::1\]?$)/i;
+export const MENTOR_QUESTION_MAX_LENGTH = 1_200;
+const MENTOR_ANSWER_MAX_LENGTH = 1_600;
 
 function cleanText(value, maximum = 500) {
   if (typeof value !== 'string') return '';
@@ -22,7 +24,7 @@ function cleanText(value, maximum = 500) {
 }
 
 export function normalizeMentorQuestion(value) {
-  return cleanText(value, 500);
+  return cleanText(value, MENTOR_QUESTION_MAX_LENGTH);
 }
 
 export function classifyMentorQuestion(question) {
@@ -49,7 +51,22 @@ function normalizeStudentContext(rawContext) {
 }
 
 function validateAiAnswer(value) {
-  const answer = cleanText(value, 5_000);
+  const fullAnswer = cleanText(value, 8_000);
+  const answer = fullAnswer.length <= MENTOR_ANSWER_MAX_LENGTH
+    ? fullAnswer
+    : (() => {
+        const excerpt = fullAnswer.slice(0, MENTOR_ANSWER_MAX_LENGTH + 1);
+        const sentenceEnd = Math.max(
+          excerpt.lastIndexOf('. '),
+          excerpt.lastIndexOf('! '),
+          excerpt.lastIndexOf('? '),
+          excerpt.lastIndexOf('\n'),
+        );
+        const safeEnd = sentenceEnd >= 700
+          ? sentenceEnd + 1
+          : excerpt.lastIndexOf(' ', MENTOR_ANSWER_MAX_LENGTH);
+        return `${excerpt.slice(0, safeEnd > 0 ? safeEnd : MENTOR_ANSWER_MAX_LENGTH).trim()}…`;
+      })();
   if (answer.length < 120 || /\b(uid|e-?mail|token|prompt interno)\b/i.test(answer)) return null;
   return answer;
 }
@@ -252,6 +269,8 @@ export async function answerStudentMentor({
       'Antes de responder, execute a Pesquisa Google e use ao menos uma fonte pertinente. Priorize fontes oficiais.',
       'O escopo inclui educação financeira e fiscal, cidadania, saúde pública, consumo responsável, direitos do consumidor, orçamento público e políticas públicas relacionadas.',
       'Responda em português brasileiro de forma específica para a pergunta. Diferencie fatos, interpretações e exemplos.',
+      'Seja conciso: use no máximo 1.200 caracteres, com parágrafos curtos, títulos simples e no máximo quatro itens.',
+      'Finalize todas as frases e não inclua saudações longas, linhas horizontais ou seções redundantes.',
       'Não invente fontes, não entregue gabaritos e não forneça aconselhamento médico, jurídico ou financeiro individual.',
       'Não mencione contexto interno, saldo, UID, e-mail ou outros identificadores.',
       `Tema atual da trilha: ${context.currentTopic}.`,
@@ -269,7 +288,7 @@ export async function answerStudentMentor({
         input: prompt,
         store: false,
         tools: [{ type: 'google_search' }],
-        generation_config: { max_output_tokens: 1_400 },
+        generation_config: { max_output_tokens: 700 },
       }, { timeout: timeoutMs, maxRetries: 1 });
     } catch (groundingError) {
       if (!isGroundingQuotaError(groundingError)) throw groundingError;
@@ -277,7 +296,7 @@ export async function answerStudentMentor({
         model,
         input: fallbackPrompt,
         store: false,
-        generation_config: { max_output_tokens: 1_400 },
+        generation_config: { max_output_tokens: 700 },
       }, { timeout: timeoutMs, maxRetries: 1 });
       const fallback = selectUngroundedMentorResponse(fallbackResponse);
       if (!fallback) throw new Error('ungrounded_response_required', { cause: groundingError });

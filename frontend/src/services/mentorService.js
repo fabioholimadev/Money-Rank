@@ -14,6 +14,7 @@ export async function askStudentMentor(question) {
       ? result.searchSuggestionsHtml
       : '',
     generatedBy: String(result?.generatedBy || 'policy'),
+    model: String(result?.model || ''),
     requestId: String(result?.requestId || ''),
     searchUsed: result?.searchUsed === true,
     citations: Array.isArray(result?.citations) ? result.citations : [],

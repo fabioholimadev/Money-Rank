@@ -25,6 +25,43 @@ const SUGESTOES = [
 ];
 
 const MENTOR_AVATAR = '/avatars/capi-mentor.jpg';
+const QUESTION_MAX_LENGTH = 1_200;
+
+function InlineMarkdown({ children }) {
+  return String(children || '').split(/(\*\*[^*\n]+\*\*)/g).map((part, index) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={`${part}-${index}`} className="font-black text-white">{part.slice(2, -2)}</strong>
+      : part,
+  );
+}
+
+function FormattedMessage({ content }) {
+  return (
+    <div className="space-y-2.5">
+      {String(content || '').split('\n').map((rawLine, index) => {
+        const line = rawLine.trim();
+        if (!line) return null;
+        if (/^-{3,}$/.test(line)) return <hr key={`separator-${index}`} className="border-[#37464f]" />;
+
+        const heading = line.match(/^#{1,6}\s+(.+)$/)?.[1];
+        if (heading) return <p key={`heading-${index}`} className="pt-1 font-black text-white"><InlineMarkdown>{heading}</InlineMarkdown></p>;
+
+        const listItem = line.match(/^(?:[-*]|•|\d+[.)])\s+(.+)$/)?.[1];
+        if (listItem) return <p key={`item-${index}`} className="flex gap-2"><span className="font-black text-[#58cc02]">•</span><span><InlineMarkdown>{listItem}</InlineMarkdown></span></p>;
+
+        return <p key={`paragraph-${index}`}><InlineMarkdown>{line}</InlineMarkdown></p>;
+      })}
+    </div>
+  );
+}
+
+function modelLabel(model, grounded) {
+  const normalized = String(model || '').trim();
+  const readable = normalized
+    ? normalized.split('-').map((part) => part === 'gemini' ? 'Gemini' : part === 'flash' ? 'Flash' : part).join(' ')
+    : 'Gemini';
+  return grounded ? `${readable} + Pesquisa Google` : readable;
+}
 
 export default function CapiMentor() {
   const { aluno } = useAuth();
@@ -82,6 +119,7 @@ export default function CapiMentor() {
           sources: resposta.sources,
           searchSuggestionsHtml: resposta.searchSuggestionsHtml,
           generatedBy: resposta.generatedBy,
+          model: resposta.model,
         },
       ]);
     } catch (e) {
@@ -179,15 +217,15 @@ export default function CapiMentor() {
                         : 'rounded-bl-xs border border-[#37464f] bg-[#17262c] text-[#f1f7fb]'
                     }`}
                   >
-                    {m.content}
+                    <FormattedMessage content={m.content} />
                     {m.generatedBy && (
                       <p className={`mt-2 text-[10px] font-black uppercase tracking-wider ${
                         m.generatedBy === 'policy' ? 'text-amber-400' : 'text-[#58cc02]'
                       }`}>
                         {m.generatedBy === 'gemini-grounded'
-                          ? 'Gemini + Grounding Web'
+                          ? modelLabel(m.model, true)
                           : m.generatedBy === 'gemini'
-                            ? 'Gemini 2.0 Flash'
+                            ? modelLabel(m.model, false)
                             : 'Diretriz de Segurança'}
                       </p>
                     )}
@@ -272,7 +310,8 @@ export default function CapiMentor() {
                 ref={inputRef}
                 rows={1}
                 value={rascunho}
-                onChange={(e) => setRascunho(e.target.value.slice(0, 500))}
+                onChange={(e) => setRascunho(e.target.value.slice(0, QUESTION_MAX_LENGTH))}
+                maxLength={QUESTION_MAX_LENGTH}
                 onKeyDown={aoTeclar}
                 placeholder="Tire dúvidas sobre finanças e cidadania…"
                 className="max-h-28 flex-1 resize-none bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder:text-[#78909c] focus:outline-none"
@@ -287,7 +326,7 @@ export default function CapiMentor() {
               </button>
             </div>
             <p className="mt-2 px-1 text-center text-[10px] text-[#78909c] font-medium">
-              O CapiMentor é um tutor IA para estudos. Sempre confirme decisões importantes.
+              {rascunho.length}/{QUESTION_MAX_LENGTH} • O CapiMentor é um tutor IA para estudos. Confirme decisões importantes.
             </p>
          </div>
         </div>

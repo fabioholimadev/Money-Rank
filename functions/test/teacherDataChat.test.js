@@ -114,3 +114,24 @@ test('mantém resposta factual disponível sem chave do Gemini', async () => {
   assert.match(response.answer, /40%/);
   assert.ok(response.suggestion.length >= 20);
 });
+
+test('aceita JSON do analista envolvido por texto e bloco Markdown', async () => {
+  const response = await buildTeacherChatResponse({
+    question: 'Como está a participação?',
+    rawContext: CONTEXT,
+    apiKey: 'test-key',
+    model: 'gemini-test',
+    requestId: 'teacher-json-test',
+    createClient: () => ({
+      models: {
+        generateContent: async () => ({
+          text: 'Here is the JSON:\n```json\n{"suggestion":"Retome os objetivos com a turma e combine uma etapa curta para ampliar o envolvimento."}\n```',
+        }),
+      },
+    }),
+  });
+
+  assert.equal(response.aiStatus, 'ok');
+  assert.equal(response.generatedBy, 'aggregate+gemini');
+  assert.match(response.suggestion, /Retome os objetivos/);
+});
