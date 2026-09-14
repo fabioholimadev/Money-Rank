@@ -9,6 +9,7 @@ import InsightsRounded from '@mui/icons-material/InsightsRounded';
 import MenuRounded from '@mui/icons-material/MenuRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
+import BrandIdentity from '../components/BrandIdentity';
 
 const NAV_ITEMS = [
   ['Como funciona', '#como-funciona'],
@@ -55,8 +56,7 @@ const FAQ = [
 function Brand() {
   return (
     <a href="#inicio" className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#49c0f8]">
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302]">MR</span>
-      <span className="text-xl font-black text-white">MONEY<span className="text-[#58cc02]">RANK</span></span>
+      <BrandIdentity />
     </a>
   );
 }

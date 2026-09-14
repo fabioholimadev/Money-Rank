@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { LoadingState } from '../components/ui/DesignSystem';
 import { useAuth } from '../contexts/AuthContext';
 import { getHomePathForProfile } from '../lib/roleAccess';
+import BrandIdentity from '../components/BrandIdentity';
 
 const AUTH_ERROR_MESSAGES = {
   'auth/cancelled-popup-request': 'Já existe uma tentativa de login em andamento.',
@@ -58,8 +59,7 @@ export default function Login() {
         <section className="relative hidden overflow-hidden border-r-2 border-[#37464f] bg-[#1f2d33] p-10 lg:flex lg:flex-col lg:justify-between">
           <div className="absolute -bottom-24 -left-16 h-96 w-96 rounded-full bg-[#58cc02]/10 blur-3xl" aria-hidden="true" />
           <Link to="/" className="relative flex items-center gap-3 text-xl font-black text-white">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#58cc02] text-sm text-[#13210f] shadow-[0_5px_0_#46a302]">MR</span>
-            MONEY<span className="-ml-2 text-[#58cc02]">RANK</span>
+            <BrandIdentity />
           </Link>
 
           <div className="relative grid grid-cols-[180px_1fr] items-center gap-8">
@@ -88,8 +88,7 @@ export default function Login() {
         <section className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-md">
             <div className="mb-9 flex items-center gap-3 lg:hidden">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#58cc02] text-sm font-black text-[#13210f] shadow-[0_4px_0_#46a302]">MR</span>
-              <span className="text-xl font-black text-white">MONEY<span className="text-[#58cc02]">RANK</span></span>
+              <BrandIdentity />
             </div>
             <p className="mr-eyebrow">Bem-vindo de volta</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">Continue sua evolução</h1>

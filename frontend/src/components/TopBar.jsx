@@ -11,6 +11,7 @@ import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
+import { BrandMark, BrandWordmark } from './BrandIdentity';
 
 const STUDENT_ITEMS = [
   { label: 'Início', to: '/student', Icon: HomeRounded },
@@ -45,12 +46,12 @@ function Brand({ homePath, collapsed = false, onToggle }) {
         aria-expanded={!collapsed}
         title={collapsed ? 'Abrir menu' : 'Recolher menu'}
       >
-        MR
+        <BrandMark className="h-11 w-11" alt="" />
         <MenuOpenRounded className={`absolute -bottom-2 -right-2 rounded-full border-2 border-[#131f24] bg-[#49c0f8] p-0.5 text-[#10252d] transition-transform ${collapsed ? 'rotate-180' : ''}`} sx={{ fontSize: 19 }} />
       </button>
       {!collapsed && (
-        <Link to={homePath} className="rounded-xl text-xl font-black tracking-tight text-white focus-visible:outline-offset-4">
-          MONEY<span className="text-[#58cc02]">RANK</span>
+        <Link to={homePath} className="rounded-xl focus-visible:outline-offset-4">
+          <BrandWordmark className="h-7 w-auto" />
         </Link>
       )}
     </div>
@@ -82,8 +83,8 @@ export default function TopBar({ collapsed = false, onToggle }) {
     <>
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
         <Link to={homePath} className="flex items-center gap-3 rounded-2xl">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#58cc02] text-xs font-black text-[#13210f] shadow-[0_4px_0_#46a302]">MR</span>
-          <span className="hidden text-lg font-black tracking-tight text-white min-[390px]:inline">MONEY<span className="text-[#58cc02]">RANK</span></span>
+          <BrandMark className="h-10 w-10" />
+          <BrandWordmark className="hidden h-6 w-auto min-[390px]:block" />
         </Link>
         {!isTeacher && (
           <div className="flex items-center gap-3" aria-label="Resumo do progresso">
