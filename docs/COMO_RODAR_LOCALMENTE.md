@@ -96,6 +96,20 @@ Invoke-WebRequest http://localhost:8080/readyz
 - `/readyz` confirma acesso ao Capi Bank e exige os 140 itens pedagogicos
   ativos; responde `503` quando o banco iniciou, mas ainda nao foi populado.
 
+Se o retorno mostrar `activeItems: 0`, carregue o banco no emulador local em
+um quarto terminal aberto na raiz:
+
+```powershell
+$env:FIREBASE_DATA_CONNECT_EMULATOR_HOST="127.0.0.1:9399"
+cd backend\render-api
+npm run bank:import
+cd ..\..
+Remove-Item Env:FIREBASE_DATA_CONNECT_EMULATOR_HOST
+```
+
+O nome dessa variavel pertence a CLI do Firebase. A API usa
+`DATA_CONNECT_EMULATOR_HOST`, que ja esta configurada no `.env.local`.
+
 ## 5. App Check
 
 `APP_CHECK_ENFORCEMENT=false` e aceito apenas fora de producao. A API ignora
@@ -166,8 +180,10 @@ git diff --check
   executar o script novamente.
 - **`healthz` passa e `readyz` falha:** confira o Terminal 1 e confirme que o
   banco pedagogico foi carregado.
-- **Erro de CORS:** `FRONTEND_ORIGIN` deve ser exatamente a origem exibida pelo
-  Vite.
+- **Erro de CORS:** `FRONTEND_ORIGIN` aceita uma lista separada por virgulas.
+  Em desenvolvimento, origens locais em `localhost`, `127.0.0.1` e `[::1]`
+  sao aceitas mesmo quando o Vite escolhe outra porta livre; em producao, cada
+  origem deve ser declarada explicitamente.
 - **Resposta `missing_app_check`:** use a desativacao local documentada ou
   registre um token debug; producao nunca aceita o bypass.
 - **Login Google falha:** habilite o provedor Google e autorize `localhost` no

@@ -35,9 +35,33 @@ if (!getApps().length) {
 
 const dataConnect = getDataConnect(config.dataConnect);
 const app = express();
-const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
 const teacherEmails = new Set(String(process.env.TEACHER_EMAILS || '').split(',').map((email) => email.trim().toLowerCase()).filter(Boolean));
 const isTest = process.env.NODE_ENV === 'test';
+export function allowedFrontendOrigins(environment = process.env) {
+  const configured = String(environment.FRONTEND_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  const allowed = new Set(configured);
+
+  if (environment.NODE_ENV === 'test') allowed.add('http://localhost:5173');
+  return allowed;
+}
+export function isFrontendOriginAllowed(origin, environment = process.env) {
+  if (!origin) return true;
+  const normalizedOrigin = String(origin).replace(/\/$/, '');
+  if (allowedFrontendOrigins(environment).has(normalizedOrigin)) return true;
+  if (environment.NODE_ENV === 'production') return false;
+
+  try {
+    const url = new URL(normalizedOrigin);
+    return ['http:', 'https:'].includes(url.protocol)
+      && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+const frontendOrigin = String(process.env.FRONTEND_ORIGIN || '').trim();
 export function shouldEnforceAppCheck(environment = process.env) {
   if (environment.NODE_ENV === 'production') return true;
   return String(environment.APP_CHECK_ENFORCEMENT || 'true').trim().toLowerCase() !== 'false';
@@ -59,7 +83,7 @@ app.disable('x-powered-by');
 app.use(helmet());
 app.use(express.json({ limit: '9mb' }));
 app.use(cors({ origin: (origin, callback) => {
-  if (!origin || origin === frontendOrigin || (isTest && origin === 'http://localhost:5173')) return callback(null, true);
+  if (isFrontendOriginAllowed(origin)) return callback(null, true);
   return callback(new Error('cors_origin_denied'));
 } }));
 app.use((req, res, next) => { req.requestId = crypto.randomUUID(); res.setHeader('X-Request-Id', req.requestId); next(); });
