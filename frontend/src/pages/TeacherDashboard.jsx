@@ -3,14 +3,12 @@ import {
   AutoGraph,
   Download,
   GroupsOutlined,
-  EditNote,
   MonetizationOn,
   Refresh,
   SchoolOutlined,
   TaskAlt,
   WarningAmber,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
 import TeacherDataChat from '../components/TeacherDataChat';
@@ -127,7 +125,6 @@ function EmptyState({ title, message }) {
 
 export default function TeacherDashboard() {
   const { aluno } = useAuth();
-  const navigate = useNavigate();
   const [periods, setPeriods] = useState([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState('');
   const [dashboard, setDashboard] = useState(null);
@@ -322,14 +319,6 @@ export default function TeacherDashboard() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/professor/estudio')}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#58cc02] px-4 text-sm font-black text-[#13210f] transition hover:bg-[#79e72e]"
-            >
-              <EditNote sx={{ fontSize: 18 }} aria-hidden="true" />
-              Estúdio de conteúdos
-            </button>
             <button
               type="button"
               onClick={handleExport}

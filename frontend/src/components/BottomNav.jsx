@@ -3,7 +3,6 @@ import MapRounded from '@mui/icons-material/MapRounded';
 import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
-import EditNoteRounded from '@mui/icons-material/EditNoteRounded';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
@@ -17,7 +16,6 @@ const STUDENT_ITEMS = [
 
 const TEACHER_ITEMS = [
   { label: 'Turma', to: '/professor', Icon: SchoolRounded },
-  { label: 'Estúdio', to: '/professor/estudio', Icon: EditNoteRounded },
 ];
 
 export default function BottomNav() {

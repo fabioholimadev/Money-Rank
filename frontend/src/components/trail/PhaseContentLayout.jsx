@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import ArticleOutlined from '@mui/icons-material/ArticleOutlined';
@@ -15,7 +15,6 @@ import {
 } from '../../services/studentDataService';
 import {
   CONTENT_MATERIAL_TYPES,
-  getAvailableExtraMaterialIds,
   getContentMaterialSlots,
   hasCompletedContentVisits,
   isMaterialAvailable,
@@ -26,7 +25,6 @@ import {
 } from '../../lib/trailProgress';
 import TrailLockedState from './TrailLockedState';
 import TrailPageShell from './TrailPageShell';
-import { fetchPublishedLearningContent } from '../../services/publishedEditorialService';
 
 const MATERIAL_ICONS = {
   [CONTENT_MATERIAL_TYPES.VIDEO]: PlayCircleOutlined,
@@ -256,8 +254,7 @@ function MaterialPanel({ slot }) {
 
 export default function PhaseContentLayout({ content: fallbackContent }) {
   const navigate = useNavigate();
-  const [publishedContent, setPublishedContent] = useState(null);
-  const content = publishedContent ?? fallbackContent;
+  const content = fallbackContent;
   const {
     aluno,
     trailProgress,
@@ -276,28 +273,6 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  useEffect(() => {
-    let active = true;
-    fetchPublishedLearningContent(fallbackContent.id)
-      .then((result) => {
-        const payload = result?.payload;
-        if (
-          active &&
-          payload?.id === fallbackContent.id &&
-          Number(payload?.phaseNumber) === Number(fallbackContent.phaseNumber)
-        ) {
-          setPublishedContent(payload);
-        }
-      })
-      .catch(() => {
-        // O arquivo estático permanece como recuperação segura durante a migração.
-        if (active) setPublishedContent(null);
-      });
-    return () => {
-      active = false;
-    };
-  }, [fallbackContent]);
-
   const currentPhase = normalizeCurrentPhase(aluno?.fase_atual);
   const phaseProgress = getPhaseProgress(
     trailProgress,
@@ -310,9 +285,6 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
   const contentAlreadyCompleted =
     phaseProgress?.status === 'IN_PROGRESS' ||
     phaseProgress?.status === 'COMPLETED';
-  const availableExtraMaterialIds = getAvailableExtraMaterialIds(content);
-  const requiresExtraMaterial =
-    !content.introduction && availableExtraMaterialIds.length > 0;
   const destination = content.activityPath || content.nextPath;
   const canContinue =
     completionRequirementsMet &&
@@ -322,17 +294,11 @@ export default function PhaseContentLayout({ content: fallbackContent }) {
     !trailLoading;
   const activeSlot = tabs.find(({ id }) => id === activeTab) || tabs[0];
   const completionMessage = completionRequirementsMet
-    ? requiresExtraMaterial
-      ? 'O vídeo e pelo menos um material extra foram acessados. Confirme para avançar.'
-      : 'O vídeo foi acessado. Confirme para avançar.'
-    : requiresExtraMaterial
-      ? 'Acesse o vídeo e pelo menos um material extra publicado para liberar a confirmação.'
-      : 'Acesse o vídeo para liberar a confirmação.';
-  const completionLabel = requiresExtraMaterial
+    ? 'O vídeo foi acessado. Confirme para avançar.'
+    : 'Acesse o vídeo para liberar a confirmação.';
+  const completionLabel = content.introduction
     ? content.completionLabel
-    : content.introduction
-      ? content.completionLabel
-      : 'Assisti ao vídeo desta fase';
+    : 'Assisti ao vídeo desta fase';
 
   const selectTab = (slot) => {
     setActiveTab(slot.id);

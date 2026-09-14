@@ -44,6 +44,7 @@ export default function SystemDiagnosticsPanel() {
 
   const period = data?.database?.recognizedPeriod;
   const mentor = data?.gemini?.mentor;
+  const geminiConfigured = Boolean(data?.gemini?.keyRecognized);
   return (
     <details className="mt-6 rounded-3xl border border-[#53666f] bg-[#1f2d33] p-5 sm:p-6">
       <summary className="flex cursor-pointer list-none items-center gap-2 font-black">
@@ -83,10 +84,15 @@ export default function SystemDiagnosticsPanel() {
         </section>
       </div>
       {probe && <p className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs text-emerald-200">Teste “O que é IPI?” aprovado {probe.searchUsed ? `com ${probe.sources?.length || 0} fontes e Pesquisa Google` : 'com Gemini sem pesquisa online'}.</p>}
+      {data && !geminiConfigured && (
+        <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/5 p-3 text-xs font-bold text-amber-200">
+          Teste real indisponível: configure GEMINI_API_KEY em backend/render-api/.env.local e reinicie a API. O CapiMentor permanece disponível em modo pedagógico local.
+        </p>
+      )}
       {error && <p role="alert" className="mt-4 text-sm font-bold text-red-300">{error}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" disabled={loading} onClick={() => void load()} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#53666f] px-3 text-xs font-black disabled:opacity-50"><Refresh sx={{ fontSize: 17 }} /> Atualizar</button>
-        <button type="button" disabled={loading} onClick={() => void testGemini()} className="min-h-10 rounded-xl border border-cyan-400/30 px-3 text-xs font-black text-cyan-300 disabled:opacity-50">Executar teste real do Gemini + Pesquisa Google</button>
+        <button type="button" disabled={loading || !geminiConfigured} onClick={() => void testGemini()} className="min-h-10 rounded-xl border border-cyan-400/30 px-3 text-xs font-black text-cyan-300 disabled:cursor-not-allowed disabled:opacity-50">Executar teste real do Gemini + Pesquisa Google</button>
       </div>
     </details>
   );

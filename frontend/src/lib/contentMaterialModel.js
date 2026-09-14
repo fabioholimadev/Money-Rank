@@ -32,9 +32,10 @@ export function isMaterialAvailable(material) {
 }
 
 export function getContentMaterialSlots(content) {
-  const visibleSlots = content?.introduction
-    ? CONTENT_MATERIAL_SLOTS.slice(0, 1)
-    : CONTENT_MATERIAL_SLOTS;
+  // Para a apresentação, a trilha publica somente o vídeo. Slides e
+  // resumos permanecem no modelo editorial, mas não aparecem nem bloqueiam
+  // o avanço enquanto esses materiais não estiverem completos.
+  const visibleSlots = CONTENT_MATERIAL_SLOTS.slice(0, 1);
 
   return visibleSlots.map((slot) => ({
     ...slot,
@@ -47,12 +48,8 @@ export function getContentMaterialSlots(content) {
 }
 
 export function getAvailableExtraMaterialIds(content) {
-  return [
-    CONTENT_MATERIAL_TYPES.SLIDES,
-    CONTENT_MATERIAL_TYPES.SUMMARY,
-  ].filter((materialId) =>
-    isMaterialAvailable(content?.materialSlots?.[materialId]),
-  );
+  void content;
+  return [];
 }
 
 export function hasCompletedContentVisits(content, visitedMaterialIds) {
@@ -65,18 +62,7 @@ export function hasCompletedContentVisits(content, visitedMaterialIds) {
     return false;
   }
 
-  if (content?.introduction) {
-    return true;
-  }
-
-  const availableExtraMaterialIds = getAvailableExtraMaterialIds(content);
-  if (availableExtraMaterialIds.length === 0) {
-    return true;
-  }
-
-  return availableExtraMaterialIds.some((materialId) =>
-    visited.has(materialId),
-  );
+  return true;
 }
 
 export function validatePhaseContent(content) {
