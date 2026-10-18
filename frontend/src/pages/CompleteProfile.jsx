@@ -1,21 +1,30 @@
 import Logout from '@mui/icons-material/Logout';
 import VerifiedUserOutlined from '@mui/icons-material/VerifiedUserOutlined';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ProfileForm from '../components/ProfileForm';
 import { useAuth } from '../contexts/AuthContext';
 import { getHomePathForProfile } from '../lib/roleAccess';
 import BrandIdentity from '../components/BrandIdentity';
 
 export default function CompleteProfile() {
-  const { aluno, saveProfile, logout } = useAuth();
+  const { aluno, saveProfile, saveWorkshopProfile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTeamCode = String(searchParams.get('equipe') || '').replace(/\D/g, '').slice(0, 8);
+  const [workshopMode, setWorkshopMode] = useState(Boolean(initialTeamCode));
   const destination =
     location.state?.from?.pathname || getHomePathForProfile(aluno);
 
   const handleSubmit = async (profile) => {
-    await saveProfile(profile);
-    navigate(destination, { replace: true });
+    if (workshopMode) {
+      await saveWorkshopProfile(profile);
+      navigate('/trilha/oficina', { replace: true });
+    } else {
+      await saveProfile(profile);
+      navigate(destination, { replace: true });
+    }
   };
 
   const handleChangeAccount = async () => {
@@ -42,7 +51,9 @@ export default function CompleteProfile() {
             Complete seu Perfil
           </h1>
           <p className="mx-auto mt-2 max-w-xl text-xs sm:text-sm leading-relaxed text-[#a5b7c2]">
-            Personalize sua identidade e conecte sua conta à sua turma para começar na Trilha.
+            {workshopMode
+              ? 'Entre na equipe criada pelo professor e acesse somente a trilha Ciência Delas.'
+              : 'Personalize sua identidade e conecte sua conta à sua turma para começar na Trilha.'}
           </p>
         </header>
 
@@ -64,9 +75,20 @@ export default function CompleteProfile() {
 
           <ProfileForm
             initialProfile={aluno}
+            initialTeamCode={initialTeamCode}
             onSubmit={handleSubmit}
-            submitLabel="Concluir e Começar"
+            submitLabel={workshopMode ? 'Entrar na equipe' : 'Concluir e começar'}
+            workshopMode={workshopMode}
           />
+          {!initialTeamCode && (
+            <button
+              className="mt-5 w-full rounded-xl border border-[#53666f] px-4 py-3 text-xs font-black text-[#dbe7ed] transition hover:border-[#58cc02] hover:text-[#58cc02]"
+              onClick={() => setWorkshopMode((current) => !current)}
+              type="button"
+            >
+              {workshopMode ? 'Usar cadastro das turmas regulares' : 'Tenho um código da oficina'}
+            </button>
+          )}
         </section>
 
         <div className="mt-6 text-center">

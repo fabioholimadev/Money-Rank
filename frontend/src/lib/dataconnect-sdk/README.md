@@ -25,6 +25,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetEconomyConfig*](#geteconomyconfig)
   - [*ListVisibleCompetitionPeriods*](#listvisiblecompetitionperiods)
   - [*GetCompetitionRankings*](#getcompetitionrankings)
+  - [*GetGlobalRankings*](#getglobalrankings)
   - [*GetCompetitionAbuseSignals*](#getcompetitionabusesignals)
   - [*ListTeacherCompetitionPeriods*](#listteachercompetitionperiods)
   - [*GetTeacherDashboard*](#getteacherdashboard)
@@ -37,6 +38,11 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetTeacherTestRun*](#getteachertestrun)
   - [*GetPilotExportRows*](#getpilotexportrows)
   - [*GetLoadTestCleanupStatus*](#getloadtestcleanupstatus)
+  - [*GetMyWorkshopContext*](#getmyworkshopcontext)
+  - [*ResolveWorkshopTeamByJoinCode*](#resolveworkshopteambyjoincode)
+  - [*ListWorkshopEventsForTeacher*](#listworkshopeventsforteacher)
+  - [*ListWorkshopTeamsForTeacher*](#listworkshopteamsforteacher)
+  - [*GetWorkshopRankings*](#getworkshoprankings)
 - [**Mutations**](#mutations)
   - [*UpsertMyProfileWithAvatar*](#upsertmyprofilewithavatar)
   - [*CreateLearningModuleVersionEditorial*](#createlearningmoduleversioneditorial)
@@ -84,6 +90,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*RecordLoadTestMetrics*](#recordloadtestmetrics)
   - [*CleanupMarkedLoadTestStudents*](#cleanupmarkedloadteststudents)
   - [*FinalizeLoadTestCleanup*](#finalizeloadtestcleanup)
+  - [*CreateWorkshopEvent*](#createworkshopevent)
+  - [*CreateWorkshopTeam*](#createworkshopteam)
+  - [*JoinWorkshopTeamAndCompleteProfile*](#joinworkshopteamandcompleteprofile)
+  - [*RecordWorkshopActivityAttempt*](#recordworkshopactivityattempt)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `money-rank-connector`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -2173,6 +2183,124 @@ executeQuery(ref).then((response) => {
 });
 ```
 
+## GetGlobalRankings
+You can execute the `GetGlobalRankings` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getGlobalRankings(vars?: GetGlobalRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+
+interface GetGlobalRankingsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: GetGlobalRankingsVariables): QueryRef<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+}
+export const getGlobalRankingsRef: GetGlobalRankingsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getGlobalRankings(dc: DataConnect, vars?: GetGlobalRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+
+interface GetGlobalRankingsRef {
+  ...
+  (dc: DataConnect, vars?: GetGlobalRankingsVariables): QueryRef<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+}
+export const getGlobalRankingsRef: GetGlobalRankingsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getGlobalRankingsRef:
+```typescript
+const name = getGlobalRankingsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetGlobalRankings` query has an optional argument of type `GetGlobalRankingsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetGlobalRankingsVariables {
+  studentLimit?: number | null;
+}
+```
+### Return Type
+Recall that executing the `GetGlobalRankings` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetGlobalRankingsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetGlobalRankingsData {
+  individualRanking?: unknown[] | null;
+  classRanking?: unknown[] | null;
+}
+```
+### Using `GetGlobalRankings`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getGlobalRankings, GetGlobalRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetGlobalRankings` query has an optional argument of type `GetGlobalRankingsVariables`:
+const getGlobalRankingsVars: GetGlobalRankingsVariables = {
+  studentLimit: ..., // optional
+};
+
+// Call the `getGlobalRankings()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getGlobalRankings(getGlobalRankingsVars);
+// Variables can be defined inline as well.
+const { data } = await getGlobalRankings({ studentLimit: ..., });
+// Since all variables are optional for this query, you can omit the `GetGlobalRankingsVariables` argument.
+const { data } = await getGlobalRankings();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getGlobalRankings(dataConnect, getGlobalRankingsVars);
+
+console.log(data.individualRanking);
+console.log(data.classRanking);
+
+// Or, you can use the `Promise` API.
+getGlobalRankings(getGlobalRankingsVars).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.classRanking);
+});
+```
+
+### Using `GetGlobalRankings`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getGlobalRankingsRef, GetGlobalRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetGlobalRankings` query has an optional argument of type `GetGlobalRankingsVariables`:
+const getGlobalRankingsVars: GetGlobalRankingsVariables = {
+  studentLimit: ..., // optional
+};
+
+// Call the `getGlobalRankingsRef()` function to get a reference to the query.
+const ref = getGlobalRankingsRef(getGlobalRankingsVars);
+// Variables can be defined inline as well.
+const ref = getGlobalRankingsRef({ studentLimit: ..., });
+// Since all variables are optional for this query, you can omit the `GetGlobalRankingsVariables` argument.
+const ref = getGlobalRankingsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getGlobalRankingsRef(dataConnect, getGlobalRankingsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.individualRanking);
+console.log(data.classRanking);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.classRanking);
+});
+```
+
 ## GetCompetitionAbuseSignals
 You can execute the `GetCompetitionAbuseSignals` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
 ```typescript
@@ -3561,6 +3689,559 @@ executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.run);
   console.log(data.remainingMarkedUsers);
+});
+```
+
+## GetMyWorkshopContext
+You can execute the `GetMyWorkshopContext` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getMyWorkshopContext(vars: GetMyWorkshopContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+
+interface GetMyWorkshopContextRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyWorkshopContextVariables): QueryRef<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+}
+export const getMyWorkshopContextRef: GetMyWorkshopContextRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getMyWorkshopContext(dc: DataConnect, vars: GetMyWorkshopContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+
+interface GetMyWorkshopContextRef {
+  ...
+  (dc: DataConnect, vars: GetMyWorkshopContextVariables): QueryRef<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+}
+export const getMyWorkshopContextRef: GetMyWorkshopContextRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyWorkshopContextRef:
+```typescript
+const name = getMyWorkshopContextRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetMyWorkshopContext` query requires an argument of type `GetMyWorkshopContextVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetMyWorkshopContextVariables {
+  studentUid: string;
+}
+```
+### Return Type
+Recall that executing the `GetMyWorkshopContext` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetMyWorkshopContextData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetMyWorkshopContextData {
+  membership?: unknown | null;
+}
+```
+### Using `GetMyWorkshopContext`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getMyWorkshopContext, GetMyWorkshopContextVariables } from '@money-rank/dataconnect';
+
+// The `GetMyWorkshopContext` query requires an argument of type `GetMyWorkshopContextVariables`:
+const getMyWorkshopContextVars: GetMyWorkshopContextVariables = {
+  studentUid: ..., 
+};
+
+// Call the `getMyWorkshopContext()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getMyWorkshopContext(getMyWorkshopContextVars);
+// Variables can be defined inline as well.
+const { data } = await getMyWorkshopContext({ studentUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getMyWorkshopContext(dataConnect, getMyWorkshopContextVars);
+
+console.log(data.membership);
+
+// Or, you can use the `Promise` API.
+getMyWorkshopContext(getMyWorkshopContextVars).then((response) => {
+  const data = response.data;
+  console.log(data.membership);
+});
+```
+
+### Using `GetMyWorkshopContext`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getMyWorkshopContextRef, GetMyWorkshopContextVariables } from '@money-rank/dataconnect';
+
+// The `GetMyWorkshopContext` query requires an argument of type `GetMyWorkshopContextVariables`:
+const getMyWorkshopContextVars: GetMyWorkshopContextVariables = {
+  studentUid: ..., 
+};
+
+// Call the `getMyWorkshopContextRef()` function to get a reference to the query.
+const ref = getMyWorkshopContextRef(getMyWorkshopContextVars);
+// Variables can be defined inline as well.
+const ref = getMyWorkshopContextRef({ studentUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getMyWorkshopContextRef(dataConnect, getMyWorkshopContextVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.membership);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.membership);
+});
+```
+
+## ResolveWorkshopTeamByJoinCode
+You can execute the `ResolveWorkshopTeamByJoinCode` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+resolveWorkshopTeamByJoinCode(vars: ResolveWorkshopTeamByJoinCodeVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+
+interface ResolveWorkshopTeamByJoinCodeRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ResolveWorkshopTeamByJoinCodeVariables): QueryRef<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+}
+export const resolveWorkshopTeamByJoinCodeRef: ResolveWorkshopTeamByJoinCodeRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+resolveWorkshopTeamByJoinCode(dc: DataConnect, vars: ResolveWorkshopTeamByJoinCodeVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+
+interface ResolveWorkshopTeamByJoinCodeRef {
+  ...
+  (dc: DataConnect, vars: ResolveWorkshopTeamByJoinCodeVariables): QueryRef<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+}
+export const resolveWorkshopTeamByJoinCodeRef: ResolveWorkshopTeamByJoinCodeRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the resolveWorkshopTeamByJoinCodeRef:
+```typescript
+const name = resolveWorkshopTeamByJoinCodeRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ResolveWorkshopTeamByJoinCode` query requires an argument of type `ResolveWorkshopTeamByJoinCodeVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ResolveWorkshopTeamByJoinCodeVariables {
+  joinCode: string;
+}
+```
+### Return Type
+Recall that executing the `ResolveWorkshopTeamByJoinCode` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ResolveWorkshopTeamByJoinCodeData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ResolveWorkshopTeamByJoinCodeData {
+  team?: unknown | null;
+}
+```
+### Using `ResolveWorkshopTeamByJoinCode`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, resolveWorkshopTeamByJoinCode, ResolveWorkshopTeamByJoinCodeVariables } from '@money-rank/dataconnect';
+
+// The `ResolveWorkshopTeamByJoinCode` query requires an argument of type `ResolveWorkshopTeamByJoinCodeVariables`:
+const resolveWorkshopTeamByJoinCodeVars: ResolveWorkshopTeamByJoinCodeVariables = {
+  joinCode: ..., 
+};
+
+// Call the `resolveWorkshopTeamByJoinCode()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await resolveWorkshopTeamByJoinCode(resolveWorkshopTeamByJoinCodeVars);
+// Variables can be defined inline as well.
+const { data } = await resolveWorkshopTeamByJoinCode({ joinCode: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await resolveWorkshopTeamByJoinCode(dataConnect, resolveWorkshopTeamByJoinCodeVars);
+
+console.log(data.team);
+
+// Or, you can use the `Promise` API.
+resolveWorkshopTeamByJoinCode(resolveWorkshopTeamByJoinCodeVars).then((response) => {
+  const data = response.data;
+  console.log(data.team);
+});
+```
+
+### Using `ResolveWorkshopTeamByJoinCode`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, resolveWorkshopTeamByJoinCodeRef, ResolveWorkshopTeamByJoinCodeVariables } from '@money-rank/dataconnect';
+
+// The `ResolveWorkshopTeamByJoinCode` query requires an argument of type `ResolveWorkshopTeamByJoinCodeVariables`:
+const resolveWorkshopTeamByJoinCodeVars: ResolveWorkshopTeamByJoinCodeVariables = {
+  joinCode: ..., 
+};
+
+// Call the `resolveWorkshopTeamByJoinCodeRef()` function to get a reference to the query.
+const ref = resolveWorkshopTeamByJoinCodeRef(resolveWorkshopTeamByJoinCodeVars);
+// Variables can be defined inline as well.
+const ref = resolveWorkshopTeamByJoinCodeRef({ joinCode: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = resolveWorkshopTeamByJoinCodeRef(dataConnect, resolveWorkshopTeamByJoinCodeVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.team);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.team);
+});
+```
+
+## ListWorkshopEventsForTeacher
+You can execute the `ListWorkshopEventsForTeacher` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listWorkshopEventsForTeacher(vars: ListWorkshopEventsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+
+interface ListWorkshopEventsForTeacherRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListWorkshopEventsForTeacherVariables): QueryRef<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+}
+export const listWorkshopEventsForTeacherRef: ListWorkshopEventsForTeacherRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listWorkshopEventsForTeacher(dc: DataConnect, vars: ListWorkshopEventsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+
+interface ListWorkshopEventsForTeacherRef {
+  ...
+  (dc: DataConnect, vars: ListWorkshopEventsForTeacherVariables): QueryRef<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+}
+export const listWorkshopEventsForTeacherRef: ListWorkshopEventsForTeacherRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listWorkshopEventsForTeacherRef:
+```typescript
+const name = listWorkshopEventsForTeacherRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListWorkshopEventsForTeacher` query requires an argument of type `ListWorkshopEventsForTeacherVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListWorkshopEventsForTeacherVariables {
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `ListWorkshopEventsForTeacher` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListWorkshopEventsForTeacherData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListWorkshopEventsForTeacherData {
+  events?: unknown[] | null;
+}
+```
+### Using `ListWorkshopEventsForTeacher`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listWorkshopEventsForTeacher, ListWorkshopEventsForTeacherVariables } from '@money-rank/dataconnect';
+
+// The `ListWorkshopEventsForTeacher` query requires an argument of type `ListWorkshopEventsForTeacherVariables`:
+const listWorkshopEventsForTeacherVars: ListWorkshopEventsForTeacherVariables = {
+  actorUid: ..., 
+};
+
+// Call the `listWorkshopEventsForTeacher()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listWorkshopEventsForTeacher(listWorkshopEventsForTeacherVars);
+// Variables can be defined inline as well.
+const { data } = await listWorkshopEventsForTeacher({ actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listWorkshopEventsForTeacher(dataConnect, listWorkshopEventsForTeacherVars);
+
+console.log(data.events);
+
+// Or, you can use the `Promise` API.
+listWorkshopEventsForTeacher(listWorkshopEventsForTeacherVars).then((response) => {
+  const data = response.data;
+  console.log(data.events);
+});
+```
+
+### Using `ListWorkshopEventsForTeacher`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listWorkshopEventsForTeacherRef, ListWorkshopEventsForTeacherVariables } from '@money-rank/dataconnect';
+
+// The `ListWorkshopEventsForTeacher` query requires an argument of type `ListWorkshopEventsForTeacherVariables`:
+const listWorkshopEventsForTeacherVars: ListWorkshopEventsForTeacherVariables = {
+  actorUid: ..., 
+};
+
+// Call the `listWorkshopEventsForTeacherRef()` function to get a reference to the query.
+const ref = listWorkshopEventsForTeacherRef(listWorkshopEventsForTeacherVars);
+// Variables can be defined inline as well.
+const ref = listWorkshopEventsForTeacherRef({ actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listWorkshopEventsForTeacherRef(dataConnect, listWorkshopEventsForTeacherVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.events);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.events);
+});
+```
+
+## ListWorkshopTeamsForTeacher
+You can execute the `ListWorkshopTeamsForTeacher` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+listWorkshopTeamsForTeacher(vars: ListWorkshopTeamsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+
+interface ListWorkshopTeamsForTeacherRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListWorkshopTeamsForTeacherVariables): QueryRef<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+}
+export const listWorkshopTeamsForTeacherRef: ListWorkshopTeamsForTeacherRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listWorkshopTeamsForTeacher(dc: DataConnect, vars: ListWorkshopTeamsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+
+interface ListWorkshopTeamsForTeacherRef {
+  ...
+  (dc: DataConnect, vars: ListWorkshopTeamsForTeacherVariables): QueryRef<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+}
+export const listWorkshopTeamsForTeacherRef: ListWorkshopTeamsForTeacherRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listWorkshopTeamsForTeacherRef:
+```typescript
+const name = listWorkshopTeamsForTeacherRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListWorkshopTeamsForTeacher` query requires an argument of type `ListWorkshopTeamsForTeacherVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListWorkshopTeamsForTeacherVariables {
+  actorUid: string;
+  eventId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `ListWorkshopTeamsForTeacher` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListWorkshopTeamsForTeacherData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListWorkshopTeamsForTeacherData {
+  teams?: unknown[] | null;
+}
+```
+### Using `ListWorkshopTeamsForTeacher`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listWorkshopTeamsForTeacher, ListWorkshopTeamsForTeacherVariables } from '@money-rank/dataconnect';
+
+// The `ListWorkshopTeamsForTeacher` query requires an argument of type `ListWorkshopTeamsForTeacherVariables`:
+const listWorkshopTeamsForTeacherVars: ListWorkshopTeamsForTeacherVariables = {
+  actorUid: ..., 
+  eventId: ..., 
+};
+
+// Call the `listWorkshopTeamsForTeacher()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listWorkshopTeamsForTeacher(listWorkshopTeamsForTeacherVars);
+// Variables can be defined inline as well.
+const { data } = await listWorkshopTeamsForTeacher({ actorUid: ..., eventId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listWorkshopTeamsForTeacher(dataConnect, listWorkshopTeamsForTeacherVars);
+
+console.log(data.teams);
+
+// Or, you can use the `Promise` API.
+listWorkshopTeamsForTeacher(listWorkshopTeamsForTeacherVars).then((response) => {
+  const data = response.data;
+  console.log(data.teams);
+});
+```
+
+### Using `ListWorkshopTeamsForTeacher`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listWorkshopTeamsForTeacherRef, ListWorkshopTeamsForTeacherVariables } from '@money-rank/dataconnect';
+
+// The `ListWorkshopTeamsForTeacher` query requires an argument of type `ListWorkshopTeamsForTeacherVariables`:
+const listWorkshopTeamsForTeacherVars: ListWorkshopTeamsForTeacherVariables = {
+  actorUid: ..., 
+  eventId: ..., 
+};
+
+// Call the `listWorkshopTeamsForTeacherRef()` function to get a reference to the query.
+const ref = listWorkshopTeamsForTeacherRef(listWorkshopTeamsForTeacherVars);
+// Variables can be defined inline as well.
+const ref = listWorkshopTeamsForTeacherRef({ actorUid: ..., eventId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listWorkshopTeamsForTeacherRef(dataConnect, listWorkshopTeamsForTeacherVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.teams);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.teams);
+});
+```
+
+## GetWorkshopRankings
+You can execute the `GetWorkshopRankings` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+getWorkshopRankings(vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+
+interface GetWorkshopRankingsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetWorkshopRankingsVariables): QueryRef<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+}
+export const getWorkshopRankingsRef: GetWorkshopRankingsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+getWorkshopRankings(dc: DataConnect, vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+
+interface GetWorkshopRankingsRef {
+  ...
+  (dc: DataConnect, vars: GetWorkshopRankingsVariables): QueryRef<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+}
+export const getWorkshopRankingsRef: GetWorkshopRankingsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getWorkshopRankingsRef:
+```typescript
+const name = getWorkshopRankingsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `GetWorkshopRankings` query requires an argument of type `GetWorkshopRankingsVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface GetWorkshopRankingsVariables {
+  eventId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `GetWorkshopRankings` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `GetWorkshopRankingsData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface GetWorkshopRankingsData {
+  individualRanking?: unknown[] | null;
+  teamRanking?: unknown[] | null;
+}
+```
+### Using `GetWorkshopRankings`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, getWorkshopRankings, GetWorkshopRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetWorkshopRankings` query requires an argument of type `GetWorkshopRankingsVariables`:
+const getWorkshopRankingsVars: GetWorkshopRankingsVariables = {
+  eventId: ..., 
+};
+
+// Call the `getWorkshopRankings()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await getWorkshopRankings(getWorkshopRankingsVars);
+// Variables can be defined inline as well.
+const { data } = await getWorkshopRankings({ eventId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await getWorkshopRankings(dataConnect, getWorkshopRankingsVars);
+
+console.log(data.individualRanking);
+console.log(data.teamRanking);
+
+// Or, you can use the `Promise` API.
+getWorkshopRankings(getWorkshopRankingsVars).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.teamRanking);
+});
+```
+
+### Using `GetWorkshopRankings`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, getWorkshopRankingsRef, GetWorkshopRankingsVariables } from '@money-rank/dataconnect';
+
+// The `GetWorkshopRankings` query requires an argument of type `GetWorkshopRankingsVariables`:
+const getWorkshopRankingsVars: GetWorkshopRankingsVariables = {
+  eventId: ..., 
+};
+
+// Call the `getWorkshopRankingsRef()` function to get a reference to the query.
+const ref = getWorkshopRankingsRef(getWorkshopRankingsVars);
+// Variables can be defined inline as well.
+const ref = getWorkshopRankingsRef({ eventId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = getWorkshopRankingsRef(dataConnect, getWorkshopRankingsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.individualRanking);
+console.log(data.teamRanking);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.individualRanking);
+  console.log(data.teamRanking);
 });
 ```
 
@@ -9075,6 +9756,508 @@ const ref = finalizeLoadTestCleanupRef({ runId: ..., deletedAuthUsers: ..., });
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = finalizeLoadTestCleanupRef(dataConnect, finalizeLoadTestCleanupVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CreateWorkshopEvent
+You can execute the `CreateWorkshopEvent` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createWorkshopEvent(vars: CreateWorkshopEventVariables): MutationPromise<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+
+interface CreateWorkshopEventRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateWorkshopEventVariables): MutationRef<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+}
+export const createWorkshopEventRef: CreateWorkshopEventRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createWorkshopEvent(dc: DataConnect, vars: CreateWorkshopEventVariables): MutationPromise<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+
+interface CreateWorkshopEventRef {
+  ...
+  (dc: DataConnect, vars: CreateWorkshopEventVariables): MutationRef<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+}
+export const createWorkshopEventRef: CreateWorkshopEventRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createWorkshopEventRef:
+```typescript
+const name = createWorkshopEventRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateWorkshopEvent` mutation requires an argument of type `CreateWorkshopEventVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateWorkshopEventVariables {
+  eventId: UUIDString;
+  actorUid: string;
+  competitionPeriodId: UUIDString;
+  name: string;
+  trailKey: string;
+}
+```
+### Return Type
+Recall that executing the `CreateWorkshopEvent` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateWorkshopEventData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateWorkshopEventData {
+  affectedRows?: number | null;
+}
+```
+### Using `CreateWorkshopEvent`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createWorkshopEvent, CreateWorkshopEventVariables } from '@money-rank/dataconnect';
+
+// The `CreateWorkshopEvent` mutation requires an argument of type `CreateWorkshopEventVariables`:
+const createWorkshopEventVars: CreateWorkshopEventVariables = {
+  eventId: ..., 
+  actorUid: ..., 
+  competitionPeriodId: ..., 
+  name: ..., 
+  trailKey: ..., 
+};
+
+// Call the `createWorkshopEvent()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createWorkshopEvent(createWorkshopEventVars);
+// Variables can be defined inline as well.
+const { data } = await createWorkshopEvent({ eventId: ..., actorUid: ..., competitionPeriodId: ..., name: ..., trailKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createWorkshopEvent(dataConnect, createWorkshopEventVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+createWorkshopEvent(createWorkshopEventVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CreateWorkshopEvent`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createWorkshopEventRef, CreateWorkshopEventVariables } from '@money-rank/dataconnect';
+
+// The `CreateWorkshopEvent` mutation requires an argument of type `CreateWorkshopEventVariables`:
+const createWorkshopEventVars: CreateWorkshopEventVariables = {
+  eventId: ..., 
+  actorUid: ..., 
+  competitionPeriodId: ..., 
+  name: ..., 
+  trailKey: ..., 
+};
+
+// Call the `createWorkshopEventRef()` function to get a reference to the mutation.
+const ref = createWorkshopEventRef(createWorkshopEventVars);
+// Variables can be defined inline as well.
+const ref = createWorkshopEventRef({ eventId: ..., actorUid: ..., competitionPeriodId: ..., name: ..., trailKey: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createWorkshopEventRef(dataConnect, createWorkshopEventVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## CreateWorkshopTeam
+You can execute the `CreateWorkshopTeam` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+createWorkshopTeam(vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+
+interface CreateWorkshopTeamRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateWorkshopTeamVariables): MutationRef<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+}
+export const createWorkshopTeamRef: CreateWorkshopTeamRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createWorkshopTeam(dc: DataConnect, vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+
+interface CreateWorkshopTeamRef {
+  ...
+  (dc: DataConnect, vars: CreateWorkshopTeamVariables): MutationRef<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+}
+export const createWorkshopTeamRef: CreateWorkshopTeamRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createWorkshopTeamRef:
+```typescript
+const name = createWorkshopTeamRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateWorkshopTeam` mutation requires an argument of type `CreateWorkshopTeamVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateWorkshopTeamVariables {
+  teamId: UUIDString;
+  actorUid: string;
+  eventId: UUIDString;
+  name: string;
+  joinCode: string;
+}
+```
+### Return Type
+Recall that executing the `CreateWorkshopTeam` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateWorkshopTeamData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateWorkshopTeamData {
+  affectedRows?: number | null;
+}
+```
+### Using `CreateWorkshopTeam`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createWorkshopTeam, CreateWorkshopTeamVariables } from '@money-rank/dataconnect';
+
+// The `CreateWorkshopTeam` mutation requires an argument of type `CreateWorkshopTeamVariables`:
+const createWorkshopTeamVars: CreateWorkshopTeamVariables = {
+  teamId: ..., 
+  actorUid: ..., 
+  eventId: ..., 
+  name: ..., 
+  joinCode: ..., 
+};
+
+// Call the `createWorkshopTeam()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createWorkshopTeam(createWorkshopTeamVars);
+// Variables can be defined inline as well.
+const { data } = await createWorkshopTeam({ teamId: ..., actorUid: ..., eventId: ..., name: ..., joinCode: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createWorkshopTeam(dataConnect, createWorkshopTeamVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+createWorkshopTeam(createWorkshopTeamVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `CreateWorkshopTeam`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createWorkshopTeamRef, CreateWorkshopTeamVariables } from '@money-rank/dataconnect';
+
+// The `CreateWorkshopTeam` mutation requires an argument of type `CreateWorkshopTeamVariables`:
+const createWorkshopTeamVars: CreateWorkshopTeamVariables = {
+  teamId: ..., 
+  actorUid: ..., 
+  eventId: ..., 
+  name: ..., 
+  joinCode: ..., 
+};
+
+// Call the `createWorkshopTeamRef()` function to get a reference to the mutation.
+const ref = createWorkshopTeamRef(createWorkshopTeamVars);
+// Variables can be defined inline as well.
+const ref = createWorkshopTeamRef({ teamId: ..., actorUid: ..., eventId: ..., name: ..., joinCode: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createWorkshopTeamRef(dataConnect, createWorkshopTeamVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## JoinWorkshopTeamAndCompleteProfile
+You can execute the `JoinWorkshopTeamAndCompleteProfile` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+joinWorkshopTeamAndCompleteProfile(vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationPromise<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+
+interface JoinWorkshopTeamAndCompleteProfileRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationRef<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+}
+export const joinWorkshopTeamAndCompleteProfileRef: JoinWorkshopTeamAndCompleteProfileRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+joinWorkshopTeamAndCompleteProfile(dc: DataConnect, vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationPromise<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+
+interface JoinWorkshopTeamAndCompleteProfileRef {
+  ...
+  (dc: DataConnect, vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationRef<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+}
+export const joinWorkshopTeamAndCompleteProfileRef: JoinWorkshopTeamAndCompleteProfileRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the joinWorkshopTeamAndCompleteProfileRef:
+```typescript
+const name = joinWorkshopTeamAndCompleteProfileRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `JoinWorkshopTeamAndCompleteProfile` mutation requires an argument of type `JoinWorkshopTeamAndCompleteProfileVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface JoinWorkshopTeamAndCompleteProfileVariables {
+  studentUid: string;
+  email: string;
+  preferredName: string;
+  fullName: string;
+  className: string;
+  joinCode: string;
+  avatarId?: ProfessionalAvatar | null;
+  avatarUrl?: string | null;
+}
+```
+### Return Type
+Recall that executing the `JoinWorkshopTeamAndCompleteProfile` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `JoinWorkshopTeamAndCompleteProfileData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface JoinWorkshopTeamAndCompleteProfileData {
+  affectedRows?: number | null;
+}
+```
+### Using `JoinWorkshopTeamAndCompleteProfile`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, joinWorkshopTeamAndCompleteProfile, JoinWorkshopTeamAndCompleteProfileVariables } from '@money-rank/dataconnect';
+
+// The `JoinWorkshopTeamAndCompleteProfile` mutation requires an argument of type `JoinWorkshopTeamAndCompleteProfileVariables`:
+const joinWorkshopTeamAndCompleteProfileVars: JoinWorkshopTeamAndCompleteProfileVariables = {
+  studentUid: ..., 
+  email: ..., 
+  preferredName: ..., 
+  fullName: ..., 
+  className: ..., 
+  joinCode: ..., 
+  avatarId: ..., // optional
+  avatarUrl: ..., // optional
+};
+
+// Call the `joinWorkshopTeamAndCompleteProfile()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await joinWorkshopTeamAndCompleteProfile(joinWorkshopTeamAndCompleteProfileVars);
+// Variables can be defined inline as well.
+const { data } = await joinWorkshopTeamAndCompleteProfile({ studentUid: ..., email: ..., preferredName: ..., fullName: ..., className: ..., joinCode: ..., avatarId: ..., avatarUrl: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await joinWorkshopTeamAndCompleteProfile(dataConnect, joinWorkshopTeamAndCompleteProfileVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+joinWorkshopTeamAndCompleteProfile(joinWorkshopTeamAndCompleteProfileVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `JoinWorkshopTeamAndCompleteProfile`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, joinWorkshopTeamAndCompleteProfileRef, JoinWorkshopTeamAndCompleteProfileVariables } from '@money-rank/dataconnect';
+
+// The `JoinWorkshopTeamAndCompleteProfile` mutation requires an argument of type `JoinWorkshopTeamAndCompleteProfileVariables`:
+const joinWorkshopTeamAndCompleteProfileVars: JoinWorkshopTeamAndCompleteProfileVariables = {
+  studentUid: ..., 
+  email: ..., 
+  preferredName: ..., 
+  fullName: ..., 
+  className: ..., 
+  joinCode: ..., 
+  avatarId: ..., // optional
+  avatarUrl: ..., // optional
+};
+
+// Call the `joinWorkshopTeamAndCompleteProfileRef()` function to get a reference to the mutation.
+const ref = joinWorkshopTeamAndCompleteProfileRef(joinWorkshopTeamAndCompleteProfileVars);
+// Variables can be defined inline as well.
+const ref = joinWorkshopTeamAndCompleteProfileRef({ studentUid: ..., email: ..., preferredName: ..., fullName: ..., className: ..., joinCode: ..., avatarId: ..., avatarUrl: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = joinWorkshopTeamAndCompleteProfileRef(dataConnect, joinWorkshopTeamAndCompleteProfileVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## RecordWorkshopActivityAttempt
+You can execute the `RecordWorkshopActivityAttempt` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+recordWorkshopActivityAttempt(vars: RecordWorkshopActivityAttemptVariables): MutationPromise<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+
+interface RecordWorkshopActivityAttemptRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RecordWorkshopActivityAttemptVariables): MutationRef<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+}
+export const recordWorkshopActivityAttemptRef: RecordWorkshopActivityAttemptRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+recordWorkshopActivityAttempt(dc: DataConnect, vars: RecordWorkshopActivityAttemptVariables): MutationPromise<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+
+interface RecordWorkshopActivityAttemptRef {
+  ...
+  (dc: DataConnect, vars: RecordWorkshopActivityAttemptVariables): MutationRef<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+}
+export const recordWorkshopActivityAttemptRef: RecordWorkshopActivityAttemptRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the recordWorkshopActivityAttemptRef:
+```typescript
+const name = recordWorkshopActivityAttemptRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `RecordWorkshopActivityAttempt` mutation requires an argument of type `RecordWorkshopActivityAttemptVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface RecordWorkshopActivityAttemptVariables {
+  attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
+  activityId: string;
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+}
+```
+### Return Type
+Recall that executing the `RecordWorkshopActivityAttempt` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `RecordWorkshopActivityAttemptData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface RecordWorkshopActivityAttemptData {
+  affectedRows?: number | null;
+}
+```
+### Using `RecordWorkshopActivityAttempt`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, recordWorkshopActivityAttempt, RecordWorkshopActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RecordWorkshopActivityAttempt` mutation requires an argument of type `RecordWorkshopActivityAttemptVariables`:
+const recordWorkshopActivityAttemptVars: RecordWorkshopActivityAttemptVariables = {
+  attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `recordWorkshopActivityAttempt()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await recordWorkshopActivityAttempt(recordWorkshopActivityAttemptVars);
+// Variables can be defined inline as well.
+const { data } = await recordWorkshopActivityAttempt({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await recordWorkshopActivityAttempt(dataConnect, recordWorkshopActivityAttemptVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+recordWorkshopActivityAttempt(recordWorkshopActivityAttemptVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `RecordWorkshopActivityAttempt`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, recordWorkshopActivityAttemptRef, RecordWorkshopActivityAttemptVariables } from '@money-rank/dataconnect';
+
+// The `RecordWorkshopActivityAttempt` mutation requires an argument of type `RecordWorkshopActivityAttemptVariables`:
+const recordWorkshopActivityAttemptVars: RecordWorkshopActivityAttemptVariables = {
+  attemptId: ..., 
+  sessionId: ..., 
+  studentUid: ..., 
+  activityId: ..., 
+  phaseNumber: ..., 
+  score: ..., 
+  correctAnswers: ..., 
+  wrongAnswers: ..., 
+};
+
+// Call the `recordWorkshopActivityAttemptRef()` function to get a reference to the mutation.
+const ref = recordWorkshopActivityAttemptRef(recordWorkshopActivityAttemptVars);
+// Variables can be defined inline as well.
+const ref = recordWorkshopActivityAttemptRef({ attemptId: ..., sessionId: ..., studentUid: ..., activityId: ..., phaseNumber: ..., score: ..., correctAnswers: ..., wrongAnswers: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = recordWorkshopActivityAttemptRef(dataConnect, recordWorkshopActivityAttemptVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

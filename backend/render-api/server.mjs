@@ -10,6 +10,14 @@ import { getDataConnect } from 'firebase-admin/data-connect';
 import ExcelJS from 'exceljs';
 import { canAccessActivity } from '../../functions/src/activityAccess.js';
 import { assertRuntimeEnvironment, normalizeFrontendOrigins } from './runtime-config.mjs';
+import {
+  createJoinCode,
+  isWorkshopCompetitionOpen,
+  normalizeJoinCode,
+  normalizeWorkshopEventInput,
+  normalizeWorkshopProfileInput,
+  normalizeWorkshopTeamInput,
+} from './workshop.mjs';
 
 const environmentAudit = assertRuntimeEnvironment();
 const runtimeConfig = environmentAudit.configuration;
@@ -289,6 +297,11 @@ function secureRandom() {
   return crypto.randomInt(0, 2 ** 32) / (2 ** 32);
 }
 
+function workshopJoinUrl(joinCode) {
+  const origin = runtimeConfig.frontendOrigins[0] || 'http://localhost:5173';
+  return `${origin}/completar-perfil?equipe=${encodeURIComponent(joinCode)}`;
+}
+
 function dataConnectAuth(identity) {
   const claims = typeof identity === 'string'
     ? { sub: identity, email_verified: true }
@@ -433,6 +446,186 @@ app.put('/api/me/profile', ...protectedRoute(), async (req, res, next) => {
     await sqlMutation(operation, variables, dataConnectAuth(req.auth));
     await ensureTeacherRole(req.auth);
     return res.json({ profile: await getMyProfile(req.auth) });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/workshop/context', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const data = unwrap(await sqlOperation('GetMyWorkshopContext', {
+      studentUid: req.auth.uid,
+    }));
+    return res.json({ workshop: data.membership || null });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/workshop/team', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const joinCode = normalizeJoinCode(req.query.code);
+    const data = unwrap(await sqlOperation('ResolveWorkshopTeamByJoinCode', {
+      joinCode,
+    }));
+    if (!data.team) {
+      return res.status(404).json({
+        error: 'workshop_team_not_found',
+        requestId: req.requestId,
+      });
+    }
+    return res.json({ team: data.team });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/workshop/join', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const profile = normalizeWorkshopProfileInput(req.body);
+    const email = String(req.auth.email || '').trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ error: 'email_required', requestId: req.requestId });
+    }
+    const resolved = unwrap(await sqlOperation('ResolveWorkshopTeamByJoinCode', {
+      joinCode: profile.joinCode,
+    }));
+    if (!resolved.team) {
+      return res.status(404).json({
+        error: 'workshop_team_not_found',
+        requestId: req.requestId,
+      });
+    }
+    const saved = unwrap(await sqlMutation('JoinWorkshopTeamAndCompleteProfile', {
+      studentUid: req.auth.uid,
+      email,
+      ...profile,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({
+        error: 'workshop_join_refused',
+        requestId: req.requestId,
+      });
+    }
+    const [databaseProfile, context] = await Promise.all([
+      getMyProfile(req.auth),
+      sqlOperation('GetMyWorkshopContext', { studentUid: req.auth.uid }).then(unwrap),
+    ]);
+    return res.status(201).json({
+      profile: databaseProfile,
+      workshop: context.membership || null,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/workshop/ranking', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const context = unwrap(await sqlOperation('GetMyWorkshopContext', {
+      studentUid: req.auth.uid,
+    })).membership;
+    if (!context) {
+      return res.status(404).json({ error: 'workshop_membership_required', requestId: req.requestId });
+    }
+    const data = unwrap(await sqlOperation('GetWorkshopRankings', {
+      eventId: context.eventId,
+    }));
+    return res.json({
+      event: context,
+      individualRanking: data.individualRanking || [],
+      teamRanking: data.teamRanking || [],
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/workshop/activities/:activityKey/sessions', ...protectedRoute(), async (req, res, next) => {
+  try {
+    const context = unwrap(await sqlOperation('GetMyWorkshopContext', {
+      studentUid: req.auth.uid,
+    })).membership;
+    if (!context) {
+      return res.status(403).json({ error: 'workshop_membership_required', requestId: req.requestId });
+    }
+    if (!isWorkshopCompetitionOpen(context)) {
+      return res.status(409).json({ error: 'workshop_competition_closed', requestId: req.requestId });
+    }
+    const engine = await import('../../functions/src/workshopActivityEngine.js');
+    const activityKey = String(req.params.activityKey || '');
+    const definition = engine.buildWorkshopActivitySession(activityKey, { random: secureRandom });
+    const seenData = unwrap(await sqlOperation('ListStudentSeenPedagogicalItemIds', {
+      studentUid: req.auth.uid,
+      activityId: definition.activityId,
+    }));
+    const prepared = engine.buildWorkshopActivitySession(activityKey, {
+      random: secureRandom,
+      seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
+    });
+    const sessionId = crypto.randomUUID();
+    await sqlMutation('CreateAuthoritativeActivitySession', {
+      sessionId,
+      studentUid: req.auth.uid,
+      activityId: prepared.activityId,
+      phaseNumber: prepared.phaseNumber,
+      variantId: activityKey,
+      contentVersion: prepared.contentVersion,
+      publicPayload: prepared.publicPayload,
+      answerKey: {
+        ...prepared.answerKey,
+        runtime: {
+          workshopEventId: context.eventId,
+          competitionPeriodId: context.competitionPeriodId,
+          teamId: context.teamId,
+        },
+      },
+      expiresAt: context.endsAt,
+    });
+    return res.status(201).json({
+      sessionId,
+      activityId: prepared.activityId,
+      phaseNumber: prepared.phaseNumber,
+      expiresAt: context.endsAt,
+      ...prepared.publicPayload,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/workshop/activities/sessions/:sessionId/submit', ...protectedRoute(), async (req, res, next) => {
+  try {
+    if (!validUuid(req.params.sessionId)) {
+      return res.status(400).json({ error: 'invalid_session_id', requestId: req.requestId });
+    }
+    const [sessionData, priorData, contextData] = await Promise.all([
+      sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }).then(unwrap),
+      sqlOperation('GetAuthoritativeActivityResult', { sessionId: req.params.sessionId }).then(unwrap),
+      sqlOperation('GetMyWorkshopContext', { studentUid: req.auth.uid }).then(unwrap),
+    ]);
+    const session = sessionData.activitySession;
+    const prior = priorData.activityAttempts?.[0];
+    if (!session || session.userUid !== req.auth.uid || !session.activityId.startsWith('workshop-')) {
+      return res.status(404).json({ error: 'session_not_found', requestId: req.requestId });
+    }
+    if (prior) return res.json({ ...prior, idempotentReplay: true });
+    const context = contextData.membership;
+    if (!context || session.answerKey?.runtime?.workshopEventId !== context.eventId) {
+      return res.status(403).json({ error: 'workshop_membership_required', requestId: req.requestId });
+    }
+    if (!isWorkshopCompetitionOpen(context)) {
+      return res.status(409).json({ error: 'workshop_competition_closed', requestId: req.requestId });
+    }
+    const engine = await import('../../functions/src/workshopActivityEngine.js');
+    const result = engine.scoreWorkshopActivitySession(session.answerKey, req.body?.answers);
+    const saved = unwrap(await sqlMutation('RecordWorkshopActivityAttempt', {
+      attemptId: session.id,
+      sessionId: session.id,
+      studentUid: req.auth.uid,
+      activityId: session.activityId,
+      phaseNumber: session.phaseNumber,
+      score: result.score,
+      correctAnswers: result.correctAnswers,
+      wrongAnswers: result.wrongAnswers,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({ error: 'workshop_attempt_refused', requestId: req.requestId });
+    }
+    return res.json({
+      ...result,
+      rewardAmount: result.score,
+      officialRewardGranted: true,
+      idempotentReplay: false,
+    });
   } catch (error) { return next(error); }
 });
 
@@ -798,6 +991,113 @@ app.get('/api/teacher/periods', ...protectedRoute(requireTeacher), async (req, r
   } catch (error) { return next(error); }
 });
 
+app.get('/api/teacher/workshops', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const data = unwrap(await sqlOperation('ListWorkshopEventsForTeacher', {
+      actorUid: req.auth.uid,
+    }));
+    return res.json({ workshops: data.events || [] });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/workshops', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const input = normalizeWorkshopEventInput(req.body);
+    const eventId = crypto.randomUUID();
+    const saved = unwrap(await sqlMutation('CreateWorkshopEvent', {
+      eventId,
+      actorUid: req.auth.uid,
+      ...input,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({
+        error: 'workshop_event_refused',
+        requestId: req.requestId,
+      });
+    }
+    const data = unwrap(await sqlOperation('ListWorkshopEventsForTeacher', {
+      actorUid: req.auth.uid,
+    }));
+    const workshop = (data.events || []).find((item) =>
+      item.competitionPeriodId === input.competitionPeriodId) || null;
+    return res.status(201).json({ workshop });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/workshops/:eventId/teams', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.eventId)) {
+      return res.status(400).json({ error: 'invalid_workshop_id', requestId: req.requestId });
+    }
+    const data = unwrap(await sqlOperation('ListWorkshopTeamsForTeacher', {
+      actorUid: req.auth.uid,
+      eventId: req.params.eventId,
+    }));
+    return res.json({
+      teams: (data.teams || []).map((team) => ({
+        ...team,
+        joinUrl: workshopJoinUrl(team.joinCode),
+      })),
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/workshops/:eventId/teams', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.eventId)) {
+      return res.status(400).json({ error: 'invalid_workshop_id', requestId: req.requestId });
+    }
+    const { name } = normalizeWorkshopTeamInput(req.body);
+    const teamId = crypto.randomUUID();
+    const joinCode = createJoinCode();
+    const saved = unwrap(await sqlMutation('CreateWorkshopTeam', {
+      teamId,
+      actorUid: req.auth.uid,
+      eventId: req.params.eventId,
+      name,
+      joinCode,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({
+        error: 'workshop_team_refused',
+        requestId: req.requestId,
+      });
+    }
+    return res.status(201).json({
+      team: {
+        id: teamId,
+        eventId: req.params.eventId,
+        name,
+        joinCode,
+        joinUrl: workshopJoinUrl(joinCode),
+        active: true,
+        memberCount: 0,
+        capiCoins: 0,
+      },
+    });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/workshops/:eventId/ranking', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.eventId)) {
+      return res.status(400).json({ error: 'invalid_workshop_id', requestId: req.requestId });
+    }
+    const data = unwrap(await sqlOperation('GetWorkshopRankings', {
+      eventId: req.params.eventId,
+    }));
+    return res.json({
+      individualRanking: data.individualRanking || [],
+      teamRanking: data.teamRanking || [],
+    });
+  } catch (error) { return next(error); }
+});
+
 app.get('/api/teacher/test-mode', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);
@@ -954,6 +1254,13 @@ app.use((error, req, res, next) => {
   let message = 'O servidor não conseguiu concluir a operação.';
   if (rawMessage === 'cors_origin_denied') { status = 403; code = rawMessage; message = 'Origem não autorizada.'; }
   else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
+  else if (rawMessage === 'invalid_workshop_join_code') { status = 400; code = rawMessage; message = 'Informe um código de equipe com oito dígitos.'; }
+  else if (rawMessage === 'invalid_workshop_name') { status = 400; code = rawMessage; message = 'Informe um nome válido para a oficina.'; }
+  else if (rawMessage === 'invalid_workshop_team_name') { status = 400; code = rawMessage; message = 'Informe um nome válido para a equipe.'; }
+  else if (rawMessage === 'invalid_workshop_full_name') { status = 400; code = rawMessage; message = 'Informe seu nome completo.'; }
+  else if (rawMessage === 'invalid_workshop_class_name') { status = 400; code = rawMessage; message = 'Informe sua turma.'; }
+  else if (rawMessage === 'workshop_avatar_required') { status = 400; code = rawMessage; message = 'Escolha um avatar.'; }
+  else if (rawMessage === 'invalid_avatar' || rawMessage === 'invalid_avatar_url' || rawMessage === 'invalid_preferred_name') { status = 400; code = rawMessage; message = 'Revise os dados do perfil.'; }
   else if (rawMessage === 'no_official_period_for_export') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para exportação.'; }
   else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
   console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));

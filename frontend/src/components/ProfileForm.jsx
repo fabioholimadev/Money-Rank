@@ -24,16 +24,28 @@ function normalizeText(value) {
   return value.trim().replace(/\s+/g, ' ');
 }
 
-function validateProfile({ nome, turma, avatarId, photoUrl }) {
+function validateProfile({ nome, fullName, turma, teamCode, avatarId, photoUrl }, workshopMode) {
   if (nome.length < 2) {
     return 'Digite um nome preferido com pelo menos 2 caracteres.';
   }
 
-  if (!isValidClassName(turma)) {
+  if (workshopMode && fullName.length < 3) {
+    return 'Digite seu nome completo.';
+  }
+
+  if (workshopMode && !turma) {
+    return 'Informe sua turma.';
+  }
+
+  if (workshopMode && !/^\d{8}$/.test(teamCode)) {
+    return 'Informe o código da equipe com oito dígitos.';
+  }
+
+  if (!workshopMode && !isValidClassName(turma)) {
     return 'Selecione sua turma: 3º DSA ou 3º DSB.';
   }
 
-  if (!avatarId && !photoUrl) {
+  if (!avatarId && (!photoUrl || workshopMode)) {
     return 'Escolha uma Capi profissional ou envie uma foto de perfil.';
   }
 
@@ -112,6 +124,8 @@ export default function ProfileForm({
   onSubmit,
   submitLabel = 'Salvar perfil',
   requireChanges = false,
+  workshopMode = false,
+  initialTeamCode = '',
 }) {
   const photoInputId = useId();
   const initialValues = useMemo(() => {
@@ -121,16 +135,22 @@ export default function ProfileForm({
 
     return {
       nome: initialProfile?.nome ?? '',
-      turma: isValidClassName(initialProfile?.turma)
+      fullName: initialProfile?.full_name ?? '',
+      turma: workshopMode
+        ? initialProfile?.workshop?.className || initialProfile?.turma || ''
+        : isValidClassName(initialProfile?.turma)
         ? initialProfile.turma
         : '',
+      teamCode: String(initialTeamCode || '').replace(/\D/g, '').slice(0, 8),
       avatarId: initialAvatarId,
       photoUrl: initialAvatarId ? '' : initialProfile?.avatar_url ?? '',
     };
-  }, [initialProfile]);
+  }, [initialProfile, initialTeamCode, workshopMode]);
 
   const [nome, setNome] = useState(initialValues.nome);
+  const [fullName, setFullName] = useState(initialValues.fullName);
   const [turma, setTurma] = useState(initialValues.turma);
+  const [teamCode, setTeamCode] = useState(initialValues.teamCode);
   const [avatarId, setAvatarId] = useState(initialValues.avatarId);
   const [photoUrl, setPhotoUrl] = useState(initialValues.photoUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,14 +159,18 @@ export default function ProfileForm({
 
   const normalizedProfile = {
     nome: normalizeText(nome),
+    fullName: normalizeText(fullName),
     turma,
+    teamCode,
     avatarId,
     photoUrl: avatarId ? '' : photoUrl,
   };
 
   const hasChanges =
     normalizedProfile.nome !== normalizeText(initialValues.nome) ||
+    normalizedProfile.fullName !== normalizeText(initialValues.fullName) ||
     normalizedProfile.turma !== initialValues.turma ||
+    normalizedProfile.teamCode !== initialValues.teamCode ||
     normalizedProfile.avatarId !== initialValues.avatarId ||
     normalizedProfile.photoUrl !== initialValues.photoUrl;
 
@@ -179,7 +203,7 @@ export default function ProfileForm({
     event.preventDefault();
     setErrorMessage('');
 
-    const validationError = validateProfile(normalizedProfile);
+    const validationError = validateProfile(normalizedProfile, workshopMode);
     if (validationError) {
       setErrorMessage(validationError);
       return;
@@ -190,7 +214,9 @@ export default function ProfileForm({
     try {
       await onSubmit({
         nome: normalizedProfile.nome,
+        full_name: normalizedProfile.fullName,
         turma: normalizedProfile.turma,
+        team_code: normalizedProfile.teamCode,
         avatar_id: normalizedProfile.avatarId || null,
         avatar_url: normalizedProfile.photoUrl || null,
       });
@@ -209,6 +235,25 @@ export default function ProfileForm({
   return (
     <form className="space-y-7" onSubmit={handleSubmit}>
       <div className="grid gap-5 sm:grid-cols-2">
+        {workshopMode && (
+          <label className="block sm:col-span-2">
+            <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
+              <Person className="text-[#58cc02]" sx={{ fontSize: 18 }} />
+              Nome completo
+            </span>
+            <input
+              autoComplete="name"
+              className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 placeholder:text-[#78909c]"
+              disabled={isBusy}
+              maxLength={100}
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder="Seu nome completo"
+              required
+              type="text"
+              value={fullName}
+            />
+          </label>
+        )}
         <label className="block">
           <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
             <Person className="text-[#58cc02]" sx={{ fontSize: 18 }} />
@@ -235,26 +280,58 @@ export default function ProfileForm({
             <GroupsOutlined className="text-[#58cc02]" sx={{ fontSize: 18 }} />
             Turma
           </span>
-          <select
-            className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 disabled:opacity-60 cursor-pointer"
-            disabled={isBusy}
-            onChange={(event) => setTurma(event.target.value)}
-            required
-            value={turma}
-          >
-            <option disabled value="">
-              Selecione sua turma
-            </option>
-            {CLASS_OPTIONS.map((className) => (
-              <option key={className} value={className}>
-                {className}
-              </option>
-            ))}
-          </select>
+          {workshopMode ? (
+            <input
+              className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 placeholder:text-[#78909c]"
+              disabled={isBusy}
+              maxLength={80}
+              onChange={(event) => setTurma(event.target.value)}
+              placeholder="Ex.: 2º ano A ou comunidade"
+              required
+              type="text"
+              value={turma}
+            />
+          ) : (
+            <select
+              className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-sm text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 disabled:opacity-60 cursor-pointer"
+              disabled={isBusy}
+              onChange={(event) => setTurma(event.target.value)}
+              required
+              value={turma}
+            >
+              <option disabled value="">Selecione sua turma</option>
+              {CLASS_OPTIONS.map((className) => (
+                <option key={className} value={className}>{className}</option>
+              ))}
+            </select>
+          )}
           <span className="mt-1.5 block text-xs text-[#78909c] font-medium">
-            Turmas disponíveis: 3º DSA e 3º DSB.
+            {workshopMode
+              ? 'Use a identificação que a organização da oficina informou.'
+              : 'Turmas disponíveis: 3º DSA e 3º DSB.'}
           </span>
         </label>
+        {workshopMode && (
+          <label className="block sm:col-span-2">
+            <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
+              <GroupsOutlined className="text-[#58cc02]" sx={{ fontSize: 18 }} />
+              Código da equipe
+            </span>
+            <input
+              className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-center font-mono text-lg tracking-[0.3em] text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 placeholder:text-[#78909c]"
+              disabled={isBusy}
+              inputMode="numeric"
+              maxLength={8}
+              onChange={(event) => setTeamCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
+              placeholder="00000000"
+              required
+              value={teamCode}
+            />
+            <span className="mt-1.5 block text-xs text-[#78909c] font-medium">
+              Digite o código exibido pelo professor ou abra o link do QR Code.
+            </span>
+          </label>
+        )}
       </div>
 
       <fieldset disabled={isBusy}>
@@ -262,7 +339,9 @@ export default function ProfileForm({
           Escolha sua Capi profissional
         </legend>
         <p className="mt-1 text-xs leading-relaxed text-[#a5b7c2]">
-          Você também pode enviar uma foto pessoal logo abaixo.
+          {workshopMode
+            ? 'Este avatar aparecerá nos rankings individual e da equipe.'
+            : 'Você também pode enviar uma foto pessoal logo abaixo.'}
         </p>
 
         <div
@@ -303,7 +382,7 @@ export default function ProfileForm({
         </div>
       </fieldset>
 
-      <div className="relative flex items-center gap-3">
+      {!workshopMode && <><div className="relative flex items-center gap-3">
         <span className="h-px flex-1 bg-white/[0.08]" />
         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#78909c]">
           ou use sua foto
@@ -364,7 +443,7 @@ export default function ProfileForm({
               ? 'Trocar foto'
               : 'Escolher foto'}
         </label>
-      </div>
+      </div></>}
 
       {errorMessage && (
         <div

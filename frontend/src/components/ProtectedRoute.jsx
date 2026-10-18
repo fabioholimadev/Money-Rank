@@ -9,6 +9,7 @@ export default function ProtectedRoute({
   children,
   requireCompleteProfile = true,
   requiredRole = null,
+  experience = null,
 }) {
   const { user, aluno, loading } = useAuth();
   const location = useLocation();
@@ -47,6 +48,14 @@ export default function ProtectedRoute({
 
   if (!canProfileAccessRole(aluno, requiredRole)) {
     return <Navigate replace to={getHomePathForProfile(aluno)} />;
+  }
+
+  if (experience === 'WORKSHOP' && !aluno?.workshop) {
+    return <Navigate replace to="/trilha" />;
+  }
+
+  if (experience === 'REGULAR' && aluno?.workshop) {
+    return <Navigate replace to="/trilha/oficina" />;
   }
 
   if (!requireCompleteProfile && aluno?.profile_complete) {

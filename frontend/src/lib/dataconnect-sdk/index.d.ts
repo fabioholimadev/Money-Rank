@@ -350,6 +350,30 @@ export interface CreateTestActivitySessionVariables {
   expiresAt: TimestampString;
 }
 
+export interface CreateWorkshopEventData {
+  affectedRows?: number | null;
+}
+
+export interface CreateWorkshopEventVariables {
+  eventId: UUIDString;
+  actorUid: string;
+  competitionPeriodId: UUIDString;
+  name: string;
+  trailKey: string;
+}
+
+export interface CreateWorkshopTeamData {
+  affectedRows?: number | null;
+}
+
+export interface CreateWorkshopTeamVariables {
+  teamId: UUIDString;
+  actorUid: string;
+  eventId: UUIDString;
+  name: string;
+  joinCode: string;
+}
+
 export interface EconomyConfig_Key {
   configKey: string;
   __typename?: 'EconomyConfig_Key';
@@ -508,6 +532,15 @@ export interface GetEditorialSeedStateData {
   })[];
 }
 
+export interface GetGlobalRankingsData {
+  individualRanking?: unknown[] | null;
+  classRanking?: unknown[] | null;
+}
+
+export interface GetGlobalRankingsVariables {
+  studentLimit?: number | null;
+}
+
 export interface GetLearningModuleVersionForEditorialData {
   learningModuleVersion?: {
     id: UUIDString;
@@ -612,6 +645,14 @@ export interface GetMyProfileData {
   } & User_Key;
 }
 
+export interface GetMyWorkshopContextData {
+  membership?: unknown | null;
+}
+
+export interface GetMyWorkshopContextVariables {
+  studentUid: string;
+}
+
 export interface GetPedagogicalBankStatusData {
   latestLoad?: unknown | null;
   counts?: unknown[] | null;
@@ -696,6 +737,15 @@ export interface GetTeacherTestRunVariables {
   actorUid: string;
 }
 
+export interface GetWorkshopRankingsData {
+  individualRanking?: unknown[] | null;
+  teamRanking?: unknown[] | null;
+}
+
+export interface GetWorkshopRankingsVariables {
+  eventId: UUIDString;
+}
+
 export interface ImportPedagogicalBankData {
   importedRows?: number | null;
 }
@@ -710,6 +760,21 @@ export interface ImportPedagogicalBankVariables {
 
 export interface InitializeMyTrailData {
   affectedRows?: number | null;
+}
+
+export interface JoinWorkshopTeamAndCompleteProfileData {
+  affectedRows?: number | null;
+}
+
+export interface JoinWorkshopTeamAndCompleteProfileVariables {
+  studentUid: string;
+  email: string;
+  preferredName: string;
+  fullName: string;
+  className: string;
+  joinCode: string;
+  avatarId?: ProfessionalAvatar | null;
+  avatarUrl?: string | null;
 }
 
 export interface LearningModuleVersion_Key {
@@ -915,6 +980,23 @@ export interface ListVisibleCompetitionPeriodsData {
   } & CompetitionPeriod_Key)[];
 }
 
+export interface ListWorkshopEventsForTeacherData {
+  events?: unknown[] | null;
+}
+
+export interface ListWorkshopEventsForTeacherVariables {
+  actorUid: string;
+}
+
+export interface ListWorkshopTeamsForTeacherData {
+  teams?: unknown[] | null;
+}
+
+export interface ListWorkshopTeamsForTeacherVariables {
+  actorUid: string;
+  eventId: UUIDString;
+}
+
 export interface LoadTestRun_Key {
   runId: string;
   __typename?: 'LoadTestRun_Key';
@@ -986,6 +1068,21 @@ export interface RecordTestActivityAttemptVariables {
   passed: boolean;
 }
 
+export interface RecordWorkshopActivityAttemptData {
+  affectedRows?: number | null;
+}
+
+export interface RecordWorkshopActivityAttemptVariables {
+  attemptId: UUIDString;
+  sessionId: UUIDString;
+  studentUid: string;
+  activityId: string;
+  phaseNumber: number;
+  score: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+}
+
 export interface RegisterMyCurrentPhaseAttemptData {
   affectedRows?: number | null;
 }
@@ -1021,6 +1118,14 @@ export interface ResolveCompetitionPeriodByKeyData {
 
 export interface ResolveCompetitionPeriodByKeyVariables {
   periodKey: string;
+}
+
+export interface ResolveWorkshopTeamByJoinCodeData {
+  team?: unknown | null;
+}
+
+export interface ResolveWorkshopTeamByJoinCodeVariables {
+  joinCode: string;
 }
 
 export interface ReviewResearchEditorialData {
@@ -1261,6 +1366,22 @@ export interface UpsertStudentProgressVariables {
 export interface User_Key {
   uid: string;
   __typename?: 'User_Key';
+}
+
+export interface WorkshopEvent_Key {
+  id: UUIDString;
+  __typename?: 'WorkshopEvent_Key';
+}
+
+export interface WorkshopMembership_Key {
+  eventId: UUIDString;
+  userUid: string;
+  __typename?: 'WorkshopMembership_Key';
+}
+
+export interface WorkshopTeam_Key {
+  id: UUIDString;
+  __typename?: 'WorkshopTeam_Key';
 }
 
 interface UpsertMyProfileWithAvatarRef {
@@ -1815,6 +1936,54 @@ export const finalizeLoadTestCleanupRef: FinalizeLoadTestCleanupRef;
 export function finalizeLoadTestCleanup(vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
 export function finalizeLoadTestCleanup(dc: DataConnect, vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
 
+interface CreateWorkshopEventRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateWorkshopEventVariables): MutationRef<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateWorkshopEventVariables): MutationRef<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+  operationName: string;
+}
+export const createWorkshopEventRef: CreateWorkshopEventRef;
+
+export function createWorkshopEvent(vars: CreateWorkshopEventVariables): MutationPromise<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+export function createWorkshopEvent(dc: DataConnect, vars: CreateWorkshopEventVariables): MutationPromise<CreateWorkshopEventData, CreateWorkshopEventVariables>;
+
+interface CreateWorkshopTeamRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateWorkshopTeamVariables): MutationRef<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateWorkshopTeamVariables): MutationRef<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+  operationName: string;
+}
+export const createWorkshopTeamRef: CreateWorkshopTeamRef;
+
+export function createWorkshopTeam(vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+export function createWorkshopTeam(dc: DataConnect, vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+
+interface JoinWorkshopTeamAndCompleteProfileRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationRef<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationRef<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+  operationName: string;
+}
+export const joinWorkshopTeamAndCompleteProfileRef: JoinWorkshopTeamAndCompleteProfileRef;
+
+export function joinWorkshopTeamAndCompleteProfile(vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationPromise<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+export function joinWorkshopTeamAndCompleteProfile(dc: DataConnect, vars: JoinWorkshopTeamAndCompleteProfileVariables): MutationPromise<JoinWorkshopTeamAndCompleteProfileData, JoinWorkshopTeamAndCompleteProfileVariables>;
+
+interface RecordWorkshopActivityAttemptRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RecordWorkshopActivityAttemptVariables): MutationRef<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RecordWorkshopActivityAttemptVariables): MutationRef<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+  operationName: string;
+}
+export const recordWorkshopActivityAttemptRef: RecordWorkshopActivityAttemptRef;
+
+export function recordWorkshopActivityAttempt(vars: RecordWorkshopActivityAttemptVariables): MutationPromise<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+export function recordWorkshopActivityAttempt(dc: DataConnect, vars: RecordWorkshopActivityAttemptVariables): MutationPromise<RecordWorkshopActivityAttemptData, RecordWorkshopActivityAttemptVariables>;
+
 interface GetMyProfileRef {
   /* Allow users to create refs without passing in DataConnect */
   (): QueryRef<GetMyProfileData, undefined>;
@@ -2019,6 +2188,18 @@ export const getCompetitionRankingsRef: GetCompetitionRankingsRef;
 export function getCompetitionRankings(vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
 export function getCompetitionRankings(dc: DataConnect, vars: GetCompetitionRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetCompetitionRankingsData, GetCompetitionRankingsVariables>;
 
+interface GetGlobalRankingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: GetGlobalRankingsVariables): QueryRef<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars?: GetGlobalRankingsVariables): QueryRef<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+  operationName: string;
+}
+export const getGlobalRankingsRef: GetGlobalRankingsRef;
+
+export function getGlobalRankings(vars?: GetGlobalRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+export function getGlobalRankings(dc: DataConnect, vars?: GetGlobalRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetGlobalRankingsData, GetGlobalRankingsVariables>;
+
 interface GetCompetitionAbuseSignalsRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: GetCompetitionAbuseSignalsVariables): QueryRef<GetCompetitionAbuseSignalsData, GetCompetitionAbuseSignalsVariables>;
@@ -2162,4 +2343,64 @@ export const getLoadTestCleanupStatusRef: GetLoadTestCleanupStatusRef;
 
 export function getLoadTestCleanupStatus(vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
 export function getLoadTestCleanupStatus(dc: DataConnect, vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
+
+interface GetMyWorkshopContextRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetMyWorkshopContextVariables): QueryRef<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetMyWorkshopContextVariables): QueryRef<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+  operationName: string;
+}
+export const getMyWorkshopContextRef: GetMyWorkshopContextRef;
+
+export function getMyWorkshopContext(vars: GetMyWorkshopContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+export function getMyWorkshopContext(dc: DataConnect, vars: GetMyWorkshopContextVariables, options?: ExecuteQueryOptions): QueryPromise<GetMyWorkshopContextData, GetMyWorkshopContextVariables>;
+
+interface ResolveWorkshopTeamByJoinCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ResolveWorkshopTeamByJoinCodeVariables): QueryRef<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ResolveWorkshopTeamByJoinCodeVariables): QueryRef<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+  operationName: string;
+}
+export const resolveWorkshopTeamByJoinCodeRef: ResolveWorkshopTeamByJoinCodeRef;
+
+export function resolveWorkshopTeamByJoinCode(vars: ResolveWorkshopTeamByJoinCodeVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+export function resolveWorkshopTeamByJoinCode(dc: DataConnect, vars: ResolveWorkshopTeamByJoinCodeVariables, options?: ExecuteQueryOptions): QueryPromise<ResolveWorkshopTeamByJoinCodeData, ResolveWorkshopTeamByJoinCodeVariables>;
+
+interface ListWorkshopEventsForTeacherRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListWorkshopEventsForTeacherVariables): QueryRef<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListWorkshopEventsForTeacherVariables): QueryRef<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+  operationName: string;
+}
+export const listWorkshopEventsForTeacherRef: ListWorkshopEventsForTeacherRef;
+
+export function listWorkshopEventsForTeacher(vars: ListWorkshopEventsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+export function listWorkshopEventsForTeacher(dc: DataConnect, vars: ListWorkshopEventsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopEventsForTeacherData, ListWorkshopEventsForTeacherVariables>;
+
+interface ListWorkshopTeamsForTeacherRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListWorkshopTeamsForTeacherVariables): QueryRef<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListWorkshopTeamsForTeacherVariables): QueryRef<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+  operationName: string;
+}
+export const listWorkshopTeamsForTeacherRef: ListWorkshopTeamsForTeacherRef;
+
+export function listWorkshopTeamsForTeacher(vars: ListWorkshopTeamsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+export function listWorkshopTeamsForTeacher(dc: DataConnect, vars: ListWorkshopTeamsForTeacherVariables, options?: ExecuteQueryOptions): QueryPromise<ListWorkshopTeamsForTeacherData, ListWorkshopTeamsForTeacherVariables>;
+
+interface GetWorkshopRankingsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetWorkshopRankingsVariables): QueryRef<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetWorkshopRankingsVariables): QueryRef<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+  operationName: string;
+}
+export const getWorkshopRankingsRef: GetWorkshopRankingsRef;
+
+export function getWorkshopRankings(vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+export function getWorkshopRankings(dc: DataConnect, vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
 

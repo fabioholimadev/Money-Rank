@@ -70,6 +70,12 @@ enum TestRunAuditAction {
   CLEANED
 }
 
+enum WorkshopStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
 # Ciclo editorial usado pelo Estúdio do Professor. Uma versão publicada nunca
 # volta a rascunho; uma nova versão deve ser criada para preservar auditoria.
 enum EditorialStatus {
@@ -493,6 +499,94 @@ type CompetitionPeriod
   closedAt: Timestamp @col(name: "closed_at")
   createdAt: Timestamp!
     @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Uma oficina usa uma trilha isolada e reaproveita a janela autoritativa de
+# competição. O vínculo único com CompetitionPeriod mantém a apuração oficial
+# em um único intervalo de tempo.
+type WorkshopEvent
+  @table(
+    name: "workshop_events"
+    singular: "workshopEvent"
+    plural: "workshopEvents"
+  )
+  @unique(fields: ["competitionPeriodId"])
+  @index(fields: ["status", "createdAt"], order: [ASC, DESC]) {
+  name: String! @col(dataType: "varchar(100)")
+  trailKey: String!
+    @col(name: "trail_key", dataType: "varchar(64)")
+    @default(value: "ciencia-delas")
+  status: WorkshopStatus! @default(value: DRAFT) @index
+  competitionPeriod: CompetitionPeriod!
+    @ref(fields: "competitionPeriodId", references: "id")
+  competitionPeriodId: UUID! @col(name: "competition_period_id")
+  createdBy: User! @ref(fields: "createdByUid", references: "uid")
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# Cada equipe recebe um código numérico de oito dígitos. O código é globalmente
+# único para que o cadastro identifique equipe e oficina em uma única consulta.
+type WorkshopTeam
+  @table(
+    name: "workshop_teams"
+    singular: "workshopTeam"
+    plural: "workshopTeams"
+  )
+  @unique(fields: ["eventId", "name"])
+  @index(fields: ["eventId", "createdAt"], order: [ASC, ASC]) {
+  event: WorkshopEvent! @ref(fields: "eventId", references: "id")
+  eventId: UUID! @col(name: "event_id")
+  name: String! @col(dataType: "varchar(60)")
+  joinCode: String!
+    @col(name: "join_code", dataType: "char(8)")
+    @unique
+  active: Boolean! @default(value: true) @index
+  createdBy: User! @ref(fields: "createdByUid", references: "uid")
+  createdByUid: String!
+    @col(name: "created_by_uid", dataType: "varchar(128)")
+  createdAt: Timestamp!
+    @col(name: "created_at")
+    @default(expr: "request.time")
+  updatedAt: Timestamp!
+    @col(name: "updated_at")
+    @default(expr: "request.time")
+}
+
+# A associação preserva nome completo e turma informada na oficina sem alterar
+# o enum das turmas regulares. Um aluno pode participar de oficinas futuras,
+# mas possui somente uma equipe dentro de cada evento.
+type WorkshopMembership
+  @table(
+    name: "workshop_memberships"
+    key: ["event", "user"]
+    singular: "workshopMembership"
+    plural: "workshopMemberships"
+  )
+  @index(fields: ["teamId", "joinedAt"], order: [ASC, ASC]) {
+  event: WorkshopEvent! @ref(fields: "eventId", references: "id")
+  eventId: UUID! @col(name: "event_id")
+  team: WorkshopTeam! @ref(fields: "teamId", references: "id")
+  teamId: UUID! @col(name: "team_id")
+  user: User! @ref(fields: "userUid", references: "uid")
+  userUid: String!
+    @col(name: "user_uid", dataType: "varchar(128)")
+  fullName: String!
+    @col(name: "full_name", dataType: "varchar(100)")
+  className: String!
+    @col(name: "class_name", dataType: "varchar(80)")
+  joinedAt: Timestamp!
+    @col(name: "joined_at")
     @default(expr: "request.time")
   updatedAt: Timestamp!
     @col(name: "updated_at")

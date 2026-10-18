@@ -659,6 +659,54 @@ export function finalizeLoadTestCleanup(dcOrVars, vars) {
   return executeMutation(finalizeLoadTestCleanupRef(dcInstance, inputVars));
 }
 
+export const createWorkshopEventRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateWorkshopEvent', inputVars);
+}
+createWorkshopEventRef.operationName = 'CreateWorkshopEvent';
+
+export function createWorkshopEvent(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createWorkshopEventRef(dcInstance, inputVars));
+}
+
+export const createWorkshopTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateWorkshopTeam', inputVars);
+}
+createWorkshopTeamRef.operationName = 'CreateWorkshopTeam';
+
+export function createWorkshopTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createWorkshopTeamRef(dcInstance, inputVars));
+}
+
+export const joinWorkshopTeamAndCompleteProfileRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'JoinWorkshopTeamAndCompleteProfile', inputVars);
+}
+joinWorkshopTeamAndCompleteProfileRef.operationName = 'JoinWorkshopTeamAndCompleteProfile';
+
+export function joinWorkshopTeamAndCompleteProfile(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(joinWorkshopTeamAndCompleteProfileRef(dcInstance, inputVars));
+}
+
+export const recordWorkshopActivityAttemptRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RecordWorkshopActivityAttempt', inputVars);
+}
+recordWorkshopActivityAttemptRef.operationName = 'RecordWorkshopActivityAttempt';
+
+export function recordWorkshopActivityAttempt(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(recordWorkshopActivityAttemptRef(dcInstance, inputVars));
+}
+
 export const getMyProfileRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -880,6 +928,19 @@ export function getCompetitionRankings(dcOrVars, varsOrOptions, options) {
   return executeQuery(getCompetitionRankingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
+export const getGlobalRankingsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetGlobalRankings', inputVars);
+}
+getGlobalRankingsRef.operationName = 'GetGlobalRankings';
+
+export function getGlobalRankings(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(getGlobalRankingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
 export const getCompetitionAbuseSignalsRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -1034,5 +1095,70 @@ export function getLoadTestCleanupStatus(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getLoadTestCleanupStatusRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getMyWorkshopContextRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyWorkshopContext', inputVars);
+}
+getMyWorkshopContextRef.operationName = 'GetMyWorkshopContext';
+
+export function getMyWorkshopContext(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getMyWorkshopContextRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const resolveWorkshopTeamByJoinCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ResolveWorkshopTeamByJoinCode', inputVars);
+}
+resolveWorkshopTeamByJoinCodeRef.operationName = 'ResolveWorkshopTeamByJoinCode';
+
+export function resolveWorkshopTeamByJoinCode(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(resolveWorkshopTeamByJoinCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listWorkshopEventsForTeacherRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListWorkshopEventsForTeacher', inputVars);
+}
+listWorkshopEventsForTeacherRef.operationName = 'ListWorkshopEventsForTeacher';
+
+export function listWorkshopEventsForTeacher(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listWorkshopEventsForTeacherRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listWorkshopTeamsForTeacherRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListWorkshopTeamsForTeacher', inputVars);
+}
+listWorkshopTeamsForTeacherRef.operationName = 'ListWorkshopTeamsForTeacher';
+
+export function listWorkshopTeamsForTeacher(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listWorkshopTeamsForTeacherRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const getWorkshopRankingsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetWorkshopRankings', inputVars);
+}
+getWorkshopRankingsRef.operationName = 'GetWorkshopRankings';
+
+export function getWorkshopRankings(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getWorkshopRankingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 

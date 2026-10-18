@@ -2838,3 +2838,356 @@ mutation FinalizeLoadTestCleanup(
     params: [$runId, $deletedAuthUsers]
   )
 }
+
+mutation CreateWorkshopEvent(
+  $eventId: UUID!
+  $actorUid: String!
+  $competitionPeriodId: UUID!
+  $name: String!
+  $trailKey: String!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      INSERT INTO workshop_events (
+        id,
+        name,
+        trail_key,
+        status,
+        competition_period_id,
+        created_by_uid,
+        created_at,
+        updated_at
+      )
+      SELECT
+        $1::uuid,
+        $4,
+        $5,
+        'ACTIVE',
+        period.id,
+        teacher.firebase_uid,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      FROM users AS teacher
+      INNER JOIN competition_periods AS period ON period.id = $3::uuid
+      WHERE teacher.firebase_uid = $2
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND period.status <> 'CLOSED'
+        AND period.ends_at > CURRENT_TIMESTAMP
+      ON CONFLICT (competition_period_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        trail_key = EXCLUDED.trail_key,
+        status = 'ACTIVE',
+        updated_at = CURRENT_TIMESTAMP
+    """
+    params: [$eventId, $actorUid, $competitionPeriodId, $name, $trailKey]
+  )
+}
+
+mutation CreateWorkshopTeam(
+  $teamId: UUID!
+  $actorUid: String!
+  $eventId: UUID!
+  $name: String!
+  $joinCode: String!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      INSERT INTO workshop_teams (
+        id,
+        event_id,
+        name,
+        join_code,
+        active,
+        created_by_uid,
+        created_at,
+        updated_at
+      )
+      SELECT
+        $1::uuid,
+        event.id,
+        $4,
+        $5,
+        TRUE,
+        teacher.firebase_uid,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      FROM users AS teacher
+      INNER JOIN workshop_events AS event ON event.id = $3::uuid
+      INNER JOIN competition_periods AS period
+        ON period.id = event.competition_period_id
+      WHERE teacher.firebase_uid = $2
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND event.status = 'ACTIVE'
+        AND period.status <> 'CLOSED'
+        AND period.ends_at > CURRENT_TIMESTAMP
+    """
+    params: [$teamId, $actorUid, $eventId, $name, $joinCode]
+  )
+}
+
+mutation JoinWorkshopTeamAndCompleteProfile(
+  $studentUid: String!
+  $email: String!
+  $preferredName: String!
+  $fullName: String!
+  $className: String!
+  $joinCode: String!
+  $avatarId: ProfessionalAvatar
+  $avatarUrl: String
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH selected_team AS (
+        SELECT
+          team.id AS team_id,
+          event.id AS event_id
+        FROM workshop_teams AS team
+        INNER JOIN workshop_events AS event ON event.id = team.event_id
+        INNER JOIN competition_periods AS period
+          ON period.id = event.competition_period_id
+        WHERE team.join_code = $6
+          AND team.active = TRUE
+          AND event.status = 'ACTIVE'
+          AND period.status <> 'CLOSED'
+          AND period.ends_at > CURRENT_TIMESTAMP
+        LIMIT 1
+      ), upserted_user AS (
+        INSERT INTO users (
+          firebase_uid,
+          email,
+          preferred_name,
+          class_group,
+          role,
+          avatar_id,
+          avatar_url,
+          profile_completed,
+          is_test,
+          origin,
+          capi_coins,
+          current_phase,
+          current_streak,
+          created_at,
+          updated_at
+        )
+        SELECT
+          $1,
+          $2,
+          $3,
+          NULL,
+          'STUDENT',
+          $7::professional_avatar,
+          $8,
+          TRUE,
+          FALSE,
+          'WORKSHOP',
+          0,
+          0,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        FROM selected_team
+        ON CONFLICT (firebase_uid) DO UPDATE SET
+          email = EXCLUDED.email,
+          preferred_name = EXCLUDED.preferred_name,
+          avatar_id = EXCLUDED.avatar_id,
+          avatar_url = EXCLUDED.avatar_url,
+          profile_completed = TRUE,
+          origin = COALESCE(users.origin, 'WORKSHOP'),
+          updated_at = CURRENT_TIMESTAMP
+        RETURNING firebase_uid
+      )
+      INSERT INTO workshop_memberships (
+        event_id,
+        team_id,
+        user_uid,
+        full_name,
+        class_name,
+        joined_at,
+        updated_at
+      )
+      SELECT
+        selected_team.event_id,
+        selected_team.team_id,
+        upserted_user.firebase_uid,
+        $4,
+        $5,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP
+      FROM selected_team
+      INNER JOIN upserted_user ON TRUE
+      ON CONFLICT (event_id, user_uid) DO UPDATE SET
+        team_id = EXCLUDED.team_id,
+        full_name = EXCLUDED.full_name,
+        class_name = EXCLUDED.class_name,
+        updated_at = CURRENT_TIMESTAMP
+    """
+    params: [
+      $studentUid
+      $email
+      $preferredName
+      $fullName
+      $className
+      $joinCode
+      $avatarId
+      $avatarUrl
+    ]
+  )
+}
+
+# Cada sessão vale exatamente uma recompensa. Uma nova sessão representa uma
+# nova rodada e volta a pontuar; o conflito por activity_session_id torna o
+# reenvio da mesma rodada idempotente.
+mutation RecordWorkshopActivityAttempt(
+  $attemptId: UUID!
+  $sessionId: UUID!
+  $studentUid: String!
+  $activityId: String!
+  $phaseNumber: Int!
+  $score: Int!
+  $correctAnswers: Int!
+  $wrongAnswers: Int!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      WITH eligible AS (
+        SELECT
+          session.id AS session_id,
+          event.competition_period_id,
+          users.class_group
+        FROM activity_sessions AS session
+        INNER JOIN users ON users.firebase_uid = session.user_uid
+        INNER JOIN workshop_memberships AS membership
+          ON membership.user_uid = session.user_uid
+        INNER JOIN workshop_events AS event
+          ON event.id = membership.event_id
+        INNER JOIN competition_periods AS period
+          ON period.id = event.competition_period_id
+        WHERE session.id = $2::uuid
+          AND session.user_uid = $3
+          AND session.activity_id = $4
+          AND session.phase_number = $5
+          AND session.status = 'OPEN'
+          AND session.is_test = FALSE
+          AND event.status = 'ACTIVE'
+          AND period.status IN ('SCHEDULED', 'ACTIVE')
+          AND period.starts_at <= CURRENT_TIMESTAMP
+          AND period.ends_at > CURRENT_TIMESTAMP
+          AND session.expires_at > CURRENT_TIMESTAMP
+        LIMIT 1
+      ), inserted_attempt AS (
+        INSERT INTO activity_attempts (
+          id,
+          user_uid,
+          activity_id,
+          activity_session_id,
+          phase_number,
+          score,
+          correct_answers,
+          wrong_answers,
+          passed,
+          first_completion,
+          reward_base,
+          streak_multiplier_percent,
+          streak_bonus,
+          reward_amount,
+          reward_limit_reached,
+          reward_suppression_reason,
+          is_test,
+          created_at
+        )
+        SELECT
+          $1::uuid,
+          $3,
+          $4,
+          eligible.session_id,
+          $5,
+          $6,
+          $7,
+          $8,
+          TRUE,
+          NOT EXISTS (
+            SELECT 1 FROM activity_attempts AS previous
+            WHERE previous.user_uid = $3
+              AND previous.activity_id = $4
+              AND previous.is_test = FALSE
+          ),
+          $6,
+          100,
+          0,
+          $6,
+          FALSE,
+          'NONE',
+          FALSE,
+          CURRENT_TIMESTAMP
+        FROM eligible
+        ON CONFLICT (activity_session_id) DO NOTHING
+        RETURNING id, user_uid, phase_number, reward_amount
+      ), inserted_transaction AS (
+        INSERT INTO capi_coin_transactions (
+          user_uid,
+          attempt_id,
+          competition_period_id,
+          amount,
+          base_amount,
+          streak_multiplier_percent,
+          streak_bonus,
+          transaction_type,
+          reason,
+          source_id,
+          phase_number,
+          class_group,
+          competition_week,
+          is_test,
+          created_at
+        )
+        SELECT
+          inserted_attempt.user_uid,
+          inserted_attempt.id,
+          eligible.competition_period_id,
+          inserted_attempt.reward_amount,
+          inserted_attempt.reward_amount,
+          100,
+          0,
+          'ACTIVITY_REPEAT_REWARD',
+          'Rodada concluída na oficina Ciência Delas',
+          eligible.session_id::text,
+          inserted_attempt.phase_number,
+          eligible.class_group,
+          date_trunc('week', CURRENT_TIMESTAMP)::date,
+          FALSE,
+          CURRENT_TIMESTAMP
+        FROM inserted_attempt
+        INNER JOIN eligible ON TRUE
+        RETURNING user_uid, amount
+      ), updated_user AS (
+        UPDATE users
+        SET
+          capi_coins = capi_coins + inserted_transaction.amount,
+          updated_at = CURRENT_TIMESTAMP
+        FROM inserted_transaction
+        WHERE users.firebase_uid = inserted_transaction.user_uid
+        RETURNING users.firebase_uid
+      )
+      UPDATE activity_sessions
+      SET
+        status = 'SUBMITTED',
+        submitted_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+      FROM inserted_attempt
+      WHERE activity_sessions.id = inserted_attempt.id
+        OR activity_sessions.id = $2::uuid
+    """
+    params: [
+      $attemptId
+      $sessionId
+      $studentUid
+      $activityId
+      $phaseNumber
+      $score
+      $correctAnswers
+      $wrongAnswers
+    ]
+  )
+}

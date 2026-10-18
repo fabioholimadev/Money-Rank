@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
 import TestModePanel from '../components/TestModePanel';
 import SystemDiagnosticsPanel from '../components/SystemDiagnosticsPanel';
+import WorkshopTeamManager from '../components/WorkshopTeamManager';
 import { buildTeacherDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
 import {
   fetchTeacherDashboard,
@@ -398,6 +399,8 @@ export default function TeacherDashboard() {
         </section>
 
         <TestModePanel />
+
+        <WorkshopTeamManager periods={periods} selectedPeriodId={selectedPeriodId} />
 
         <SystemDiagnosticsPanel />
 

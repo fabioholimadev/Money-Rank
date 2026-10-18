@@ -28,6 +28,10 @@ import {
   initializeLegacyTrail,
   syncStudentProfile,
 } from '../services/studentDataService';
+import {
+  fetchMyWorkshopContext,
+  joinWorkshopTeam,
+} from '../services/workshopService';
 
 const AuthContext = createContext(null);
 
@@ -81,9 +85,14 @@ function readStoredProfile(uid) {
     if (parsedProfile.uid !== uid) return null;
 
     const nome = normalizeText(parsedProfile.nome, 40);
-    const turma = isValidClassName(parsedProfile.turma)
-      ? parsedProfile.turma
-      : '';
+    const workshop = parsedProfile.workshop?.eventId
+      ? parsedProfile.workshop
+      : null;
+    const turma = workshop
+      ? normalizeText(parsedProfile.turma, 80)
+      : isValidClassName(parsedProfile.turma)
+        ? parsedProfile.turma
+        : '';
     const avatarId = isValidAvatarId(parsedProfile.avatar_id)
       ? parsedProfile.avatar_id
       : null;
@@ -94,6 +103,7 @@ function readStoredProfile(uid) {
       turma,
       avatar_id: avatarId,
       avatar_url: avatarUrl,
+      workshop,
       profile_complete:
         parsedProfile.profile_complete === true &&
         nome.length >= 2 &&
@@ -115,6 +125,7 @@ function writeStoredProfile(uid, profile) {
         turma: profile.turma,
         avatar_id: profile.avatar_id,
         avatar_url: profile.avatar_url,
+        workshop: profile.workshop || null,
         profile_complete: true,
       }),
     );
@@ -133,6 +144,7 @@ function createStudentSnapshot(
   const matchingStudent =
     currentStudent?.id === firebaseUser.uid ? currentStudent : null;
   const storedProfile = readStoredProfile(firebaseUser.uid);
+  const workshop = remoteProfile?.workshop || storedProfile?.workshop || matchingStudent?.workshop || null;
   const hasRemoteProfile = Boolean(remoteProfile);
   const remoteAvatarId = isValidAvatarId(remoteProfile?.avatar_id)
     ? remoteProfile.avatar_id
@@ -175,10 +187,11 @@ function createStudentSnapshot(
     avatar_url: avatarUrl,
     avatar_id: avatarId,
     turma:
-      remoteProfile?.turma ||
+      workshop?.className || remoteProfile?.turma ||
       storedProfile?.turma ||
       matchingStudent?.turma ||
       '',
+    workshop,
     capicoins:
       remoteProfile?.capicoins ?? matchingStudent?.capicoins ?? 0,
     fase_atual:
@@ -245,7 +258,10 @@ export function AuthProvider({ children }) {
         setTrailLoading(true);
 
         async function loadRelationalProfile() {
-          let remoteProfile = await fetchMyStudentProfile();
+          let [remoteProfile, workshop] = await Promise.all([
+            fetchMyStudentProfile(),
+            fetchMyWorkshopContext(),
+          ]);
           let remoteProgress = [];
 
           // Migra automaticamente um perfil completo da Task 1.3.
@@ -254,11 +270,13 @@ export function AuthProvider({ children }) {
           }
 
           if (remoteProfile) {
-            remoteProgress = await fetchMyProgress();
+            remoteProfile = { ...remoteProfile, workshop };
+            remoteProgress = workshop ? [] : await fetchMyProgress();
 
             // Perfis anteriores à Task 3.2 começavam na Fase 1. Somente um
             // perfil sem histórico pode ser reiniciado no Passo 0.
             if (
+              !workshop &&
               remoteProfile.fase_atual === 1 &&
               remoteProgress.length === 0
             ) {
@@ -449,6 +467,42 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  const saveWorkshopProfile = useCallback(async (profile) => {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) {
+      throw new Error('Sua sessão expirou. Entre novamente para continuar.');
+    }
+
+    const nome = normalizeText(profile.nome, 40);
+    const fullName = normalizeText(profile.full_name, 100);
+    const turma = normalizeText(profile.turma, 80);
+    const teamCode = String(profile.team_code || '').replace(/\D/g, '');
+    const avatarId = isValidAvatarId(profile.avatar_id) ? profile.avatar_id : null;
+    if (nome.length < 2 || fullName.length < 3 || !turma || teamCode.length !== 8 || !avatarId) {
+      throw new Error('Preencha seus dados, o código de oito dígitos e escolha uma Capi.');
+    }
+
+    await updateProfile(firebaseUser, { displayName: nome });
+    const result = await joinWorkshopTeam({
+      nome,
+      full_name: fullName,
+      turma,
+      team_code: teamCode,
+      avatar_id: avatarId,
+    });
+    const completedProfile = createStudentSnapshot(
+      firebaseUser,
+      alunoRef.current,
+      { ...result.profile, workshop: result.workshop },
+    );
+    writeStoredProfile(firebaseUser.uid, completedProfile);
+    alunoRef.current = completedProfile;
+    setAluno(completedProfile);
+    setTrailProgress([]);
+    setProfileSyncError(null);
+    return completedProfile;
+  }, []);
+
   const refreshTrailState = useCallback(async () => {
     const firebaseUser = auth.currentUser;
 
@@ -462,15 +516,16 @@ export function AuthProvider({ children }) {
     setTrailLoading(true);
 
     try {
-      const [remoteProfile, remoteProgress] = await Promise.all([
+      const [remoteProfile, remoteProgress, workshop] = await Promise.all([
         fetchMyStudentProfile(),
         fetchMyProgress(),
+        fetchMyWorkshopContext(),
       ]);
       const synchronizedSnapshot = remoteProfile
         ? createStudentSnapshot(
             firebaseUser,
             alunoRef.current,
-            remoteProfile,
+            { ...remoteProfile, workshop },
           )
         : alunoRef.current;
 
@@ -510,6 +565,7 @@ export function AuthProvider({ children }) {
       loginWithGoogle,
       logout,
       saveProfile,
+      saveWorkshopProfile,
       updateAluno,
       refreshTrailState,
     }),
@@ -524,6 +580,7 @@ export function AuthProvider({ children }) {
       loginWithGoogle,
       logout,
       saveProfile,
+      saveWorkshopProfile,
       updateAluno,
       refreshTrailState,
     ],

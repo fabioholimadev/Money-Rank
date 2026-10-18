@@ -1215,7 +1215,11 @@ query ListStudentSeenPedagogicalItemIds(
       SELECT DISTINCT item->>'itemId' AS "itemId"
       FROM activity_sessions AS session
       CROSS JOIN LATERAL jsonb_array_elements(
-        COALESCE(session.answer_key->'items', '[]'::jsonb)
+        COALESCE(
+          session.answer_key->'items',
+          session.answer_key->'answers',
+          '[]'::jsonb
+        )
       ) AS item
       WHERE session.user_uid = $1
         AND session.activity_id = $2
@@ -1448,5 +1452,195 @@ query GetLoadTestCleanupStatus($runId: String!) @auth(level: NO_ACCESS) {
         AND origin = 'LOAD_TEST'
         AND firebase_uid LIKE 'loadtest-%'
     """
+  )
+}
+
+# Contexto mínimo usado pelo backend para isolar a trilha da oficina.
+query GetMyWorkshopContext($studentUid: String!) @auth(level: NO_ACCESS) {
+  membership: _selectFirst(
+    sql: """
+      SELECT
+        membership.event_id::text AS "eventId",
+        event.name AS "eventName",
+        event.trail_key AS "trailKey",
+        event.status::text AS "eventStatus",
+        event.competition_period_id::text AS "competitionPeriodId",
+        period.status::text AS "periodStatus",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt",
+        membership.team_id::text AS "teamId",
+        team.name AS "teamName",
+        team.join_code AS "teamCode",
+        membership.full_name AS "fullName",
+        membership.class_name AS "className",
+        membership.joined_at AS "joinedAt"
+      FROM workshop_memberships AS membership
+      INNER JOIN workshop_events AS event ON event.id = membership.event_id
+      INNER JOIN workshop_teams AS team ON team.id = membership.team_id
+      INNER JOIN competition_periods AS period
+        ON period.id = event.competition_period_id
+      WHERE membership.user_uid = $1
+        AND event.status <> 'CLOSED'
+        AND team.active = TRUE
+      ORDER BY membership.joined_at DESC
+      LIMIT 1
+    """
+    params: [$studentUid]
+  )
+}
+
+query ResolveWorkshopTeamByJoinCode($joinCode: String!)
+  @auth(level: NO_ACCESS) {
+  team: _selectFirst(
+    sql: """
+      SELECT
+        team.id::text AS "teamId",
+        team.name AS "teamName",
+        team.join_code AS "teamCode",
+        event.id::text AS "eventId",
+        event.name AS "eventName",
+        event.trail_key AS "trailKey",
+        event.status::text AS "eventStatus",
+        event.competition_period_id::text AS "competitionPeriodId",
+        period.status::text AS "periodStatus",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt"
+      FROM workshop_teams AS team
+      INNER JOIN workshop_events AS event ON event.id = team.event_id
+      INNER JOIN competition_periods AS period
+        ON period.id = event.competition_period_id
+      WHERE team.join_code = $1
+        AND team.active = TRUE
+        AND event.status = 'ACTIVE'
+        AND period.status <> 'CLOSED'
+        AND period.ends_at > CURRENT_TIMESTAMP
+      LIMIT 1
+    """
+    params: [$joinCode]
+  )
+}
+
+query ListWorkshopEventsForTeacher($actorUid: String!)
+  @auth(level: NO_ACCESS) {
+  events: _select(
+    sql: """
+      SELECT
+        event.id::text AS id,
+        event.name,
+        event.trail_key AS "trailKey",
+        event.status::text AS status,
+        event.competition_period_id::text AS "competitionPeriodId",
+        period.name AS "periodName",
+        period.status::text AS "periodStatus",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt",
+        COUNT(DISTINCT team.id)::integer AS "teamCount",
+        COUNT(DISTINCT membership.user_uid)::integer AS "participantCount",
+        event.created_at AS "createdAt"
+      FROM workshop_events AS event
+      INNER JOIN users AS teacher
+        ON teacher.firebase_uid = $1
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+      INNER JOIN competition_periods AS period
+        ON period.id = event.competition_period_id
+      LEFT JOIN workshop_teams AS team ON team.event_id = event.id
+      LEFT JOIN workshop_memberships AS membership
+        ON membership.event_id = event.id
+      GROUP BY event.id, period.id
+      ORDER BY event.created_at DESC
+    """
+    params: [$actorUid]
+  )
+}
+
+query ListWorkshopTeamsForTeacher($actorUid: String!, $eventId: UUID!)
+  @auth(level: NO_ACCESS) {
+  teams: _select(
+    sql: """
+      SELECT
+        team.id::text AS id,
+        team.event_id::text AS "eventId",
+        team.name,
+        team.join_code AS "joinCode",
+        team.active,
+        COUNT(DISTINCT membership.user_uid)::integer AS "memberCount",
+        COALESCE(SUM(transaction.amount), 0)::integer AS "capiCoins",
+        team.created_at AS "createdAt"
+      FROM workshop_teams AS team
+      INNER JOIN users AS teacher
+        ON teacher.firebase_uid = $1
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+      LEFT JOIN workshop_memberships AS membership ON membership.team_id = team.id
+      LEFT JOIN capi_coin_transactions AS transaction
+        ON transaction.user_uid = membership.user_uid
+        AND transaction.competition_period_id = (
+          SELECT event.competition_period_id
+          FROM workshop_events AS event
+          WHERE event.id = team.event_id
+        )
+        AND transaction.is_test = FALSE
+      WHERE team.event_id = $2::uuid
+      GROUP BY team.id
+      ORDER BY team.created_at ASC
+    """
+    params: [$actorUid, $eventId]
+  )
+}
+
+query GetWorkshopRankings($eventId: UUID!) @auth(level: NO_ACCESS) {
+  individualRanking: _select(
+    sql: """
+      SELECT
+        membership.user_uid AS "studentUid",
+        users.preferred_name AS "preferredName",
+        users.avatar_id::text AS "avatarId",
+        users.avatar_url AS "avatarUrl",
+        membership.class_name AS "className",
+        membership.team_id::text AS "teamId",
+        team.name AS "teamName",
+        COALESCE(SUM(transaction.amount), 0)::integer AS "capiCoins",
+        RANK() OVER (
+          ORDER BY COALESCE(SUM(transaction.amount), 0) DESC,
+            users.preferred_name ASC
+        )::integer AS position
+      FROM workshop_memberships AS membership
+      INNER JOIN users ON users.firebase_uid = membership.user_uid
+      INNER JOIN workshop_teams AS team ON team.id = membership.team_id
+      INNER JOIN workshop_events AS event ON event.id = membership.event_id
+      LEFT JOIN capi_coin_transactions AS transaction
+        ON transaction.user_uid = membership.user_uid
+        AND transaction.competition_period_id = event.competition_period_id
+        AND transaction.is_test = FALSE
+      WHERE membership.event_id = $1::uuid
+      GROUP BY membership.user_uid, users.preferred_name, users.avatar_id,
+        users.avatar_url, membership.class_name, membership.team_id, team.name
+      ORDER BY position ASC, users.preferred_name ASC
+    """
+    params: [$eventId]
+  )
+  teamRanking: _select(
+    sql: """
+      SELECT
+        team.id::text AS "teamId",
+        team.name AS "teamName",
+        COUNT(DISTINCT membership.user_uid)::integer AS "memberCount",
+        COALESCE(SUM(transaction.amount), 0)::integer AS "capiCoins",
+        RANK() OVER (
+          ORDER BY COALESCE(SUM(transaction.amount), 0) DESC, team.name ASC
+        )::integer AS position
+      FROM workshop_teams AS team
+      INNER JOIN workshop_events AS event ON event.id = team.event_id
+      LEFT JOIN workshop_memberships AS membership ON membership.team_id = team.id
+      LEFT JOIN capi_coin_transactions AS transaction
+        ON transaction.user_uid = membership.user_uid
+        AND transaction.competition_period_id = event.competition_period_id
+        AND transaction.is_test = FALSE
+      WHERE team.event_id = $1::uuid
+      GROUP BY team.id, team.name
+      ORDER BY position ASC, team.name ASC
+    """
+    params: [$eventId]
   )
 }

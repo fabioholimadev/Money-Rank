@@ -18,10 +18,20 @@ const TEACHER_ITEMS = [
   { label: 'Turma', to: '/professor', Icon: SchoolRounded },
 ];
 
+const WORKSHOP_ITEMS = [
+  { label: 'Oficina', to: '/trilha/oficina', Icon: MapRounded },
+  { label: 'Ranking', to: '/ranking/oficina', Icon: EmojiEventsRounded },
+  { label: 'Perfil', to: '/perfil', Icon: PersonRounded },
+];
+
 export default function BottomNav() {
   const { aluno } = useAuth();
   const { pathname } = useLocation();
-  const items = getProfileRole(aluno) === USER_ROLES.TEACHER ? TEACHER_ITEMS : STUDENT_ITEMS;
+  const items = getProfileRole(aluno) === USER_ROLES.TEACHER
+    ? TEACHER_ITEMS
+    : aluno?.workshop
+      ? WORKSHOP_ITEMS
+      : STUDENT_ITEMS;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[55] block border-t-2 border-[#37464f] bg-[#131f24]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Navegação principal">

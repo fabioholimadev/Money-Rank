@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Outlet, Routes, Route } from 'react-router-dom';
 
 // Páginas públicas
 import LandingPage from './pages/LandingPage';
@@ -22,6 +22,8 @@ import Perfil from './pages/Perfil';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTestActivity from './pages/TeacherTestActivity';
+import WorkshopTrail from './pages/Trilha/WorkshopTrail';
+import WorkshopRanking from './pages/WorkshopRanking';
 
 // Infraestrutura de layout
 import ProtectedRoute from './components/ProtectedRoute';
@@ -55,39 +57,24 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/trilha" element={<TrilhaHub />} />
-          <Route
-            path="/trilha/saude-consumo/introducao/conteudo"
-            element={<ConteudoIntroducao />}
-          />
-          <Route path="/trilha/saude-consumo/perigo-doce/conteudo" element={<ConteudoPerigoDoce />} />
-          <Route path="/trilha/saude-consumo/perigo-doce/atividade" element={<AtividadeQuiz />} />
-          <Route
-            path="/trilha/saude-consumo/custo-vicio/conteudo"
-            element={<ConteudoCustoVicio />}
-          />
-          <Route
-            path="/trilha/saude-consumo/custo-vicio/atividade"
-            element={<AtividadeCaso />}
-          />
-          <Route
-            path="/trilha/saude-consumo/ilusao-dinheiro/conteudo"
-            element={<ConteudoIlusaoDinheiro />}
-          />
-          <Route
-            path="/trilha/saude-consumo/ilusao-dinheiro/atividade"
-            element={<AtividadeCaminhos />}
-          />
-          <Route
-            path="/trilha/saude-consumo/engenharia-desejo/conteudo"
-            element={<ConteudoEngenhariaDesejo />}
-          />
-          <Route
-            path="/trilha/saude-consumo/engenharia-desejo/atividade"
-            element={<AtividadeFatoFake />}
-          />
-          <Route path="/ranking" element={<Ranking />} />
+          <Route element={<ProtectedRoute experience="REGULAR"><Outlet /></ProtectedRoute>}>
+            <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/trilha" element={<TrilhaHub />} />
+            <Route path="/trilha/saude-consumo/introducao/conteudo" element={<ConteudoIntroducao />} />
+            <Route path="/trilha/saude-consumo/perigo-doce/conteudo" element={<ConteudoPerigoDoce />} />
+            <Route path="/trilha/saude-consumo/perigo-doce/atividade" element={<AtividadeQuiz />} />
+            <Route path="/trilha/saude-consumo/custo-vicio/conteudo" element={<ConteudoCustoVicio />} />
+            <Route path="/trilha/saude-consumo/custo-vicio/atividade" element={<AtividadeCaso />} />
+            <Route path="/trilha/saude-consumo/ilusao-dinheiro/conteudo" element={<ConteudoIlusaoDinheiro />} />
+            <Route path="/trilha/saude-consumo/ilusao-dinheiro/atividade" element={<AtividadeCaminhos />} />
+            <Route path="/trilha/saude-consumo/engenharia-desejo/conteudo" element={<ConteudoEngenhariaDesejo />} />
+            <Route path="/trilha/saude-consumo/engenharia-desejo/atividade" element={<AtividadeFatoFake />} />
+            <Route path="/ranking" element={<Ranking />} />
+          </Route>
+          <Route element={<ProtectedRoute experience="WORKSHOP"><Outlet /></ProtectedRoute>}>
+            <Route path="/trilha/oficina" element={<WorkshopTrail />} />
+            <Route path="/ranking/oficina" element={<WorkshopRanking />} />
+          </Route>
           <Route path="/perfil" element={<Perfil />} />
         </Route>
         <Route

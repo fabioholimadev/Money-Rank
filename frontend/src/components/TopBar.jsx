@@ -24,6 +24,12 @@ const TEACHER_ITEMS = [
   { label: 'Visão da turma', to: '/professor', Icon: SchoolRounded },
 ];
 
+const WORKSHOP_ITEMS = [
+  { label: 'Trilha da oficina', to: '/trilha/oficina', Icon: MapRounded },
+  { label: 'Ranking', to: '/ranking/oficina', Icon: EmojiEventsRounded },
+  { label: 'Perfil', to: '/perfil', Icon: PersonRounded },
+];
+
 function formatCompact(value) {
   const number = Number(value) || 0;
   if (number < 1000) return String(number);
@@ -67,8 +73,8 @@ export default function TopBar({ collapsed = false, onToggle }) {
 
   const role = getProfileRole(aluno);
   const isTeacher = role === USER_ROLES.TEACHER;
-  const items = isTeacher ? TEACHER_ITEMS : STUDENT_ITEMS;
-  const homePath = isTeacher ? '/professor' : '/student';
+  const items = isTeacher ? TEACHER_ITEMS : aluno.workshop ? WORKSHOP_ITEMS : STUDENT_ITEMS;
+  const homePath = isTeacher ? '/professor' : aluno.workshop ? '/trilha/oficina' : '/student';
 
   const handleLogout = async () => {
     try {
