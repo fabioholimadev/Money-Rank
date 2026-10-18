@@ -76,13 +76,21 @@ preservar o histórico depois do encerramento.
 
 ### 3.4 Pontuação simples e comparável
 
-Cada uma das quatro atividades valerá o mesmo total máximo. A regra proposta é
-100 pontos por atividade e 400 pontos individuais no total.
+Cada rodada válida das quatro atividades deverá gerar CapiCoins durante a
+janela da competição. A disputa será por desempenho e quantidade de rodadas
+concluídas dentro do tempo definido pelo professor.
 
-- a primeira conclusão oficial de cada atividade pontua;
-- repetições ficam liberadas para estudo, mas valem zero ponto oficial;
-- o ranking individual soma os quatro resultados oficiais;
-- o ranking de equipe soma os resultados oficiais de seus integrantes;
+- toda submissão válida pontua, inclusive repetições da mesma atividade;
+- cada nova rodada recebe uma sessão própria e pode gerar CapiCoins;
+- a mesma sessão só pode ser creditada uma vez, mesmo se a rede reenviar a
+  requisição;
+- a regra inicial será direta: a pontuação da rodada, de 0 a 100, será a
+  quantidade de CapiCoins creditada; os quatro formatos terão a mesma escala;
+- não será necessário atingir uma nota mínima para a rodada entrar na disputa:
+  menos acertos geram menos CapiCoins, sem bloquear novas tentativas;
+- o ranking individual soma todas as CapiCoins válidas durante o período;
+- o ranking de equipe soma as CapiCoins válidas de seus integrantes;
+- não haverá teto de repetições pontuadas durante a janela da oficina;
 - não haverá multiplicador de sequência, recompensa de conteúdo ou bônus
   oculto no ranking da oficina;
 - como a divisão será feita com equipes do mesmo tamanho, não haverá média ou
@@ -161,7 +169,7 @@ necessários:
 
 - sessão autoritativa de atividade vinculada à matrícula e ao período;
 - tentativa append-only para auditoria e repetição;
-- resultado oficial único por aluno + período + atividade;
+- transação de CapiCoins idempotente por sessão concluída;
 - itens já vistos para reduzir repetição até o banco ser esgotado;
 - fonte, instituição, URL, explicação e versão em cada item.
 
@@ -381,15 +389,17 @@ A remoção será feita por camada.
 - permitir acesso direto às atividades sem concluir conteúdo ou vídeo;
 - sortear itens com baixa repetição;
 - exibir feedback e fontes após o envio;
-- liberar repetição sem nova pontuação.
+- liberar novas rodadas pontuadas enquanto o período estiver aberto.
 
 **Saída:** jornada completa do aluno para a oficina.
 
 ### Etapa 7 — Pontuação e rankings
 
-- registrar apenas o primeiro resultado oficial por atividade;
-- somar resultados individuais;
-- somar integrantes por equipe;
+- registrar e premiar cada nova sessão concluída;
+- impedir crédito duplicado somente para o reenvio da mesma sessão;
+- calcular a recompensa conforme o desempenho da rodada;
+- somar todas as CapiCoins individuais obtidas durante o período;
+- somar todas as CapiCoins dos integrantes da equipe;
 - filtrar pelo período da oficina;
 - integrar as duas abas do ranking;
 - adaptar o painel e a exportação do professor.
@@ -466,7 +476,10 @@ cadastro consuma mais tempo que o previsto.
 - somente professor autorizado cria ou altera equipe;
 - aluno acessa apenas os próprios dados e a classificação pública mínima;
 - gabarito nunca aparece no payload público;
-- primeira submissão pontua uma única vez, inclusive sob concorrência;
+- cada nova sessão concluída gera CapiCoins conforme o desempenho;
+- reenvios concorrentes da mesma sessão geram no máximo um crédito;
+- repetições em novas sessões continuam pontuando durante o período ativo;
+- submissões fora da janela não entram no ranking da oficina;
 - tentativa de teste nunca altera resultados oficiais.
 
 ### Frontend
@@ -507,20 +520,12 @@ Os commits devem ser pequenos e verificáveis. Ordem sugerida:
 Nenhum commit da branch antiga será mesclado ou aplicado por cherry-pick. O
 conteúdo pedagógico poderá ser reavaliado e reescrito sobre a arquitetura atual.
 
-## 12. Fora do escopo imediato
+## 12. Limites desta entrega
 
-- migração do backend para Python;
-- integração direta com Power BI;
 - ranking normalizado para equipes de tamanhos diferentes;
 - criação automática de questões por IA;
 - aplicativo móvel nativo;
 - substituição completa do Estúdio do Professor.
-
-A preparação futura para análise de dados deverá manter IDs estáveis,
-timestamps, período, equipe, atividade, tentativa e resultado oficial bem
-estruturados. Isso permitirá criar uma camada de exportação para Power BI e,
-posteriormente, avaliar serviços analíticos em Python sem reescrever o núcleo
-da oficina.
 
 ## 13. Critérios de conclusão
 
@@ -532,8 +537,10 @@ A adaptação estará pronta quando:
 - participantes da oficina não acessarem a trilha regular;
 - as quatro atividades estiverem separadas e acessíveis sem vídeo obrigatório;
 - o banco possuir ao menos 96 itens revisados e documentados;
-- repetições funcionarem sem inflar a pontuação;
-- rankings individual e por equipe somarem apenas pontos oficiais do período;
+- toda nova rodada válida gerar CapiCoins durante o período ativo;
+- reenvios da mesma sessão não duplicarem a recompensa;
+- rankings individual e por equipe somarem todas as CapiCoins válidas do
+  período;
 - a visão do aluno do professor estiver isolada dos dados reais;
 - não houver IA ativa, chave Gemini obrigatória ou dependência GenAI em uso;
 - o fluxo regular de DSA/DSB continuar funcionando;
