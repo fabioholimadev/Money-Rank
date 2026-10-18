@@ -3,6 +3,7 @@ import MapRounded from '@mui/icons-material/MapRounded';
 import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
@@ -16,6 +17,7 @@ const STUDENT_ITEMS = [
 
 const TEACHER_ITEMS = [
   { label: 'Turma', to: '/professor', Icon: SchoolRounded },
+  { label: 'Aluno', to: '/professor/visao-aluno', Icon: VisibilityRounded },
 ];
 
 const WORKSHOP_ITEMS = [

@@ -1110,6 +1110,101 @@ app.get('/api/teacher/test-mode', ...protectedRoute(requireTeacher), async (req,
   } catch (error) { return next(error); }
 });
 
+app.post('/api/teacher/test-mode/workshop/activities/:activityKey/sessions', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    const testRun = await resolveActiveTestRun(req.auth.uid);
+    if (!testRun) {
+      return res.status(409).json({ error: 'teacher_test_mode_required', requestId: req.requestId });
+    }
+    const engine = await import('../../functions/src/workshopActivityEngine.js');
+    const activityKey = String(req.params.activityKey || '');
+    const initial = engine.buildWorkshopActivitySession(activityKey, { random: secureRandom });
+    const seenData = unwrap(await sqlOperation('ListStudentSeenPedagogicalItemIds', {
+      studentUid: req.auth.uid,
+      activityId: initial.activityId,
+    }));
+    const prepared = engine.buildWorkshopActivitySession(activityKey, {
+      random: secureRandom,
+      seenItemIds: (seenData.seenItems || []).map((item) => item.itemId),
+    });
+    const sessionId = crypto.randomUUID();
+    const saved = unwrap(await sqlMutation('CreateTestActivitySession', {
+      sessionId,
+      testRunId: testRun.id,
+      actorUid: req.auth.uid,
+      activityId: prepared.activityId,
+      phaseNumber: prepared.phaseNumber,
+      variantId: activityKey,
+      contentVersion: prepared.contentVersion,
+      publicPayload: prepared.publicPayload,
+      answerKey: {
+        ...prepared.answerKey,
+        runtime: { testRunId: testRun.id, accessSource: 'TEST_RUN' },
+      },
+      expiresAt: testRun.endsAt,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({ error: 'teacher_test_session_refused', requestId: req.requestId });
+    }
+    return res.status(201).json({
+      sessionId,
+      activityId: prepared.activityId,
+      phaseNumber: prepared.phaseNumber,
+      expiresAt: testRun.endsAt,
+      testMode: true,
+      ...prepared.publicPayload,
+    });
+  } catch (error) { return next(error); }
+});
+
+app.post('/api/teacher/test-mode/workshop/activities/sessions/:sessionId/submit', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.sessionId)) {
+      return res.status(400).json({ error: 'invalid_session_id', requestId: req.requestId });
+    }
+    const [testRun, sessionData, priorData] = await Promise.all([
+      resolveActiveTestRun(req.auth.uid),
+      sqlOperation('GetAuthoritativeActivitySession', { sessionId: req.params.sessionId }).then(unwrap),
+      sqlOperation('GetAuthoritativeActivityResult', { sessionId: req.params.sessionId }).then(unwrap),
+    ]);
+    const session = sessionData.activitySession;
+    const prior = priorData.activityAttempts?.[0];
+    if (!session || session.userUid !== req.auth.uid || !session.isTest || !session.activityId.startsWith('workshop-')) {
+      return res.status(404).json({ error: 'session_not_found', requestId: req.requestId });
+    }
+    if (prior) return res.json({ ...prior, rewardAmount: 0, testMode: true, idempotentReplay: true });
+    if (!testRun || session.testRunId !== testRun.id) {
+      return res.status(409).json({ error: 'teacher_test_mode_required', requestId: req.requestId });
+    }
+    const engine = await import('../../functions/src/workshopActivityEngine.js');
+    const result = engine.scoreWorkshopActivitySession(session.answerKey, req.body?.answers);
+    const saved = unwrap(await sqlMutation('RecordTestActivityAttempt', {
+      attemptId: session.id,
+      sessionId: session.id,
+      testRunId: testRun.id,
+      actorUid: req.auth.uid,
+      activityId: session.activityId,
+      phaseNumber: session.phaseNumber,
+      score: result.score,
+      correctAnswers: result.correctAnswers,
+      wrongAnswers: result.wrongAnswers,
+      passed: true,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({ error: 'teacher_test_attempt_refused', requestId: req.requestId });
+    }
+    return res.json({
+      ...result,
+      rewardAmount: 0,
+      officialRewardGranted: false,
+      testMode: true,
+      idempotentReplay: false,
+    });
+  } catch (error) { return next(error); }
+});
+
 app.post('/api/teacher/test-mode/start', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);

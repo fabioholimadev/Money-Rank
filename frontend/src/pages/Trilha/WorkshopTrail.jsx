@@ -29,14 +29,24 @@ const ACTIVITIES = [
   },
 ];
 
-export default function WorkshopTrail() {
+export default function WorkshopTrail({ teacherPreview = false }) {
   const { aluno } = useAuth();
   const [tab, setTab] = useState('atividades');
-  const workshop = aluno?.workshop;
+  const workshop = teacherPreview
+    ? { teamName: 'Equipe de teste', teamCode: '00000000' }
+    : aluno?.workshop;
+  const activityBasePath = teacherPreview
+    ? '/professor/visao-aluno/oficina/atividades'
+    : '/trilha/oficina/atividades';
 
   return (
     <div className="space-y-6 py-3 text-[#f1f7fb]">
       <header className="overflow-hidden rounded-3xl border border-[#37464f] bg-gradient-to-br from-[#1f2d33] via-[#183328] to-[#1f2d33] p-6 sm:p-8">
+        {teacherPreview && (
+          <div className="mb-5 rounded-2xl border border-[#49c0f8]/40 bg-[#49c0f8]/10 p-4 text-sm font-bold text-[#bfeaff]">
+            Visão do aluno em modo de teste. As respostas ficam isoladas e não entram no ranking.
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-[#58cc02]">
           <ScienceRounded /> Trilha exclusiva da oficina
         </div>
@@ -79,7 +89,7 @@ export default function WorkshopTrail() {
               <p className="mt-3 flex-1 text-sm leading-6 text-[#a5b7c2]">{activity.description}</p>
               <Link
                 className="mt-5 inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#58cc02] px-4 font-black text-[#13210f] shadow-[0_4px_0_#46a302] active:translate-y-1 active:shadow-none"
-                to={`/trilha/oficina/atividades/${activity.key}`}
+                to={`${activityBasePath}/${activity.key}`}
               >
                 Iniciar rodada
               </Link>

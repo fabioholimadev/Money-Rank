@@ -3018,10 +3018,10 @@ mutation JoinWorkshopTeamAndCompleteProfile(
       FROM selected_team
       INNER JOIN upserted_user ON TRUE
       ON CONFLICT (event_id, user_uid) DO UPDATE SET
-        team_id = EXCLUDED.team_id,
         full_name = EXCLUDED.full_name,
         class_name = EXCLUDED.class_name,
         updated_at = CURRENT_TIMESTAMP
+      WHERE workshop_memberships.team_id = EXCLUDED.team_id
     """
     params: [
       $studentUid
@@ -3176,8 +3176,8 @@ mutation RecordWorkshopActivityAttempt(
         submitted_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       FROM inserted_attempt
-      WHERE activity_sessions.id = inserted_attempt.id
-        OR activity_sessions.id = $2::uuid
+      WHERE activity_sessions.id = $2::uuid
+        AND inserted_attempt.id = $1::uuid
     """
     params: [
       $attemptId

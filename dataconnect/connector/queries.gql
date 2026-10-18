@@ -1481,6 +1481,7 @@ query GetMyWorkshopContext($studentUid: String!) @auth(level: NO_ACCESS) {
         ON period.id = event.competition_period_id
       WHERE membership.user_uid = $1
         AND event.status <> 'CLOSED'
+        AND period.status <> 'CLOSED'
         AND team.active = TRUE
       ORDER BY membership.joined_at DESC
       LIMIT 1

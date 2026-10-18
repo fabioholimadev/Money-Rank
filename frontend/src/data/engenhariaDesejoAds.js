@@ -19,7 +19,7 @@ export const engenhariaDesejoKnowledge = {
     'Peças reais devem ter uma fonte institucional verificável.',
     'Descrições reais são adaptações pedagógicas, não reproduções integrais dos anúncios.',
     'Peças inventadas não podem receber links, marcas reais ou citações falsas.',
-    'A classificação é definida pelo banco revisado; nenhuma IA decide o gabarito durante o jogo.',
+    'A classificação é definida pelo banco pedagógico revisado e permanece estável durante o jogo.',
   ],
   policySources: [
     {

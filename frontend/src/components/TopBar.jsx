@@ -3,6 +3,7 @@ import MapRounded from '@mui/icons-material/MapRounded';
 import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import LocalFireDepartmentRounded from '@mui/icons-material/LocalFireDepartmentRounded';
 import MonetizationOnRounded from '@mui/icons-material/MonetizationOnRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
@@ -22,6 +23,7 @@ const STUDENT_ITEMS = [
 
 const TEACHER_ITEMS = [
   { label: 'Visão da turma', to: '/professor', Icon: SchoolRounded },
+  { label: 'Visão do aluno', to: '/professor/visao-aluno', Icon: VisibilityRounded },
 ];
 
 const WORKSHOP_ITEMS = [

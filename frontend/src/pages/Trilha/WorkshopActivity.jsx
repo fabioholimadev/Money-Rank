@@ -17,7 +17,7 @@ const LABELS = {
   quiz: 'Quiz Ciência Delas',
 };
 
-export default function WorkshopActivity() {
+export default function WorkshopActivity({ testMode = false }) {
   const { activityKey } = useParams();
   const { refreshTrailState } = useAuth();
   const [session, setSession] = useState(null);
@@ -30,12 +30,25 @@ export default function WorkshopActivity() {
 
   async function start() {
     setLoading(true); setError(''); setResult(null); setAnswers({});
-    try { setSession(await startWorkshopActivity(activityKey)); }
+    try { setSession(await startWorkshopActivity(activityKey, { testMode })); }
     catch (cause) { setError(cause.message); }
     finally { setLoading(false); }
   }
 
-  useEffect(() => { void start(); }, [activityKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    let mounted = true;
+    startWorkshopActivity(activityKey, { testMode })
+      .then((createdSession) => {
+        if (mounted) setSession(createdSession);
+      })
+      .catch((cause) => {
+        if (mounted) setError(cause.message);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => { mounted = false; };
+  }, [activityKey, testMode]);
 
   async function submit(event) {
     event.preventDefault();
@@ -45,9 +58,9 @@ export default function WorkshopActivity() {
       const saved = await submitWorkshopActivity(session.sessionId, session.items.map((item) => ({
         itemId: item.itemId,
         answerIndex: answers[item.itemId],
-      })));
+      })), { testMode });
       setResult(saved);
-      await refreshTrailState();
+      if (!testMode) await refreshTrailState();
     } catch (cause) { setError(cause.message); }
     finally { setLoading(false); }
   }
@@ -55,10 +68,10 @@ export default function WorkshopActivity() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-3 text-[#f1f7fb]">
       <header className="rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6">
-        <Link className="inline-flex items-center gap-2 text-sm font-black text-[#8edcff]" to="/trilha/oficina"><ArrowBackRounded /> Voltar à oficina</Link>
-        <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[#58cc02]">Rodada com 6 desafios</p>
+        <Link className="inline-flex items-center gap-2 text-sm font-black text-[#8edcff]" to={testMode ? '/professor/visao-aluno' : '/trilha/oficina'}><ArrowBackRounded /> Voltar à oficina</Link>
+        <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-[#58cc02]">{testMode ? 'Teste isolado do professor' : 'Rodada com 6 desafios'}</p>
         <h1 className="mt-2 text-3xl font-black text-white">{title}</h1>
-        <p className="mt-2 text-sm text-[#a5b7c2]">Sua nota de 0 a 100 vira CapiCoins. Toda nova rodada concluída durante o período pontua novamente.</p>
+        <p className="mt-2 text-sm text-[#a5b7c2]">{testMode ? 'Esta experiência usa o banco real de questões, mas não altera saldo, ranking ou progresso oficial.' : 'Sua nota de 0 a 100 vira CapiCoins. Toda nova rodada concluída durante o período pontua novamente.'}</p>
       </header>
 
       {loading && !session && <div className="flex min-h-48 items-center justify-center"><span className="h-10 w-10 animate-spin rounded-full border-4 border-[#37464f] border-t-[#58cc02]" /></div>}
@@ -89,7 +102,7 @@ export default function WorkshopActivity() {
           <div className="text-center">
             <CheckCircleRounded className="text-[#58cc02]" sx={{ fontSize: 56 }} />
             <h2 className="mt-2 text-3xl font-black text-white">{result.score} pontos</h2>
-            <p className="mt-2 inline-flex items-center gap-2 font-black text-[#ffc800]"><MonetizationOnRounded /> +{result.rewardAmount} CapiCoins</p>
+            <p className="mt-2 inline-flex items-center gap-2 font-black text-[#ffc800]"><MonetizationOnRounded /> {testMode ? 'Sem CapiCoins no teste' : `+${result.rewardAmount} CapiCoins`}</p>
             <p className="mt-2 text-sm text-[#a5b7c2]">{result.correctAnswers} acertos e {result.wrongAnswers} erros.</p>
           </div>
           <div className="space-y-3">

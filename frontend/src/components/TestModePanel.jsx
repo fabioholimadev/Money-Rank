@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DeleteSweep from '@mui/icons-material/DeleteSweep';
 import Science from '@mui/icons-material/Science';
+import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -88,6 +89,9 @@ export default function TestModePanel() {
           <p className="text-sm font-bold text-[#dbe7ed]">Encerra automaticamente em {DATE_TIME.format(new Date(testRun.endsAt))}.</p>
           <p className="mt-1 text-xs text-[#78909b]">Execução {testRun.id} · {testRun.sessionCount} sessões · {testRun.attemptCount} submissões · {testRun.auditCount} eventos auditados</p>
           <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={() => navigate('/professor/visao-aluno')} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#49c0f8] px-3 text-xs font-black text-[#10252d] shadow-[0_3px_0_#2393c6]">
+              <VisibilityRounded sx={{ fontSize: 18 }} /> Abrir visão do aluno
+            </button>
             {ACTIVITIES.map(([phase, label]) => (
               <button key={phase} type="button" onClick={() => navigate(`/professor/teste/${phase}`)} className="min-h-10 rounded-xl border-2 border-[#37464f] bg-[#17262c] px-3 text-xs font-black text-[#49c0f8] hover:border-[#49c0f8]">
                 Iniciar {label}

@@ -374,8 +374,8 @@ type ContentAsset
     @default(expr: "request.time")
 }
 
-# Fila de fontes sugeridas por professor, Codex ou Gemini. A aprovação é
-# pedagógica e não publica automaticamente uma atividade.
+# Fila de fontes sugeridas pelo professor. A aprovação pedagógica não
+# publica automaticamente uma atividade.
 type ResearchReview
   @table(
     name: "research_reviews"

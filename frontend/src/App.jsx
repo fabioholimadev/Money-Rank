@@ -22,7 +22,9 @@ import Perfil from './pages/Perfil';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTestActivity from './pages/TeacherTestActivity';
+import TeacherStudentPreview from './pages/TeacherStudentPreview';
 import WorkshopTrail from './pages/Trilha/WorkshopTrail';
+import WorkshopActivity from './pages/Trilha/WorkshopActivity';
 import WorkshopRanking from './pages/WorkshopRanking';
 
 // Infraestrutura de layout
@@ -73,6 +75,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute experience="WORKSHOP"><Outlet /></ProtectedRoute>}>
             <Route path="/trilha/oficina" element={<WorkshopTrail />} />
+            <Route path="/trilha/oficina/atividades/:activityKey" element={<WorkshopActivity />} />
             <Route path="/ranking/oficina" element={<WorkshopRanking />} />
           </Route>
           <Route path="/perfil" element={<Perfil />} />
@@ -86,6 +89,11 @@ function App() {
         >
           <Route path="/professor" element={<TeacherDashboard />} />
           <Route path="/professor/estudio" element={<TeacherStudio />} />
+          <Route path="/professor/visao-aluno" element={<TeacherStudentPreview />} />
+          <Route
+            path="/professor/visao-aluno/oficina/atividades/:activityKey"
+            element={<WorkshopActivity testMode />}
+          />
           <Route path="/professor/teste/:phase" element={<TeacherTestActivity />} />
         </Route>
       </Routes>

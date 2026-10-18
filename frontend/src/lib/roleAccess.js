@@ -12,9 +12,8 @@ export function getProfileRole(profile) {
 }
 
 export function getHomePathForProfile(profile) {
-  return getProfileRole(profile) === USER_ROLES.TEACHER
-    ? '/professor'
-    : '/student';
+  if (getProfileRole(profile) === USER_ROLES.TEACHER) return '/professor';
+  return profile?.workshop ? '/trilha/oficina' : '/student';
 }
 
 export function canProfileAccessRole(profile, requiredRole) {

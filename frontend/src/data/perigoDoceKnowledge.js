@@ -8,10 +8,8 @@ export const KNOWLEDGE_REVIEW_STATUS = Object.freeze({
 /**
  * Base de conhecimento da Fase 1.
  *
- * Cada registro contém uma afirmação curta e rastreável. A IA recebe apenas
- * estes fatos e não pode tratar conhecimento próprio como fonte da atividade.
- * As alternativas incorretas são conceitos equivocados controlados, usados
- * exclusivamente pelo modo local de contingência.
+ * Cada registro contém uma afirmação curta e rastreável. As alternativas
+ * incorretas são conceitos equivocados controlados e revisáveis.
  */
 export const perigoDoceKnowledge = Object.freeze([
   {
