@@ -9,7 +9,6 @@ import TaskAlt from '@mui/icons-material/TaskAlt';
 import WarningAmber from '@mui/icons-material/WarningAmber';
 import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
-import TeacherDataChat from '../components/TeacherDataChat';
 import TestModePanel from '../components/TestModePanel';
 import SystemDiagnosticsPanel from '../components/SystemDiagnosticsPanel';
 import { buildTeacherDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
@@ -402,10 +401,6 @@ export default function TeacherDashboard() {
 
         <SystemDiagnosticsPanel />
 
-        <TeacherDataChat
-          key={selectedPeriodId || 'no-period'}
-          periodId={selectedPeriodId}
-        />
 
         {errorMessage && (
           <div

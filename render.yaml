@@ -24,10 +24,6 @@ services:
         sync: false
       - key: FIREBASE_STORAGE_BUCKET
         value: money-rank.firebasestorage.app
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: GEMINI_MODEL
-        value: gemini-3.6-flash
       - key: SQL_CONNECT_LOCATION
         value: southamerica-east1
       - key: SQL_CONNECT_SERVICE
@@ -67,8 +63,6 @@ services:
       - key: VITE_DATA_CONNECT_ENABLED
         value: "false"
       - key: VITE_USE_DATA_CONNECT_EMULATOR
-        value: "false"
-      - key: VITE_FIREBASE_AI_ENABLED
         value: "false"
       - key: VITE_RECAPTCHA_ENTERPRISE_SITE_KEY
         sync: false

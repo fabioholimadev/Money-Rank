@@ -10,7 +10,7 @@ export const EDITORIAL_TYPES = Object.freeze({
 
 const TYPE_VALUES = new Set(Object.values(EDITORIAL_TYPES));
 const RESEARCH_STATUSES = new Set(['TEACHER_APPROVED', 'REJECTED']);
-const PROPOSERS = new Set(['TEACHER', 'CODEX', 'GEMINI']);
+const PROPOSERS = new Set(['TEACHER']);
 
 export function normalizeEditorialType(value) {
   const type = String(value ?? '').trim().toUpperCase();

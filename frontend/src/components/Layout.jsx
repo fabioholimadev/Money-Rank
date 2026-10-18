@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
-import CapiMentor from './CapiMentor';
 
 export default function Layout() {
   const { aluno } = useAuth();
-  const isStudent = getProfileRole(aluno) === USER_ROLES.STUDENT;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       return window.localStorage.getItem('money-rank-sidebar-collapsed') === 'true';
@@ -39,7 +36,6 @@ export default function Layout() {
         </div>
       </main>
       {aluno && <BottomNav />}
-      {aluno && isStudent && <CapiMentor />}
     </div>
   );
 }

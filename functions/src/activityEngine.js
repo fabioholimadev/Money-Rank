@@ -1,4 +1,3 @@
-import legacyManifest from './generated/activity-manifest.json' with { type: 'json' };
 import pedagogicalBank from './generated/pedagogical-bank.json' with { type: 'json' };
 
 export const ACTIVITY_IDS_BY_PHASE = Object.freeze({
@@ -20,7 +19,6 @@ function requireArray(value, message) {
   if (!Array.isArray(value)) throw new Error(message);
   return value;
 }
-
 function answerMap(answers, itemField, choiceField) {
   const normalized = new Map();
   for (const answer of requireArray(answers, 'Respostas inválidas.')) {
@@ -459,9 +457,4 @@ export function scoreActivitySession(session, answers) {
     default:
       throw new Error('Sessão de atividade inválida.');
   }
-}
-
-// Keep the historical knowledge base available only to the legacy AI helper.
-export function getPerigoDoceDefinition(overrideDefinition = null) {
-  return overrideDefinition ?? legacyManifest.activities['perigo-doce-quiz'];
 }

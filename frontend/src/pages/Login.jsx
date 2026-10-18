@@ -63,7 +63,7 @@ export default function Login() {
           </Link>
 
           <div className="relative grid grid-cols-[180px_1fr] items-center gap-8">
-            <img src="/avatars/capi-mentor.jpg" alt="Capi, mentora da Money Rank" className="aspect-square w-full rounded-[2rem] border-4 border-[#58cc02] object-cover shadow-[0_8px_0_#46a302]" />
+            <img src="/avatars/capi-cientista.jpg" alt="Capi Cientista da Money Rank" className="aspect-square w-full rounded-[2rem] border-4 border-[#58cc02] object-cover shadow-[0_8px_0_#46a302]" />
             <div>
               <p className="mr-eyebrow">Sua jornada começa aqui</p>
               <h1 className="mt-2 text-4xl font-black leading-tight text-white">Aprenda tomando decisões.</h1>

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
-import { defineSecret, defineString } from 'firebase-functions/params';
 import {
   ACTIVITY_IDS_BY_PHASE,
   buildStaticSession,
@@ -12,19 +11,9 @@ import {
   getActivityResult,
   getActivitySession,
   getPedagogicalActivityBank,
-  getTeacherDashboardForChat,
-  getStudentMentorContext,
   markActivitySessionSubmitted,
   persistActivityResult,
 } from './activityRepository.js';
-import {
-  buildTeacherChatResponse,
-  normalizeTeacherQuestion,
-} from './teacherDataChat.js';
-import {
-  answerStudentMentor,
-  normalizeMentorQuestion,
-} from './studentMentor.js';
 import {
   buildTeacherStudioPayload,
   normalizeDraftInput,
@@ -65,10 +54,6 @@ import {
 const REGION = 'southamerica-east1';
 const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const isFunctionsEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
-const geminiApiKey = defineSecret('GEMINI_API_KEY');
-const geminiModel = defineString('GEMINI_MODEL', {
-  default: 'gemini-3.6-flash',
-});
 
 const callableOptions = {
   region: REGION,
@@ -123,14 +108,6 @@ function editorialError(error, fallbackMessage) {
     isExpectedEditorialError ? 'failed-precondition' : 'internal',
     isExpectedEditorialError ? message : fallbackMessage,
   );
-}
-
-function normalizeUuid(value, message) {
-  const uuid = String(value ?? '').trim();
-  if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(uuid)) {
-    throw new HttpsError('invalid-argument', message);
-  }
-  return uuid;
 }
 
 function normalizePhaseNumber(value) {
@@ -280,122 +257,6 @@ export const submitActivitySession = onCall(
       throw new HttpsError(
         'failed-precondition',
         error?.message || 'Não foi possível concluir a atividade.',
-      );
-    }
-  },
-);
-
-export const askTeacherData = onCall(
-  {
-    ...callableOptions,
-    secrets: [geminiApiKey],
-  },
-  async (request) => {
-    const teacherUid = requireStudent(request);
-    const periodId = normalizeUuid(
-      request.data?.periodId,
-      'Selecione um período válido para a análise.',
-    );
-    const question = normalizeTeacherQuestion(request.data?.question);
-    if (question.length < 5) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Escreva uma pergunta com pelo menos cinco caracteres.',
-      );
-    }
-
-    try {
-      const context = await getTeacherDashboardForChat(
-        teacherUid,
-        periodId,
-      );
-      if (!context?.summary) {
-        throw new HttpsError(
-          'permission-denied',
-          'Somente um professor autorizado pode consultar estes dados.',
-        );
-      }
-
-      const response = await buildTeacherChatResponse({
-        question,
-        rawContext: context,
-        apiKey: geminiApiKey.value(),
-        model: geminiModel.value(),
-      });
-      if (!response) {
-        throw new HttpsError(
-          'failed-precondition',
-          'O período não possui dados válidos para esta análise.',
-        );
-      }
-
-      return {
-        ...response,
-        periodId,
-        scope: 'Dados agregados do período selecionado',
-        limitations:
-          'A análise não consulta e-mail, UID, respostas individuais ou dados fora do período.',
-      };
-    } catch (error) {
-      logger.error('Falha no Chat de Dados do professor.', {
-        periodId,
-        code: error?.code,
-        message: error?.message,
-      });
-      if (error instanceof HttpsError) throw error;
-      throw new HttpsError(
-        'failed-precondition',
-        'Não foi possível preparar a análise pedagógica agora.',
-      );
-    }
-  },
-);
-
-export const askStudentMentor = onCall(
-  {
-    ...callableOptions,
-    maxInstances: 5,
-    timeoutSeconds: 45,
-    secrets: [geminiApiKey],
-  },
-  async (request) => {
-    const studentUid = requireStudent(request);
-    const question = normalizeMentorQuestion(request.data?.question);
-    if (question.length < 4) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Escreva uma pergunta um pouco mais detalhada.',
-      );
-    }
-
-    try {
-      const context = await getStudentMentorContext(studentUid);
-      const response = await answerStudentMentor({
-        question,
-        rawContext: context,
-        apiKey: geminiApiKey.value(),
-        model: geminiModel.value(),
-      });
-      if (!response) {
-        throw new HttpsError(
-          'permission-denied',
-          'O CapiMentor está disponível somente para alunos com perfil completo.',
-        );
-      }
-      return {
-        ...response,
-        limitations:
-          'O tutor pode errar e não substitui o professor nem fontes oficiais.',
-      };
-    } catch (error) {
-      logger.error('Falha no CapiMentor.', {
-        code: error?.code,
-        message: error?.message,
-      });
-      if (error instanceof HttpsError) throw error;
-      throw new HttpsError(
-        'failed-precondition',
-        'O CapiMentor não conseguiu responder agora.',
       );
     }
   },

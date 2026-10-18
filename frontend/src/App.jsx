@@ -47,7 +47,7 @@ function App() {
         <Route path="/esqueci-senha" element={<Navigate to="/login" replace />} />
         <Route path="/redefinir-senha" element={<Navigate to="/login" replace />} />
 
-        {/* ── Rotas protegidas (com Layout = TopBar + BottomNav + CapiMentor) ── */}
+        {/* ── Rotas protegidas (com Layout = TopBar + BottomNav) ─────────── */}
         <Route
           element={
             <ProtectedRoute requiredRole={USER_ROLES.STUDENT}>

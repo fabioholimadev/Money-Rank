@@ -1,7 +1,6 @@
 const requiredFlags = Object.freeze({
   VITE_DATA_CONNECT_ENABLED: 'false',
   VITE_USE_DATA_CONNECT_EMULATOR: 'false',
-  VITE_FIREBASE_AI_ENABLED: 'false',
   VITE_FIREBASE_APPCHECK_DEBUG: 'false',
 });
 
@@ -31,7 +30,7 @@ for (const [key, expected] of Object.entries(requiredFlags)) {
   }
 }
 
-for (const key of ['VITE_GEMINI_API_KEY', 'VITE_FIREBASE_PRIVATE_KEY', 'VITE_FIREBASE_CLIENT_EMAIL']) {
+for (const key of ['VITE_FIREBASE_PRIVATE_KEY', 'VITE_FIREBASE_CLIENT_EMAIL']) {
   if (String(process.env[key] || '').trim()) errors.push(`FORBIDDEN_${key}`);
 }
 

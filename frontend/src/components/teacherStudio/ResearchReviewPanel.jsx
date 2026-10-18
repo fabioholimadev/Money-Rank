@@ -63,10 +63,10 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
     <div className="space-y-5">
       <StudioSection
         title="Adicionar fonte para validação"
-        description="Codex, Gemini ou o professor podem sugerir. Somente a decisão do professor muda o status pedagógico."
+        description="O professor registra a fonte e confirma sua validade pedagógica antes da publicação."
       >
         <form className="space-y-4" onSubmit={submitResearch}>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <StudioField label="Atividade">
               <select
                 className={inputClassName}
@@ -89,17 +89,6 @@ export default function ResearchReviewPanel({ research, onRefresh }) {
                 onChange={(event) => setForm({ ...form, factKey: event.target.value })}
                 required
               />
-            </StudioField>
-            <StudioField label="Origem da sugestão">
-              <select
-                className={inputClassName}
-                value={form.proposedBy}
-                onChange={(event) => setForm({ ...form, proposedBy: event.target.value })}
-              >
-                <option value="TEACHER">Professor</option>
-                <option value="CODEX">Codex</option>
-                <option value="GEMINI">Gemini</option>
-              </select>
             </StudioField>
           </div>
           <StudioField label="Título da fonte">

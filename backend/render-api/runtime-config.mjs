@@ -39,10 +39,6 @@ export function buildRuntimeConfiguration(environment = process.env) {
       privateKey: normalizePrivateKey(environment.FIREBASE_PRIVATE_KEY),
       storageBucket: readEnvironmentValue(environment, 'FIREBASE_STORAGE_BUCKET'),
     },
-    gemini: {
-      apiKey: readEnvironmentValue(environment, 'GEMINI_API_KEY'),
-      model: readEnvironmentValue(environment, 'GEMINI_MODEL', 'gemini-3.6-flash'),
-    },
     dataConnect: {
       location: readEnvironmentValue(environment, 'SQL_CONNECT_LOCATION', 'southamerica-east1'),
       serviceId: readEnvironmentValue(environment, 'SQL_CONNECT_SERVICE', 'money-rank-service'),
@@ -92,15 +88,6 @@ export function auditRuntimeEnvironment(environment = process.env) {
   }
 
   if (!configuration.firebase.storageBucket) warnings.push('MISSING_FIREBASE_STORAGE_BUCKET');
-  if (!configuration.gemini.apiKey) {
-    warnings.push('MISSING_GEMINI_API_KEY');
-  } else if (/\s/.test(configuration.gemini.apiKey) || configuration.gemini.apiKey.length < 20) {
-    warnings.push('MALFORMED_GEMINI_API_KEY');
-  }
-  if (!/^[a-z0-9][a-z0-9._-]+$/i.test(configuration.gemini.model)) {
-    warnings.push('MALFORMED_GEMINI_MODEL');
-  }
-
   return { configuration, errors, warnings, ok: errors.length === 0 };
 }
 

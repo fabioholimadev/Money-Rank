@@ -34,24 +34,6 @@ Para o backend HTTP atual, execute o script sem esse parametro.
 "@
     }
 
-    $functionsDirectory = Join-Path $repositoryRoot "functions"
-    $localEnvironmentPath = Join-Path $functionsDirectory ".env.local"
-    $localSecretsPath = Join-Path $functionsDirectory ".secret.local"
-
-    if (-not (Test-Path $localEnvironmentPath)) {
-        Set-Content `
-            -LiteralPath $localEnvironmentPath `
-            -Value "GEMINI_MODEL=gemini-3.6-flash" `
-            -Encoding Ascii
-    }
-
-    if (-not (Test-Path $localSecretsPath)) {
-        Set-Content `
-            -LiteralPath $localSecretsPath `
-            -Value "GEMINI_API_KEY=local-fallback" `
-            -Encoding Ascii
-        Write-Host "Gemini local sem chave: fallback cientifico ativado."
-    }
 }
 
 $activePorts = @($ports | Where-Object { Test-LocalPort -Port $_ })

@@ -17,7 +17,6 @@
     "test:dataconnect-mappers": "node ../scripts/test-data-connect-mappers.mjs",
     "test:engenharia-desejo": "node ../scripts/test-engenharia-desejo-game.mjs",
     "test:ilusao-dinheiro": "node ../scripts/test-ilusao-dinheiro-game.mjs",
-    "test:perigo-doce-ai": "node ../scripts/test-perigo-doce-ai.mjs",
     "test:rankings": "node ../scripts/test-ranking-data.mjs",
     "test:role-access": "node ../scripts/test-role-access.mjs",
     "test:teacher-analytics": "node ../scripts/test-teacher-analytics.mjs",

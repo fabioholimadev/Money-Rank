@@ -24,8 +24,6 @@ console.log(JSON.stringify({
   warnings: environmentAudit.warnings,
   frontendOriginCount: runtimeConfig.frontendOrigins.length,
   teacherEmailCount: runtimeConfig.teacherEmails.length,
-  geminiConfigured: Boolean(runtimeConfig.gemini.apiKey),
-  geminiModel: runtimeConfig.gemini.model,
 }));
 
 export function configureFirebaseProjectEnvironment(projectId, environment = process.env) {
@@ -87,16 +85,7 @@ const TIME_ZONE = 'America/Fortaleza';
 const UNLIMITED_ACTIVITY_SESSION_END = '9999-12-31T23:59:59.999Z';
 const runtimeDiagnostics = {
   sql: { lastSuccessAt: null, lastFailure: null },
-  mentor: null,
-  analyst: null,
 };
-
-function geminiApiKey() {
-  return runtimeConfig.gemini.apiKey;
-}
-function geminiModel() {
-  return runtimeConfig.gemini.model;
-}
 
 app.disable('x-powered-by');
 app.use(helmet());
@@ -397,7 +386,6 @@ app.get('/readyz', async (req, res, next) => {
       ok: activeItems === 140,
       service: 'money-rank-api',
       database: 'sql-connect',
-      geminiConfigured: Boolean(geminiApiKey()),
       environmentWarnings: environmentAudit.warnings,
       activeItems,
       counts,
@@ -683,7 +671,6 @@ const teacherActions = new Set([
   'teacher-period-create',
   'teacher-period-update',
   'teacher-period-status',
-  'teacher-data-chat',
 ]);
 
 app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => {
@@ -712,47 +699,6 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
       const version = await repository.getPublishedActivityDefinition(activityKey);
       if (!version) return res.status(404).json({ error: 'published_activity_not_found' });
       return res.json({ activityKey: version.activityKey, phaseNumber: Number(version.phaseNumber), version: Number(version.version), payload: Number(version.phaseNumber) === 1 ? null : version.payload, publishedAt: version.publishedAt });
-    }
-
-    if (action === 'student-mentor') {
-      const [{ getStudentMentorContext }, mentor] = await Promise.all([
-        import('../../functions/src/activityRepository.js'),
-        import('../../functions/src/studentMentor.js'),
-      ]);
-      const question = mentor.normalizeMentorQuestion(payload.question);
-      if (question.length < 4) return res.status(400).json({ error: 'mentor_question_too_short' });
-      const context = await getStudentMentorContext(uid);
-      const answer = await mentor.answerStudentMentor({
-        question,
-        rawContext: context,
-        apiKey: geminiApiKey(),
-        model: geminiModel(),
-        requestId: req.requestId,
-        allowOfflineFallback: true,
-        onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
-      });
-      if (!answer) return res.status(403).json({ error: 'student_profile_required' });
-      return res.json({ ...answer, limitations: 'O tutor pode errar e não substitui o professor nem fontes oficiais.' });
-    }
-
-    if (action === 'teacher-data-chat') {
-      const [{ getTeacherDashboardForChat }, chat] = await Promise.all([
-        import('../../functions/src/activityRepository.js'),
-        import('../../functions/src/teacherDataChat.js'),
-      ]);
-      const periodId = String(payload.periodId || '');
-      const question = chat.normalizeTeacherQuestion(payload.question);
-      if (question.length < 5) return res.status(400).json({ error: 'teacher_question_too_short' });
-      const context = await getTeacherDashboardForChat(uid, periodId);
-      const answer = await chat.buildTeacherChatResponse({
-        question,
-        rawContext: context,
-        apiKey: geminiApiKey(),
-        model: geminiModel(),
-        requestId: req.requestId,
-        onDiagnostic: (diagnostic) => { runtimeDiagnostics.analyst = { ...diagnostic, at: new Date().toISOString() }; },
-      });
-      return res.json({ ...answer, periodId, scope: 'Dados agregados do período selecionado', limitations: 'A análise não consulta e-mail, UID, respostas individuais ou dados fora do período.' });
     }
 
     if (action.startsWith('teacher-studio-')) {
@@ -918,12 +864,6 @@ app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (re
         lastSuccessAt: runtimeDiagnostics.sql.lastSuccessAt,
         lastFailure: runtimeDiagnostics.sql.lastFailure,
       },
-      gemini: {
-        keyRecognized: Boolean(geminiApiKey()),
-        model: geminiModel(),
-        mentor: runtimeDiagnostics.mentor,
-        analyst: runtimeDiagnostics.analyst,
-      },
       render: {
         apiCommit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'unknown',
         serviceId: process.env.RENDER_SERVICE_ID || 'unknown',
@@ -934,22 +874,6 @@ app.get('/api/teacher/diagnostics', ...protectedRoute(requireTeacher), async (re
       },
       requestId: req.requestId,
     });
-  } catch (error) { return next(error); }
-});
-
-app.post('/api/teacher/diagnostics/gemini-probe', ...protectedRoute(requireTeacher), async (req, res, next) => {
-  try {
-    await ensureTeacherRole(req.auth);
-    const mentor = await import('../../functions/src/studentMentor.js');
-    const answer = await mentor.answerStudentMentor({
-      question: 'O que é IPI?',
-      rawContext: { profile: { role: 'STUDENT', profileCompleted: true, currentPhase: 0 }, progress: [] },
-      apiKey: geminiApiKey(),
-      model: geminiModel(),
-      requestId: req.requestId,
-      onDiagnostic: (diagnostic) => { runtimeDiagnostics.mentor = { ...diagnostic, at: new Date().toISOString() }; },
-    });
-    return res.json(answer);
   } catch (error) { return next(error); }
 });
 
@@ -1031,7 +955,6 @@ app.use((error, req, res, next) => {
   if (rawMessage === 'cors_origin_denied') { status = 403; code = rawMessage; message = 'Origem não autorizada.'; }
   else if (rawMessage === 'invalid_period_id') { status = 400; code = rawMessage; message = 'Selecione um período válido.'; }
   else if (rawMessage === 'no_official_period_for_export') { status = 409; code = rawMessage; message = 'Não existe período oficial ativo para exportação.'; }
-  else if (error?.name === 'MentorUnavailableError') { status = 503; code = 'mentor_unavailable'; message = error.message; }
   else if (rawMessage.startsWith('O ') || rawMessage.startsWith('A ') || rawMessage.startsWith('Um ')) { status = 409; code = 'operation_refused'; message = rawMessage; }
   console.error(JSON.stringify({ event: 'request_error', requestId: req.requestId, status, code, ...sanitizedError(error) }));
   return res.status(status).json({ error: code, message, diagnosticCode: req.requestId, requestId: req.requestId });
