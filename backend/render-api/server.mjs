@@ -870,6 +870,7 @@ const teacherActions = new Set([
   'teacher-studio-review-research',
   'teacher-studio-upload-asset',
   'teacher-period-create',
+  'teacher-period-delete',
   'teacher-period-update',
   'teacher-period-status',
 ]);
@@ -956,6 +957,7 @@ app.post('/api/actions/:action', ...protectedRoute(), async (req, res, next) => 
         import('../../functions/src/competitionPeriodRepository.js'),
       ]);
       if (action === 'teacher-period-create') return res.json(await repository.createCompetitionPeriodAsTeacher({ ...periods.normalizeCompetitionPeriodCreateInput(payload), actorUid: uid }));
+      if (action === 'teacher-period-delete') return res.json(await repository.deleteCompetitionPeriodAsTeacher({ ...periods.normalizeCompetitionPeriodDeleteInput(payload), actorUid: uid }));
       if (action === 'teacher-period-update') return res.json(await repository.updateCompetitionPeriodAsTeacher({ ...periods.normalizeCompetitionPeriodUpdateInput(payload), actorUid: uid }));
       if (action === 'teacher-period-status') return res.json(await repository.setCompetitionPeriodStatusAsTeacher({ ...periods.normalizeCompetitionPeriodStatusInput(payload), actorUid: uid }));
     }

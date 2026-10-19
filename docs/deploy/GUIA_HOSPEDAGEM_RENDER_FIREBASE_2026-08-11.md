@@ -147,7 +147,7 @@ Cadastre no `money-rank-api`:
 | `FIREBASE_CLIENT_EMAIL` | secret da conta de serviço |
 | `FIREBASE_PRIVATE_KEY` | secret da conta de serviço, com quebras de linha preservadas |
 | `FIREBASE_STORAGE_BUCKET` | `money-rank.firebasestorage.app` |
-| `TEACHER_EMAILS` | `fabiooliveiral2020@gmail.com,profciensyllas@gmail.com` |
+| `TEACHER_EMAILS` | `fabiooliveiral2020@gmail.com` |
 | `SQL_CONNECT_LOCATION` | `southamerica-east1` |
 | `SQL_CONNECT_SERVICE` | `money-rank-service` |
 | `SQL_CONNECT_CONNECTOR` | `money-rank-connector` |
@@ -155,6 +155,10 @@ Cadastre no `money-rank-api`:
 Não cadastre `GEMINI_API_KEY`, `GEMINI_MODEL` nem outra variável de IA para
 esta versão. Se uma delas existir no serviço antigo, remova-a em
 **Environment** no painel do Render e salve a alteração antes do deploy.
+
+Também remova do serviço da API as variáveis legadas `MENTOR_PROVIDER`,
+`PERIOD_ID`, `PERIOD_DATE`, `SUPABASE_KEY` e `SUPABASE_URL`. Não crie `PORT`:
+o Render fornece essa variável automaticamente.
 
 ### Variáveis do frontend
 
@@ -170,6 +174,11 @@ Cadastre no `money-rank-web`:
 
 Não crie `VITE_FIREBASE_PRIVATE_KEY`, `VITE_GEMINI_API_KEY` ou qualquer outra
 variável de segredo no frontend.
+
+Remova do Static Site as variáveis legadas `VITE_FIREBASE_AI_ENABLED`,
+`VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_URL` e
+`VITE_USE_FUNCTIONS_EMULATOR`. `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` deve ficar
+ausente, e não apenas preenchida com um token antigo.
 
 O build de produção executa `npm run build:render` e é interrompido antes da
 publicação quando a URL da API, a chave pública do App Check, o commit ou as

@@ -80,3 +80,19 @@ export async function setCompetitionPeriodStatusAsTeacher({
   }
   return data.updatedPeriod;
 }
+
+export async function deleteCompetitionPeriodAsTeacher({
+  periodId,
+  actorUid,
+}) {
+  const data = await executeMutation('DeleteTeacherCompetitionPeriod', {
+    periodId,
+    actorUid,
+  });
+  if (!data.deletedPeriod) {
+    throw new Error(
+      'O período não foi apagado. Somente rascunhos ou períodos encerrados podem ser excluídos.',
+    );
+  }
+  return data.deletedPeriod;
+}

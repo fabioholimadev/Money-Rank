@@ -38,6 +38,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetTeacherTestRun*](#getteachertestrun)
   - [*GetPilotExportRows*](#getpilotexportrows)
   - [*GetLoadTestCleanupStatus*](#getloadtestcleanupstatus)
+  - [*AuditFreshStartState*](#auditfreshstartstate)
   - [*GetMyWorkshopContext*](#getmyworkshopcontext)
   - [*ResolveWorkshopTeamByJoinCode*](#resolveworkshopteambyjoincode)
   - [*ListWorkshopEventsForTeacher*](#listworkshopeventsforteacher)
@@ -70,6 +71,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateTeacherCompetitionPeriod*](#createteachercompetitionperiod)
   - [*UpdateTeacherCompetitionPeriod*](#updateteachercompetitionperiod)
   - [*SetTeacherCompetitionPeriodStatus*](#setteachercompetitionperiodstatus)
+  - [*DeleteTeacherCompetitionPeriod*](#deleteteachercompetitionperiod)
   - [*CreateAuthoritativeActivitySession*](#createauthoritativeactivitysession)
   - [*MarkAuthoritativeActivitySessionSubmitted*](#markauthoritativeactivitysessionsubmitted)
   - [*InitializeMyTrail*](#initializemytrail)
@@ -91,6 +93,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*RecordLoadTestMetrics*](#recordloadtestmetrics)
   - [*CleanupMarkedLoadTestStudents*](#cleanupmarkedloadteststudents)
   - [*FinalizeLoadTestCleanup*](#finalizeloadtestcleanup)
+  - [*ResetApplicationForFreshStart*](#resetapplicationforfreshstart)
   - [*CreateWorkshopEvent*](#createworkshopevent)
   - [*CreateWorkshopTeam*](#createworkshopteam)
   - [*JoinWorkshopTeamAndCompleteProfile*](#joinworkshopteamandcompleteprofile)
@@ -3690,6 +3693,115 @@ executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.run);
   console.log(data.remainingMarkedUsers);
+});
+```
+
+## AuditFreshStartState
+You can execute the `AuditFreshStartState` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+auditFreshStartState(vars: AuditFreshStartStateVariables, options?: ExecuteQueryOptions): QueryPromise<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+
+interface AuditFreshStartStateRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: AuditFreshStartStateVariables): QueryRef<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+}
+export const auditFreshStartStateRef: AuditFreshStartStateRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+auditFreshStartState(dc: DataConnect, vars: AuditFreshStartStateVariables, options?: ExecuteQueryOptions): QueryPromise<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+
+interface AuditFreshStartStateRef {
+  ...
+  (dc: DataConnect, vars: AuditFreshStartStateVariables): QueryRef<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+}
+export const auditFreshStartStateRef: AuditFreshStartStateRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the auditFreshStartStateRef:
+```typescript
+const name = auditFreshStartStateRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `AuditFreshStartState` query requires an argument of type `AuditFreshStartStateVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface AuditFreshStartStateVariables {
+  preservedTeacherEmail: string;
+}
+```
+### Return Type
+Recall that executing the `AuditFreshStartState` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `AuditFreshStartStateData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface AuditFreshStartStateData {
+  state?: unknown | null;
+}
+```
+### Using `AuditFreshStartState`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, auditFreshStartState, AuditFreshStartStateVariables } from '@money-rank/dataconnect';
+
+// The `AuditFreshStartState` query requires an argument of type `AuditFreshStartStateVariables`:
+const auditFreshStartStateVars: AuditFreshStartStateVariables = {
+  preservedTeacherEmail: ..., 
+};
+
+// Call the `auditFreshStartState()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await auditFreshStartState(auditFreshStartStateVars);
+// Variables can be defined inline as well.
+const { data } = await auditFreshStartState({ preservedTeacherEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await auditFreshStartState(dataConnect, auditFreshStartStateVars);
+
+console.log(data.state);
+
+// Or, you can use the `Promise` API.
+auditFreshStartState(auditFreshStartStateVars).then((response) => {
+  const data = response.data;
+  console.log(data.state);
+});
+```
+
+### Using `AuditFreshStartState`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, auditFreshStartStateRef, AuditFreshStartStateVariables } from '@money-rank/dataconnect';
+
+// The `AuditFreshStartState` query requires an argument of type `AuditFreshStartStateVariables`:
+const auditFreshStartStateVars: AuditFreshStartStateVariables = {
+  preservedTeacherEmail: ..., 
+};
+
+// Call the `auditFreshStartStateRef()` function to get a reference to the query.
+const ref = auditFreshStartStateRef(auditFreshStartStateVars);
+// Variables can be defined inline as well.
+const ref = auditFreshStartStateRef({ preservedTeacherEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = auditFreshStartStateRef(dataConnect, auditFreshStartStateVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.state);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.state);
 });
 ```
 
@@ -7469,6 +7581,118 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## DeleteTeacherCompetitionPeriod
+You can execute the `DeleteTeacherCompetitionPeriod` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+deleteTeacherCompetitionPeriod(vars: DeleteTeacherCompetitionPeriodVariables): MutationPromise<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+
+interface DeleteTeacherCompetitionPeriodRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteTeacherCompetitionPeriodVariables): MutationRef<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+}
+export const deleteTeacherCompetitionPeriodRef: DeleteTeacherCompetitionPeriodRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteTeacherCompetitionPeriod(dc: DataConnect, vars: DeleteTeacherCompetitionPeriodVariables): MutationPromise<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+
+interface DeleteTeacherCompetitionPeriodRef {
+  ...
+  (dc: DataConnect, vars: DeleteTeacherCompetitionPeriodVariables): MutationRef<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+}
+export const deleteTeacherCompetitionPeriodRef: DeleteTeacherCompetitionPeriodRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteTeacherCompetitionPeriodRef:
+```typescript
+const name = deleteTeacherCompetitionPeriodRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteTeacherCompetitionPeriod` mutation requires an argument of type `DeleteTeacherCompetitionPeriodVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  actorUid: string;
+}
+```
+### Return Type
+Recall that executing the `DeleteTeacherCompetitionPeriod` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteTeacherCompetitionPeriodData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteTeacherCompetitionPeriodData {
+  deletedPeriod?: unknown | null;
+}
+```
+### Using `DeleteTeacherCompetitionPeriod`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteTeacherCompetitionPeriod, DeleteTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `DeleteTeacherCompetitionPeriod` mutation requires an argument of type `DeleteTeacherCompetitionPeriodVariables`:
+const deleteTeacherCompetitionPeriodVars: DeleteTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `deleteTeacherCompetitionPeriod()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteTeacherCompetitionPeriod(deleteTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const { data } = await deleteTeacherCompetitionPeriod({ periodId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteTeacherCompetitionPeriod(dataConnect, deleteTeacherCompetitionPeriodVars);
+
+console.log(data.deletedPeriod);
+
+// Or, you can use the `Promise` API.
+deleteTeacherCompetitionPeriod(deleteTeacherCompetitionPeriodVars).then((response) => {
+  const data = response.data;
+  console.log(data.deletedPeriod);
+});
+```
+
+### Using `DeleteTeacherCompetitionPeriod`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteTeacherCompetitionPeriodRef, DeleteTeacherCompetitionPeriodVariables } from '@money-rank/dataconnect';
+
+// The `DeleteTeacherCompetitionPeriod` mutation requires an argument of type `DeleteTeacherCompetitionPeriodVariables`:
+const deleteTeacherCompetitionPeriodVars: DeleteTeacherCompetitionPeriodVariables = {
+  periodId: ..., 
+  actorUid: ..., 
+};
+
+// Call the `deleteTeacherCompetitionPeriodRef()` function to get a reference to the mutation.
+const ref = deleteTeacherCompetitionPeriodRef(deleteTeacherCompetitionPeriodVars);
+// Variables can be defined inline as well.
+const ref = deleteTeacherCompetitionPeriodRef({ periodId: ..., actorUid: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteTeacherCompetitionPeriodRef(dataConnect, deleteTeacherCompetitionPeriodVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.deletedPeriod);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.deletedPeriod);
+});
+```
+
 ## CreateAuthoritativeActivitySession
 You can execute the `CreateAuthoritativeActivitySession` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
 ```typescript
@@ -9890,6 +10114,115 @@ console.log(data.affectedRows);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.affectedRows);
+});
+```
+
+## ResetApplicationForFreshStart
+You can execute the `ResetApplicationForFreshStart` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+resetApplicationForFreshStart(vars: ResetApplicationForFreshStartVariables): MutationPromise<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+
+interface ResetApplicationForFreshStartRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ResetApplicationForFreshStartVariables): MutationRef<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+}
+export const resetApplicationForFreshStartRef: ResetApplicationForFreshStartRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+resetApplicationForFreshStart(dc: DataConnect, vars: ResetApplicationForFreshStartVariables): MutationPromise<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+
+interface ResetApplicationForFreshStartRef {
+  ...
+  (dc: DataConnect, vars: ResetApplicationForFreshStartVariables): MutationRef<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+}
+export const resetApplicationForFreshStartRef: ResetApplicationForFreshStartRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the resetApplicationForFreshStartRef:
+```typescript
+const name = resetApplicationForFreshStartRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ResetApplicationForFreshStart` mutation requires an argument of type `ResetApplicationForFreshStartVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ResetApplicationForFreshStartVariables {
+  preservedTeacherEmail: string;
+}
+```
+### Return Type
+Recall that executing the `ResetApplicationForFreshStart` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ResetApplicationForFreshStartData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ResetApplicationForFreshStartData {
+  result?: unknown | null;
+}
+```
+### Using `ResetApplicationForFreshStart`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, resetApplicationForFreshStart, ResetApplicationForFreshStartVariables } from '@money-rank/dataconnect';
+
+// The `ResetApplicationForFreshStart` mutation requires an argument of type `ResetApplicationForFreshStartVariables`:
+const resetApplicationForFreshStartVars: ResetApplicationForFreshStartVariables = {
+  preservedTeacherEmail: ..., 
+};
+
+// Call the `resetApplicationForFreshStart()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await resetApplicationForFreshStart(resetApplicationForFreshStartVars);
+// Variables can be defined inline as well.
+const { data } = await resetApplicationForFreshStart({ preservedTeacherEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await resetApplicationForFreshStart(dataConnect, resetApplicationForFreshStartVars);
+
+console.log(data.result);
+
+// Or, you can use the `Promise` API.
+resetApplicationForFreshStart(resetApplicationForFreshStartVars).then((response) => {
+  const data = response.data;
+  console.log(data.result);
+});
+```
+
+### Using `ResetApplicationForFreshStart`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, resetApplicationForFreshStartRef, ResetApplicationForFreshStartVariables } from '@money-rank/dataconnect';
+
+// The `ResetApplicationForFreshStart` mutation requires an argument of type `ResetApplicationForFreshStartVariables`:
+const resetApplicationForFreshStartVars: ResetApplicationForFreshStartVariables = {
+  preservedTeacherEmail: ..., 
+};
+
+// Call the `resetApplicationForFreshStartRef()` function to get a reference to the mutation.
+const ref = resetApplicationForFreshStartRef(resetApplicationForFreshStartVars);
+// Variables can be defined inline as well.
+const ref = resetApplicationForFreshStartRef({ preservedTeacherEmail: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = resetApplicationForFreshStartRef(dataConnect, resetApplicationForFreshStartVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.result);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.result);
 });
 ```
 

@@ -42,11 +42,13 @@ import {
 } from './teacherStudioStorage.js';
 import {
   normalizeCompetitionPeriodCreateInput,
+  normalizeCompetitionPeriodDeleteInput,
   normalizeCompetitionPeriodStatusInput,
   normalizeCompetitionPeriodUpdateInput,
 } from './competitionPeriod.js';
 import {
   createCompetitionPeriodAsTeacher,
+  deleteCompetitionPeriodAsTeacher,
   setCompetitionPeriodStatusAsTeacher,
   updateCompetitionPeriodAsTeacher,
 } from './competitionPeriodRepository.js';
@@ -345,6 +347,22 @@ export const setTeacherCompetitionPeriodStatus = onCall(
       });
     } catch (error) {
       throw editorialError(error, 'Não foi possível mudar o período.');
+    }
+  },
+);
+
+export const deleteTeacherCompetitionPeriod = onCall(
+  callableOptions,
+  async (request) => {
+    const teacherUid = await requireTeacher(request);
+    try {
+      const input = normalizeCompetitionPeriodDeleteInput(request.data);
+      return await deleteCompetitionPeriodAsTeacher({
+        ...input,
+        actorUid: teacherUid,
+      });
+    } catch (error) {
+      throw editorialError(error, 'Não foi possível apagar o período.');
     }
   },
 );

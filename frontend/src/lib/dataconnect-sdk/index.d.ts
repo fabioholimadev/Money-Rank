@@ -150,6 +150,14 @@ export interface ApplyCapiCoinTransactionVariables {
   sourceId?: string | null;
 }
 
+export interface AuditFreshStartStateData {
+  state?: unknown | null;
+}
+
+export interface AuditFreshStartStateVariables {
+  preservedTeacherEmail: string;
+}
+
 export interface BindPilotClassData {
   affectedRows?: number | null;
 }
@@ -372,6 +380,15 @@ export interface CreateWorkshopTeamVariables {
   eventId: UUIDString;
   name: string;
   joinCode: string;
+}
+
+export interface DeleteTeacherCompetitionPeriodData {
+  deletedPeriod?: unknown | null;
+}
+
+export interface DeleteTeacherCompetitionPeriodVariables {
+  periodId: UUIDString;
+  actorUid: string;
 }
 
 export interface EconomyConfig_Key {
@@ -1114,6 +1131,14 @@ export interface ResearchReview_Key {
   __typename?: 'ResearchReview_Key';
 }
 
+export interface ResetApplicationForFreshStartData {
+  result?: unknown | null;
+}
+
+export interface ResetApplicationForFreshStartVariables {
+  preservedTeacherEmail: string;
+}
+
 export interface ResolveCompetitionPeriodByKeyData {
   competitionPeriod?: {
     id: UUIDString;
@@ -1695,6 +1720,18 @@ export const setTeacherCompetitionPeriodStatusRef: SetTeacherCompetitionPeriodSt
 export function setTeacherCompetitionPeriodStatus(vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
 export function setTeacherCompetitionPeriodStatus(dc: DataConnect, vars: SetTeacherCompetitionPeriodStatusVariables): MutationPromise<SetTeacherCompetitionPeriodStatusData, SetTeacherCompetitionPeriodStatusVariables>;
 
+interface DeleteTeacherCompetitionPeriodRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteTeacherCompetitionPeriodVariables): MutationRef<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteTeacherCompetitionPeriodVariables): MutationRef<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+  operationName: string;
+}
+export const deleteTeacherCompetitionPeriodRef: DeleteTeacherCompetitionPeriodRef;
+
+export function deleteTeacherCompetitionPeriod(vars: DeleteTeacherCompetitionPeriodVariables): MutationPromise<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+export function deleteTeacherCompetitionPeriod(dc: DataConnect, vars: DeleteTeacherCompetitionPeriodVariables): MutationPromise<DeleteTeacherCompetitionPeriodData, DeleteTeacherCompetitionPeriodVariables>;
+
 interface CreateAuthoritativeActivitySessionRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: CreateAuthoritativeActivitySessionVariables): MutationRef<CreateAuthoritativeActivitySessionData, CreateAuthoritativeActivitySessionVariables>;
@@ -1946,6 +1983,18 @@ export const finalizeLoadTestCleanupRef: FinalizeLoadTestCleanupRef;
 
 export function finalizeLoadTestCleanup(vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
 export function finalizeLoadTestCleanup(dc: DataConnect, vars: FinalizeLoadTestCleanupVariables): MutationPromise<FinalizeLoadTestCleanupData, FinalizeLoadTestCleanupVariables>;
+
+interface ResetApplicationForFreshStartRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ResetApplicationForFreshStartVariables): MutationRef<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ResetApplicationForFreshStartVariables): MutationRef<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+  operationName: string;
+}
+export const resetApplicationForFreshStartRef: ResetApplicationForFreshStartRef;
+
+export function resetApplicationForFreshStart(vars: ResetApplicationForFreshStartVariables): MutationPromise<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
+export function resetApplicationForFreshStart(dc: DataConnect, vars: ResetApplicationForFreshStartVariables): MutationPromise<ResetApplicationForFreshStartData, ResetApplicationForFreshStartVariables>;
 
 interface CreateWorkshopEventRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -2354,6 +2403,18 @@ export const getLoadTestCleanupStatusRef: GetLoadTestCleanupStatusRef;
 
 export function getLoadTestCleanupStatus(vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
 export function getLoadTestCleanupStatus(dc: DataConnect, vars: GetLoadTestCleanupStatusVariables, options?: ExecuteQueryOptions): QueryPromise<GetLoadTestCleanupStatusData, GetLoadTestCleanupStatusVariables>;
+
+interface AuditFreshStartStateRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: AuditFreshStartStateVariables): QueryRef<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: AuditFreshStartStateVariables): QueryRef<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+  operationName: string;
+}
+export const auditFreshStartStateRef: AuditFreshStartStateRef;
+
+export function auditFreshStartState(vars: AuditFreshStartStateVariables, options?: ExecuteQueryOptions): QueryPromise<AuditFreshStartStateData, AuditFreshStartStateVariables>;
+export function auditFreshStartState(dc: DataConnect, vars: AuditFreshStartStateVariables, options?: ExecuteQueryOptions): QueryPromise<AuditFreshStartStateData, AuditFreshStartStateVariables>;
 
 interface GetMyWorkshopContextRef {
   /* Allow users to create refs without passing in DataConnect */

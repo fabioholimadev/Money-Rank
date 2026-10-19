@@ -22,6 +22,10 @@ export function createTeacherCompetitionPeriod(input) {
   return invoke('teacher-period-create', input, 'Não foi possível criar o período.');
 }
 
+export function deleteTeacherCompetitionPeriod(input) {
+  return invoke('teacher-period-delete', input, 'Não foi possível apagar o período.');
+}
+
 export function updateTeacherCompetitionPeriod(input) {
   return invoke('teacher-period-update', input, 'Não foi possível alterar o período.');
 }

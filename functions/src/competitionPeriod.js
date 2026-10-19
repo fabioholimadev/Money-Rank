@@ -80,6 +80,12 @@ export function normalizeCompetitionPeriodStatusInput(data) {
   };
 }
 
+export function normalizeCompetitionPeriodDeleteInput(data) {
+  return {
+    periodId: normalizeUuid(data?.periodId),
+  };
+}
+
 export const COMPETITION_PERIOD_INITIAL_STATUSES = Object.freeze(
   [...INITIAL_STATUSES],
 );

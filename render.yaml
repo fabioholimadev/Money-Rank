@@ -15,7 +15,7 @@ services:
       - key: FRONTEND_ORIGIN
         sync: false
       - key: TEACHER_EMAILS
-        value: fabiooliveiral2020@gmail.com,profciensyllas@gmail.com
+        value: fabiooliveiral2020@gmail.com
       - key: FIREBASE_PROJECT_ID
         value: money-rank
       - key: FIREBASE_CLIENT_EMAIL

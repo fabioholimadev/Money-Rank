@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   normalizeCompetitionPeriodCreateInput,
+  normalizeCompetitionPeriodDeleteInput,
   normalizeCompetitionPeriodStatusInput,
   normalizeCompetitionPeriodUpdateInput,
 } from '../src/competitionPeriod.js';
@@ -77,5 +78,8 @@ test('canonicaliza UUID compacto devolvido pelo Capi Bank', () => {
   assert.equal(normalizeCompetitionPeriodStatusInput({
     periodId: compactId,
     status: 'CLOSED',
+  }).periodId, canonicalId);
+  assert.equal(normalizeCompetitionPeriodDeleteInput({
+    periodId: compactId,
   }).periodId, canonicalId);
 });

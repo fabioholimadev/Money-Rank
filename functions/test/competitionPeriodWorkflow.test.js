@@ -50,6 +50,27 @@ test('criar, editar e mudar status repetem a autorização TEACHER no banco', as
   }
 });
 
+test('exclusão exige professor, estado seguro e remove dependências do período', async () => {
+  const source = await readFile(mutationsPath, 'utf8');
+  const mutation = operation(source, 'DeleteTeacherCompetitionPeriod');
+  assert.ok(mutation, 'DeleteTeacherCompetitionPeriod deve existir');
+  assert.match(mutation, /@auth\(level: NO_ACCESS\)/);
+  assert.match(mutation, /teacher\.firebase_uid = \$2/);
+  assert.match(mutation, /teacher\.role = 'TEACHER'/);
+  assert.match(mutation, /period\.status IN \('DRAFT', 'CLOSED'\)/);
+  for (const table of [
+    'capi_coin_transactions',
+    'activity_attempts',
+    'activity_sessions',
+    'workshop_memberships',
+    'workshop_teams',
+    'workshop_events',
+    'competition_periods',
+  ]) {
+    assert.match(mutation, new RegExp(`DELETE FROM ${table}`));
+  }
+});
+
 test('edição preserva encerrados e impede sobreposição', async () => {
   const source = await readFile(mutationsPath, 'utf8');
   const mutation = operation(source, 'UpdateTeacherCompetitionPeriod');
@@ -77,6 +98,7 @@ test('callables exigem requireTeacher antes de chamar o repositório', async () 
   const source = await readFile(indexPath, 'utf8');
   for (const name of [
     'createTeacherCompetitionPeriod',
+    'deleteTeacherCompetitionPeriod',
     'updateTeacherCompetitionPeriod',
     'setTeacherCompetitionPeriodStatus',
   ]) {

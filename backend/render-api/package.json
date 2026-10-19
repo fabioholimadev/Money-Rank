@@ -13,6 +13,7 @@
     "load:smoke": "node scripts/load-test.mjs --smoke",
     "pilot:provision": "node scripts/provision-pilot.mjs --deploy",
     "pilot:seed": "node scripts/provision-pilot.mjs",
+    "production:reset": "node scripts/reset-production-data.mjs",
     "start": "node server.mjs",
     "test": "node --test test/*.test.mjs"
   },

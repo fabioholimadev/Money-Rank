@@ -474,6 +474,20 @@ exports.setTeacherCompetitionPeriodStatus = function setTeacherCompetitionPeriod
 }
 ;
 
+const deleteTeacherCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteTeacherCompetitionPeriod', inputVars);
+}
+deleteTeacherCompetitionPeriodRef.operationName = 'DeleteTeacherCompetitionPeriod';
+exports.deleteTeacherCompetitionPeriodRef = deleteTeacherCompetitionPeriodRef;
+
+exports.deleteTeacherCompetitionPeriod = function deleteTeacherCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteTeacherCompetitionPeriodRef(dcInstance, inputVars));
+}
+;
+
 const createAuthoritativeActivitySessionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -765,6 +779,20 @@ exports.finalizeLoadTestCleanupRef = finalizeLoadTestCleanupRef;
 exports.finalizeLoadTestCleanup = function finalizeLoadTestCleanup(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(finalizeLoadTestCleanupRef(dcInstance, inputVars));
+}
+;
+
+const resetApplicationForFreshStartRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ResetApplicationForFreshStart', inputVars);
+}
+resetApplicationForFreshStartRef.operationName = 'ResetApplicationForFreshStart';
+exports.resetApplicationForFreshStartRef = resetApplicationForFreshStartRef;
+
+exports.resetApplicationForFreshStart = function resetApplicationForFreshStart(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(resetApplicationForFreshStartRef(dcInstance, inputVars));
 }
 ;
 
@@ -1271,6 +1299,21 @@ exports.getLoadTestCleanupStatus = function getLoadTestCleanupStatus(dcOrVars, v
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getLoadTestCleanupStatusRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const auditFreshStartStateRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'AuditFreshStartState', inputVars);
+}
+auditFreshStartStateRef.operationName = 'AuditFreshStartState';
+exports.auditFreshStartStateRef = auditFreshStartStateRef;
+
+exports.auditFreshStartState = function auditFreshStartState(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(auditFreshStartStateRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 

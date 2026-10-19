@@ -1455,6 +1455,38 @@ query GetLoadTestCleanupStatus($runId: String!) @auth(level: NO_ACCESS) {
   )
 }
 
+# Preflight do reset operacional. Não retorna nomes, e-mails ou UIDs; serve
+# para conferir o alcance antes de qualquer exclusão em produção.
+query AuditFreshStartState($preservedTeacherEmail: String!)
+  @auth(level: NO_ACCESS) {
+  state: _selectFirst(
+    sql: """
+      SELECT
+        COUNT(*)::integer AS "totalUsers",
+        COUNT(*) FILTER (WHERE role = 'STUDENT')::integer AS "studentUsers",
+        COUNT(*) FILTER (WHERE role = 'TEACHER')::integer AS "teacherUsers",
+        COUNT(*) FILTER (
+          WHERE role = 'TEACHER'
+            AND LOWER(email) <> LOWER(BTRIM($1))
+        )::integer AS "otherTeacherUsers",
+        COUNT(*) FILTER (
+          WHERE LOWER(email) = LOWER(BTRIM($1))
+        )::integer AS "preservedTeacherUsers",
+        (SELECT COUNT(*)::integer FROM competition_periods) AS "periods",
+        (SELECT COUNT(*)::integer FROM workshop_events) AS "workshopEvents",
+        (SELECT COUNT(*)::integer FROM workshop_teams) AS "workshopTeams",
+        (SELECT COUNT(*)::integer FROM workshop_memberships) AS "workshopMemberships",
+        (SELECT COUNT(*)::integer FROM student_progress) AS "studentProgressEntries",
+        (SELECT COUNT(*)::integer FROM activity_sessions) AS "activitySessions",
+        (SELECT COUNT(*)::integer FROM activity_attempts) AS "activityAttempts",
+        (SELECT COUNT(*)::integer FROM capi_coin_transactions) AS "transactions",
+        (SELECT COUNT(*)::integer FROM test_runs) AS "testRuns"
+      FROM users
+    """
+    params: [$preservedTeacherEmail]
+  )
+}
+
 # Contexto mínimo usado pelo backend para isolar a trilha da oficina.
 query GetMyWorkshopContext($studentUid: String!) @auth(level: NO_ACCESS) {
   membership: _selectFirst(

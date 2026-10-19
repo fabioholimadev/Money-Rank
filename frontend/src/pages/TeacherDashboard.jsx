@@ -20,6 +20,7 @@ import {
 } from '../services/teacherAnalyticsService';
 import {
   createTeacherCompetitionPeriod,
+  deleteTeacherCompetitionPeriod,
   setTeacherCompetitionPeriodStatus,
   updateTeacherCompetitionPeriod,
 } from '../services/teacherCompetitionService';
@@ -414,6 +415,7 @@ export default function TeacherDashboard() {
                 periods={periods}
                 selectedPeriod={selectedPeriod}
                 onCreate={createTeacherCompetitionPeriod}
+                onDelete={deleteTeacherCompetitionPeriod}
                 onUpdate={updateTeacherCompetitionPeriod}
                 onStatusChange={setTeacherCompetitionPeriodStatus}
                 onChanged={handlePeriodChanged}
@@ -426,6 +428,7 @@ export default function TeacherDashboard() {
                 periods={periods}
                 selectedPeriod={null}
                 onCreate={createTeacherCompetitionPeriod}
+                onDelete={deleteTeacherCompetitionPeriod}
                 onUpdate={updateTeacherCompetitionPeriod}
                 onStatusChange={setTeacherCompetitionPeriodStatus}
                 onChanged={handlePeriodChanged}

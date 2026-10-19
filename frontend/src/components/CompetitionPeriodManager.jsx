@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import Add from '@mui/icons-material/Add';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Close from '@mui/icons-material/Close';
+import DeleteForeverOutlined from '@mui/icons-material/DeleteForeverOutlined';
 import EditCalendar from '@mui/icons-material/EditCalendar';
 import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
 import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
@@ -88,6 +89,7 @@ export default function CompetitionPeriodManager({
   periods,
   selectedPeriod,
   onCreate,
+  onDelete,
   onUpdate,
   onStatusChange,
   onChanged,
@@ -99,6 +101,8 @@ export default function CompetitionPeriodManager({
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const triggerRef = useRef(null);
 
   const currentPeriod = mode === 'edit' ? selectedPeriod : null;
@@ -113,6 +117,8 @@ export default function CompetitionPeriodManager({
     setMessage('');
     setErrorMessage('');
     setConfirmClose(false);
+    setConfirmDelete(false);
+    setDeleteConfirmation('');
     setIsOpen(true);
   };
 
@@ -127,6 +133,8 @@ export default function CompetitionPeriodManager({
     setMessage('');
     setErrorMessage('');
     setConfirmClose(false);
+    setConfirmDelete(false);
+    setDeleteConfirmation('');
   };
 
   const validatedInput = () => {
@@ -150,6 +158,8 @@ export default function CompetitionPeriodManager({
       const changed = await action();
       setMessage(successMessage);
       setConfirmClose(false);
+      setConfirmDelete(false);
+      setDeleteConfirmation('');
       await onChanged?.(changed);
     } catch (error) {
       setErrorMessage(
@@ -194,6 +204,14 @@ export default function CompetitionPeriodManager({
     void runAction(
       () => onStatusChange({ periodId: currentPeriod.id, status }),
       `${presentation.label.replace(' ou retomar', '')}: alteração concluída.`,
+    );
+  };
+
+  const handleDelete = () => {
+    if (!currentPeriod || deleteConfirmation !== 'APAGAR') return;
+    void runAction(
+      () => onDelete({ periodId: currentPeriod.id }),
+      'Período e dados relacionados apagados.',
     );
   };
 
@@ -430,6 +448,67 @@ export default function CompetitionPeriodManager({
                         Cancelar
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {['DRAFT', 'CLOSED'].includes(currentPeriod.status) && (
+                  <div className="mt-5 border-t border-[#37464f] pt-5">
+                    {!confirmDelete ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmDelete(true);
+                          setConfirmClose(false);
+                          setMessage('');
+                          setErrorMessage('');
+                        }}
+                        disabled={isSaving}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-red-500/30 px-3 text-xs font-black text-red-300 transition hover:border-red-300 disabled:opacity-50"
+                      >
+                        <DeleteForeverOutlined sx={{ fontSize: 18 }} aria-hidden="true" />
+                        Apagar período
+                      </button>
+                    ) : (
+                      <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4">
+                        <p className="text-sm font-black text-red-200">
+                          Esta ação apaga definitivamente o período, sua oficina,
+                          equipes e resultados vinculados.
+                        </p>
+                        <p className="mt-2 text-xs text-red-100/80">
+                          Digite APAGAR para confirmar. Períodos ativos, agendados
+                          ou pausados precisam ser encerrados primeiro.
+                        </p>
+                        <input
+                          value={deleteConfirmation}
+                          onChange={(event) => setDeleteConfirmation(event.target.value.toUpperCase().slice(0, 6))}
+                          disabled={isSaving}
+                          placeholder="APAGAR"
+                          autoComplete="off"
+                          className="mt-3 min-h-11 w-full rounded-xl border border-red-400/40 bg-[#131f24] px-4 text-sm font-black uppercase outline-none focus:border-red-300 disabled:opacity-50"
+                        />
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={handleDelete}
+                            disabled={isSaving || deleteConfirmation !== 'APAGAR'}
+                            className="min-h-10 rounded-xl bg-red-400 px-4 text-xs font-black text-[#13210f] disabled:opacity-40"
+                          >
+                            Apagar definitivamente
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setConfirmDelete(false);
+                              setDeleteConfirmation('');
+                            }}
+                            disabled={isSaving}
+                            className="min-h-10 rounded-xl border border-[#53666f] px-4 text-xs font-bold text-[#d8e2e7] disabled:opacity-50"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

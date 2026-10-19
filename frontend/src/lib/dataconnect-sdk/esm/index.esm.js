@@ -407,6 +407,18 @@ export function setTeacherCompetitionPeriodStatus(dcOrVars, vars) {
   return executeMutation(setTeacherCompetitionPeriodStatusRef(dcInstance, inputVars));
 }
 
+export const deleteTeacherCompetitionPeriodRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteTeacherCompetitionPeriod', inputVars);
+}
+deleteTeacherCompetitionPeriodRef.operationName = 'DeleteTeacherCompetitionPeriod';
+
+export function deleteTeacherCompetitionPeriod(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteTeacherCompetitionPeriodRef(dcInstance, inputVars));
+}
+
 export const createAuthoritativeActivitySessionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -657,6 +669,18 @@ finalizeLoadTestCleanupRef.operationName = 'FinalizeLoadTestCleanup';
 export function finalizeLoadTestCleanup(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(finalizeLoadTestCleanupRef(dcInstance, inputVars));
+}
+
+export const resetApplicationForFreshStartRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ResetApplicationForFreshStart', inputVars);
+}
+resetApplicationForFreshStartRef.operationName = 'ResetApplicationForFreshStart';
+
+export function resetApplicationForFreshStart(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(resetApplicationForFreshStartRef(dcInstance, inputVars));
 }
 
 export const createWorkshopEventRef = (dcOrVars, vars) => {
@@ -1095,6 +1119,19 @@ export function getLoadTestCleanupStatus(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getLoadTestCleanupStatusRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const auditFreshStartStateRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'AuditFreshStartState', inputVars);
+}
+auditFreshStartStateRef.operationName = 'AuditFreshStartState';
+
+export function auditFreshStartState(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(auditFreshStartStateRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getMyWorkshopContextRef = (dcOrVars, vars) => {

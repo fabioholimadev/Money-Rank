@@ -1171,6 +1171,99 @@ mutation SetTeacherCompetitionPeriodStatus(
   )
 }
 
+# Exclusão administrativa explícita. Períodos em andamento precisam ser
+# encerrados antes; isso impede apagar por engano uma competição ativa ou
+# remover pontos sem executar a compensação de encerramento.
+mutation DeleteTeacherCompetitionPeriod(
+  $periodId: UUID!
+  $actorUid: String!
+) @auth(level: NO_ACCESS) {
+  deletedPeriod: _executeReturningFirst(
+    sql: """
+      WITH authorized_period AS MATERIALIZED (
+        SELECT period.*
+        FROM competition_periods AS period
+        WHERE
+          period.id = $1::uuid
+          AND period.status IN ('DRAFT', 'CLOSED')
+          AND EXISTS (
+            SELECT 1
+            FROM users AS teacher
+            WHERE
+              teacher.firebase_uid = $2
+              AND teacher.role = 'TEACHER'
+              AND teacher.profile_completed = TRUE
+          )
+      ), target_attempts AS MATERIALIZED (
+        SELECT DISTINCT transaction.attempt_id
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN authorized_period AS period
+          ON period.id = transaction.competition_period_id
+        WHERE transaction.attempt_id IS NOT NULL
+      ), deleted_transactions AS (
+        DELETE FROM capi_coin_transactions AS transaction
+        USING authorized_period AS period
+        WHERE transaction.competition_period_id = period.id
+        RETURNING transaction.attempt_id
+      ), deleted_attempts AS (
+        DELETE FROM activity_attempts AS attempt
+        WHERE
+          attempt.id IN (SELECT attempt_id FROM target_attempts)
+          AND (SELECT COUNT(*) FROM deleted_transactions) >= 0
+        RETURNING attempt.activity_session_id
+      ), deleted_sessions AS (
+        DELETE FROM activity_sessions AS session
+        WHERE
+          session.id IN (
+            SELECT activity_session_id
+            FROM deleted_attempts
+            WHERE activity_session_id IS NOT NULL
+          )
+        RETURNING session.id
+      ), deleted_memberships AS (
+        DELETE FROM workshop_memberships AS membership
+        USING workshop_events AS event, authorized_period AS period
+        WHERE
+          membership.event_id = event.id
+          AND event.competition_period_id = period.id
+        RETURNING membership.event_id
+      ), deleted_teams AS (
+        DELETE FROM workshop_teams AS team
+        USING workshop_events AS event, authorized_period AS period
+        WHERE
+          team.event_id = event.id
+          AND event.competition_period_id = period.id
+          AND (SELECT COUNT(*) FROM deleted_memberships) >= 0
+        RETURNING team.event_id
+      ), deleted_events AS (
+        DELETE FROM workshop_events AS event
+        USING authorized_period AS period
+        WHERE
+          event.competition_period_id = period.id
+          AND (SELECT COUNT(*) FROM deleted_teams) >= 0
+        RETURNING event.competition_period_id
+      )
+      DELETE FROM competition_periods AS period
+      USING authorized_period AS authorized
+      WHERE
+        period.id = authorized.id
+        AND (SELECT COUNT(*) FROM deleted_sessions) >= 0
+        AND (SELECT COUNT(*) FROM deleted_events) >= 0
+      RETURNING
+        period.id,
+        period.name,
+        period.status::text AS "status",
+        period.starts_at AS "startsAt",
+        period.ends_at AS "endsAt",
+        period.paused_at AS "pausedAt",
+        period.closed_at AS "closedAt",
+        period.created_at AS "createdAt",
+        period.updated_at AS "updatedAt"
+    """
+    params: [$periodId, $actorUid]
+  )
+}
+
 # Somente a callable function confiável pode preparar uma rodada. O gabarito
 # fica no banco e nunca integra uma consulta autorizada ao navegador.
 mutation CreateAuthoritativeActivitySession(
@@ -2836,6 +2929,118 @@ mutation FinalizeLoadTestCleanup(
       WHERE run_id = $1
     """
     params: [$runId, $deletedAuthUsers]
+  )
+}
+
+# Reset operacional deliberadamente fora da API pública. Preserva o conteúdo
+# pedagógico/editorial e a configuração da economia, mas remove identidades
+# (exceto o professor informado), progresso, tentativas, moedas, testes,
+# oficinas e períodos. A conta preservada precisa existir para que nada seja
+# apagado por engano com um e-mail digitado incorretamente.
+mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
+  @auth(level: NO_ACCESS) {
+  result: _executeReturningFirst(
+    sql: """
+      WITH preserved_teacher AS MATERIALIZED (
+        UPDATE users
+        SET
+          role = 'TEACHER',
+          capi_coins = 0,
+          current_phase = 0,
+          current_streak = 0,
+          last_streak_date = NULL,
+          is_test = FALSE,
+          test_run_id = NULL,
+          origin = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE
+          LOWER(email) = LOWER(BTRIM($1))
+          AND profile_completed = TRUE
+        RETURNING firebase_uid, email
+      ), deleted_test_run_audit AS (
+        DELETE FROM test_run_audit
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
+        RETURNING id
+      ), deleted_test_runs AS (
+        DELETE FROM test_runs
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_test_run_audit) >= 0
+        RETURNING id
+      ), deleted_transactions AS (
+        DELETE FROM capi_coin_transactions
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
+        RETURNING id
+      ), deleted_attempts AS (
+        DELETE FROM activity_attempts
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_transactions) >= 0
+        RETURNING id
+      ), deleted_sessions AS (
+        DELETE FROM activity_sessions
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_attempts) >= 0
+        RETURNING id
+      ), deleted_progress AS (
+        DELETE FROM student_progress
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_sessions) >= 0
+        RETURNING user_uid
+      ), deleted_memberships AS (
+        DELETE FROM workshop_memberships
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
+        RETURNING event_id
+      ), deleted_teams AS (
+        DELETE FROM workshop_teams
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_memberships) >= 0
+        RETURNING id
+      ), deleted_events AS (
+        DELETE FROM workshop_events
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_teams) >= 0
+        RETURNING id
+      ), deleted_periods AS (
+        DELETE FROM competition_periods
+        WHERE
+          EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_events) >= 0
+          AND (SELECT COUNT(*) FROM deleted_transactions) >= 0
+        RETURNING id
+      ), deleted_load_test_runs AS (
+        DELETE FROM load_test_runs
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
+        RETURNING run_id
+      ), deleted_users AS (
+        DELETE FROM users
+        WHERE
+          LOWER(email) <> LOWER(BTRIM($1))
+          AND EXISTS (SELECT 1 FROM preserved_teacher)
+          AND (SELECT COUNT(*) FROM deleted_progress) >= 0
+          AND (SELECT COUNT(*) FROM deleted_periods) >= 0
+          AND (SELECT COUNT(*) FROM deleted_load_test_runs) >= 0
+        RETURNING firebase_uid
+      )
+      SELECT
+        (SELECT email FROM preserved_teacher LIMIT 1) AS "preservedTeacherEmail",
+        (SELECT COUNT(*)::integer FROM deleted_users) AS "deletedUsers",
+        (SELECT COUNT(*)::integer FROM deleted_periods) AS "deletedPeriods",
+        (SELECT COUNT(*)::integer FROM deleted_events) AS "deletedWorkshopEvents",
+        (SELECT COUNT(*)::integer FROM deleted_memberships) AS "deletedMemberships",
+        (SELECT COUNT(*)::integer FROM deleted_progress) AS "deletedProgressEntries",
+        (SELECT COUNT(*)::integer FROM deleted_sessions) AS "deletedSessions",
+        (SELECT COUNT(*)::integer FROM deleted_attempts) AS "deletedAttempts",
+        (SELECT COUNT(*)::integer FROM deleted_transactions) AS "deletedTransactions",
+        (SELECT COUNT(*)::integer FROM deleted_test_runs) AS "deletedTestRuns"
+      FROM preserved_teacher
+      LIMIT 1
+    """
+    params: [$preservedTeacherEmail]
   )
 }
 
