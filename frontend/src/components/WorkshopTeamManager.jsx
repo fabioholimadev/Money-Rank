@@ -10,8 +10,18 @@ import {
   fetchTeacherWorkshops,
   fetchWorkshopTeams,
 } from '../services/teacherWorkshopService';
+import { setTeacherCompetitionPeriodStatus } from '../services/teacherCompetitionService';
 
-export default function WorkshopTeamManager({ periods, selectedPeriodId }) {
+function activationTarget(period, now = Date.now()) {
+  if (!period) return null;
+  const startsAt = Date.parse(period.startsAt);
+  const endsAt = Date.parse(period.endsAt);
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || now >= endsAt) return null;
+  if (now < startsAt) return period.status === 'DRAFT' ? 'SCHEDULED' : null;
+  return ['DRAFT', 'PAUSED'].includes(period.status) ? 'ACTIVE' : null;
+}
+
+export default function WorkshopTeamManager({ periods, selectedPeriodId, onPeriodChanged, onWorkshopChanged }) {
   const [workshops, setWorkshops] = useState([]);
   const [teams, setTeams] = useState([]);
   const [teamName, setTeamName] = useState('');
@@ -47,12 +57,44 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId }) {
     if (!selectedPeriod) return;
     setBusy(true); setMessage('');
     try {
+      const targetStatus = activationTarget(selectedPeriod);
+      if (selectedPeriod.status === 'DRAFT' && !targetStatus) {
+        throw new Error('Revise o horário: esse período já terminou e não pode receber a oficina.');
+      }
+      if (targetStatus) {
+        const changedPeriod = await setTeacherCompetitionPeriodStatus({
+          periodId: selectedPeriod.id,
+          status: targetStatus,
+        });
+        await onPeriodChanged?.(changedPeriod);
+      }
       await createTeacherWorkshop({
         name: 'Oficina Ciência Delas',
         competitionPeriodId: selectedPeriod.id,
       });
       await load();
-      setMessage('Oficina preparada. Agora crie as equipes.');
+      await onWorkshopChanged?.();
+      setMessage('Oficina e período preparados. Agora crie as equipes.');
+    } catch (error) { setMessage(error.message); } finally { setBusy(false); }
+  }
+
+  async function openCompetition() {
+    const targetStatus = activationTarget(selectedPeriod);
+    if (!targetStatus) {
+      setMessage('Ajuste a janela do período antes de abrir a competição.');
+      return;
+    }
+    setBusy(true); setMessage('');
+    try {
+      const changedPeriod = await setTeacherCompetitionPeriodStatus({
+        periodId: selectedPeriod.id,
+        status: targetStatus,
+      });
+      await onPeriodChanged?.(changedPeriod);
+      await onWorkshopChanged?.();
+      setMessage(targetStatus === 'ACTIVE'
+        ? 'Competição ativada. As atividades estão liberadas.'
+        : 'Competição agendada. Ela será liberada no horário definido.');
     } catch (error) { setMessage(error.message); } finally { setBusy(false); }
   }
 
@@ -64,6 +106,7 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId }) {
       const team = await createWorkshopTeam(workshop.id, teamName);
       setTeams((current) => [...current, team]);
       setTeamName('');
+      await onWorkshopChanged?.();
       setMessage(`Equipe ${team.name} criada.`);
     } catch (error) { setMessage(error.message); } finally { setBusy(false); }
   }
@@ -87,6 +130,17 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId }) {
       )}
       {workshop && (
         <>
+          {['DRAFT', 'PAUSED'].includes(selectedPeriod?.status) && (
+            <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[#ff9600]/30 bg-[#ff9600]/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-black text-[#ffd39a]">A competição ainda não está liberada</p>
+                <p className="mt-1 text-xs leading-5 text-[#e7ba83]">Ative o período para os alunos iniciarem rodadas e receberem CapiCoins.</p>
+              </div>
+              <button className="min-h-11 rounded-xl bg-[#ffb020] px-4 text-sm font-black text-[#2b1b00] disabled:opacity-50" disabled={busy || !activationTarget(selectedPeriod)} onClick={() => void openCompetition()} type="button">
+                {selectedPeriod.status === 'PAUSED' ? 'Retomar competição' : 'Ativar competição'}
+              </button>
+            </div>
+          )}
           <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={addTeam}>
             <input className="min-h-12 flex-1 rounded-xl border border-[#53666f] bg-[#131f24] px-4 text-sm text-white outline-none focus:border-[#58cc02]" disabled={busy} maxLength={60} onChange={(event) => setTeamName(event.target.value)} placeholder="Nome da equipe, ex.: Ada Lovelace" required value={teamName} />
             <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#58cc02] px-5 text-sm font-black text-[#13210f] disabled:opacity-50" disabled={busy} type="submit"><AddRounded /> Criar equipe</button>

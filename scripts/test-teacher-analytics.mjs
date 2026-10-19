@@ -120,11 +120,19 @@ const querySource = await readFile(
 const teacherSection = querySource.slice(
   querySource.indexOf('query ListTeacherCompetitionPeriods'),
 );
-assert.equal(
-  (teacherSection.match(/teacher\.role = 'TEACHER'/g) || []).length,
-  7,
+assert.ok(
+  (teacherSection.match(/teacher\.role = 'TEACHER'/g) || []).length >= 10,
   'Períodos, agregações e consultas do modo de teste devem validar TEACHER.',
 );
+const workshopDashboardSection = teacherSection.slice(
+  teacherSection.indexOf('query GetWorkshopTeacherDashboard'),
+);
+assert.equal(
+  (workshopDashboardSection.match(/teacher\.role = 'TEACHER'/g) || []).length,
+  3,
+  'Cada raiz agregada da oficina deve repetir a autorização do professor.',
+);
+assert.match(workshopDashboardSection, /attempt\.activity_id LIKE 'workshop-%'/);
 assert.match(teacherSection, /query GetActiveTestRunForUser[\s\S]*run\.created_by_uid = \$1[\s\S]*teacher\.role = 'TEACHER'/);
 assert.match(teacherSection, /query GetTeacherTestRun[\s\S]*run\.created_by_uid = \$1[\s\S]*teacher\.role = 'TEACHER'/);
 assert.equal(

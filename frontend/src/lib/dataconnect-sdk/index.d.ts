@@ -746,6 +746,17 @@ export interface GetWorkshopRankingsVariables {
   eventId: UUIDString;
 }
 
+export interface GetWorkshopTeacherDashboardData {
+  summary?: unknown | null;
+  activityMetrics?: unknown[] | null;
+  studentMetrics?: unknown[] | null;
+}
+
+export interface GetWorkshopTeacherDashboardVariables {
+  actorUid: string;
+  eventId: UUIDString;
+}
+
 export interface ImportPedagogicalBankData {
   importedRows?: number | null;
 }
@@ -2403,4 +2414,16 @@ export const getWorkshopRankingsRef: GetWorkshopRankingsRef;
 
 export function getWorkshopRankings(vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
 export function getWorkshopRankings(dc: DataConnect, vars: GetWorkshopRankingsVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopRankingsData, GetWorkshopRankingsVariables>;
+
+interface GetWorkshopTeacherDashboardRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetWorkshopTeacherDashboardVariables): QueryRef<GetWorkshopTeacherDashboardData, GetWorkshopTeacherDashboardVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetWorkshopTeacherDashboardVariables): QueryRef<GetWorkshopTeacherDashboardData, GetWorkshopTeacherDashboardVariables>;
+  operationName: string;
+}
+export const getWorkshopTeacherDashboardRef: GetWorkshopTeacherDashboardRef;
+
+export function getWorkshopTeacherDashboard(vars: GetWorkshopTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopTeacherDashboardData, GetWorkshopTeacherDashboardVariables>;
+export function getWorkshopTeacherDashboard(dc: DataConnect, vars: GetWorkshopTeacherDashboardVariables, options?: ExecuteQueryOptions): QueryPromise<GetWorkshopTeacherDashboardData, GetWorkshopTeacherDashboardVariables>;
 

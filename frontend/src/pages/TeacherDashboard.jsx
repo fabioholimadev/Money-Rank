@@ -3,15 +3,16 @@ import AutoGraph from '@mui/icons-material/AutoGraph';
 import Download from '@mui/icons-material/Download';
 import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import MonetizationOn from '@mui/icons-material/MonetizationOn';
+import PauseCircleOutlined from '@mui/icons-material/PauseCircleOutlined';
+import PlayCircleOutlined from '@mui/icons-material/PlayCircleOutlined';
 import Refresh from '@mui/icons-material/Refresh';
 import SchoolOutlined from '@mui/icons-material/SchoolOutlined';
 import TaskAlt from '@mui/icons-material/TaskAlt';
 import WarningAmber from '@mui/icons-material/WarningAmber';
 import { useAuth } from '../contexts/AuthContext';
 import CompetitionPeriodManager from '../components/CompetitionPeriodManager';
-import TestModePanel from '../components/TestModePanel';
 import SystemDiagnosticsPanel from '../components/SystemDiagnosticsPanel';
-import WorkshopTeamManager from '../components/WorkshopTeamManager';
+import WorkshopTeacherDashboard from '../components/WorkshopTeacherDashboard';
 import { buildTeacherDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
 import {
   fetchTeacherDashboard,
@@ -131,6 +132,8 @@ export default function TeacherDashboard() {
   const [errorMessage, setErrorMessage] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [dashboardCategory, setDashboardCategory] = useState('REGULAR');
+  const [isChangingPeriodStatus, setIsChangingPeriodStatus] = useState(false);
 
   const selectedPeriod = periods.find(
     (period) => period.id === selectedPeriodId,
@@ -269,6 +272,24 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleQuickPeriodStatus = async () => {
+    if (!selectedPeriod || selectedPeriod.status === 'CLOSED') return;
+    const nextStatus = selectedPeriod.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    setIsChangingPeriodStatus(true);
+    setErrorMessage('');
+    try {
+      const changed = await setTeacherCompetitionPeriodStatus({
+        periodId: selectedPeriod.id,
+        status: nextStatus,
+      });
+      await handlePeriodChanged(changed);
+    } catch (error) {
+      setErrorMessage(error?.message || 'Não foi possível alterar o funcionamento do período.');
+    } finally {
+      setIsChangingPeriodStatus(false);
+    }
+  };
+
   const handleExport = () => {
     setErrorMessage('');
     try {
@@ -317,15 +338,17 @@ export default function TeacherDashboard() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={!selectedPeriod || !dashboard || isLoadingDashboard}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-bold text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Download sx={{ fontSize: 18 }} aria-hidden="true" />
-              Exportar planilha
-            </button>
+            {dashboardCategory === 'REGULAR' && (
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={!selectedPeriod || !dashboard || isLoadingDashboard}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-bold text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download sx={{ fontSize: 18 }} aria-hidden="true" />
+                Exportar planilha regular
+              </button>
+            )}
             <button
               type="button"
               onClick={handleRefresh}
@@ -374,6 +397,19 @@ export default function TeacherDashboard() {
               <span className="text-xs text-[#78909b]">
                 Horário de Fortaleza
               </span>
+              {selectedPeriod.status !== 'CLOSED' && (
+                <button
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-black transition disabled:opacity-50 ${selectedPeriod.status === 'ACTIVE' ? 'border-[#ff9600]/40 text-[#ffd39a] hover:border-[#ff9600]' : 'border-[#58cc02]/40 text-[#79e72e] hover:border-[#58cc02]'}`}
+                  disabled={isChangingPeriodStatus}
+                  onClick={() => void handleQuickPeriodStatus()}
+                  type="button"
+                >
+                  {selectedPeriod.status === 'ACTIVE'
+                    ? <PauseCircleOutlined sx={{ fontSize: 19 }} />
+                    : <PlayCircleOutlined sx={{ fontSize: 19 }} />}
+                  {selectedPeriod.status === 'ACTIVE' ? 'Desativar período' : 'Ativar período'}
+                </button>
+              )}
               <CompetitionPeriodManager
                 periods={periods}
                 selectedPeriod={selectedPeriod}
@@ -398,11 +434,33 @@ export default function TeacherDashboard() {
           )}
         </section>
 
-        <TestModePanel />
+        <nav aria-label="Categoria de dados" className="mt-6 grid gap-2 rounded-2xl border border-[#37464f] bg-[#17262c] p-2 sm:grid-cols-2">
+          <button
+            className={`min-h-12 rounded-xl px-4 text-sm font-black transition ${dashboardCategory === 'REGULAR' ? 'bg-[#58cc02] text-[#13210f] shadow-[0_4px_0_#46a302]' : 'text-[#a5b7c2] hover:bg-[#1f2d33] hover:text-white'}`}
+            onClick={() => setDashboardCategory('REGULAR')}
+            type="button"
+          >
+            Regular · turmas padrão
+          </button>
+          <button
+            className={`min-h-12 rounded-xl px-4 text-sm font-black transition ${dashboardCategory === 'WORKSHOP' ? 'bg-[#49c0f8] text-[#10252d] shadow-[0_4px_0_#258fbd]' : 'text-[#a5b7c2] hover:bg-[#1f2d33] hover:text-white'}`}
+            onClick={() => setDashboardCategory('WORKSHOP')}
+            type="button"
+          >
+            Criação de times para oficina
+          </button>
+        </nav>
 
-        <WorkshopTeamManager periods={periods} selectedPeriodId={selectedPeriodId} />
-
-        <SystemDiagnosticsPanel />
+        {dashboardCategory === 'WORKSHOP' ? (
+          <WorkshopTeacherDashboard
+            key={selectedPeriodId || 'sem-periodo'}
+            onPeriodChanged={handlePeriodChanged}
+            periods={periods}
+            selectedPeriodId={selectedPeriodId}
+          />
+        ) : (
+          <>
+            <SystemDiagnosticsPanel />
 
 
         {errorMessage && (
@@ -668,6 +726,8 @@ export default function TeacherDashboard() {
                 </p>
               )}
             </section>
+          </>
+        )}
           </>
         )}
       </div>

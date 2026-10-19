@@ -1582,6 +1582,12 @@ query ListWorkshopTeamsForTeacher($actorUid: String!, $eventId: UUID!)
           WHERE event.id = team.event_id
         )
         AND transaction.is_test = FALSE
+        AND EXISTS (
+          SELECT 1
+          FROM activity_attempts AS workshop_attempt
+          WHERE workshop_attempt.id = transaction.attempt_id
+            AND workshop_attempt.activity_id LIKE 'workshop-%'
+        )
       WHERE team.event_id = $2::uuid
       GROUP BY team.id
       ORDER BY team.created_at ASC
@@ -1614,6 +1620,12 @@ query GetWorkshopRankings($eventId: UUID!) @auth(level: NO_ACCESS) {
         ON transaction.user_uid = membership.user_uid
         AND transaction.competition_period_id = event.competition_period_id
         AND transaction.is_test = FALSE
+        AND EXISTS (
+          SELECT 1
+          FROM activity_attempts AS workshop_attempt
+          WHERE workshop_attempt.id = transaction.attempt_id
+            AND workshop_attempt.activity_id LIKE 'workshop-%'
+        )
       WHERE membership.event_id = $1::uuid
       GROUP BY membership.user_uid, users.preferred_name, users.avatar_id,
         users.avatar_url, membership.class_name, membership.team_id, team.name
@@ -1638,10 +1650,200 @@ query GetWorkshopRankings($eventId: UUID!) @auth(level: NO_ACCESS) {
         ON transaction.user_uid = membership.user_uid
         AND transaction.competition_period_id = event.competition_period_id
         AND transaction.is_test = FALSE
+        AND EXISTS (
+          SELECT 1
+          FROM activity_attempts AS workshop_attempt
+          WHERE workshop_attempt.id = transaction.attempt_id
+            AND workshop_attempt.activity_id LIKE 'workshop-%'
+        )
       WHERE team.event_id = $1::uuid
       GROUP BY team.id, team.name
       ORDER BY position ASC, team.name ASC
     """
     params: [$eventId]
+  )
+}
+
+# Dados exclusivos da oficina. Cada raiz repete a autorização porque a API
+# nunca deve depender apenas da separação visual entre Regular e Oficina.
+query GetWorkshopTeacherDashboard($actorUid: String!, $eventId: UUID!)
+  @auth(level: NO_ACCESS) {
+  summary: _selectFirst(
+    sql: """
+      WITH authorized_event AS (
+        SELECT
+          event.id,
+          event.competition_period_id,
+          period.starts_at,
+          period.ends_at
+        FROM workshop_events AS event
+        INNER JOIN competition_periods AS period
+          ON period.id = event.competition_period_id
+        INNER JOIN users AS teacher
+          ON teacher.firebase_uid = $1
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        WHERE event.id = $2::uuid
+        LIMIT 1
+      ), members AS (
+        SELECT membership.user_uid
+        FROM workshop_memberships AS membership
+        INNER JOIN authorized_event ON authorized_event.id = membership.event_id
+      ), attempts AS (
+        SELECT attempt.*
+        FROM activity_attempts AS attempt
+        INNER JOIN members ON members.user_uid = attempt.user_uid
+        CROSS JOIN authorized_event
+        WHERE attempt.activity_id LIKE 'workshop-%'
+          AND attempt.is_test = FALSE
+          AND attempt.created_at >= authorized_event.starts_at
+          AND attempt.created_at < authorized_event.ends_at
+      ), points AS (
+        SELECT transaction.amount
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN attempts ON attempts.id = transaction.attempt_id
+        CROSS JOIN authorized_event
+        WHERE transaction.competition_period_id = authorized_event.competition_period_id
+          AND transaction.is_test = FALSE
+          AND transaction.amount > 0
+      )
+      SELECT
+        (SELECT COUNT(*) FROM members)::integer AS "totalStudents",
+        (SELECT COUNT(*) FROM workshop_teams AS team
+          INNER JOIN authorized_event ON authorized_event.id = team.event_id
+          WHERE team.active = TRUE)::integer AS "totalTeams",
+        (SELECT COUNT(DISTINCT user_uid) FROM attempts)::integer AS "participatingStudents",
+        (SELECT COUNT(*) FROM attempts)::integer AS "totalAttempts",
+        COALESCE((SELECT ROUND(AVG(score)) FROM attempts), 0)::integer AS "averageScore",
+        COALESCE((SELECT SUM(correct_answers) FROM attempts), 0)::integer AS "correctAnswers",
+        COALESCE((SELECT SUM(wrong_answers) FROM attempts), 0)::integer AS "wrongAnswers",
+        COALESCE((SELECT SUM(amount) FROM points), 0)::integer AS "totalPoints"
+      FROM authorized_event
+    """
+    params: [$actorUid, $eventId]
+  )
+  activityMetrics: _select(
+    sql: """
+      WITH authorized_event AS (
+        SELECT event.id, period.starts_at, period.ends_at
+        FROM workshop_events AS event
+        INNER JOIN competition_periods AS period
+          ON period.id = event.competition_period_id
+        INNER JOIN users AS teacher
+          ON teacher.firebase_uid = $1
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        WHERE event.id = $2::uuid
+        LIMIT 1
+      ), phases AS (
+        SELECT GENERATE_SERIES(1, 4)::integer AS phase_number
+      ), attempts AS (
+        SELECT attempt.*
+        FROM activity_attempts AS attempt
+        INNER JOIN workshop_memberships AS membership
+          ON membership.user_uid = attempt.user_uid
+        INNER JOIN authorized_event
+          ON authorized_event.id = membership.event_id
+        WHERE attempt.activity_id LIKE 'workshop-%'
+          AND attempt.is_test = FALSE
+          AND attempt.created_at >= authorized_event.starts_at
+          AND attempt.created_at < authorized_event.ends_at
+      ), totals AS (
+        SELECT
+          phase_number,
+          COUNT(*)::integer AS total_attempts,
+          COUNT(DISTINCT user_uid)::integer AS participants,
+          ROUND(AVG(score))::integer AS average_score,
+          SUM(correct_answers)::integer AS correct_answers,
+          SUM(wrong_answers)::integer AS wrong_answers
+        FROM attempts
+        GROUP BY phase_number
+      )
+      SELECT
+        phases.phase_number AS "phaseNumber",
+        COALESCE(totals.total_attempts, 0)::integer AS "totalAttempts",
+        COALESCE(totals.participants, 0)::integer AS participants,
+        COALESCE(totals.average_score, 0)::integer AS "averageScore",
+        COALESCE(totals.correct_answers, 0)::integer AS "correctAnswers",
+        COALESCE(totals.wrong_answers, 0)::integer AS "wrongAnswers"
+      FROM phases
+      CROSS JOIN authorized_event
+      LEFT JOIN totals ON totals.phase_number = phases.phase_number
+      ORDER BY phases.phase_number ASC
+    """
+    params: [$actorUid, $eventId]
+  )
+  studentMetrics: _select(
+    sql: """
+      WITH authorized_event AS (
+        SELECT event.id, event.competition_period_id, period.starts_at, period.ends_at
+        FROM workshop_events AS event
+        INNER JOIN competition_periods AS period
+          ON period.id = event.competition_period_id
+        INNER JOIN users AS teacher
+          ON teacher.firebase_uid = $1
+          AND teacher.role = 'TEACHER'
+          AND teacher.profile_completed = TRUE
+        WHERE event.id = $2::uuid
+        LIMIT 1
+      ), members AS (
+        SELECT
+          membership.user_uid,
+          membership.full_name,
+          membership.class_name,
+          membership.team_id,
+          users.preferred_name,
+          team.name AS team_name
+        FROM workshop_memberships AS membership
+        INNER JOIN authorized_event ON authorized_event.id = membership.event_id
+        INNER JOIN users ON users.firebase_uid = membership.user_uid
+        INNER JOIN workshop_teams AS team ON team.id = membership.team_id
+      ), attempt_totals AS (
+        SELECT
+          attempt.user_uid,
+          COUNT(*)::integer AS attempts,
+          ROUND(AVG(attempt.score))::integer AS average_score,
+          SUM(attempt.correct_answers)::integer AS correct_answers,
+          SUM(attempt.wrong_answers)::integer AS wrong_answers,
+          MAX(attempt.created_at) AS last_activity_at
+        FROM activity_attempts AS attempt
+        INNER JOIN members ON members.user_uid = attempt.user_uid
+        CROSS JOIN authorized_event
+        WHERE attempt.activity_id LIKE 'workshop-%'
+          AND attempt.is_test = FALSE
+          AND attempt.created_at >= authorized_event.starts_at
+          AND attempt.created_at < authorized_event.ends_at
+        GROUP BY attempt.user_uid
+      ), point_totals AS (
+        SELECT transaction.user_uid, SUM(transaction.amount)::integer AS points
+        FROM capi_coin_transactions AS transaction
+        INNER JOIN activity_attempts AS attempt
+          ON attempt.id = transaction.attempt_id
+          AND attempt.activity_id LIKE 'workshop-%'
+        INNER JOIN members ON members.user_uid = transaction.user_uid
+        CROSS JOIN authorized_event
+        WHERE transaction.competition_period_id = authorized_event.competition_period_id
+          AND transaction.is_test = FALSE
+        GROUP BY transaction.user_uid
+      )
+      SELECT
+        members.user_uid AS "studentUid",
+        members.preferred_name AS "preferredName",
+        members.full_name AS "fullName",
+        members.class_name AS "className",
+        members.team_id::text AS "teamId",
+        members.team_name AS "teamName",
+        COALESCE(attempt_totals.attempts, 0)::integer AS "totalAttempts",
+        COALESCE(attempt_totals.average_score, 0)::integer AS "averageScore",
+        COALESCE(attempt_totals.correct_answers, 0)::integer AS "correctAnswers",
+        COALESCE(attempt_totals.wrong_answers, 0)::integer AS "wrongAnswers",
+        COALESCE(point_totals.points, 0)::integer AS "totalPoints",
+        attempt_totals.last_activity_at AS "lastActivityAt"
+      FROM members
+      LEFT JOIN attempt_totals ON attempt_totals.user_uid = members.user_uid
+      LEFT JOIN point_totals ON point_totals.user_uid = members.user_uid
+      ORDER BY members.team_name ASC, members.preferred_name ASC
+    """
+    params: [$actorUid, $eventId]
   )
 }

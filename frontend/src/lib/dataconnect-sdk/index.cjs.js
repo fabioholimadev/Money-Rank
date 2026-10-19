@@ -1348,3 +1348,18 @@ exports.getWorkshopRankings = function getWorkshopRankings(dcOrVars, varsOrOptio
   return executeQuery(getWorkshopRankingsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
+
+const getWorkshopTeacherDashboardRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetWorkshopTeacherDashboard', inputVars);
+}
+getWorkshopTeacherDashboardRef.operationName = 'GetWorkshopTeacherDashboard';
+exports.getWorkshopTeacherDashboardRef = getWorkshopTeacherDashboardRef;
+
+exports.getWorkshopTeacherDashboard = function getWorkshopTeacherDashboard(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getWorkshopTeacherDashboardRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;

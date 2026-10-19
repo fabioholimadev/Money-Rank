@@ -540,7 +540,11 @@ app.post('/api/workshop/activities/:activityKey/sessions', ...protectedRoute(), 
       return res.status(403).json({ error: 'workshop_membership_required', requestId: req.requestId });
     }
     if (!isWorkshopCompetitionOpen(context)) {
-      return res.status(409).json({ error: 'workshop_competition_closed', requestId: req.requestId });
+      return res.status(409).json({
+        error: 'workshop_competition_closed',
+        message: 'A competição ainda não está aberta. Peça ao professor para ativar o período da oficina.',
+        requestId: req.requestId,
+      });
     }
     const engine = await import('../../functions/src/workshopActivityEngine.js');
     const activityKey = String(req.params.activityKey || '');
@@ -603,7 +607,11 @@ app.post('/api/workshop/activities/sessions/:sessionId/submit', ...protectedRout
       return res.status(403).json({ error: 'workshop_membership_required', requestId: req.requestId });
     }
     if (!isWorkshopCompetitionOpen(context)) {
-      return res.status(409).json({ error: 'workshop_competition_closed', requestId: req.requestId });
+      return res.status(409).json({
+        error: 'workshop_competition_closed',
+        message: 'A competição foi pausada ou encerrada antes da conclusão. Fale com o professor.',
+        requestId: req.requestId,
+      });
     }
     const engine = await import('../../functions/src/workshopActivityEngine.js');
     const result = engine.scoreWorkshopActivitySession(session.answerKey, req.body?.answers);
@@ -1094,6 +1102,41 @@ app.get('/api/teacher/workshops/:eventId/ranking', ...protectedRoute(requireTeac
     return res.json({
       individualRanking: data.individualRanking || [],
       teamRanking: data.teamRanking || [],
+    });
+  } catch (error) { return next(error); }
+});
+
+app.get('/api/teacher/workshops/:eventId/dashboard', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.eventId)) {
+      return res.status(400).json({ error: 'invalid_workshop_id', requestId: req.requestId });
+    }
+    const [dashboard, rankings] = await Promise.all([
+      sqlOperation('GetWorkshopTeacherDashboard', {
+        actorUid: req.auth.uid,
+        eventId: req.params.eventId,
+      }).then(unwrap),
+      sqlOperation('GetWorkshopRankings', {
+        eventId: req.params.eventId,
+      }).then(unwrap),
+    ]);
+    if (!dashboard.summary) {
+      return res.status(404).json({ error: 'workshop_not_found', requestId: req.requestId });
+    }
+    const studentMetrics = (dashboard.studentMetrics || []).map(({ studentUid, ...student }) => ({
+      ...student,
+      key: crypto.createHash('sha256').update(String(studentUid)).digest('hex').slice(0, 16),
+    }));
+    const individualRanking = (rankings.individualRanking || []).map(({ studentUid, ...student }) => ({
+      ...student,
+      key: crypto.createHash('sha256').update(String(studentUid)).digest('hex').slice(0, 16),
+    }));
+    return res.json({
+      ...dashboard,
+      studentMetrics,
+      individualRanking,
+      teamRanking: rankings.teamRanking || [],
     });
   } catch (error) { return next(error); }
 });
