@@ -141,6 +141,154 @@ function studentRows(students) {
   ]);
 }
 
+const WORKSHOP_ACTIVITY_TITLES = Object.freeze({
+  1: 'Verdadeiro ou falso',
+  2: 'Ligar colunas',
+  3: 'Completar frases',
+  4: 'Quiz Ciência Delas',
+});
+
+function workshopSummaryRows(summary) {
+  return [
+    ['Participantes cadastrados', summary?.totalStudents, 'alunos'],
+    ['Participantes que competiram', summary?.participatingStudents, 'alunos'],
+    ['Equipes ativas', summary?.totalTeams, 'equipes'],
+    ['CapiCoins distribuídos', summary?.totalPoints, 'pontos'],
+    ['Rodadas concluídas', summary?.totalAttempts, 'rodadas'],
+    ['Média das rodadas', summary?.averageScore, '%'],
+    ['Respostas corretas', summary?.correctAnswers, 'respostas'],
+    ['Respostas incorretas', summary?.wrongAnswers, 'respostas'],
+  ];
+}
+
+function workshopTeamRows(teams) {
+  return (Array.isArray(teams) ? teams : []).map((item) => [
+    item.position,
+    item.teamName,
+    item.memberCount,
+    item.capiCoins,
+  ]);
+}
+
+function workshopIndividualRows(students) {
+  return (Array.isArray(students) ? students : []).map((item) => [
+    item.position,
+    item.preferredName,
+    item.teamName,
+    item.className,
+    item.capiCoins,
+  ]);
+}
+
+function workshopActivityRows(activities) {
+  return (Array.isArray(activities) ? activities : []).map((item) => {
+    const totalAnswers = Number(item.correctAnswers) + Number(item.wrongAnswers);
+    const difficultyRate = totalAnswers > 0
+      ? Math.round((Number(item.wrongAnswers) / totalAnswers) * 100)
+      : 0;
+    return [
+      item.phaseNumber,
+      WORKSHOP_ACTIVITY_TITLES[item.phaseNumber] || `Atividade ${item.phaseNumber}`,
+      item.totalAttempts,
+      item.participants,
+      item.averageScore,
+      item.correctAnswers,
+      item.wrongAnswers,
+      difficultyRate,
+    ];
+  });
+}
+
+function workshopStudentRows(students) {
+  return (Array.isArray(students) ? students : []).map((item) => [
+    item.preferredName || item.fullName,
+    item.teamName,
+    item.className,
+    item.totalAttempts,
+    item.averageScore,
+    item.correctAnswers,
+    item.wrongAnswers,
+    item.totalPoints,
+    formatTeacherExportDate(item.lastActivityAt),
+  ]);
+}
+
+export function buildWorkshopDashboardCsvExport({
+  event,
+  dashboard,
+  generatedAt = new Date(),
+} = {}) {
+  if (!event || typeof event !== 'object') {
+    throw new Error('Oficina inválida para exportação.');
+  }
+  if (!dashboard?.summary || typeof dashboard.summary !== 'object') {
+    throw new Error('Dados da oficina indisponíveis para exportação.');
+  }
+
+  const rows = [
+    ['Money Rank - Relatório da oficina'],
+    ['Oficina', event.name],
+    ['Período', event.periodName],
+    ['Status da oficina', STATUS_LABELS[event.status] ?? event.status ?? ''],
+    ['Status do período', STATUS_LABELS[event.periodStatus] ?? event.periodStatus ?? ''],
+    ['Início', formatTeacherExportDate(event.startsAt)],
+    ['Fim', formatTeacherExportDate(event.endsAt)],
+    ['Gerado em', formatTeacherExportDate(generatedAt)],
+    [],
+    ...section(
+      'Resumo da competição',
+      ['Indicador', 'Valor', 'Unidade'],
+      workshopSummaryRows(dashboard.summary),
+    ),
+    ...section(
+      'Ranking das equipes',
+      ['Posição', 'Equipe', 'Participantes', 'CapiCoins'],
+      workshopTeamRows(dashboard.teamRanking),
+    ),
+    ...section(
+      'Ranking individual',
+      ['Posição', 'Nome preferido', 'Equipe', 'Turma informada', 'CapiCoins'],
+      workshopIndividualRows(dashboard.individualRanking),
+    ),
+    ...section(
+      'Atividades',
+      [
+        'Atividade',
+        'Título',
+        'Rodadas',
+        'Participantes',
+        'Média (%)',
+        'Respostas corretas',
+        'Respostas incorretas',
+        'Dificuldade (%)',
+      ],
+      workshopActivityRows(dashboard.activities),
+    ),
+    ...section(
+      'Participantes',
+      [
+        'Nome exibido',
+        'Equipe',
+        'Turma informada',
+        'Rodadas',
+        'Média (%)',
+        'Respostas corretas',
+        'Respostas incorretas',
+        'CapiCoins',
+        'Última atividade',
+      ],
+      workshopStudentRows(dashboard.students),
+    ),
+  ];
+
+  return {
+    fileName: `money-rank-oficina-${safeFileName(event.name || event.periodName)}.csv`,
+    mimeType: TEACHER_EXPORT_MIME_TYPE,
+    content: CSV_BOM + rows.map(csvRow).join('\r\n'),
+    rowCount: rows.length,
+  };
+}
+
 export function buildTeacherDashboardCsvExport({
   period,
   dashboard,

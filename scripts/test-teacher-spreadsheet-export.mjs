@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   buildTeacherDashboardCsvExport,
+  buildWorkshopDashboardCsvExport,
   escapeTeacherCsvCell,
   formatTeacherExportDate,
   TEACHER_EXPORT_MIME_TYPE,
@@ -105,6 +106,89 @@ assert.throws(
   /Dados do painel indisponíveis/,
 );
 
+const workshopExport = buildWorkshopDashboardCsvExport({
+  event: {
+    name: 'Ciência Delas',
+    periodName: 'Oficina de outubro',
+    status: 'ACTIVE',
+    periodStatus: 'ACTIVE',
+    startsAt: '2026-10-19T10:30:00.000Z',
+    endsAt: '2026-10-19T13:00:00.000Z',
+  },
+  generatedAt: '2026-10-19T12:00:00.000Z',
+  dashboard: {
+    summary: {
+      totalStudents: 8,
+      participatingStudents: 7,
+      totalTeams: 2,
+      totalPoints: 940,
+      totalAttempts: 12,
+      averageScore: 78,
+      correctAnswers: 38,
+      wrongAnswers: 10,
+    },
+    teamRanking: [{
+      position: 1,
+      teamName: '=Ada',
+      memberCount: 4,
+      capiCoins: 520,
+      teamId: 'private-team-id',
+    }],
+    individualRanking: [{
+      position: 1,
+      preferredName: '+Ana',
+      teamName: '=Ada',
+      className: '3º DSA',
+      capiCoins: 180,
+      key: 'private-ranking-key',
+      avatarUrl: 'https://private-avatar.test/image.png',
+    }],
+    activities: [{
+      phaseNumber: 2,
+      totalAttempts: 3,
+      participants: 2,
+      averageScore: 75,
+      correctAnswers: 12,
+      wrongAnswers: 4,
+    }],
+    students: [{
+      preferredName: '@Bia',
+      fullName: 'private-full-name',
+      teamName: '=Ada',
+      className: '3º DSB',
+      totalAttempts: 2,
+      averageScore: 87.5,
+      correctAnswers: 7,
+      wrongAnswers: 1,
+      totalPoints: 175,
+      lastActivityAt: '2026-10-19T12:00:00.000Z',
+      key: 'private-student-key',
+    }],
+  },
+});
+
+assert.equal(workshopExport.mimeType, TEACHER_EXPORT_MIME_TYPE);
+assert.equal(workshopExport.fileName, 'money-rank-oficina-ciencia-delas.csv');
+assert.equal(workshopExport.content.charCodeAt(0), 0xfeff);
+assert.ok(workshopExport.content.includes('Resumo da competição'));
+assert.ok(workshopExport.content.includes('Ranking das equipes'));
+assert.ok(workshopExport.content.includes('Ranking individual'));
+assert.ok(workshopExport.content.includes('Ligar colunas'));
+assert.ok(workshopExport.content.includes("'=Ada"));
+assert.ok(workshopExport.content.includes("'+Ana"));
+assert.ok(workshopExport.content.includes("'@Bia"));
+assert.ok(workshopExport.content.includes(';87,5;'));
+assert.equal(workshopExport.content.includes('private-team-id'), false);
+assert.equal(workshopExport.content.includes('private-ranking-key'), false);
+assert.equal(workshopExport.content.includes('private-student-key'), false);
+assert.equal(workshopExport.content.includes('private-full-name'), false);
+assert.equal(workshopExport.content.includes('private-avatar.test'), false);
+
+assert.throws(
+  () => buildWorkshopDashboardCsvExport({ event: {}, dashboard: null }),
+  /Dados da oficina indisponíveis/,
+);
+
 console.log(
-  'Exportação CSV do professor validada: Excel UTF-8, injeção, datas, números e minimização de dados.',
+  'Exportações CSV regular e da oficina validadas: Excel UTF-8, injeção, datas, números e minimização de dados.',
 );

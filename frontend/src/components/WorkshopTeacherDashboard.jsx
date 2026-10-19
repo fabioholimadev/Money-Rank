@@ -1,10 +1,12 @@
 import AutoGraphRounded from '@mui/icons-material/AutoGraphRounded';
+import DownloadRounded from '@mui/icons-material/DownloadRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import MonetizationOnRounded from '@mui/icons-material/MonetizationOnRounded';
 import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { buildWorkshopDashboardCsvExport } from '../lib/teacherSpreadsheetExport';
 import {
   fetchTeacherWorkshops,
   fetchWorkshopDashboard,
@@ -108,6 +110,26 @@ export default function WorkshopTeacherDashboard({
 
   const summary = dashboard?.summary;
 
+  const handleExport = () => {
+    setError('');
+    try {
+      const exported = buildWorkshopDashboardCsvExport({ event, dashboard });
+      const url = URL.createObjectURL(new Blob(
+        [exported.content],
+        { type: exported.mimeType },
+      ));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = exported.fileName;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (cause) {
+      setError(cause?.message || 'Não foi possível exportar os dados da oficina.');
+    }
+  };
+
   return (
     <div>
       <TestModePanel />
@@ -128,14 +150,24 @@ export default function WorkshopTeacherDashboard({
               Somente participantes, tentativas e CapiCoins da trilha Ciência Delas neste período.
             </p>
           </div>
-          <button
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-black text-[#d8e2e7] hover:border-[#8edcff] disabled:opacity-40"
-            disabled={loading}
-            onClick={() => void load()}
-            type="button"
-          >
-            <RefreshRounded sx={{ fontSize: 19 }} /> Atualizar oficina
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-black text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={loading || !event || !dashboard}
+              onClick={handleExport}
+              type="button"
+            >
+              <DownloadRounded sx={{ fontSize: 19 }} /> Exportar CSV da oficina
+            </button>
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-black text-[#d8e2e7] hover:border-[#8edcff] disabled:opacity-40"
+              disabled={loading}
+              onClick={() => void load()}
+              type="button"
+            >
+              <RefreshRounded sx={{ fontSize: 19 }} /> Atualizar oficina
+            </button>
+          </div>
         </div>
       </section>
 
