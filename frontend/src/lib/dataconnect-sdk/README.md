@@ -10160,7 +10160,7 @@ Recall that executing the `ResetApplicationForFreshStart` mutation returns a `Mu
 The `data` property is an object of type `ResetApplicationForFreshStartData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface ResetApplicationForFreshStartData {
-  result?: unknown | null;
+  deletedUsers?: number | null;
 }
 ```
 ### Using `ResetApplicationForFreshStart`'s action shortcut function
@@ -10184,12 +10184,12 @@ const { data } = await resetApplicationForFreshStart({ preservedTeacherEmail: ..
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await resetApplicationForFreshStart(dataConnect, resetApplicationForFreshStartVars);
 
-console.log(data.result);
+console.log(data.deletedUsers);
 
 // Or, you can use the `Promise` API.
 resetApplicationForFreshStart(resetApplicationForFreshStartVars).then((response) => {
   const data = response.data;
-  console.log(data.result);
+  console.log(data.deletedUsers);
 });
 ```
 
@@ -10217,12 +10217,12 @@ const ref = resetApplicationForFreshStartRef(dataConnect, resetApplicationForFre
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.result);
+console.log(data.deletedUsers);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.result);
+  console.log(data.deletedUsers);
 });
 ```
 

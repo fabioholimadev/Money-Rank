@@ -1132,7 +1132,7 @@ export interface ResearchReview_Key {
 }
 
 export interface ResetApplicationForFreshStartData {
-  result?: unknown | null;
+  deletedUsers?: number | null;
 }
 
 export interface ResetApplicationForFreshStartVariables {

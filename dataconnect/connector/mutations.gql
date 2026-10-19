@@ -2937,9 +2937,12 @@ mutation FinalizeLoadTestCleanup(
 # (exceto o professor informado), progresso, tentativas, moedas, testes,
 # oficinas e períodos. A conta preservada precisa existir para que nada seja
 # apagado por engano com um e-mail digitado incorretamente.
+# Reset atômico: o Data Connect executa _execute como um comando DML de nível
+# superior. As CTEs encadeiam a ordem das exclusões e o DELETE final faz com
+# que tudo ocorra em uma única transação PostgreSQL.
 mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
   @auth(level: NO_ACCESS) {
-  result: _executeReturningFirst(
+  deletedUsers: _execute(
     sql: """
       WITH preserved_teacher AS MATERIALIZED (
         UPDATE users
@@ -2953,18 +2956,16 @@ mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
           test_run_id = NULL,
           origin = NULL,
           updated_at = CURRENT_TIMESTAMP
-        WHERE
-          LOWER(email) = LOWER(BTRIM($1))
+        WHERE LOWER(email) = LOWER(BTRIM($1))
           AND profile_completed = TRUE
-        RETURNING firebase_uid, email
+        RETURNING firebase_uid
       ), deleted_test_run_audit AS (
         DELETE FROM test_run_audit
         WHERE EXISTS (SELECT 1 FROM preserved_teacher)
         RETURNING id
       ), deleted_test_runs AS (
         DELETE FROM test_runs
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_test_run_audit) >= 0
         RETURNING id
       ), deleted_transactions AS (
@@ -2973,20 +2974,17 @@ mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
         RETURNING id
       ), deleted_attempts AS (
         DELETE FROM activity_attempts
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_transactions) >= 0
         RETURNING id
       ), deleted_sessions AS (
         DELETE FROM activity_sessions
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_attempts) >= 0
         RETURNING id
       ), deleted_progress AS (
         DELETE FROM student_progress
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_sessions) >= 0
         RETURNING user_uid
       ), deleted_memberships AS (
@@ -2995,20 +2993,17 @@ mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
         RETURNING event_id
       ), deleted_teams AS (
         DELETE FROM workshop_teams
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_memberships) >= 0
         RETURNING id
       ), deleted_events AS (
         DELETE FROM workshop_events
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_teams) >= 0
         RETURNING id
       ), deleted_periods AS (
         DELETE FROM competition_periods
-        WHERE
-          EXISTS (SELECT 1 FROM preserved_teacher)
+        WHERE EXISTS (SELECT 1 FROM preserved_teacher)
           AND (SELECT COUNT(*) FROM deleted_events) >= 0
           AND (SELECT COUNT(*) FROM deleted_transactions) >= 0
         RETURNING id
@@ -3016,29 +3011,14 @@ mutation ResetApplicationForFreshStart($preservedTeacherEmail: String!)
         DELETE FROM load_test_runs
         WHERE EXISTS (SELECT 1 FROM preserved_teacher)
         RETURNING run_id
-      ), deleted_users AS (
-        DELETE FROM users
-        WHERE
-          LOWER(email) <> LOWER(BTRIM($1))
-          AND EXISTS (SELECT 1 FROM preserved_teacher)
-          AND (SELECT COUNT(*) FROM deleted_progress) >= 0
-          AND (SELECT COUNT(*) FROM deleted_periods) >= 0
-          AND (SELECT COUNT(*) FROM deleted_load_test_runs) >= 0
-        RETURNING firebase_uid
       )
-      SELECT
-        (SELECT email FROM preserved_teacher LIMIT 1) AS "preservedTeacherEmail",
-        (SELECT COUNT(*)::integer FROM deleted_users) AS "deletedUsers",
-        (SELECT COUNT(*)::integer FROM deleted_periods) AS "deletedPeriods",
-        (SELECT COUNT(*)::integer FROM deleted_events) AS "deletedWorkshopEvents",
-        (SELECT COUNT(*)::integer FROM deleted_memberships) AS "deletedMemberships",
-        (SELECT COUNT(*)::integer FROM deleted_progress) AS "deletedProgressEntries",
-        (SELECT COUNT(*)::integer FROM deleted_sessions) AS "deletedSessions",
-        (SELECT COUNT(*)::integer FROM deleted_attempts) AS "deletedAttempts",
-        (SELECT COUNT(*)::integer FROM deleted_transactions) AS "deletedTransactions",
-        (SELECT COUNT(*)::integer FROM deleted_test_runs) AS "deletedTestRuns"
-      FROM preserved_teacher
-      LIMIT 1
+      DELETE FROM users
+      WHERE LOWER(email) <> LOWER(BTRIM($1))
+        AND EXISTS (SELECT 1 FROM preserved_teacher)
+        AND (SELECT COUNT(*) FROM deleted_test_runs) >= 0
+        AND (SELECT COUNT(*) FROM deleted_progress) >= 0
+        AND (SELECT COUNT(*) FROM deleted_periods) >= 0
+        AND (SELECT COUNT(*) FROM deleted_load_test_runs) >= 0
     """
     params: [$preservedTeacherEmail]
   )

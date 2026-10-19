@@ -88,8 +88,8 @@ if (preservedAuthUsers.length !== 1 || Number(databaseAudit?.preservedTeacherUse
 const resetResult = unwrap(await dataConnect.executeMutation(
   'ResetApplicationForFreshStart',
   { preservedTeacherEmail: PRESERVED_TEACHER_EMAIL },
-)).result;
-if (!resetResult?.preservedTeacherEmail) throw new Error('database_reset_not_applied');
+));
+if (typeof resetResult?.deletedUsers !== 'number') throw new Error('database_reset_not_applied');
 
 let deletedAuthUsers = 0;
 for (let index = 0; index < authUsersToDelete.length; index += 1000) {
