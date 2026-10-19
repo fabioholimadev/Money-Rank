@@ -6,7 +6,7 @@ Este guia publica a arquitetura confirmada do piloto:
 - API Node/Express em Docker no Render Web Service `money-rank-api`;
 - Firebase Authentication, App Check, Storage e SQL Connect/PostgreSQL;
 - projeto Firebase `money-rank`;
-- branch `chore/firebase-deploy-prep`.
+- branch `feat/oficina-ciencia-delas-redesign`.
 
 Não copie chaves privadas para comandos, documentação, Git, variáveis `VITE_*`
 ou conversas. Cadastre segredos somente nos painéis protegidos ou no ambiente
@@ -18,9 +18,9 @@ O Render só consegue puxar commits existentes no remoto. Confirme o branch e
 publique-o:
 
 ```powershell
-git switch chore/firebase-deploy-prep
+git switch feat/oficina-ciencia-delas-redesign
 git status --short --branch
-git push origin chore/firebase-deploy-prep
+git push -u origin feat/oficina-ciencia-delas-redesign
 ```
 
 Depois do push, use o hash exibido por `git rev-parse HEAD` como referência de
@@ -125,11 +125,15 @@ o arquivo JSON no workspace.
 
 1. No Render, selecione **New > Blueprint**.
 2. Conecte `fabioholimadev/Money-Rank`.
-3. Selecione o branch `chore/firebase-deploy-prep`.
+3. Selecione o branch `feat/oficina-ciencia-delas-redesign`.
 4. O Render lerá `render.yaml` e criará:
    - `money-rank-api`, Web Service Docker;
    - `money-rank-web`, Static Site.
-5. Mantenha `autoDeploy` desligado para o piloto.
+5. Mantenha `autoDeployTrigger: off` para controlar manualmente a publicação da oficina.
+
+Como os dois serviços usam o mesmo repositório do Blueprint, eles acompanham
+a branch selecionada para o Blueprint. Não é necessário fixar `branch` em cada
+serviço no `render.yaml`.
 
 ### Variáveis da API
 
@@ -147,8 +151,10 @@ Cadastre no `money-rank-api`:
 | `SQL_CONNECT_LOCATION` | `southamerica-east1` |
 | `SQL_CONNECT_SERVICE` | `money-rank-service` |
 | `SQL_CONNECT_CONNECTOR` | `money-rank-connector` |
-| `GEMINI_API_KEY` | secret, se mentor/analista forem usados |
-| `GEMINI_MODEL` | `gemini-3.6-flash` |
+
+Não cadastre `GEMINI_API_KEY`, `GEMINI_MODEL` nem outra variável de IA para
+esta versão. Se uma delas existir no serviço antigo, remova-a em
+**Environment** no painel do Render e salve a alteração antes do deploy.
 
 ### Variáveis do frontend
 

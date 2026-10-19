@@ -25,7 +25,8 @@ deploy público não deve ser considerado concluído.
 
 - [ ] Portar a logica testada de `functions/src` para Express sem usar o backend
   Supabase legado.
-- [ ] Criar `GEMINI_API_KEY` como secret no Render; nunca expor a chave ao Vite.
+- [ ] Confirmar que `GEMINI_API_KEY`, `GEMINI_MODEL` e outras variáveis de IA
+  não estão configuradas nos serviços desta versão.
 - [ ] Confirmar Node.js 22, CORS restrito e health check sem banco/IA.
 - [ ] Verificar Firebase ID Token e papel do professor em todas as rotas.
 - [ ] Validar que o bundle e as respostas HTTP não expõem o gabarito do quiz.
@@ -34,17 +35,12 @@ deploy público não deve ser considerado concluído.
 - [ ] Reavaliar o `npm audit` da API sem usar correção forçada
   incompatível.
 
-## Configuração e controle de custos da IA
+## IA desativada nesta versão
 
-- [ ] Manter a IA opcional e confirmar fallback deterministico sem chave/cota.
-- [ ] Configurar limite diario por usuario sem depender de memoria do processo.
-- [ ] Validar que usuarios sem Firebase Auth
-  recebem erro de autenticação.
-- [ ] Nao ativar Google Search Grounding ou outro recurso pago no MVP gratuito.
-- [ ] Validar que respostas fundamentadas do CapiMentor exibem fontes e o
-  `searchEntryPoint.renderedContent` exigido pelos termos do Google Search.
-- [ ] Confirmar que o fallback institucional continua disponível quando não há
-  fontes, cota ou pesquisa.
+- [ ] Confirmar que nenhuma tela da oficina depende de IA para carregar ou
+  concluir atividades.
+- [ ] Confirmar que o build e a inicialização da API funcionam sem variáveis
+  de IA.
 
 ## Conteúdo pedagógico
 
