@@ -142,6 +142,26 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .capi-msg { animation: capi-fade 0.25s ease both; }
 .capi-dot { animation: capi-blink 1.2s infinite ease-in-out; }
 
+@keyframes workshop-question-in {
+  from { opacity: 0; transform: translateX(22px) scale(0.99); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes workshop-line-draw {
+  from { stroke-dashoffset: 1; opacity: 0.2; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.workshop-question-in {
+  animation: workshop-question-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.workshop-connection-line {
+  stroke-dasharray: 1;
+  animation: workshop-line-draw 300ms ease-out both;
+  filter: drop-shadow(0 0 4px rgb(255 255 255 / 0.18));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
