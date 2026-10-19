@@ -139,19 +139,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start-local-emulators.ps1 -Fu
 Esse modo inicia SQL Connect (`9399`), Functions (`5001`) e Storage (`9199`) e
 exige Java no `PATH`.
 
-## 7. Gemini local
+## 7. IA desativada
 
-A API funciona sem `GEMINI_API_KEY`, usando as contingencias previstas. Para
-testar o provedor real, preencha a chave somente no arquivo ignorado
-`backend/render-api/.env.local`:
-
-```dotenv
-GEMINI_API_KEY=SUA_CHAVE_LOCAL
-GEMINI_MODEL=gemini-3.6-flash
-```
-
-Reinicie a API depois da alteracao. Nunca grave a chave em exemplos, codigo ou
-commits.
+Esta versao nao usa IA em tempo de execucao. Nao configure `GEMINI_API_KEY`,
+`GEMINI_MODEL` nem variaveis equivalentes no ambiente local ou no Render. Se
+um arquivo local antigo ainda contiver essas chaves, remova-as sem copiar o
+valor para comandos, logs ou documentacao.
 
 ## 8. Testes e validacoes
 
@@ -190,4 +183,6 @@ git diff --check
   Firebase Authentication.
 - **Java nao encontrado:** Java e necessario apenas com
   `-FullFirebaseStack`.
-- **Gemini usa fallback:** confira a chave local e reinicie a API.
+- **Referencia antiga a Gemini:** confirme que voce esta na branch
+  `feat/oficina-ciencia-delas-redesign` e nao use configuracoes historicas de
+  IA nesta versao.

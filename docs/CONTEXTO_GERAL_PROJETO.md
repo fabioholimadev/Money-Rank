@@ -1,37 +1,39 @@
 # Contexto Geral e Handoff — Money Rank v2.0
 
+> **Atualização de 19/10/2026:** para o estado vigente da oficina Ciência
+> Delas, use
+> [`docs/oficina/HANDOFF_OFICINA_CIENCIA_DELAS_2026-10-19.md`](oficina/HANDOFF_OFICINA_CIENCIA_DELAS_2026-10-19.md).
+> As seções históricas abaixo descrevem etapas anteriores e não devem
+> reintroduzir branches antigas, Chat de Dados, CapiMentor, Gemini ou variáveis
+> de IA na branch da oficina.
+
 > Fonte de retomada para outro desenvolvedor ou agente Codex. Leia este arquivo,
 > o README do Épico atual e `git status` antes de alterar código. Atualize-o
 > antes de cada commit que mude arquitetura, regras, testes ou backlog.
 
 ## 1. Retomada imediata
 
-| Campo | Estado em 2026-08-05 |
+| Campo | Estado em 2026-10-19 |
 | --- | --- |
-| Repositório canônico | `C:\Documentos\Programação\Money Rank` |
+| Repositório | clone atual de `fabioholimadev/Money-Rank` |
 | Remoto | `https://github.com/fabioholimadev/Money-Rank.git` |
-| Git local | `fabioholimadev <fabio.holima.dev@gmail.com>` |
-| Branch-base | `feat/mvp-gamificacao-ia` |
-| Branch em desenvolvimento | `chore/firebase-deploy-prep` |
-| Último commit funcional | `9718165 chore: prepara deploy no firebase` |
-| Alteração em teste | Arquitetura sem Blaze preparada; migracao Firestore/API Render ainda nao iniciada |
-| Próxima entrega | Migrar persistencia para Firestore Spark e backend para Render Free |
+| Branch-base da oficina | `origin/new/redesign-sistemico` (`e6d7e44`) |
+| Branch em desenvolvimento e deploy | `feat/oficina-ciencia-delas-redesign` |
+| Estado funcional | Oficina, equipes, atividades, rankings, professor e CSV implementados |
+| Próxima entrega | Deploy no Render, ensaio multiusuário e revisão pedagógica |
 
 Procedimento de retomada:
 
 ```powershell
-Set-Location "C:\Documentos\Programação\Money Rank"
 git rev-parse --show-toplevel
 git status --short --branch
-git log -8 --oneline
+git log -12 --oneline
 ```
 
-Preserve as alterações do usuário em `vite.config.js`. Os arquivos gerados do
-SDK podem aparecer modificados apenas por normalização de linha; confirme com
-`git diff -- <arquivo>` e não os inclua sem diferença real.
-
-Há outro diretório semelhante em `C:\Users\fabio\Documents\Programação`; ele
-não é o repositório canônico usado nesta sequência.
+Em uma nova máquina, obtenha a branch com
+`git switch --track origin/feat/oficina-ciencia-delas-redesign`. Arquivos
+`.env.local` não são transferidos pelo Git e devem ser recriados com base nos
+exemplos, sem copiar segredos para documentação ou mensagens.
 
 ## 2. Produto
 

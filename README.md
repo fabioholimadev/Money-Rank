@@ -6,6 +6,8 @@
 > comece por [`docs/CONTEXTO_GERAL_PROJETO.md`](docs/CONTEXTO_GERAL_PROJETO.md).
 > O indice tecnico, o historico e o planejamento dos cinco Epicos ficam em
 > [`docs/README.md`](docs/README.md).
+> Para continuar especificamente a oficina Ciencia Delas, use o
+> [`handoff tecnico da oficina`](docs/oficina/HANDOFF_OFICINA_CIENCIA_DELAS_2026-10-19.md).
 
 O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) focada em ensinar Educação Financeira e Fiscal para a Geração Z. O projeto visa combater a "ilusão fiscal" brasileira, ensinando de forma prática e visual como os impostos sobre o consumo (ICMS, IBS, CBS) impactam o dia a dia e financiam serviços essenciais como o SUS e a educação.
 
