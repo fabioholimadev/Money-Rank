@@ -66,7 +66,7 @@ export default function Perfil() {
       </header>
 
       {/* ── CARD PRINCIPAL DE IDENTIFICAÇÃO ─────────────────────────── */}
-      <section className="relative flex items-center gap-5 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-6 sm:p-7 shadow-xl">
+      <section className="relative flex flex-col items-start gap-5 rounded-3xl border border-[#37464f] bg-[#1f2d33] p-5 shadow-xl sm:flex-row sm:items-center sm:p-7">
         <div className="relative">
           <ProfileAvatar
             avatarId={aluno.avatar_id}

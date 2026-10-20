@@ -12,7 +12,7 @@ import MenuOpenRounded from '@mui/icons-material/MenuOpenRounded';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
-import BrandIdentity, { BrandMark, BrandName } from './BrandIdentity';
+import { BrandMark, BrandName } from './BrandIdentity';
 
 const STUDENT_ITEMS = [
   { label: 'Início', to: '/student', Icon: HomeRounded },
@@ -89,25 +89,21 @@ export default function TopBar({ collapsed = false, onToggle }) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-4 backdrop-blur lg:hidden">
-        <Link to={homePath} className="flex items-center gap-3 rounded-2xl">
-          <BrandIdentity
-            markClassName="h-11 w-11"
-            nameClassName="text-base min-[390px]:text-lg"
-          />
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#37464f] bg-[#131f24]/95 px-3 backdrop-blur sm:px-5 lg:hidden">
+        <Link
+          aria-label="Ir para o início"
+          className="rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#49c0f8]"
+          to={homePath}
+        >
+          <BrandMark alt="" className="h-11 w-11" />
         </Link>
-        {!isTeacher && (
-          <div className="hidden items-center gap-3 min-[430px]:flex" aria-label="Resumo do progresso">
-            <span className="flex items-center gap-1 font-black text-[#ffc800]">
-              <LocalFireDepartmentRounded sx={{ fontSize: 20 }} />
-              {formatCompact(aluno.streak_atual)}
-            </span>
-            <span className="flex items-center gap-1 font-black text-[#58cc02]">
-              <MonetizationOnRounded sx={{ fontSize: 20 }} />
-              {formatCompact(aluno.capicoins)}
-            </span>
-          </div>
-        )}
+        <Link
+          aria-label="Money Rank — ir para o início"
+          className="rounded-lg focus:outline-none focus:ring-2 focus:ring-[#49c0f8]"
+          to={homePath}
+        >
+          <BrandName className="text-lg min-[390px]:text-xl" />
+        </Link>
       </header>
 
       <aside className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r-2 border-[#37464f] bg-[#131f24] py-7 transition-[width,padding] duration-300 lg:flex ${collapsed ? 'w-[5.75rem] px-3' : 'w-[17.5rem] px-5'}`}>

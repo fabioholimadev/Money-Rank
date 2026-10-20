@@ -338,13 +338,13 @@ export default function TeacherDashboard() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid w-full gap-2 min-[430px]:flex min-[430px]:w-auto min-[430px]:flex-wrap">
             {dashboardCategory === 'REGULAR' && (
               <button
                 type="button"
                 onClick={handleExport}
                 disabled={!selectedPeriod || !dashboard || isLoadingDashboard}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-bold text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-400/30 px-4 text-sm font-bold text-emerald-300 transition hover:border-emerald-300 hover:text-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 min-[430px]:w-auto"
               >
                 <Download sx={{ fontSize: 18 }} aria-hidden="true" />
                 Exportar planilha regular
@@ -354,7 +354,7 @@ export default function TeacherDashboard() {
               type="button"
               onClick={handleRefresh}
               disabled={isLoadingPeriods || isLoadingDashboard}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-bold text-[#d8e2e7] transition hover:border-[#58cc02]/50 hover:text-[#79e72e] disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#53666f] px-4 text-sm font-bold text-[#d8e2e7] transition hover:border-[#58cc02]/50 hover:text-[#79e72e] disabled:opacity-50 min-[430px]:w-auto"
             >
               <Refresh sx={{ fontSize: 18 }} aria-hidden="true" />
               Atualizar

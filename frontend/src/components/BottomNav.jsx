@@ -4,7 +4,9 @@ import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
-import { Link, useLocation } from 'react-router-dom';
+import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getProfileRole, USER_ROLES } from '../lib/roleAccess';
 
@@ -27,13 +29,27 @@ const WORKSHOP_ITEMS = [
 ];
 
 export default function BottomNav() {
-  const { aluno } = useAuth();
+  const { aluno, logout } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const items = getProfileRole(aluno) === USER_ROLES.TEACHER
     ? TEACHER_ITEMS
     : aluno?.workshop
       ? WORKSHOP_ITEMS
       : STUDENT_ITEMS;
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Não foi possível encerrar a sessão:', error);
+      setIsLoggingOut(false);
+    }
+  }
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[55] block border-t-2 border-[#37464f] bg-[#131f24]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Navegação principal">
@@ -52,6 +68,16 @@ export default function BottomNav() {
             </Link>
           );
         })}
+        <button
+          aria-label={isLoggingOut ? 'Encerrando sessão' : 'Sair da conta'}
+          className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[0.58rem] font-black uppercase tracking-wide text-[#a5b7c2] transition-colors hover:bg-rose-400/10 hover:text-rose-300 disabled:cursor-wait disabled:opacity-60 min-[390px]:text-[0.68rem]"
+          disabled={isLoggingOut}
+          onClick={() => void handleLogout()}
+          type="button"
+        >
+          <LogoutRounded sx={{ fontSize: 25 }} aria-hidden="true" />
+          {isLoggingOut ? 'Saindo' : 'Sair'}
+        </button>
       </div>
     </nav>
   );

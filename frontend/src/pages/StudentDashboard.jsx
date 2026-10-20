@@ -92,14 +92,14 @@ export default function StudentDashboard() {
         <SectionHeader title="Seu caminho" eyebrow="Aprendizado em etapas" action={<Link className="text-sm font-black text-[#49c0f8]" to="/trilha">Ver trilha completa</Link>} />
         <Surface className="overflow-hidden p-5 sm:p-8">
           <div className="relative grid grid-cols-4 gap-3">
-            <div className="absolute left-[12.5%] right-[12.5%] top-7 h-2 rounded-full bg-[#0c171c]" aria-hidden="true" />
-            <div className="absolute left-[12.5%] top-7 h-2 max-w-[75%] rounded-full bg-[#58cc02] transition-[width]" style={{ width: `${Math.min(progress, 75)}%` }} aria-hidden="true" />
+            <div className="absolute left-[12.5%] right-[12.5%] top-5 h-2 rounded-full bg-[#0c171c] sm:top-7" aria-hidden="true" />
+            <div className="absolute left-[12.5%] top-5 h-2 max-w-[75%] rounded-full bg-[#58cc02] transition-[width] sm:top-7" style={{ width: `${Math.min(progress, 75)}%` }} aria-hidden="true" />
             {PHASES.map((phase) => {
               const complete = phase <= currentPhase;
               const current = phase === Math.min(currentPhase + 1, PHASES.length);
               return (
                 <div key={phase} className="relative z-10 flex flex-col items-center text-center">
-                  <span className={`flex h-16 w-16 items-center justify-center rounded-full border-[5px] text-xl font-black shadow-[0_5px_0_#0c1519] ${complete ? 'border-[#79e72e] bg-[#58cc02] text-[#13210f]' : current ? 'border-[#49c0f8] bg-[#1f2d33] text-[#49c0f8]' : 'border-[#37464f] bg-[#17262c] text-[#6f828c]'}`}>
+                  <span className={`flex h-12 w-12 items-center justify-center rounded-full border-4 text-base font-black shadow-[0_4px_0_#0c1519] sm:h-16 sm:w-16 sm:border-[5px] sm:text-xl sm:shadow-[0_5px_0_#0c1519] ${complete ? 'border-[#79e72e] bg-[#58cc02] text-[#13210f]' : current ? 'border-[#49c0f8] bg-[#1f2d33] text-[#49c0f8]' : 'border-[#37464f] bg-[#17262c] text-[#6f828c]'}`}>
                     {complete ? <StarRounded /> : phase}
                   </span>
                   <span className={`mt-3 text-xs font-black ${complete || current ? 'text-white' : 'text-[#6f828c]'}`}>Fase {phase}</span>

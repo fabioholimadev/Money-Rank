@@ -120,6 +120,12 @@ O professor pode:
 - abrir a visão de aluno em modo de teste;
 - exportar um CSV exclusivo da oficina.
 
+Na navegação móvel, o símbolo e o nome Money Rank ocupam extremidades
+separadas do cabeçalho. A barra inferior oferece **Sair** para professor,
+aluno regular e participante da oficina; no desktop, a mesma ação permanece
+na barra lateral. Formulários de período, cards de equipe, resumo do aluno e
+ações do painel possuem breakpoints específicos para telas estreitas.
+
 O CSV da oficina usa separador `;`, BOM UTF-8 para Excel e protege células que
 começam por `=`, `+`, `-` ou `@`. Ele inclui resumo, ranking das equipes,
 ranking individual, atividades e participantes, sem exportar UID, e-mail,
@@ -151,6 +157,8 @@ não devem ser interpretados como configuração vigente.
 - `frontend/src/pages/WorkshopRanking.jsx`: rankings da oficina.
 - `frontend/src/components/WorkshopTeamManager.jsx`: criação de evento,
   equipes, exclusão protegida, códigos e QR Codes.
+- `frontend/src/components/TopBar.jsx` e `BottomNav.jsx`: navegação
+  responsiva compartilhada e encerramento da sessão.
 - `frontend/src/components/WorkshopQrScanner.jsx`: leitor de QR Code pela
   câmera com fallback para digitação.
 - `frontend/src/lib/workshopQrCode.js`: validação do código lido e preservação

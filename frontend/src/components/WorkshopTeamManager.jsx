@@ -162,7 +162,7 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId, onPerio
           </form>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {teams.map((team) => (
-              <article className="grid grid-cols-[1fr_auto] gap-4 rounded-2xl border border-[#37464f] bg-[#131f24] p-4" key={team.id}>
+              <article className="grid grid-cols-1 gap-4 rounded-2xl border border-[#37464f] bg-[#131f24] p-4 sm:grid-cols-[1fr_auto]" key={team.id}>
                 <div className="min-w-0">
                   <h3 className="truncate font-black text-white">{team.name}</h3>
                   <p className="mt-1 text-xs text-[#a5b7c2]">{team.memberCount || 0} participante(s) · {team.capiCoins || 0} CapiCoins</p>
@@ -181,9 +181,9 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId, onPerio
                     <p className="mt-3 text-[11px] leading-5 text-[#78909c]">Equipes com participantes não podem ser apagadas, preservando o ranking e as respostas.</p>
                   )}
                 </div>
-                <div className="rounded-xl bg-white p-2"><QRCodeSVG level="M" size={112} value={team.joinUrl} /></div>
+                <div className="justify-self-start rounded-xl bg-white p-2 sm:justify-self-auto"><QRCodeSVG level="M" size={112} value={team.joinUrl} /></div>
                 {teamPendingDeletion === team.id && (
-                  <div className="col-span-2 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3" role="alert">
+                  <div className="rounded-xl border border-rose-400/30 bg-rose-400/10 p-3 sm:col-span-2" role="alert">
                     <p className="text-sm font-bold text-rose-100">Apagar a equipe <strong>{team.name}</strong>?</p>
                     <p className="mt-1 text-xs leading-5 text-rose-200/80">O código {team.joinCode} deixará de funcionar. Esta ação não pode ser desfeita.</p>
                     <div className="mt-3 flex flex-wrap gap-2">

@@ -325,7 +325,7 @@ export default function CompetitionPeriodManager({
                   <legend className="px-2 text-xs font-black uppercase tracking-wider text-[#79e72e]">
                     Início · Fortaleza
                   </legend>
-                  <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
+                  <div className="mt-1 grid grid-cols-1 gap-3 min-[420px]:grid-cols-[1fr_8rem]">
                     <label className="block">
                       <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Data</span>
                       <input
@@ -353,7 +353,7 @@ export default function CompetitionPeriodManager({
                   <legend className="px-2 text-xs font-black uppercase tracking-wider text-[#79e72e]">
                     Encerramento · Fortaleza
                   </legend>
-                  <div className="mt-1 grid grid-cols-[1fr_8rem] gap-3">
+                  <div className="mt-1 grid grid-cols-1 gap-3 min-[420px]:grid-cols-[1fr_8rem]">
                     <label className="block">
                       <span className="mb-1 block text-[10px] font-black uppercase text-[#78909b]">Data</span>
                       <input
