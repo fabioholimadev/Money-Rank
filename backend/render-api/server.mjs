@@ -1092,6 +1092,28 @@ app.post('/api/teacher/workshops/:eventId/teams', ...protectedRoute(requireTeach
   } catch (error) { return next(error); }
 });
 
+app.delete('/api/teacher/workshops/:eventId/teams/:teamId', ...protectedRoute(requireTeacher), async (req, res, next) => {
+  try {
+    await ensureTeacherRole(req.auth);
+    if (!validUuid(req.params.eventId) || !validUuid(req.params.teamId)) {
+      return res.status(400).json({ error: 'invalid_workshop_team_id', requestId: req.requestId });
+    }
+    const saved = unwrap(await sqlMutation('DeleteEmptyWorkshopTeam', {
+      actorUid: req.auth.uid,
+      eventId: req.params.eventId,
+      teamId: req.params.teamId,
+    }));
+    if (Number(saved.affectedRows || 0) !== 1) {
+      return res.status(409).json({
+        error: 'workshop_team_delete_refused',
+        message: 'Somente equipes vazias de uma oficina aberta podem ser apagadas.',
+        requestId: req.requestId,
+      });
+    }
+    return res.json({ deleted: true, teamId: req.params.teamId });
+  } catch (error) { return next(error); }
+});
+
 app.get('/api/teacher/workshops/:eventId/ranking', ...protectedRoute(requireTeacher), async (req, res, next) => {
   try {
     await ensureTeacherRole(req.auth);

@@ -4,6 +4,7 @@ import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import Person from '@mui/icons-material/Person';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ProfileAvatar from './ProfileAvatar';
+import WorkshopQrScanner from './WorkshopQrScanner';
 import {
   AVATAR_OPTIONS,
   CLASS_OPTIONS,
@@ -128,6 +129,7 @@ export default function ProfileForm({
   initialTeamCode = '',
 }) {
   const photoInputId = useId();
+  const teamCodeInputId = useId();
   const initialValues = useMemo(() => {
     const initialAvatarId = isValidAvatarId(initialProfile?.avatar_id)
       ? initialProfile.avatar_id
@@ -312,12 +314,13 @@ export default function ProfileForm({
           </span>
         </label>
         {workshopMode && (
-          <label className="block sm:col-span-2">
+          <div className="block sm:col-span-2">
             <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#dbe7ed]">
               <GroupsOutlined className="text-[#58cc02]" sx={{ fontSize: 18 }} />
-              Código da equipe
+              <label htmlFor={teamCodeInputId}>Código da equipe</label>
             </span>
             <input
+              id={teamCodeInputId}
               className="w-full rounded-2xl border border-[#37464f] bg-[#1f2d33] px-4 py-3.5 text-center font-mono text-lg tracking-[0.3em] text-white outline-none transition focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 placeholder:text-[#78909c]"
               disabled={isBusy}
               inputMode="numeric"
@@ -328,9 +331,16 @@ export default function ProfileForm({
               value={teamCode}
             />
             <span className="mt-1.5 block text-xs text-[#78909c] font-medium">
-              Digite o código exibido pelo professor ou abra o link do QR Code.
+              Digite o código exibido pelo professor ou use a câmera para ler o QR Code.
             </span>
-          </label>
+            <WorkshopQrScanner
+              disabled={isBusy}
+              onCode={(code) => {
+                setTeamCode(code);
+                setErrorMessage('');
+              }}
+            />
+          </div>
         )}
       </div>
 

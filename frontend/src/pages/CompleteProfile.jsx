@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ProfileForm from '../components/ProfileForm';
 import { useAuth } from '../contexts/AuthContext';
 import { getHomePathForProfile } from '../lib/roleAccess';
+import { normalizeWorkshopTeamCode } from '../lib/workshopQrCode';
 import BrandIdentity from '../components/BrandIdentity';
 
 export default function CompleteProfile() {
@@ -12,7 +13,7 @@ export default function CompleteProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialTeamCode = String(searchParams.get('equipe') || '').replace(/\D/g, '').slice(0, 8);
+  const initialTeamCode = normalizeWorkshopTeamCode(searchParams.get('equipe'));
   const [workshopMode, setWorkshopMode] = useState(Boolean(initialTeamCode));
   const destination =
     location.state?.from?.pathname || getHomePathForProfile(aluno);
@@ -73,6 +74,16 @@ export default function CompleteProfile() {
             </div>
           </div>
 
+          {!initialTeamCode && (
+            <button
+              className="mb-7 w-full rounded-xl border border-[#53666f] px-4 py-3 text-xs font-black text-[#dbe7ed] transition hover:border-[#58cc02] hover:text-[#58cc02]"
+              onClick={() => setWorkshopMode((current) => !current)}
+              type="button"
+            >
+              {workshopMode ? 'Usar cadastro das turmas regulares' : 'Entrar em uma equipe da oficina'}
+            </button>
+          )}
+
           <ProfileForm
             initialProfile={aluno}
             initialTeamCode={initialTeamCode}
@@ -80,15 +91,6 @@ export default function CompleteProfile() {
             submitLabel={workshopMode ? 'Entrar na equipe' : 'Concluir e começar'}
             workshopMode={workshopMode}
           />
-          {!initialTeamCode && (
-            <button
-              className="mt-5 w-full rounded-xl border border-[#53666f] px-4 py-3 text-xs font-black text-[#dbe7ed] transition hover:border-[#58cc02] hover:text-[#58cc02]"
-              onClick={() => setWorkshopMode((current) => !current)}
-              type="button"
-            >
-              {workshopMode ? 'Usar cadastro das turmas regulares' : 'Tenho um código da oficina'}
-            </button>
-          )}
         </section>
 
         <div className="mt-6 text-center">

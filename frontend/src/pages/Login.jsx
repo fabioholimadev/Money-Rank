@@ -8,6 +8,7 @@ import { LoadingState } from '../components/ui/DesignSystem';
 import { useAuth } from '../contexts/AuthContext';
 import { getHomePathForProfile } from '../lib/roleAccess';
 import BrandIdentity from '../components/BrandIdentity';
+import { locationWithSearch } from '../lib/workshopQrCode';
 
 const AUTH_ERROR_MESSAGES = {
   'auth/cancelled-popup-request': 'Já existe uma tentativa de login em andamento.',
@@ -35,7 +36,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const destination = location.state?.from?.pathname || getHomePathForProfile(aluno);
+  const destination = locationWithSearch(
+    location.state?.from,
+    getHomePathForProfile(aluno),
+  );
 
   if (loading) return <main className="min-h-screen bg-[#131f24]"><LoadingState label="Verificando sua conta..." /></main>;
   if (user) return <Navigate to={destination} replace />;

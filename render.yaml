@@ -54,7 +54,7 @@ services:
         value: strict-origin-when-cross-origin
       - path: /*
         name: Permissions-Policy
-        value: camera=(), geolocation=(), microphone=()
+        value: camera=(self), geolocation=(), microphone=()
     envVars:
       - key: NODE_VERSION
         value: 22.22.0

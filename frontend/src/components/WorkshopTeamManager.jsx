@@ -1,5 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import QrCode2Rounded from '@mui/icons-material/QrCode2Rounded';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -7,6 +8,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import {
   createTeacherWorkshop,
   createWorkshopTeam,
+  deleteWorkshopTeam,
   fetchTeacherWorkshops,
   fetchWorkshopTeams,
 } from '../services/teacherWorkshopService';
@@ -27,6 +29,7 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId, onPerio
   const [teamName, setTeamName] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [teamPendingDeletion, setTeamPendingDeletion] = useState(null);
   const workshop = useMemo(() => workshops.find((item) =>
     item.competitionPeriodId === selectedPeriodId) || null, [selectedPeriodId, workshops]);
   const selectedPeriod = periods.find((period) => period.id === selectedPeriodId) || null;
@@ -116,6 +119,18 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId, onPerio
     setMessage('Código copiado.');
   }
 
+  async function removeTeam(team) {
+    if (!workshop || Number(team.memberCount || 0) > 0) return;
+    setBusy(true); setMessage('');
+    try {
+      await deleteWorkshopTeam(workshop.id, team.id);
+      setTeams((current) => current.filter((item) => item.id !== team.id));
+      setTeamPendingDeletion(null);
+      await onWorkshopChanged?.();
+      setMessage(`Equipe ${team.name} apagada. O código dela não pode mais ser usado.`);
+    } catch (error) { setMessage(error.message); } finally { setBusy(false); }
+  }
+
   return (
     <details className="mt-6 rounded-3xl border border-[#53666f] bg-[#1f2d33] p-5 sm:p-6" open>
       <summary className="flex cursor-pointer list-none items-center gap-2 font-black text-white">
@@ -153,8 +168,30 @@ export default function WorkshopTeamManager({ periods, selectedPeriodId, onPerio
                   <p className="mt-1 text-xs text-[#a5b7c2]">{team.memberCount || 0} participante(s) · {team.capiCoins || 0} CapiCoins</p>
                   <button className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#53666f] px-3 py-2 font-mono text-lg font-black tracking-[0.2em] text-[#ffc800]" onClick={() => void copy(team.joinCode)} type="button"><ContentCopyRounded sx={{ fontSize: 17 }} /> {team.joinCode}</button>
                   <p className="mt-2 flex items-center gap-1 text-[11px] text-[#78909c]"><QrCode2Rounded sx={{ fontSize: 16 }} /> O QR abre o cadastro com este código preenchido.</p>
+                  {Number(team.memberCount || 0) === 0 ? (
+                    <button
+                      className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl border border-rose-400/40 px-3 text-xs font-black text-rose-300 transition hover:border-rose-300 hover:bg-rose-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={busy}
+                      onClick={() => setTeamPendingDeletion(teamPendingDeletion === team.id ? null : team.id)}
+                      type="button"
+                    >
+                      <DeleteOutlineRounded sx={{ fontSize: 18 }} /> Apagar equipe
+                    </button>
+                  ) : (
+                    <p className="mt-3 text-[11px] leading-5 text-[#78909c]">Equipes com participantes não podem ser apagadas, preservando o ranking e as respostas.</p>
+                  )}
                 </div>
                 <div className="rounded-xl bg-white p-2"><QRCodeSVG level="M" size={112} value={team.joinUrl} /></div>
+                {teamPendingDeletion === team.id && (
+                  <div className="col-span-2 rounded-xl border border-rose-400/30 bg-rose-400/10 p-3" role="alert">
+                    <p className="text-sm font-bold text-rose-100">Apagar a equipe <strong>{team.name}</strong>?</p>
+                    <p className="mt-1 text-xs leading-5 text-rose-200/80">O código {team.joinCode} deixará de funcionar. Esta ação não pode ser desfeita.</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button className="min-h-10 rounded-xl border border-[#53666f] px-3 text-xs font-black text-white disabled:opacity-50" disabled={busy} onClick={() => setTeamPendingDeletion(null)} type="button">Cancelar</button>
+                      <button className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-400 px-3 text-xs font-black text-[#301014] disabled:opacity-50" disabled={busy} onClick={() => void removeTeam(team)} type="button"><DeleteOutlineRounded sx={{ fontSize: 18 }} /> Confirmar exclusão</button>
+                    </div>
+                  </div>
+                )}
               </article>
             ))}
           </div>

@@ -3112,6 +3112,37 @@ mutation CreateWorkshopTeam(
   )
 }
 
+mutation DeleteEmptyWorkshopTeam(
+  $actorUid: String!
+  $eventId: UUID!
+  $teamId: UUID!
+) @auth(level: NO_ACCESS) {
+  affectedRows: _execute(
+    sql: """
+      DELETE FROM workshop_teams AS team
+      USING workshop_events AS event,
+        competition_periods AS period,
+        users AS teacher
+      WHERE team.id = $3::uuid
+        AND team.event_id = $2::uuid
+        AND event.id = team.event_id
+        AND period.id = event.competition_period_id
+        AND teacher.firebase_uid = $1
+        AND teacher.role = 'TEACHER'
+        AND teacher.profile_completed = TRUE
+        AND event.status = 'ACTIVE'
+        AND period.status <> 'CLOSED'
+        AND period.ends_at > CURRENT_TIMESTAMP
+        AND NOT EXISTS (
+          SELECT 1
+          FROM workshop_memberships AS membership
+          WHERE membership.team_id = team.id
+        )
+    """
+    params: [$actorUid, $eventId, $teamId]
+  )
+}
+
 mutation JoinWorkshopTeamAndCompleteProfile(
   $studentUid: String!
   $email: String!

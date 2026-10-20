@@ -382,6 +382,16 @@ export interface CreateWorkshopTeamVariables {
   joinCode: string;
 }
 
+export interface DeleteEmptyWorkshopTeamData {
+  affectedRows?: number | null;
+}
+
+export interface DeleteEmptyWorkshopTeamVariables {
+  actorUid: string;
+  eventId: UUIDString;
+  teamId: UUIDString;
+}
+
 export interface DeleteTeacherCompetitionPeriodData {
   deletedPeriod?: unknown | null;
 }
@@ -2019,6 +2029,18 @@ export const createWorkshopTeamRef: CreateWorkshopTeamRef;
 
 export function createWorkshopTeam(vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
 export function createWorkshopTeam(dc: DataConnect, vars: CreateWorkshopTeamVariables): MutationPromise<CreateWorkshopTeamData, CreateWorkshopTeamVariables>;
+
+interface DeleteEmptyWorkshopTeamRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteEmptyWorkshopTeamVariables): MutationRef<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteEmptyWorkshopTeamVariables): MutationRef<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+  operationName: string;
+}
+export const deleteEmptyWorkshopTeamRef: DeleteEmptyWorkshopTeamRef;
+
+export function deleteEmptyWorkshopTeam(vars: DeleteEmptyWorkshopTeamVariables): MutationPromise<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+export function deleteEmptyWorkshopTeam(dc: DataConnect, vars: DeleteEmptyWorkshopTeamVariables): MutationPromise<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
 
 interface JoinWorkshopTeamAndCompleteProfileRef {
   /* Allow users to create refs without passing in DataConnect */

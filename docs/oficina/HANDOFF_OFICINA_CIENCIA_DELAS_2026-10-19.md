@@ -1,7 +1,7 @@
 # Handoff técnico — oficina Ciência Delas
 
 **Projeto:** Money Rank  
-**Data do registro:** 19 de outubro de 2026  
+**Data do registro:** 20 de outubro de 2026
 **Branch autoritativa:** `feat/oficina-ciencia-delas-redesign`  
 **Base original:** `origin/new/redesign-sistemico` (`e6d7e44`)  
 **Destino de hospedagem:** Render + Firebase  
@@ -67,8 +67,14 @@ git pull --ff-only
 - Matrícula exclusiva por participante/evento.
 - Nome completo fica restrito ao acompanhamento do professor; rankings usam o
   nome preferido.
-- O sistema não possui leitor de QR Code embutido. A leitura ocorre pela câmera
-  comum do aparelho e a digitação manual é a contingência oficial.
+- Leitor de QR Code incorporado ao cadastro, aberto somente por ação do aluno,
+  com câmera traseira preferencial e digitação manual como contingência.
+- O Blueprint do Render permite câmera apenas na origem do próprio frontend e
+  continua bloqueando geolocalização e microfone.
+- O destino completo do QR Code é preservado depois do login Google, incluindo
+  o código da equipe na URL.
+- Equipes vazias podem ser apagadas pelo professor após confirmação. Equipes
+  com participantes permanecem protegidas para preservar respostas e ranking.
 
 ### 3.2 Trilha competitiva
 
@@ -106,6 +112,7 @@ O professor pode:
 
 - selecionar um período;
 - criar a oficina e as equipes;
+- apagar equipes vazias após uma confirmação explícita;
 - copiar códigos e exibir QR Codes;
 - ativar ou pausar rapidamente o período;
 - acompanhar ranking de equipes e participantes;
@@ -143,7 +150,11 @@ não devem ser interpretados como configuração vigente.
   4 x 4 com linhas.
 - `frontend/src/pages/WorkshopRanking.jsx`: rankings da oficina.
 - `frontend/src/components/WorkshopTeamManager.jsx`: criação de evento,
-  equipes, códigos e QR Codes.
+  equipes, exclusão protegida, códigos e QR Codes.
+- `frontend/src/components/WorkshopQrScanner.jsx`: leitor de QR Code pela
+  câmera com fallback para digitação.
+- `frontend/src/lib/workshopQrCode.js`: validação do código lido e preservação
+  do destino completo durante o login.
 - `frontend/src/components/WorkshopTeacherDashboard.jsx`: dados exclusivos da
   oficina e exportação CSV.
 - `frontend/src/pages/TeacherStudentPreview.jsx`: visão segura do aluno.
@@ -239,16 +250,18 @@ npm --prefix .\functions run lint
 npm --prefix .\functions test
 npm --prefix .\backend\render-api test
 npm --prefix .\frontend run test:teacher-export
+npm --prefix .\frontend run test:workshop-qr
 npm --prefix .\frontend run lint
 npm --prefix .\frontend run build
 powershell -ExecutionPolicy Bypass -File .\scripts\test-dataconnect.ps1
 git diff --check
 ```
 
-Na validação de 19/10/2026 passaram:
+Na validação de 20/10/2026 passaram:
 
 - 58 testes de Functions;
 - 17 testes da API;
+- teste dedicado da leitura e do redirecionamento do QR Code;
 - teste de exportação CSV regular e da oficina;
 - lint e build do frontend;
 - geração/compilação do Data Connect;
@@ -289,12 +302,15 @@ crie essa variável manualmente.
 Ordem recomendada:
 
 1. enviar a branch ao GitHub;
-2. selecionar/sincronizar a branch no Blueprint;
-3. preencher os valores `sync: false` sem expô-los;
-4. publicar `money-rank-api`;
-5. testar `/healthz` e `/readyz`;
-6. publicar `money-rank-web`;
-7. atualizar `FRONTEND_ORIGIN` com a URL real e validar Auth/App Check.
+2. publicar as operações novas com
+   `npx -y firebase-tools@latest deploy --only dataconnect --project money-rank`;
+3. selecionar/sincronizar a branch no Blueprint;
+4. preencher os valores `sync: false` sem expô-los;
+5. publicar `money-rank-api`;
+6. testar `/healthz` e `/readyz`;
+7. publicar `money-rank-web`;
+8. atualizar `FRONTEND_ORIGIN` com a URL real e validar Auth/App Check;
+9. testar câmera, digitação e exclusão de uma equipe vazia em produção.
 
 ## 8. Histórico dos commits da oficina
 
@@ -318,8 +334,8 @@ Ordem recomendada:
 - Configurar domínios autorizados do Firebase Auth e App Check para as URLs do
   Render.
 - Executar o deploy real e o smoke de produção.
-- Opcional depois da oficina: leitor de QR Code embutido, troca de equipe pelo
-  professor com auditoria, Python para análise e integração com Power BI.
+- Opcional depois da oficina: troca de equipe pelo professor com auditoria,
+  Python para análise e integração com Power BI.
 
 ## 10. Cuidados para a próxima IA
 

@@ -96,6 +96,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ResetApplicationForFreshStart*](#resetapplicationforfreshstart)
   - [*CreateWorkshopEvent*](#createworkshopevent)
   - [*CreateWorkshopTeam*](#createworkshopteam)
+  - [*DeleteEmptyWorkshopTeam*](#deleteemptyworkshopteam)
   - [*JoinWorkshopTeamAndCompleteProfile*](#joinworkshopteamandcompleteprofile)
   - [*RecordWorkshopActivityAttempt*](#recordworkshopactivityattempt)
 
@@ -10454,6 +10455,121 @@ const ref = createWorkshopTeamRef({ teamId: ..., actorUid: ..., eventId: ..., na
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = createWorkshopTeamRef(dataConnect, createWorkshopTeamVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+## DeleteEmptyWorkshopTeam
+You can execute the `DeleteEmptyWorkshopTeam` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-sdk/index.d.ts](./index.d.ts):
+```typescript
+deleteEmptyWorkshopTeam(vars: DeleteEmptyWorkshopTeamVariables): MutationPromise<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+
+interface DeleteEmptyWorkshopTeamRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteEmptyWorkshopTeamVariables): MutationRef<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+}
+export const deleteEmptyWorkshopTeamRef: DeleteEmptyWorkshopTeamRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteEmptyWorkshopTeam(dc: DataConnect, vars: DeleteEmptyWorkshopTeamVariables): MutationPromise<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+
+interface DeleteEmptyWorkshopTeamRef {
+  ...
+  (dc: DataConnect, vars: DeleteEmptyWorkshopTeamVariables): MutationRef<DeleteEmptyWorkshopTeamData, DeleteEmptyWorkshopTeamVariables>;
+}
+export const deleteEmptyWorkshopTeamRef: DeleteEmptyWorkshopTeamRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteEmptyWorkshopTeamRef:
+```typescript
+const name = deleteEmptyWorkshopTeamRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteEmptyWorkshopTeam` mutation requires an argument of type `DeleteEmptyWorkshopTeamVariables`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteEmptyWorkshopTeamVariables {
+  actorUid: string;
+  eventId: UUIDString;
+  teamId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `DeleteEmptyWorkshopTeam` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteEmptyWorkshopTeamData`, which is defined in [dataconnect-sdk/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteEmptyWorkshopTeamData {
+  affectedRows?: number | null;
+}
+```
+### Using `DeleteEmptyWorkshopTeam`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteEmptyWorkshopTeam, DeleteEmptyWorkshopTeamVariables } from '@money-rank/dataconnect';
+
+// The `DeleteEmptyWorkshopTeam` mutation requires an argument of type `DeleteEmptyWorkshopTeamVariables`:
+const deleteEmptyWorkshopTeamVars: DeleteEmptyWorkshopTeamVariables = {
+  actorUid: ..., 
+  eventId: ..., 
+  teamId: ..., 
+};
+
+// Call the `deleteEmptyWorkshopTeam()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteEmptyWorkshopTeam(deleteEmptyWorkshopTeamVars);
+// Variables can be defined inline as well.
+const { data } = await deleteEmptyWorkshopTeam({ actorUid: ..., eventId: ..., teamId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteEmptyWorkshopTeam(dataConnect, deleteEmptyWorkshopTeamVars);
+
+console.log(data.affectedRows);
+
+// Or, you can use the `Promise` API.
+deleteEmptyWorkshopTeam(deleteEmptyWorkshopTeamVars).then((response) => {
+  const data = response.data;
+  console.log(data.affectedRows);
+});
+```
+
+### Using `DeleteEmptyWorkshopTeam`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteEmptyWorkshopTeamRef, DeleteEmptyWorkshopTeamVariables } from '@money-rank/dataconnect';
+
+// The `DeleteEmptyWorkshopTeam` mutation requires an argument of type `DeleteEmptyWorkshopTeamVariables`:
+const deleteEmptyWorkshopTeamVars: DeleteEmptyWorkshopTeamVariables = {
+  actorUid: ..., 
+  eventId: ..., 
+  teamId: ..., 
+};
+
+// Call the `deleteEmptyWorkshopTeamRef()` function to get a reference to the mutation.
+const ref = deleteEmptyWorkshopTeamRef(deleteEmptyWorkshopTeamVars);
+// Variables can be defined inline as well.
+const ref = deleteEmptyWorkshopTeamRef({ actorUid: ..., eventId: ..., teamId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteEmptyWorkshopTeamRef(dataConnect, deleteEmptyWorkshopTeamVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

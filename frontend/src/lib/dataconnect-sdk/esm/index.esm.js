@@ -707,6 +707,18 @@ export function createWorkshopTeam(dcOrVars, vars) {
   return executeMutation(createWorkshopTeamRef(dcInstance, inputVars));
 }
 
+export const deleteEmptyWorkshopTeamRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteEmptyWorkshopTeam', inputVars);
+}
+deleteEmptyWorkshopTeamRef.operationName = 'DeleteEmptyWorkshopTeam';
+
+export function deleteEmptyWorkshopTeam(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteEmptyWorkshopTeamRef(dcInstance, inputVars));
+}
+
 export const joinWorkshopTeamAndCompleteProfileRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();

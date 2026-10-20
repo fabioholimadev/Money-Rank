@@ -23,6 +23,7 @@
     "test:role-access": "node ../scripts/test-role-access.mjs",
     "test:teacher-analytics": "node ../scripts/test-teacher-analytics.mjs",
     "test:teacher-export": "node ../scripts/test-teacher-spreadsheet-export.mjs",
+    "test:workshop-qr": "node ../scripts/test-workshop-qr-code.mjs",
     "test:trail-progress": "node ../scripts/test-trail-progress.mjs"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
     "@mui/icons-material": "^9.1.0",
     "@mui/material": "^9.1.0",
     "@tailwindcss/postcss": "^4.3.0",
+    "@zxing/browser": "^0.2.1",
     "firebase": "^12.17.0",
     "lucide-react": "^1.17.0",
     "qrcode.react": "^4.2.0",

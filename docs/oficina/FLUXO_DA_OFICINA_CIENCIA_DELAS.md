@@ -3,7 +3,7 @@
 **Projeto:** Money Rank  
 **Duração total:** 1 hora e 40 minutos  
 **Público:** professor responsável, apoio de sala e equipe técnica  
-**Data de revisão:** 18 de outubro de 2026
+**Data de revisão:** 20 de outubro de 2026
 
 ## Resultado esperado
 
@@ -43,7 +43,9 @@ O fluxo regular de 3º DSA e 3º DSB continua separado. A oficina não depende d
 6. Conferir para cada equipe o nome, o código de oito dígitos e o QR Code.
 7. Projetar um QR Code de cada vez ou distribuir cartões separados para evitar entrada na equipe errada.
 
-O QR Code abre um endereço do próprio Money Rank com o código da equipe. O aluno pode usar a câmera comum do celular para ler esse código. A digitação dos oito dígitos permanece disponível e deve ser tratada como o plano principal de contingência. O sistema ainda não possui um leitor de câmera incorporado à página de cadastro.
+O QR Code abre um endereço do próprio Money Rank com o código da equipe. Na página de cadastro, o aluno pode tocar em **Ler QR Code da equipe**, autorizar a câmera e apontar para o código exibido pelo professor. O código permanece preenchido mesmo quando o aluno precisa entrar com Google. A digitação dos oito dígitos continua disponível como contingência.
+
+Uma equipe criada por engano pode ser apagada no painel enquanto ainda estiver vazia. A exclusão pede confirmação e invalida imediatamente o código e o QR Code. Depois que houver participante, a equipe fica protegida para preservar respostas e ranking.
 
 ## Cadastro dos alunos
 
@@ -52,7 +54,7 @@ O QR Code abre um endereço do próprio Money Rank com o código da equipe. O al
 3. Preenche nome completo para identificação interna.
 4. Informa a turma em texto livre.
 5. Escolhe o nome preferido que aparecerá no ranking.
-6. Confere ou digita o código da equipe.
+6. Lê o QR Code pela câmera incorporada ou digita o código da equipe.
 7. Seleciona um avatar.
 8. Envia o cadastro e confere o nome da equipe na trilha.
 
@@ -122,7 +124,7 @@ Digitar o código de oito dígitos. Conferir se todos os algarismos foram inform
 
 ### Câmera sem permissão
 
-Usar a câmera comum do aparelho ou digitar o código. A oficina não depende de permissão de câmera dentro do navegador.
+Permitir a câmera nas configurações do navegador e tentar novamente. Se a permissão continuar indisponível, digitar o código de oito dígitos; a oficina não depende da câmera para continuar.
 
 ### Login Google falha
 
@@ -170,18 +172,16 @@ Atualizar a página e confirmar se o período ainda está aberto. Submissões fo
 
 ## Estado da entrega
 
-Estão implementados o evento da oficina, equipes, código numérico, QR Code, cadastro específico, isolamento da trilha, quatro atividades, banco com 96 itens, pontuação recorrente, rankings individual e por equipe e Visão do aluno em modo de teste. As experiências ativas de inteligência artificial foram removidas.
+Estão implementados o evento da oficina, equipes, exclusão protegida de equipes vazias, código numérico, QR Code, leitura pela câmera no cadastro, cadastro específico, isolamento da trilha, quatro atividades, banco com 96 itens, pontuação recorrente, rankings individual e por equipe e Visão do aluno em modo de teste. As experiências ativas de inteligência artificial foram removidas.
 
-Antes de usar com a turma, ainda é necessário fazer um ensaio completo com múltiplas contas e revisar o conteúdo com o professor responsável. A leitura do QR Code ocorre pela câmera do próprio aparelho; um leitor incorporado à página pode ser avaliado depois da oficina.
+Antes de usar com a turma, ainda é necessário fazer um ensaio completo com múltiplas contas e revisar o conteúdo com o professor responsável. O ensaio deve conferir a câmera autorizada, a câmera bloqueada e a digitação manual.
 
 ## Evoluções posteriores à oficina
 
 As seguintes ideias ficam fora desta entrega e podem ser priorizadas depois do evento:
 
-- leitor de QR Code dentro da página de cadastro;
 - limite configurável de integrantes por equipe;
 - troca de equipe feita pelo professor com trilha de auditoria;
 - normalização do ranking para equipes de tamanhos diferentes;
 - painel com dificuldade por conceito e por formato;
-- exportação específica da oficina para análise de dados;
 - avaliação de uma arquitetura em Python e integração com Power BI.

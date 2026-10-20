@@ -26,6 +26,12 @@ export async function createWorkshopTeam(eventId, name) {
   return result.team;
 }
 
+export async function deleteWorkshopTeam(eventId, teamId) {
+  return fetchApiJson(`/api/teacher/workshops/${eventId}/teams/${teamId}`, {
+    method: 'DELETE',
+  });
+}
+
 function numeric(value) {
   return Number(value) || 0;
 }
