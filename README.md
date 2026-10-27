@@ -26,3 +26,11 @@ O **Money Rank** é uma plataforma educacional gamificada (estilo Duolingo) foca
 * Node.js com Express
 * Supabase (PostgreSQL & Auth)
 * CORS & Dotenv
+
+## Sobre o projeto e o jogo
+
+O Money Rank reúne iniciativas de educação financeira e fiscal. Este repositório apresenta a plataforma; o [Money Rank Jogo](https://github.com/fabioholimadev/money-rank-jogo) é uma frente relacionada de jogo físico-digital, desenvolvida no contexto do Espaço CRIAs.
+
+O projeto foi selecionado para apresentação na Ciência Jovem e avançou para a etapa de visita da Premiação Nacional de Educação Fiscal. O desenvolvimento é colaborativo e segue em evolução.
+
+> As funcionalidades descritas neste documento representam a proposta do projeto; consulte o código e o estado de desenvolvimento para verificar a disponibilidade de cada recurso. Os dados estatísticos acima precisam de fontes verificáveis antes de serem reutilizados.
